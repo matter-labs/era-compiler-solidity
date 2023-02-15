@@ -1,0 +1,28 @@
+[build]
+rustflags = [
+    "-W", "missing_docs",
+]
+incremental = true
+
+[target.x86_64-apple-darwin]
+rustflags = [
+    "-W", "missing_docs",
+    "-C", "link-arg=-mmacosx-version-min=11.0",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+    "-W", "missing_docs",
+    "-C", "link-arg=-mmacosx-version-min=11.0",
+]
+
+[profile.release]
+strip = true
+
+[env]
+LLVM_SYS_150_PREFIX = { value = "./target-llvm/target-final/", relative = true, force = true }
+
+[tools.clippy]
+warn = [
+    "missing_docs_in_private_items",
+]
