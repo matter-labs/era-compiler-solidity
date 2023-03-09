@@ -31,7 +31,7 @@ impl Compiler {
     pub const FIRST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 4, 10);
 
     /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 18);
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 19);
 
     /// The first version of `solc`, where Yul is used by default.
     pub const FIRST_YUL_VERSION: semver::Version = semver::Version::new(0, 8, 0);
@@ -187,6 +187,29 @@ impl Compiler {
         }
 
         Ok(String::from_utf8_lossy(output.stdout.as_slice()).to_string())
+    }
+
+    ///
+    /// The `solc --yul ...` mirror.
+    ///
+    /// Is used to validate manually written Yul.
+    ///
+    pub fn yul(&self, paths: &[PathBuf]) -> anyhow::Result<()> {
+        let mut command = std::process::Command::new(self.executable.as_str());
+        command.arg("--yul");
+        command.args(paths);
+        let output = command.output().map_err(|error| {
+            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
+        })?;
+        if !output.status.success() {
+            anyhow::bail!(
+                "{} error: {}",
+                self.executable,
+                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
+            );
+        }
+
+        Ok(())
     }
 
     ///

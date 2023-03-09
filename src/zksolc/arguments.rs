@@ -54,16 +54,11 @@ pub struct Arguments {
     #[structopt(long = "overwrite")]
     pub overwrite: bool,
 
-    /// Enable the LLVM bytecode optimizer.
-    #[structopt(long = "optimize")]
-    pub optimize: bool,
+    /// Sets the optimization parameter -O[0 | 1 | 2 | 3 | s | z].
+    #[structopt(short = "O", long = "optimization")]
+    pub optimization: Option<char>,
 
-    /// Sets the LLVM optimizer options.
-    #[structopt(long = "llvm-opt")]
-    pub llvm_options: Option<String>,
-
-    /// Path to the `solc` executable.
-    /// By default, the one in $PATH is used.
+    /// Path to the `solc` executable. By default, the one in `${PATH}` is used.
     #[structopt(long = "solc")]
     pub solc: Option<String>,
 

@@ -35,6 +35,7 @@ impl File {
             per_file: Some(HashSet::from_iter([SelectionFlag::AST])),
             per_contract: Some(HashSet::from_iter([
                 SelectionFlag::MethodIdentifiers,
+                SelectionFlag::Metadata,
                 SelectionFlag::from(pipeline),
             ])),
         }

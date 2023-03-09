@@ -17,6 +17,15 @@ pub enum Flag {
     /// The ABI JSON.
     #[serde(rename = "abi")]
     ABI,
+    /// The metadata.
+    #[serde(rename = "metadata")]
+    Metadata,
+    /// The developer documentation.
+    #[serde(rename = "devdoc")]
+    Devdoc,
+    /// The user documentation.
+    #[serde(rename = "userdoc")]
+    Userdoc,
     /// The function signature hashes JSON.
     #[serde(rename = "evm.methodIdentifiers")]
     MethodIdentifiers,
@@ -47,6 +56,9 @@ impl std::fmt::Display for Flag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ABI => write!(f, "abi"),
+            Self::Metadata => write!(f, "metadata"),
+            Self::Devdoc => write!(f, "devdoc"),
+            Self::Userdoc => write!(f, "userdoc"),
             Self::MethodIdentifiers => write!(f, "evm.methodIdentifiers"),
             Self::StorageLayout => write!(f, "storageLayout"),
             Self::AST => write!(f, "ast"),

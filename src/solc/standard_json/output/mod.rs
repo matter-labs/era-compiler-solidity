@@ -10,10 +10,11 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use serde::Serialize;
+use sha3::Digest;
 
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
-use crate::project::contract::source::Source as ProjectContractSource;
+use crate::project::contract::ir::IR as ProjectContractIR;
 use crate::project::contract::Contract as ProjectContract;
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
@@ -55,6 +56,7 @@ impl Output {
     ///
     pub fn try_to_project(
         &mut self,
+        source_code_files: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         pipeline: SolcPipeline,
         version: &semver::Version,
@@ -101,7 +103,7 @@ impl Output {
                             anyhow::anyhow!("Contract `{}` parsing error: {:?}", full_path, error)
                         })?;
 
-                        ProjectContractSource::new_yul(ir_optimized, object)
+                        ProjectContractIR::new_yul(ir_optimized, object)
                     }
                     SolcPipeline::EVMLA => {
                         let assembly =
@@ -110,12 +112,22 @@ impl Output {
                                 None => continue,
                             };
 
-                        ProjectContractSource::new_evmla(assembly)
+                        ProjectContractIR::new_evmla(assembly)
                     }
                 };
 
-                let project_contract =
-                    ProjectContract::new(full_path.clone(), source, Some(contract));
+                let source_code = source_code_files
+                    .get(path.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Source code for path `{}` not found", path))?;
+                let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                let project_contract = ProjectContract::new(
+                    full_path.clone(),
+                    source_hash,
+                    version.to_owned(),
+                    source,
+                    Some(contract),
+                );
                 project_contracts.insert(full_path, project_contract);
             }
         }

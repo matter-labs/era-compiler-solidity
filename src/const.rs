@@ -4,9 +4,6 @@
 
 #![allow(dead_code)]
 
-/// The LLVM framework version.
-pub const LLVM_VERSION: semver::Version = semver::Version::new(15, 0, 4);
-
 /// The `keccak256` scratch space offset.
 pub const OFFSET_SCRATCH_SPACE: usize = 0;
 

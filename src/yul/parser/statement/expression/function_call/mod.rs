@@ -1119,6 +1119,146 @@ impl FunctionCall {
                 )
                 .map(Some)
             }
+            Name::ZkStaticRawCall => {
+                let [address, abi_data, output_offset, output_length] =
+                    self.pop_arguments_llvm::<D, 4>(context)?;
+
+                compiler_llvm_context::zkevm_call::raw_far(
+                    context,
+                    context.llvm_runtime().static_call,
+                    address.into_int_value(),
+                    abi_data.as_basic_value_enum(),
+                    output_offset.into_int_value(),
+                    output_length.into_int_value(),
+                )
+                .map(Some)
+            }
+            Name::ZkStaticRawCallByRef => {
+                let [address, output_offset, output_length] =
+                    self.pop_arguments_llvm::<D, 3>(context)?;
+                let abi_data = context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?;
+
+                compiler_llvm_context::zkevm_call::raw_far(
+                    context,
+                    context.llvm_runtime().static_call_byref,
+                    address.into_int_value(),
+                    abi_data,
+                    output_offset.into_int_value(),
+                    output_length.into_int_value(),
+                )
+                .map(Some)
+            }
+            Name::ZkStaticSystemCall => {
+                let [address, abi_data, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
+                    self.pop_arguments_llvm::<D, 6>(context)?;
+
+                compiler_llvm_context::zkevm_call::system(
+                    context,
+                    context.llvm_runtime().static_call,
+                    address.into_int_value(),
+                    abi_data,
+                    context.field_const(0),
+                    context.field_const(0),
+                    vec![
+                        extra_value_1.into_int_value(),
+                        extra_value_2.into_int_value(),
+                        extra_value_3.into_int_value(),
+                        extra_value_4.into_int_value(),
+                    ],
+                )
+                .map(Some)
+            }
+            Name::ZkStaticSystemCallByRef => {
+                let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
+                    self.pop_arguments_llvm::<D, 5>(context)?;
+                let abi_data = context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?;
+
+                compiler_llvm_context::zkevm_call::system(
+                    context,
+                    context.llvm_runtime().static_call_byref,
+                    address.into_int_value(),
+                    abi_data,
+                    context.field_const(0),
+                    context.field_const(0),
+                    vec![
+                        extra_value_1.into_int_value(),
+                        extra_value_2.into_int_value(),
+                        extra_value_3.into_int_value(),
+                        extra_value_4.into_int_value(),
+                    ],
+                )
+                .map(Some)
+            }
+            Name::ZkDelegateRawCall => {
+                let [address, abi_data, output_offset, output_length] =
+                    self.pop_arguments_llvm::<D, 4>(context)?;
+
+                compiler_llvm_context::zkevm_call::raw_far(
+                    context,
+                    context.llvm_runtime().delegate_call,
+                    address.into_int_value(),
+                    abi_data.as_basic_value_enum(),
+                    output_offset.into_int_value(),
+                    output_length.into_int_value(),
+                )
+                .map(Some)
+            }
+            Name::ZkDelegateRawCallByRef => {
+                let [address, output_offset, output_length] =
+                    self.pop_arguments_llvm::<D, 3>(context)?;
+                let abi_data = context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?;
+
+                compiler_llvm_context::zkevm_call::raw_far(
+                    context,
+                    context.llvm_runtime().delegate_call_byref,
+                    address.into_int_value(),
+                    abi_data,
+                    output_offset.into_int_value(),
+                    output_length.into_int_value(),
+                )
+                .map(Some)
+            }
+            Name::ZkDelegateSystemCall => {
+                let [address, abi_data, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
+                    self.pop_arguments_llvm::<D, 6>(context)?;
+
+                compiler_llvm_context::zkevm_call::system(
+                    context,
+                    context.llvm_runtime().delegate_call,
+                    address.into_int_value(),
+                    abi_data,
+                    context.field_const(0),
+                    context.field_const(0),
+                    vec![
+                        extra_value_1.into_int_value(),
+                        extra_value_2.into_int_value(),
+                        extra_value_3.into_int_value(),
+                        extra_value_4.into_int_value(),
+                    ],
+                )
+                .map(Some)
+            }
+            Name::ZkDelegateSystemCallByRef => {
+                let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
+                    self.pop_arguments_llvm::<D, 5>(context)?;
+                let abi_data = context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?;
+
+                compiler_llvm_context::zkevm_call::system(
+                    context,
+                    context.llvm_runtime().delegate_call_byref,
+                    address.into_int_value(),
+                    abi_data,
+                    context.field_const(0),
+                    context.field_const(0),
+                    vec![
+                        extra_value_1.into_int_value(),
+                        extra_value_2.into_int_value(),
+                        extra_value_3.into_int_value(),
+                        extra_value_4.into_int_value(),
+                    ],
+                )
+                .map(Some)
+            }
 
             Name::ZkLoadCalldataIntoActivePtr => {
                 compiler_llvm_context::zkevm_abi::calldata_ptr_to_active(context).map(|_| None)
@@ -1172,6 +1312,15 @@ impl FunctionCall {
                 })?;
 
                 context.get_global(key.as_str()).map(Some)
+            }
+            Name::ZkGlobalExtraAbiData => {
+                let [index] = self.pop_arguments_llvm::<D, 1>(context)?;
+
+                compiler_llvm_context::zkevm_abi::get_extra_abi_data(
+                    context,
+                    index.into_int_value(),
+                )
+                .map(Some)
             }
             Name::ZkGlobalStore => {
                 let [mut key, value] = self.pop_arguments::<D, 2>(context)?;

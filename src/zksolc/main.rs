@@ -56,34 +56,29 @@ fn main_inner() -> anyhow::Result<()> {
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     compiler_llvm_context::initialize_target();
-    if let Some(llvm_options) = arguments.llvm_options {
-        let llvm_options = shell_words::split(llvm_options.as_str())
-            .map_err(|error| anyhow::anyhow!("LLVM options parsing error: {}", error))?;
-        let llvm_options = Vec::from_iter(llvm_options.iter().map(String::as_str));
-        inkwell::support::parse_command_line_options(
-            llvm_options.len() as i32,
-            llvm_options.as_slice(),
-            "",
-        );
-    }
 
     let solc =
         compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
             compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
         }));
 
+    let optimizer_settings = match arguments.optimization {
+        Some(mode) => compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
+        None => compiler_llvm_context::OptimizerSettings::cycles(),
+    };
+
     let build = if arguments.yul {
         compiler_solidity::yul(
             arguments.input_files.as_slice(),
             &solc,
-            arguments.optimize,
+            optimizer_settings,
             arguments.is_system_mode,
             debug_config,
         )
     } else if arguments.llvm_ir {
         compiler_solidity::llvm_ir(
             arguments.input_files.as_slice(),
-            arguments.optimize,
+            optimizer_settings,
             arguments.is_system_mode,
             debug_config,
         )
@@ -104,7 +99,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.input_files.as_slice(),
             arguments.libraries,
             &solc,
-            arguments.optimize,
+            optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
             arguments.base_path,
@@ -120,7 +115,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.input_files.as_slice(),
             arguments.libraries,
             &solc,
-            arguments.optimize,
+            optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
             arguments.base_path,

@@ -13,13 +13,32 @@ use serde::Serialize;
 pub struct Optimizer {
     /// Whether the optimizer is enabled.
     pub enabled: bool,
+    /// The optimization mode string.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<char>,
 }
 
 impl Optimizer {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(enabled: bool) -> Self {
-        Self { enabled }
+    pub fn new(enabled: bool, mode: Option<char>) -> Self {
+        Self { enabled, mode }
+    }
+}
+
+impl TryFrom<&Optimizer> for compiler_llvm_context::OptimizerSettings {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &Optimizer) -> Result<Self, Self::Error> {
+        if !value.enabled {
+            return Ok(Self::none());
+        }
+
+        if let Some(mode) = value.mode {
+            return Self::try_from_cli(mode);
+        }
+
+        Ok(Self::cycles())
     }
 }

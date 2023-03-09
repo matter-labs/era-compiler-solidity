@@ -246,6 +246,22 @@ pub enum Name {
     ZkSystemCall,
     /// The eponymous zkEVM Yul extension instruction.
     ZkSystemCallByRef,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkStaticRawCall,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkStaticRawCallByRef,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkStaticSystemCall,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkStaticSystemCallByRef,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkDelegateRawCall,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkDelegateRawCallByRef,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkDelegateSystemCall,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkDelegateSystemCallByRef,
 
     /// The eponymous zkEVM Yul extension instruction.
     ZkLoadCalldataIntoActivePtr,
@@ -263,6 +279,8 @@ pub enum Name {
 
     /// The eponymous zkEVM Yul extension instruction.
     ZkGlobalLoad,
+    /// The eponymous zkEVM Yul extension instruction.
+    ZkGlobalExtraAbiData,
     /// The eponymous zkEVM Yul extension instruction.
     ZkGlobalStore,
 }
@@ -411,6 +429,14 @@ impl From<&str> for Name {
             "$zk_raw_call_byref" => Self::ZkRawCallByRef,
             "$zk_system_call" => Self::ZkSystemCall,
             "$zk_system_call_byref" => Self::ZkSystemCallByRef,
+            "$zk_static_raw_call" => Self::ZkStaticRawCall,
+            "$zk_static_raw_call_byref" => Self::ZkStaticRawCallByRef,
+            "$zk_static_system_call" => Self::ZkStaticSystemCall,
+            "$zk_static_system_call_byref" => Self::ZkStaticSystemCallByRef,
+            "$zk_delegate_raw_call" => Self::ZkDelegateRawCall,
+            "$zk_delegate_raw_call_byref" => Self::ZkDelegateRawCallByRef,
+            "$zk_delegate_system_call" => Self::ZkDelegateSystemCall,
+            "$zk_delegate_system_call_byref" => Self::ZkDelegateSystemCallByRef,
 
             "$zk_load_calldata_into_active_ptr" => Self::ZkLoadCalldataIntoActivePtr,
             "$zk_load_returndata_into_active_ptr" => Self::ZkLoadReturndataIntoActivePtr,
@@ -421,6 +447,7 @@ impl From<&str> for Name {
             "$zk_multiplication_high" => Self::ZkMultiplicationHigh,
 
             "$zk_global_load" => Self::ZkGlobalLoad,
+            "$zk_global_extra_abi_data" => Self::ZkGlobalExtraAbiData,
             "$zk_global_store" => Self::ZkGlobalStore,
 
             input => Self::UserDefined(input.to_owned()),

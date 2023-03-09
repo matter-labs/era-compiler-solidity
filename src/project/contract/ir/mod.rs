@@ -19,7 +19,7 @@ use self::yul::Yul;
 #[derive(Debug, Clone)]
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
-pub enum Source {
+pub enum IR {
     /// The Yul source code representation.
     Yul(Yul),
     /// The EVM legacy assembly source code representation.
@@ -28,12 +28,12 @@ pub enum Source {
     LLVMIR(LLVMIR),
 }
 
-impl Source {
+impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_yul(source: String, object: Object) -> Self {
-        Self::Yul(Yul::new(source, object))
+    pub fn new_yul(source_code: String, object: Object) -> Self {
+        Self::Yul(Yul::new(source_code, object))
     }
 
     ///
@@ -51,7 +51,7 @@ impl Source {
     }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Source
+impl<D> compiler_llvm_context::WriteLLVM<D> for IR
 where
     D: compiler_llvm_context::Dependency,
 {

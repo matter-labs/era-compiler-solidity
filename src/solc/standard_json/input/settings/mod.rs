@@ -36,12 +36,12 @@ impl Settings {
     pub fn new(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: Selection,
-        optimize: bool,
+        optimizer: Optimizer,
     ) -> Self {
         Self {
             libraries: Some(libraries),
             output_selection: Some(output_selection),
-            optimizer: Optimizer::new(optimize),
+            optimizer,
         }
     }
 

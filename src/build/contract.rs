@@ -24,6 +24,12 @@ pub struct Contract {
     pub build: compiler_llvm_context::Build,
     /// The ABI specification.
     pub abi: Option<serde_json::Value>,
+    /// The metadata.
+    pub metadata: serde_json::Value,
+    /// The developer documentation.
+    pub devdoc: Option<serde_json::Value>,
+    /// The user documentation.
+    pub userdoc: Option<serde_json::Value>,
     /// The method identifiers.
     pub method_identifiers: Option<BTreeMap<String, String>>,
     /// The storage layout.
@@ -34,11 +40,15 @@ impl Contract {
     ///
     /// A shortcut constructor.
     ///
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         path: String,
         identifier: String,
         build: compiler_llvm_context::Build,
         abi: Option<serde_json::Value>,
+        metadata: serde_json::Value,
+        devdoc: Option<serde_json::Value>,
+        userdoc: Option<serde_json::Value>,
         method_identifiers: Option<BTreeMap<String, String>>,
         storage_layout: Option<serde_json::Value>,
     ) -> Self {
@@ -47,6 +57,9 @@ impl Contract {
             identifier,
             build,
             abi,
+            metadata,
+            devdoc,
+            userdoc,
             method_identifiers,
             storage_layout,
         }
@@ -184,6 +197,9 @@ impl Contract {
         standard_json_contract.ir_optimized = None;
 
         standard_json_contract.abi = self.abi;
+        standard_json_contract.metadata = Some(self.metadata);
+        standard_json_contract.devdoc = self.devdoc;
+        standard_json_contract.userdoc = self.userdoc;
         standard_json_contract.storage_layout = self.storage_layout;
 
         let assembly_text = self.build.assembly_text;
@@ -195,7 +211,7 @@ impl Contract {
         ));
 
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
-        standard_json_contract.hash = Some(self.build.hash);
+        standard_json_contract.hash = Some(self.build.bytecode_hash);
 
         Ok(())
     }

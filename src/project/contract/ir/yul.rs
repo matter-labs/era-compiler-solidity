@@ -10,7 +10,7 @@ use crate::yul::parser::statement::object::Object;
 #[derive(Debug, Clone)]
 pub struct Yul {
     /// The Yul source code.
-    pub source: String,
+    pub source_code: String,
     /// The Yul AST object.
     pub object: Object,
 }
@@ -19,8 +19,11 @@ impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(source: String, object: Object) -> Self {
-        Self { source, object }
+    pub fn new(source_code: String, object: Object) -> Self {
+        Self {
+            source_code,
+            object,
+        }
     }
 }
 

@@ -2,7 +2,8 @@
 //! The contract data representation.
 //!
 
-pub mod source;
+pub mod ir;
+pub mod metadata;
 pub mod state;
 
 use std::collections::BTreeMap;
@@ -16,7 +17,8 @@ use crate::build::contract::Contract as ContractBuild;
 use crate::project::Project;
 use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
 
-use self::source::Source;
+use self::ir::IR;
+use self::metadata::Metadata;
 use self::state::State;
 
 ///
@@ -26,10 +28,16 @@ use self::state::State;
 pub struct Contract {
     /// The absolute file path.
     pub path: String,
-    /// The source code data.
-    pub source: Source,
+    /// The IR source code data.
+    pub ir: IR,
     /// The ABI specification.
     pub abi: Option<serde_json::Value>,
+    /// The metadata.
+    pub metadata: serde_json::Value,
+    /// The developer documentation.
+    pub devdoc: Option<serde_json::Value>,
+    /// The user documentation.
+    pub userdoc: Option<serde_json::Value>,
     /// The method identifiers.
     pub method_identifiers: Option<BTreeMap<String, String>>,
     /// The storage layout.
@@ -42,13 +50,30 @@ impl Contract {
     ///
     pub fn new(
         path: String,
-        source: Source,
+        source_hash: [u8; compiler_common::BYTE_LENGTH_FIELD],
+        source_version: semver::Version,
+        ir: IR,
         mut contract: Option<&mut SolcStandardJsonOutputContract>,
     ) -> Self {
         Self {
             path,
-            source,
+            ir,
             abi: contract.as_mut().and_then(|contract| contract.abi.take()),
+            metadata: contract
+                .as_mut()
+                .and_then(|contract| contract.metadata.take())
+                .unwrap_or_else(|| {
+                    serde_json::json!({
+                        "source_hash": hex::encode(source_hash.as_slice()),
+                        "source_version": source_version.to_string(),
+                    })
+                }),
+            devdoc: contract
+                .as_mut()
+                .and_then(|contract| contract.devdoc.take()),
+            userdoc: contract
+                .as_mut()
+                .and_then(|contract| contract.userdoc.take()),
             method_identifiers: contract
                 .as_mut()
                 .and_then(|contract| contract.evm.as_mut())
@@ -66,10 +91,10 @@ impl Contract {
     /// - the module name for LLVM IR
     ///
     pub fn identifier(&self) -> &str {
-        match self.source {
-            Source::Yul(ref yul) => yul.object.identifier.as_str(),
-            Source::EVMLA(ref evm) => evm.assembly.full_path(),
-            Source::LLVMIR(ref llvm_ir) => llvm_ir.path.as_str(),
+        match self.ir {
+            IR::Yul(ref yul) => yul.object.identifier.as_str(),
+            IR::EVMLA(ref evm) => evm.assembly.full_path(),
+            IR::LLVMIR(ref llvm_ir) => llvm_ir.path.as_str(),
         }
     }
 
@@ -77,10 +102,10 @@ impl Contract {
     /// Extract factory dependencies.
     ///
     pub fn drain_factory_dependencies(&mut self) -> HashSet<String> {
-        match self.source {
-            Source::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
-            Source::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
-            Source::LLVMIR(_) => HashSet::new(),
+        match self.ir {
+            IR::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
+            IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
+            IR::LLVMIR(_) => HashSet::new(),
         }
     }
 
@@ -96,8 +121,19 @@ impl Contract {
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<ContractBuild> {
         let llvm = inkwell::context::Context::create();
-        let module = match self.source {
-            Source::LLVMIR(ref llvm_ir) => {
+        let optimizer = compiler_llvm_context::Optimizer::new(target_machine, optimizer_settings);
+
+        let metadata_hash = {
+            Metadata::new(
+                self.metadata.take(),
+                semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+                optimizer.settings().to_owned(),
+            )
+            .keccak256()
+        };
+
+        let module = match self.ir {
+            IR::LLVMIR(ref llvm_ir) => {
                 let memory_buffer =
                     inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
                         llvm_ir.source.as_bytes(),
@@ -110,7 +146,6 @@ impl Contract {
             }
             _ => llvm.create_module(self.path.as_str()),
         };
-        let optimizer = compiler_llvm_context::Optimizer::new(target_machine, optimizer_settings);
         let mut context = compiler_llvm_context::Context::new(
             &llvm,
             module,
@@ -119,30 +154,30 @@ impl Contract {
             debug_config,
         );
         context.set_solidity_data(compiler_llvm_context::ContextSolidityData::default());
-        match self.source {
-            Source::Yul(_) => {
+        match self.ir {
+            IR::Yul(_) => {
                 let yul_data = compiler_llvm_context::ContextYulData::new(is_system_mode);
                 context.set_yul_data(yul_data);
             }
-            Source::EVMLA(_) => {
+            IR::EVMLA(_) => {
                 let version = project.read().expect("Sync").version.to_owned();
                 let evmla_data = compiler_llvm_context::ContextEVMLAData::new(version);
                 context.set_evmla_data(evmla_data);
             }
-            Source::LLVMIR(_) => {}
+            IR::LLVMIR(_) => {}
         }
 
         let identifier = self.identifier().to_owned();
         let factory_dependencies = self.drain_factory_dependencies();
 
-        self.source.declare(&mut context).map_err(|error| {
+        self.ir.declare(&mut context).map_err(|error| {
             anyhow::anyhow!(
                 "The contract `{}` LLVM IR generator declaration pass error: {}",
                 self.path,
                 error
             )
         })?;
-        self.source.into_llvm(&mut context).map_err(|error| {
+        self.ir.into_llvm(&mut context).map_err(|error| {
             anyhow::anyhow!(
                 "The contract `{}` LLVM IR generator definition pass error: {}",
                 self.path,
@@ -150,7 +185,8 @@ impl Contract {
             )
         })?;
 
-        let mut build = context.build(self.path.as_str())?;
+        let mut build = context.build(self.path.as_str(), metadata_hash)?;
+
         for dependency in factory_dependencies.into_iter() {
             let full_path = project
                 .read()
@@ -165,7 +201,7 @@ impl Contract {
                 .contract_states
                 .get(full_path.as_str())
             {
-                Some(State::Build(build)) => build.build.hash.to_owned(),
+                Some(State::Build(build)) => build.build.bytecode_hash.to_owned(),
                 Some(_) => {
                     panic!("Dependency `{full_path}` must be built at this point")
                 }
@@ -182,6 +218,9 @@ impl Contract {
             identifier,
             build,
             self.abi,
+            self.metadata,
+            self.devdoc,
+            self.userdoc,
             self.method_identifiers,
             self.storage_layout,
         ))
@@ -193,10 +232,10 @@ where
     D: compiler_llvm_context::Dependency,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        self.source.declare(context)
+        self.ir.declare(context)
     }
 
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        self.source.into_llvm(context)
+        self.ir.into_llvm(context)
     }
 }

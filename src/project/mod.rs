@@ -11,10 +11,12 @@ use std::sync::RwLock;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
+use sha3::Digest;
 
 use crate::build::Build;
-use crate::project::contract::source::Source;
+use crate::project::contract::ir::IR;
 use crate::project::contract::state::State;
+use crate::solc::Compiler as SolcCompiler;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::statement::object::Object;
 
@@ -187,10 +189,12 @@ impl Project {
     ///
     /// Parses the Yul source code file and returns the source data.
     ///
-    pub fn try_from_yul_path(path: &Path, version: &semver::Version) -> anyhow::Result<Self> {
-        let yul = std::fs::read_to_string(path)
+    pub fn try_from_yul_path(path: &Path) -> anyhow::Result<Self> {
+        let source_code = std::fs::read_to_string(path)
             .map_err(|error| anyhow::anyhow!("Yul file {:?} reading error: {}", path, error))?;
-        let mut lexer = Lexer::new(yul.clone());
+        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+        let mut lexer = Lexer::new(source_code.clone());
         let path = path.to_string_lossy().to_string();
         let object = Object::parse(&mut lexer, None)
             .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing error: {}", path, error,))?;
@@ -198,11 +202,17 @@ impl Project {
         let mut project_contracts = BTreeMap::new();
         project_contracts.insert(
             path.clone(),
-            Contract::new(path, Source::new_yul(yul, object), None),
+            Contract::new(
+                path,
+                source_hash,
+                SolcCompiler::LAST_SUPPORTED_VERSION,
+                IR::new_yul(source_code, object),
+                None,
+            ),
         );
 
         Ok(Self::new(
-            version.to_owned(),
+            SolcCompiler::LAST_SUPPORTED_VERSION,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -213,12 +223,10 @@ impl Project {
     ///
     /// Only for integration testing purposes.
     ///
-    pub fn try_from_yul_string(
-        path: &str,
-        code: &str,
-        version: &semver::Version,
-    ) -> anyhow::Result<Self> {
-        let mut lexer = Lexer::new(code.to_owned());
+    pub fn try_from_yul_string(path: &str, source_code: &str) -> anyhow::Result<Self> {
+        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+        let mut lexer = Lexer::new(source_code.to_owned());
         let object = Object::parse(&mut lexer, None)
             .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing error: {}", path, error))?;
 
@@ -227,13 +235,15 @@ impl Project {
             path.to_owned(),
             Contract::new(
                 path.to_owned(),
-                Source::new_yul(code.to_owned(), object),
+                source_hash,
+                SolcCompiler::LAST_SUPPORTED_VERSION,
+                IR::new_yul(source_code.to_owned(), object),
                 None,
             ),
         );
 
         Ok(Self::new(
-            version.to_owned(),
+            SolcCompiler::LAST_SUPPORTED_VERSION,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -243,18 +253,26 @@ impl Project {
     /// Parses the LLVM IR source code file and returns the source data.
     ///
     pub fn try_from_llvm_ir_path(path: &Path) -> anyhow::Result<Self> {
-        let code = std::fs::read_to_string(path)
+        let source_code = std::fs::read_to_string(path)
             .map_err(|error| anyhow::anyhow!("LLVM IR file {:?} reading error: {}", path, error))?;
+        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
         project_contracts.insert(
             path.clone(),
-            Contract::new(path.clone(), Source::new_llvm_ir(path, code), None),
+            Contract::new(
+                path.clone(),
+                source_hash,
+                compiler_llvm_context::LLVM_VERSION,
+                IR::new_llvm_ir(path, source_code),
+                None,
+            ),
         );
 
         Ok(Self::new(
-            crate::r#const::LLVM_VERSION,
+            compiler_llvm_context::LLVM_VERSION,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -312,7 +330,7 @@ impl compiler_llvm_context::Dependency for Project {
             .contract_states
             .get(contract_path.as_str())
         {
-            Some(ContractState::Build(build)) => Ok(build.build.hash.to_owned()),
+            Some(ContractState::Build(build)) => Ok(build.build.bytecode_hash.to_owned()),
             Some(ContractState::Error(error)) => anyhow::bail!(
                 "Dependency contract `{}` compiling error: {}",
                 identifier,

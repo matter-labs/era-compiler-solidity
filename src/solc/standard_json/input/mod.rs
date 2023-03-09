@@ -15,6 +15,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 
 use self::language::Language;
@@ -57,7 +58,7 @@ impl Input {
         paths: &[PathBuf],
         library_map: Vec<String>,
         output_selection: SolcStandardJsonInputSettingsSelection,
-        optimize: bool,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
     ) -> anyhow::Result<Self> {
         let sources = paths
             .into_par_iter()
@@ -74,7 +75,7 @@ impl Input {
         Ok(Self {
             language,
             sources,
-            settings: Settings::new(libraries, output_selection, optimize),
+            settings: Settings::new(libraries, output_selection, optimizer),
         })
     }
 
@@ -87,7 +88,7 @@ impl Input {
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
-        optimize: bool,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
     ) -> anyhow::Result<Self> {
         let sources = sources
             .into_par_iter()
@@ -97,7 +98,7 @@ impl Input {
         Ok(Self {
             language: Language::Solidity,
             sources,
-            settings: Settings::new(libraries, output_selection, optimize),
+            settings: Settings::new(libraries, output_selection, optimizer),
         })
     }
 }

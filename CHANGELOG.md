@@ -1,5 +1,19 @@
 # The `zksolc` changelog
 
+## [1.3.6] - 2023-03-09
+
+### Added
+
+- The contract metadata hash to the end of bytecode
+- The solc v0.8.19 support
+- Source code validation in the Yul mode via a call to `solc`
+- Output selection flags `metadata`, `devdoc`, `userdoc`
+
+### Changed
+
+- The optimizer settings to support multiple modes
+- The optimizer now optimizes for performance instead of size by default
+
 ## [1.3.5] - 2023-02-18
 
 ### Added
