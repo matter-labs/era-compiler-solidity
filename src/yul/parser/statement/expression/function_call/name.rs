@@ -138,15 +138,30 @@ pub enum Name {
     StaticCall,
 
     /// create new contract with code `mem[p…(p+n))` and send `v` wei and return the new address
+    ///
+    /// Passes bytecode to the system contracts.
     Create,
     /// create new contract with code `mem[p…(p+n))` at address
     /// `keccak256(0xff . this . s . keccak256(mem[p…(p+n)))` and send `v` wei and return the
     /// new address, where `0xff` is a 1-byte value, this is the current contract’s address as a
     /// 20-byte value and `s` is a big-endian 256-bit value
+    ///
+    /// Passes bytecode to the system contracts.
     Create2,
+    /// create new contract with code `mem[p…(p+n))` and send `v` wei and return the new address
+    ///
+    /// Passes hash to the system contracts.
+    ZkCreate,
+    /// create new contract with code `mem[p…(p+n))` at address
+    /// `keccak256(0xff . this . s . keccak256(mem[p…(p+n)))` and send `v` wei and return the
+    /// new address, where `0xff` is a 1-byte value, this is the current contract’s address as a
+    /// 20-byte value and `s` is a big-endian 256-bit value
+    ///
+    /// Passes hash to the system contracts.
+    ZkCreate2,
     /// returns the size in the data area
     DataSize,
-    ///  is equivalent to `CodeCopy`
+    /// is equivalent to `CodeCopy`
     DataCopy,
     /// returns the offset in the data area
     DataOffset,
@@ -375,6 +390,8 @@ impl From<&str> for Name {
 
             "create" => Self::Create,
             "create2" => Self::Create2,
+            "$zk_create" => Self::ZkCreate,
+            "$zk_create2" => Self::ZkCreate2,
             "datasize" => Self::DataSize,
             "dataoffset" => Self::DataOffset,
             "datacopy" => Self::DataCopy,

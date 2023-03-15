@@ -21,6 +21,8 @@ use self::version::Version;
 pub struct Compiler {
     /// The binary executable name.
     pub executable: String,
+    /// The lazily-initialized compiler version.
+    pub version: Option<Version>,
 }
 
 impl Compiler {
@@ -30,11 +32,14 @@ impl Compiler {
     /// The first supported version of `solc`.
     pub const FIRST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 4, 10);
 
-    /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 19);
-
     /// The first version of `solc`, where Yul is used by default.
     pub const FIRST_YUL_VERSION: semver::Version = semver::Version::new(0, 8, 0);
+
+    /// The first version of `solc`, where the `--via-ir` CLI flag is supported.
+    pub const FIRST_CLI_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
+
+    /// The last supported version of `solc`.
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 19);
 
     ///
     /// A shortcut constructor.
@@ -43,7 +48,10 @@ impl Compiler {
     /// uses `solc-<version>` format.
     ///
     pub fn new(executable: String) -> Self {
-        Self { executable }
+        Self {
+            executable,
+            version: None,
+        }
     }
 
     ///
@@ -121,14 +129,36 @@ impl Compiler {
     /// The `solc --combined-json abi,hashes...` mirror.
     ///
     pub fn combined_json(
-        &self,
+        &mut self,
         paths: &[PathBuf],
         combined_json_argument: &str,
     ) -> anyhow::Result<CombinedJson> {
         let mut command = std::process::Command::new(self.executable.as_str());
         command.args(paths);
+
+        let version = self.version()?.default;
+        if version >= Self::FIRST_CLI_VIA_IR_VERSION {
+            command.arg("--via-ir");
+        } else if version >= Self::FIRST_YUL_VERSION {
+            command.arg("--experimental-via-ir");
+        }
+
+        let mut combined_json_flags = Vec::new();
+        let mut combined_json_fake_flag_pushed = false;
+        let mut filtered_flags = Vec::with_capacity(3);
+        for flag in combined_json_argument.split(',') {
+            match flag {
+                flag @ "asm" | flag @ "bin" | flag @ "bin-runtime" => filtered_flags.push(flag),
+                flag => combined_json_flags.push(flag),
+            }
+        }
+        if combined_json_flags.is_empty() {
+            combined_json_flags.push("ast");
+            combined_json_fake_flag_pushed = true;
+        }
         command.arg("--combined-json");
-        command.arg(combined_json_argument);
+        command.arg(combined_json_flags.join(","));
+
         let output = command.output().map_err(|error| {
             anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
         })?;
@@ -142,51 +172,35 @@ impl Compiler {
             );
         }
 
-        let combined_json = serde_json::from_slice(output.stdout.as_slice()).map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess output parsing error: {}\n{}",
-                self.executable,
-                error,
-                serde_json::from_slice::<serde_json::Value>(output.stdout.as_slice())
-                    .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                    .unwrap_or_else(
-                        |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
-                    ),
-            )
-        })?;
+        let mut combined_json: CombinedJson = serde_json::from_slice(output.stdout.as_slice())
+            .map_err(|error| {
+                anyhow::anyhow!(
+                    "{} subprocess output parsing error: {}\n{}",
+                    self.executable,
+                    error,
+                    serde_json::from_slice::<serde_json::Value>(output.stdout.as_slice())
+                        .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
+                        .unwrap_or_else(
+                            |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
+                        ),
+                )
+            })?;
+        for filtered_flag in filtered_flags.into_iter() {
+            for (_path, contract) in combined_json.contracts.iter_mut() {
+                match filtered_flag {
+                    "asm" => contract.asm = Some(serde_json::Value::Null),
+                    "bin" => contract.bin = Some("".to_owned()),
+                    "bin-runtime" => contract.bin_runtime = Some("".to_owned()),
+                    _ => continue,
+                }
+            }
+        }
+        if combined_json_fake_flag_pushed {
+            combined_json.source_list = None;
+            combined_json.sources = None;
+        }
 
         Ok(combined_json)
-    }
-
-    ///
-    /// The `solc --abi --hashes ...` mirror.
-    ///
-    pub fn extra_output(
-        &self,
-        paths: &[PathBuf],
-        output_abi: bool,
-        output_hashes: bool,
-    ) -> anyhow::Result<String> {
-        let mut command = std::process::Command::new(self.executable.as_str());
-        command.args(paths);
-        if output_abi {
-            command.arg("--abi");
-        }
-        if output_hashes {
-            command.arg("--hashes");
-        }
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
-            );
-        }
-
-        Ok(String::from_utf8_lossy(output.stdout.as_slice()).to_string())
     }
 
     ///
@@ -215,7 +229,11 @@ impl Compiler {
     ///
     /// The `solc --version` mini-parser.
     ///
-    pub fn version(&self) -> anyhow::Result<Version> {
+    pub fn version(&mut self) -> anyhow::Result<Version> {
+        if let Some(version) = self.version.as_ref() {
+            return Ok(version.to_owned());
+        }
+
         let mut command = std::process::Command::new(self.executable.as_str());
         command.arg("--version");
         let output = command.output().map_err(|error| {
@@ -269,6 +287,8 @@ impl Compiler {
                 version.default
             );
         }
+
+        self.version = Some(version.clone());
 
         Ok(version)
     }

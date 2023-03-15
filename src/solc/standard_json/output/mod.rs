@@ -66,7 +66,7 @@ impl Output {
             self.preprocess_dependencies()?;
         }
 
-        let files = match self.contracts.as_mut() {
+        let files = match self.contracts.as_ref() {
             Some(files) => files,
             None => {
                 anyhow::bail!(
@@ -80,13 +80,13 @@ impl Output {
         };
         let mut project_contracts = BTreeMap::new();
 
-        for (path, contracts) in files.iter_mut() {
-            for (name, contract) in contracts.iter_mut() {
+        for (path, contracts) in files.iter() {
+            for (name, contract) in contracts.iter() {
                 let full_path = format!("{path}:{name}");
 
                 let source = match pipeline {
                     SolcPipeline::Yul => {
-                        let ir_optimized = match contract.ir_optimized.take() {
+                        let ir_optimized = match contract.ir_optimized.to_owned() {
                             Some(ir_optimized) => ir_optimized,
                             None => continue,
                         };
@@ -98,19 +98,22 @@ impl Output {
                             debug_config.dump_yul(full_path.as_str(), ir_optimized.as_str())?;
                         }
 
-                        let mut lexer = Lexer::new(ir_optimized.clone());
+                        let mut lexer = Lexer::new(ir_optimized.to_owned());
                         let object = Object::parse(&mut lexer, None).map_err(|error| {
                             anyhow::anyhow!("Contract `{}` parsing error: {:?}", full_path, error)
                         })?;
 
-                        ProjectContractIR::new_yul(ir_optimized, object)
+                        ProjectContractIR::new_yul(ir_optimized.to_owned(), object)
                     }
                     SolcPipeline::EVMLA => {
-                        let assembly =
-                            match contract.evm.as_ref().and_then(|evm| evm.assembly.as_ref()) {
-                                Some(assembly) => assembly.to_owned(),
-                                None => continue,
-                            };
+                        let assembly = match contract
+                            .evm
+                            .as_ref()
+                            .and_then(|evm| evm.assembly.to_owned())
+                        {
+                            Some(assembly) => assembly.to_owned(),
+                            None => continue,
+                        };
 
                         ProjectContractIR::new_evmla(assembly)
                     }
@@ -126,7 +129,7 @@ impl Output {
                     source_hash,
                     version.to_owned(),
                     source,
-                    Some(contract),
+                    contract.metadata.to_owned(),
                 );
                 project_contracts.insert(full_path, project_contract);
             }

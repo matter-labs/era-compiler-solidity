@@ -196,8 +196,6 @@ where
 
         entry.into_llvm(context)?;
 
-        runtime.into_llvm(context)?;
-
         Ok(())
     }
 
@@ -208,8 +206,15 @@ where
             compiler_llvm_context::DeployCodeFunction::new(self.code).into_llvm(context)?;
         }
 
-        if let Some(object) = self.inner_object {
-            object.into_llvm(context)?;
+        match self.inner_object {
+            Some(object) => {
+                object.into_llvm(context)?;
+            }
+            None => {
+                let runtime =
+                    compiler_llvm_context::Runtime::new(compiler_llvm_context::AddressSpace::Heap);
+                runtime.into_llvm(context)?;
+            }
         }
 
         Ok(())

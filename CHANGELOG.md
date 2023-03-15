@@ -1,5 +1,24 @@
 # The `zksolc` changelog
 
+## [1.3.7] - 2023-03-15
+
+### Added
+
+- LLVM options for debugging and verification
+- Fields `metadata`, `devdoc`, `userdoc`, `storage-layout`, `ast` to the combined JSON output
+
+### Removed
+
+- Options `--abi` and `--hashes` due to inefficiency in calling the `solc` subprocess
+
+### Fixed
+
+- The missing `abi` field in the combined JSON output
+- The `hashes` field in the combined JSON output is now only printed if requested
+- The stack-too-deep error produced by `solc` in some cases of the combined JSON usage
+- Invalid behavior of exception handling with the near call ABI
+- IRs are not removed from the standard JSON output anymore
+
 ## [1.3.6] - 2023-03-09
 
 ### Added

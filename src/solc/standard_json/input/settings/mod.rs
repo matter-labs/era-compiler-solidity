@@ -27,6 +27,9 @@ pub struct Settings {
     pub output_selection: Option<Selection>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
+    /// Whether to compile via IR. Only used by `solc` >=0.8.0.
+    #[serde(rename = "viaIR", skip_serializing_if = "Option::is_none")]
+    pub via_ir: Option<bool>,
 }
 
 impl Settings {
@@ -37,11 +40,13 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: Selection,
         optimizer: Optimizer,
+        via_ir: bool,
     ) -> Self {
         Self {
             libraries: Some(libraries),
             output_selection: Some(output_selection),
             optimizer,
+            via_ir: if via_ir { Some(true) } else { None },
         }
     }
 

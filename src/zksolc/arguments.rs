@@ -95,14 +95,6 @@ pub struct Arguments {
     #[structopt(long = "system-mode")]
     pub is_system_mode: bool,
 
-    /// Output ABI specification of the contracts.
-    #[structopt(long = "abi")]
-    pub output_abi: bool,
-
-    /// Output function signature hashes of the contracts.
-    #[structopt(long = "hashes")]
-    pub output_hashes: bool,
-
     /// Output zkEVM assembly of the contracts.
     #[structopt(long = "asm")]
     pub output_assembly: bool,
@@ -114,6 +106,20 @@ pub struct Arguments {
     /// Dump all IRs to files in the specified directory.
     #[structopt(long = "debug-output-dir")]
     pub debug_output_directory: Option<PathBuf>,
+
+    /// Sets the `verify each` option in LLVM.
+    #[structopt(long = "llvm-verify-each")]
+    pub llvm_verify_each: bool,
+
+    /// Sets the `debug logging` option in LLVM.
+    #[structopt(long = "llvm-debug-logging")]
+    pub llvm_debug_logging: bool,
+}
+
+impl Default for Arguments {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Arguments {
@@ -128,27 +134,15 @@ impl Arguments {
     /// Validates the arguments.
     ///
     pub fn validate(&self) -> anyhow::Result<()> {
-        if self.yul {
+        if self.yul || self.llvm_ir {
             if self.combined_json.is_some() {
-                anyhow::bail!("The following options are invalid in Yul mode: --combined-json.");
+                anyhow::bail!("The `--combined-json` option is invalid in IR modes");
             }
             if self.standard_json {
-                anyhow::bail!("The following options are invalid in Yul mode: --standard-json.");
-            }
-            if self.output_abi {
-                anyhow::bail!("The following options are invalid in Yul mode: --abi.");
-            }
-            if self.output_hashes {
-                anyhow::bail!("The following options are invalid in Yul mode: --hashes.");
+                anyhow::bail!("The `--standard-json` option is invalid in IR modes");
             }
         }
 
         Ok(())
-    }
-}
-
-impl Default for Arguments {
-    fn default() -> Self {
-        Self::new()
     }
 }

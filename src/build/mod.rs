@@ -31,7 +31,6 @@ impl Build {
         output_directory: &Path,
         output_assembly: bool,
         output_binary: bool,
-        output_abi: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
         for (_path, contract) in self.contracts.into_iter() {
@@ -39,7 +38,6 @@ impl Build {
                 output_directory,
                 output_assembly,
                 output_binary,
-                output_abi,
                 overwrite,
             )?;
         }

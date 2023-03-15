@@ -6,16 +6,15 @@ pub mod ir;
 pub mod metadata;
 pub mod state;
 
-use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::RwLock;
 
 use compiler_llvm_context::WriteLLVM;
+use sha3::Digest;
 
 use crate::build::contract::Contract as ContractBuild;
 use crate::project::Project;
-use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
 
 use self::ir::IR;
 use self::metadata::Metadata;
@@ -30,18 +29,8 @@ pub struct Contract {
     pub path: String,
     /// The IR source code data.
     pub ir: IR,
-    /// The ABI specification.
-    pub abi: Option<serde_json::Value>,
     /// The metadata.
     pub metadata: serde_json::Value,
-    /// The developer documentation.
-    pub devdoc: Option<serde_json::Value>,
-    /// The user documentation.
-    pub userdoc: Option<serde_json::Value>,
-    /// The method identifiers.
-    pub method_identifiers: Option<BTreeMap<String, String>>,
-    /// The storage layout.
-    pub storage_layout: Option<serde_json::Value>,
 }
 
 impl Contract {
@@ -53,34 +42,17 @@ impl Contract {
         source_hash: [u8; compiler_common::BYTE_LENGTH_FIELD],
         source_version: semver::Version,
         ir: IR,
-        mut contract: Option<&mut SolcStandardJsonOutputContract>,
+        metadata: Option<serde_json::Value>,
     ) -> Self {
         Self {
             path,
             ir,
-            abi: contract.as_mut().and_then(|contract| contract.abi.take()),
-            metadata: contract
-                .as_mut()
-                .and_then(|contract| contract.metadata.take())
-                .unwrap_or_else(|| {
-                    serde_json::json!({
-                        "source_hash": hex::encode(source_hash.as_slice()),
-                        "source_version": source_version.to_string(),
-                    })
-                }),
-            devdoc: contract
-                .as_mut()
-                .and_then(|contract| contract.devdoc.take()),
-            userdoc: contract
-                .as_mut()
-                .and_then(|contract| contract.userdoc.take()),
-            method_identifiers: contract
-                .as_mut()
-                .and_then(|contract| contract.evm.as_mut())
-                .and_then(|evm| evm.method_identifiers.take()),
-            storage_layout: contract
-                .as_mut()
-                .and_then(|contract| contract.storage_layout.take()),
+            metadata: metadata.unwrap_or_else(|| {
+                serde_json::json!({
+                    "source_hash": hex::encode(source_hash.as_slice()),
+                    "source_version": source_version.to_string(),
+                })
+            }),
         }
     }
 
@@ -123,14 +95,15 @@ impl Contract {
         let llvm = inkwell::context::Context::create();
         let optimizer = compiler_llvm_context::Optimizer::new(target_machine, optimizer_settings);
 
-        let metadata_hash = {
-            Metadata::new(
-                self.metadata.take(),
-                semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
-                optimizer.settings().to_owned(),
-            )
-            .keccak256()
-        };
+        let metadata = Metadata::new(
+            self.metadata.take(),
+            semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+            optimizer.settings().to_owned(),
+        );
+        let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
+        let metadata_string = serde_json::to_string(&metadata).expect("Always valid");
+        let metadata_hash: [u8; compiler_common::BYTE_LENGTH_FIELD] =
+            sha3::Keccak256::digest(metadata_string.as_bytes()).into();
 
         let module = match self.ir {
             IR::LLVMIR(ref llvm_ir) => {
@@ -217,12 +190,7 @@ impl Contract {
             self.path,
             identifier,
             build,
-            self.abi,
-            self.metadata,
-            self.devdoc,
-            self.userdoc,
-            self.method_identifiers,
-            self.storage_layout,
+            metadata_json,
         ))
     }
 }

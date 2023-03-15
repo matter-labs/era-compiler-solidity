@@ -16,6 +16,8 @@ use self::bytecode::Bytecode;
 ///
 /// The `solc --standard-json` output contract EVM data.
 ///
+/// It is replaced by zkEVM data after compiling.
+///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct EVM {
@@ -35,18 +37,11 @@ pub struct EVM {
 
 impl EVM {
     ///
-    /// A shortcut constructor for the zkEVM bytecode.
+    /// Sets the zkEVM assembly and bytecode.
     ///
-    pub fn new(
-        assembly_text: String,
-        bytecode: String,
-        method_identifiers: Option<BTreeMap<String, String>>,
-    ) -> Self {
-        Self {
-            assembly: None,
-            assembly_text: Some(assembly_text),
-            bytecode: Some(Bytecode::new(bytecode)),
-            method_identifiers,
-        }
+    pub fn modify(&mut self, assembly_text: String, bytecode: String) {
+        self.assembly = None;
+        self.assembly_text = Some(assembly_text);
+        self.bytecode = Some(Bytecode::new(bytecode));
     }
 }

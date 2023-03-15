@@ -14,7 +14,7 @@ pub struct Optimizer {
     /// Whether the optimizer is enabled.
     pub enabled: bool,
     /// The optimization mode string.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub mode: Option<char>,
 }
 

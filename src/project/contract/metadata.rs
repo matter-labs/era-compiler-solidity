@@ -3,7 +3,6 @@
 //!
 
 use serde::Serialize;
-use sha3::Digest;
 
 ///
 /// The Solidity contract metadata.
@@ -34,14 +33,5 @@ impl Metadata {
             zk_version,
             optimizer_settings: optimizer_settings.to_string(),
         }
-    }
-
-    ///
-    /// Returns the `keccak256` hash of the metadata.
-    ///
-    pub fn keccak256(&self) -> [u8; compiler_common::BYTE_LENGTH_FIELD] {
-        let json = serde_json::to_vec(self).expect("Always valid");
-        let hash = sha3::Keccak256::digest(json.as_slice());
-        hash.into()
     }
 }

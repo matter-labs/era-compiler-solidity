@@ -40,13 +40,14 @@ impl Input {
     ///
     /// A shortcut constructor from stdin.
     ///
-    pub fn try_from_stdin(solc_pipeline: SolcPipeline) -> anyhow::Result<Self> {
+    pub fn try_from_stdin(solc_pipeline: SolcPipeline, via_ir: bool) -> anyhow::Result<Self> {
         let mut input: Self = serde_json::from_reader(std::io::BufReader::new(std::io::stdin()))?;
         input
             .settings
             .output_selection
             .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
             .extend_with_required(solc_pipeline);
+        input.settings.via_ir = if via_ir { Some(true) } else { None };
         Ok(input)
     }
 
@@ -59,6 +60,7 @@ impl Input {
         library_map: Vec<String>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        via_ir: bool,
     ) -> anyhow::Result<Self> {
         let sources = paths
             .into_par_iter()
@@ -75,7 +77,7 @@ impl Input {
         Ok(Self {
             language,
             sources,
-            settings: Settings::new(libraries, output_selection, optimizer),
+            settings: Settings::new(libraries, output_selection, optimizer, via_ir),
         })
     }
 
@@ -89,6 +91,7 @@ impl Input {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        via_ir: bool,
     ) -> anyhow::Result<Self> {
         let sources = sources
             .into_par_iter()
@@ -98,7 +101,7 @@ impl Input {
         Ok(Self {
             language: Language::Solidity,
             sources,
-            settings: Settings::new(libraries, output_selection, optimizer),
+            settings: Settings::new(libraries, output_selection, optimizer, via_ir),
         })
     }
 }

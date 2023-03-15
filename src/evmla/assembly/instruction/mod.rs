@@ -107,6 +107,9 @@ impl Instruction {
             Name::CREATE => 3,
             Name::CREATE2 => 4,
 
+            Name::ZK_CREATE => 3,
+            Name::ZK_CREATE2 => 4,
+
             Name::BALANCE => 1,
 
             Name::BLOCKHASH => 1,
@@ -231,6 +234,9 @@ impl Instruction {
 
             Name::CREATE => 1,
             Name::CREATE2 => 1,
+
+            Name::ZK_CREATE => 1,
+            Name::ZK_CREATE2 => 1,
 
             Name::ADDRESS => 1,
             Name::CALLER => 1,

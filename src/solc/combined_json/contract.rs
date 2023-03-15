@@ -19,6 +19,21 @@ pub struct Contract {
     /// The `solc` ABI output.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub abi: Option<serde_json::Value>,
+    /// The `solc` metadata output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<String>,
+    /// The `solc` developer documentation output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub devdoc: Option<serde_json::Value>,
+    /// The `solc` user documentation output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub userdoc: Option<serde_json::Value>,
+    /// The `solc` storage layout output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub storage_layout: Option<serde_json::Value>,
+    /// The `solc` AST output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ast: Option<serde_json::Value>,
     /// The `solc` assembly output.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub asm: Option<serde_json::Value>,

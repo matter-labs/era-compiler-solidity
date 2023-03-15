@@ -778,7 +778,7 @@ impl FunctionCall {
                 .map(Some)
             }
 
-            Name::Create => {
+            Name::Create | Name::ZkCreate => {
                 let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
 
                 let value = arguments[0].into_int_value();
@@ -788,7 +788,7 @@ impl FunctionCall {
                 compiler_llvm_context::create::create(context, value, input_offset, input_length)
                     .map(Some)
             }
-            Name::Create2 => {
+            Name::Create2 | Name::ZkCreate2 => {
                 let arguments = self.pop_arguments_llvm::<D, 4>(context)?;
 
                 let value = arguments[0].into_int_value();

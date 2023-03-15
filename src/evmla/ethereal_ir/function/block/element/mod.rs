@@ -1035,7 +1035,7 @@ where
                 .map(Some)
             }
 
-            InstructionName::CREATE => {
+            InstructionName::CREATE | InstructionName::ZK_CREATE => {
                 let arguments = self.pop_arguments_llvm(context);
 
                 let value = arguments[0].into_int_value();
@@ -1045,7 +1045,7 @@ where
                 compiler_llvm_context::create::create(context, value, input_offset, input_length)
                     .map(Some)
             }
-            InstructionName::CREATE2 => {
+            InstructionName::CREATE2 | InstructionName::ZK_CREATE2 => {
                 let arguments = self.pop_arguments_llvm(context);
 
                 let value = arguments[0].into_int_value();

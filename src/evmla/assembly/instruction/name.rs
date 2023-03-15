@@ -300,6 +300,13 @@ pub enum Name {
     /// The eponymous EVM instruction.
     CREATE2,
 
+    /// The eponymous zkEVM instruction.
+    #[serde(rename = "$ZK_CREATE")]
+    ZK_CREATE,
+    /// The eponymous zkEVM instruction.
+    #[serde(rename = "$ZK_CREATE2")]
+    ZK_CREATE2,
+
     /// The eponymous EVM instruction.
     ADDRESS,
     /// The eponymous EVM instruction.

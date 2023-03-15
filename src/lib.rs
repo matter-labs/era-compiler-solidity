@@ -108,7 +108,7 @@ pub fn llvm_ir(
 pub fn standard_output(
     input_files: &[PathBuf],
     libraries: Vec<String>,
-    solc: &SolcCompiler,
+    solc: &mut SolcCompiler,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
@@ -126,6 +126,7 @@ pub fn standard_output(
         libraries,
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
     )?;
     let source_code_files = solc_input
         .sources
@@ -176,7 +177,7 @@ pub fn standard_output(
 ///
 #[allow(clippy::too_many_arguments)]
 pub fn standard_json(
-    solc: &SolcCompiler,
+    solc: &mut SolcCompiler,
     force_evmla: bool,
     is_system_mode: bool,
     base_path: Option<String>,
@@ -189,7 +190,10 @@ pub fn standard_json(
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let solc_input = SolcStandardJsonInput::try_from_stdin(
+        solc_pipeline,
+        solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
+    )?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -240,7 +244,7 @@ pub fn combined_json(
     format: String,
     input_files: &[PathBuf],
     libraries: Vec<String>,
-    solc: &SolcCompiler,
+    solc: &mut SolcCompiler,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,

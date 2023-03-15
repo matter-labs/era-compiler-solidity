@@ -57,15 +57,17 @@ fn main_inner() -> anyhow::Result<()> {
     inkwell::support::enable_llvm_pretty_stack_trace();
     compiler_llvm_context::initialize_target();
 
-    let solc =
+    let mut solc =
         compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
             compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
         }));
 
-    let optimizer_settings = match arguments.optimization {
+    let mut optimizer_settings = match arguments.optimization {
         Some(mode) => compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
         None => compiler_llvm_context::OptimizerSettings::cycles(),
     };
+    optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
+    optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
     let build = if arguments.yul {
         compiler_solidity::yul(
@@ -84,7 +86,7 @@ fn main_inner() -> anyhow::Result<()> {
         )
     } else if arguments.standard_json {
         compiler_solidity::standard_json(
-            &solc,
+            &mut solc,
             arguments.force_evmla,
             arguments.is_system_mode,
             arguments.base_path,
@@ -98,7 +100,7 @@ fn main_inner() -> anyhow::Result<()> {
             format,
             arguments.input_files.as_slice(),
             arguments.libraries,
-            &solc,
+            &mut solc,
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
@@ -114,7 +116,7 @@ fn main_inner() -> anyhow::Result<()> {
         compiler_solidity::standard_output(
             arguments.input_files.as_slice(),
             arguments.libraries,
-            &solc,
+            &mut solc,
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
@@ -132,18 +134,13 @@ fn main_inner() -> anyhow::Result<()> {
             &output_directory,
             arguments.output_assembly,
             arguments.output_binary,
-            arguments.output_abi,
             arguments.overwrite,
         )?;
 
         eprintln!(
             "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
         );
-    } else if arguments.output_assembly
-        || arguments.output_binary
-        || arguments.output_hashes
-        || arguments.output_abi
-    {
+    } else if arguments.output_assembly || arguments.output_binary {
         for (path, contract) in build.contracts.into_iter() {
             if arguments.output_assembly {
                 println!(
@@ -158,15 +155,6 @@ fn main_inner() -> anyhow::Result<()> {
                     hex::encode(contract.build.bytecode)
                 );
             }
-        }
-
-        if arguments.output_abi || arguments.output_hashes {
-            let extra_output = solc.extra_output(
-                arguments.input_files.as_slice(),
-                arguments.output_abi,
-                arguments.output_hashes,
-            )?;
-            print!("{extra_output}");
         }
     } else {
         eprintln!("Compiler run successful. No output requested. Use --asm and --bin flags.");

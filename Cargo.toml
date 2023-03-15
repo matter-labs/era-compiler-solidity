@@ -1,6 +1,6 @@
 [package]
 name = "compiler-solidity"
-version = "1.3.6"
+version = "1.3.7"
 authors = [
     "Alex Zarudnyy <a.zarudnyy@matterlabs.dev>",
 ]
@@ -36,8 +36,8 @@ md5 = "0.7"
 
 zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", branch = "main" }
 
-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", rev = "a6c5b02e4f149f82f1c3821a6f258363308abd2a" }
-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", rev = "a1e29ba41fc081ff67d967c11d5e110d38e5b1ac" }
+compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
+compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"

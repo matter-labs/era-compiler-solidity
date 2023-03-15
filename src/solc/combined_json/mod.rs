@@ -21,6 +21,13 @@ use self::contract::Contract;
 pub struct CombinedJson {
     /// The contract entries.
     pub contracts: BTreeMap<String, Contract>,
+    /// The list of source files.
+    #[serde(rename = "sourceList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_list: Option<Vec<String>>,
+    /// The source code extra data, including the AST.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sources: Option<serde_json::Value>,
     /// The `solc` compiler version.
     pub version: String,
     /// The `zksolc` compiler version.
