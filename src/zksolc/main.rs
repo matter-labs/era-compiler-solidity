@@ -6,6 +6,9 @@ pub mod arguments;
 
 use self::arguments::Arguments;
 
+/// The rayon worker stack size.
+const RAYON_WORKER_STACK_SIZE: usize = 16 * 1024 * 1024;
+
 #[cfg(target_env = "musl")]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -49,6 +52,11 @@ fn main_inner() -> anyhow::Result<()> {
         }
         None => None,
     };
+
+    rayon::ThreadPoolBuilder::new()
+        .stack_size(RAYON_WORKER_STACK_SIZE)
+        .build_global()
+        .expect("Thread pool configuration failure");
 
     for path in arguments.input_files.iter_mut() {
         *path = path.canonicalize()?;
@@ -101,6 +109,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.input_files.as_slice(),
             arguments.libraries,
             &mut solc,
+            !arguments.disable_solc_optimizer,
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
@@ -117,6 +126,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.input_files.as_slice(),
             arguments.libraries,
             &mut solc,
+            !arguments.disable_solc_optimizer,
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,

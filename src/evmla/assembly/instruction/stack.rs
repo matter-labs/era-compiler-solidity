@@ -16,7 +16,10 @@ where
 {
     let result = context
         .field_type()
-        .const_int_from_string(value.as_str(), inkwell::types::StringRadix::Hexadecimal)
+        .const_int_from_string(
+            value.to_ascii_uppercase().as_str(),
+            inkwell::types::StringRadix::Hexadecimal,
+        )
         .expect("Always valid")
         .as_basic_value_enum();
     Ok(result)

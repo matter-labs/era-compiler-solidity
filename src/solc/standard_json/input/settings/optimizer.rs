@@ -31,10 +31,6 @@ impl TryFrom<&Optimizer> for compiler_llvm_context::OptimizerSettings {
     type Error = anyhow::Error;
 
     fn try_from(value: &Optimizer) -> Result<Self, Self::Error> {
-        if !value.enabled {
-            return Ok(Self::none());
-        }
-
         if let Some(mode) = value.mode {
             return Self::try_from_cli(mode);
         }

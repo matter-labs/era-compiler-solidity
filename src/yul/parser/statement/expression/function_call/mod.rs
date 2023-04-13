@@ -807,16 +807,20 @@ impl FunctionCall {
             }
             Name::DataOffset => {
                 let mut arguments = self.pop_arguments::<D, 1>(context)?;
+
                 let identifier = arguments[0].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{} `dataoffset` object identifier is missing", location)
                 })?;
+
                 compiler_llvm_context::create::contract_hash(context, identifier).map(Some)
             }
             Name::DataSize => {
                 let mut arguments = self.pop_arguments::<D, 1>(context)?;
+
                 let identifier = arguments[0].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{} `dataoffset` object identifier is missing", location)
                 })?;
+
                 compiler_llvm_context::create::header_size(context, identifier).map(Some)
             }
             Name::DataCopy => {

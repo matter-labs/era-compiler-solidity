@@ -653,9 +653,11 @@ impl Function {
                 let result = match (operand_1, operand_2) {
                     (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
                     | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
                         Element::Tag(operand_1 | operand_2)
+                    }
+                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                        Element::Constant(operand_1 | operand_2)
                     }
                     _ => Element::Value,
                 };
@@ -678,9 +680,11 @@ impl Function {
                 let result = match (operand_1, operand_2) {
                     (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
                     | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
                         Element::Tag(operand_1 ^ operand_2)
+                    }
+                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                        Element::Constant(operand_1 ^ operand_2)
                     }
                     _ => Element::Value,
                 };
@@ -703,9 +707,11 @@ impl Function {
                 let result = match (operand_1, operand_2) {
                     (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
                     | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
                         Element::Tag(operand_1 & operand_2)
+                    }
+                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                        Element::Constant(operand_1 & operand_2)
                     }
                     _ => Element::Value,
                 };

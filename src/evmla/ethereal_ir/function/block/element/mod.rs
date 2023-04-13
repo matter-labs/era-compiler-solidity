@@ -791,7 +791,19 @@ where
                 )
                 .map(|_| None)
             }
-            InstructionName::CODESIZE => compiler_llvm_context::calldata::size(context).map(Some),
+            InstructionName::CODESIZE => {
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        compiler_llvm_context::calldata::size(context).map(Some)
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                    }
+                }
+            }
             InstructionName::CODECOPY => {
                 let mut arguments =
                     Vec::with_capacity(self.instruction.input_size(&self.solc_version));
@@ -826,7 +838,7 @@ where
                             && source == parent =>
                     {
                         match original_destination {
-                            Some(length) if length == "B" => {
+                            Some(length) if length.to_ascii_uppercase().as_str() == "B" => {
                                 codecopy::library_marker(context, length, "73")
                             }
                             _ => Ok(()),
@@ -838,12 +850,21 @@ where
                     {
                         codecopy::static_data(context, arguments[0].into_int_value(), source)
                     }
-                    Some(_) | None => compiler_llvm_context::calldata::copy(
-                        context,
-                        arguments[0].into_int_value(),
-                        arguments[1].into_int_value(),
-                        arguments[2].into_int_value(),
-                    ),
+                    Some(_) | None => {
+                        match context.code_type().ok_or_else(|| {
+                            anyhow::anyhow!("The contract code part type is undefined")
+                        })? {
+                            compiler_llvm_context::CodeType::Deploy => {
+                                compiler_llvm_context::calldata::copy(
+                                    context,
+                                    arguments[0].into_int_value(),
+                                    arguments[1].into_int_value(),
+                                    arguments[2].into_int_value(),
+                                )
+                            }
+                            compiler_llvm_context::CodeType::Runtime => Ok(()),
+                        }
+                    }
                 }
                 .map(|_| None)
             }

@@ -109,6 +109,7 @@ pub fn standard_output(
     input_files: &[PathBuf],
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
+    solc_optimizer_enabled: bool,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
@@ -125,7 +126,7 @@ pub fn standard_output(
         input_files,
         libraries,
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
         solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
     )?;
     let source_code_files = solc_input
@@ -245,6 +246,7 @@ pub fn combined_json(
     input_files: &[PathBuf],
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
+    solc_optimizer_enabled: bool,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
@@ -259,6 +261,7 @@ pub fn combined_json(
         input_files,
         libraries,
         solc,
+        solc_optimizer_enabled,
         optimizer_settings,
         force_evmla,
         is_system_mode,

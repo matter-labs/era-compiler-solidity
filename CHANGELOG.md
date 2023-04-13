@@ -1,5 +1,24 @@
 # The `zksolc` changelog
 
+## [1.3.8] - 2023-04-04
+
+### Added
+
+- Better errors for unsupported `type(X).runtimeCode` with the Yul pipeline
+- An option to disable the `solc` optimizer
+
+### Changed
+
+- Increased the stack size for `rayon` workers to 16 MB
+- Improved the CLI interface description (see `--help`)
+
+### Fixed
+
+- Another stack overflow issue with the EVMLA pipeline
+- `CODECOPY` in runtime code now does not copy calldata with the EVMLA pipeline
+- `CODESIZE` in runtime code now returns 0 with the EVMLA pipeline
+- Hexadecimal arguments in EVMLA are now parsed as case-insensitive
+
 ## [1.3.7] - 2023-03-15
 
 ### Added
@@ -64,7 +83,7 @@
 ### Changed
 
 - The `send` and `transfer` methods now produce a compile-time error
-- The minimal supported `solc` version to 0.4.10
+- The minimal supported `solc` version to 0.4.12
 
 ### Removed
 
