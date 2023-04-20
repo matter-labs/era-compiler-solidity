@@ -1,7 +1,8 @@
 //!
-//! The `solc --standard-json` input settings representation.
+//! The `solc --standard-json` input settings.
 //!
 
+pub mod metadata;
 pub mod optimizer;
 pub mod selection;
 
@@ -10,11 +11,12 @@ use std::collections::BTreeMap;
 use serde::Deserialize;
 use serde::Serialize;
 
+use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::Selection;
 
 ///
-/// The `solc --standard-json` input settings representation.
+/// The `solc --standard-json` input settings.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,6 +29,9 @@ pub struct Settings {
     pub output_selection: Option<Selection>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
+    /// The metadata settings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<Metadata>,
     /// Whether to compile via IR. Only used by `solc` >=0.8.0.
     #[serde(rename = "viaIR", skip_serializing_if = "Option::is_none")]
     pub via_ir: Option<bool>,
@@ -40,12 +45,14 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: Selection,
         optimizer: Optimizer,
+        metadata: Option<Metadata>,
         via_ir: bool,
     ) -> Self {
         Self {
             libraries: Some(libraries),
             output_selection: Some(output_selection),
             optimizer,
+            metadata,
             via_ir: if via_ir { Some(true) } else { None },
         }
     }

@@ -536,32 +536,80 @@ impl FunctionCall {
 
             Name::CallDataLoad => {
                 let arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                compiler_llvm_context::calldata::load(context, arguments[0].into_int_value())
-                    .map(Some)
-            }
-            Name::CallDataSize => compiler_llvm_context::calldata::size(context).map(Some),
-            Name::CallDataCopy => {
-                let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
-                compiler_llvm_context::calldata::copy(
-                    context,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                    arguments[2].into_int_value(),
-                )
-                .map(|_| None)
-            }
-            Name::CodeSize => {
-                if let compiler_llvm_context::CodeType::Runtime = context
+
+                match context
                     .code_type()
                     .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
                 {
-                    anyhow::bail!(
-                        "{} The `CODESIZE` instruction is not supported in the runtime code",
-                        location,
-                    );
+                    compiler_llvm_context::CodeType::Deploy => {
+                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        compiler_llvm_context::calldata::load(
+                            context,
+                            arguments[0].into_int_value(),
+                        )
+                        .map(Some)
+                    }
                 }
+            }
+            Name::CallDataSize => {
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        compiler_llvm_context::calldata::size(context).map(Some)
+                    }
+                }
+            }
+            Name::CallDataCopy => {
+                let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
 
-                compiler_llvm_context::calldata::size(context).map(Some)
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        let calldata_size = compiler_llvm_context::calldata::size(context)?;
+
+                        compiler_llvm_context::calldata::copy(
+                            context,
+                            arguments[0].into_int_value(),
+                            calldata_size.into_int_value(),
+                            arguments[2].into_int_value(),
+                        )
+                        .map(|_| None)
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        compiler_llvm_context::calldata::copy(
+                            context,
+                            arguments[0].into_int_value(),
+                            arguments[1].into_int_value(),
+                            arguments[2].into_int_value(),
+                        )
+                        .map(|_| None)
+                    }
+                }
+            }
+            Name::CodeSize => {
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        compiler_llvm_context::calldata::size(context).map(Some)
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        let code_source =
+                            compiler_llvm_context::zkevm_general::code_source(context)?;
+                        compiler_llvm_context::ext_code::size(context, code_source.into_int_value())
+                            .map(Some)
+                    }
+                }
             }
             Name::CodeCopy => {
                 if let compiler_llvm_context::CodeType::Runtime = context

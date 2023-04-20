@@ -1,5 +1,5 @@
 //!
-//! The `solc --asm-json` output representation.
+//! The `solc --asm-json` output.
 //!
 
 pub mod data;
@@ -19,7 +19,7 @@ use self::instruction::name::Name as InstructionName;
 use self::instruction::Instruction;
 
 ///
-/// The JSON assembly representation.
+/// The JSON assembly.
 ///
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Assembly {
@@ -29,7 +29,7 @@ pub struct Assembly {
     /// The deploy code instructions.
     #[serde(rename = ".code")]
     pub code: Option<Vec<Instruction>>,
-    /// The runtime code representation.
+    /// The runtime code.
     #[serde(rename = ".data")]
     pub data: Option<BTreeMap<String, Data>>,
 

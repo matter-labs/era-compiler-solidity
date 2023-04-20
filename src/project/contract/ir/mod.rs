@@ -20,11 +20,11 @@ use self::yul::Yul;
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum IR {
-    /// The Yul source code representation.
+    /// The Yul source code.
     Yul(Yul),
-    /// The EVM legacy assembly source code representation.
+    /// The EVM legacy assembly source code.
     EVMLA(EVMLA),
-    /// The LLVM IR source code representation.
+    /// The LLVM IR source code.
     LLVMIR(LLVMIR),
 }
 

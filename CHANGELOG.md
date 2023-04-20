@@ -1,5 +1,30 @@
 # The `zksolc` changelog
 
+## [1.3.9] - 2023-04-18
+
+### Added
+
+- A warning that Yul is not validated in system mode
+- The `CODESIZE` support in runtime code
+- An option not to include the metadata hash at the end of bytecode
+
+### Changed
+
+- Internal function pointers now trigger a compile-time error with the EVMLA pipeline
+- Calldata instructions now return 0 in deploy code
+
+### Removed
+
+- Disabled Yul validation via `solc` due to its crashes when attempting to compile to EVM
+
+### Fixed
+
+- The bug with addresses of unresolved libraries replaced with 0
+- `CODECOPY` in EVMLA runtime code now zeroes memory out
+- The Solidity AST is now passed through without changes
+- The LLVM crash with memory offsets `>= 2^64`
+- The LLVM crash with ternary operator on fat memory pointers
+
 ## [1.3.8] - 2023-04-04
 
 ### Added

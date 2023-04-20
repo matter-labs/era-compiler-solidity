@@ -74,7 +74,7 @@ impl Literal {
     }
 
     ///
-    /// Converts the literal into its LLVM representation.
+    /// Converts the literal into its LLVM.
     ///
     pub fn into_llvm<'ctx, D>(
         self,

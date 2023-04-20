@@ -108,6 +108,12 @@ pub struct Arguments {
     #[structopt(long = "system-mode")]
     pub is_system_mode: bool,
 
+    /// Set the metadata hash mode.
+    /// The only supported value is `none` that disables appending the metadata hash.
+    /// Is enabled by default.
+    #[structopt(long = "metadata-hash")]
+    pub metadata_hash: Option<String>,
+
     /// Output zkEVM assembly of the contracts.
     #[structopt(long = "asm")]
     pub output_assembly: bool,

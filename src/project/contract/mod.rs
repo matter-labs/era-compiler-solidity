@@ -1,5 +1,5 @@
 //!
-//! The contract data representation.
+//! The contract data.
 //!
 
 pub mod ir;
@@ -21,7 +21,7 @@ use self::metadata::Metadata;
 use self::state::State;
 
 ///
-/// The contract data representation.
+/// The contract data.
 ///
 #[derive(Debug, Clone)]
 pub struct Contract {
@@ -90,6 +90,7 @@ impl Contract {
         target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
+        include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<ContractBuild> {
         let llvm = inkwell::context::Context::create();
@@ -101,9 +102,13 @@ impl Contract {
             optimizer.settings().to_owned(),
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-        let metadata_string = serde_json::to_string(&metadata).expect("Always valid");
-        let metadata_hash: [u8; compiler_common::BYTE_LENGTH_FIELD] =
-            sha3::Keccak256::digest(metadata_string.as_bytes()).into();
+        let metadata_hash: Option<[u8; compiler_common::BYTE_LENGTH_FIELD]> =
+            if include_metadata_hash {
+                let metadata_string = serde_json::to_string(&metadata).expect("Always valid");
+                Some(sha3::Keccak256::digest(metadata_string.as_bytes()).into())
+            } else {
+                None
+            };
 
         let module = match self.ir {
             IR::LLVMIR(ref llvm_ir) => {
@@ -112,10 +117,8 @@ impl Contract {
                         llvm_ir.source.as_bytes(),
                         self.path.as_str(),
                     );
-                let module = llvm
-                    .create_module_from_ir(memory_buffer)
-                    .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                module
+                llvm.create_module_from_ir(memory_buffer)
+                    .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
             _ => llvm.create_module(self.path.as_str()),
         };
@@ -124,6 +127,7 @@ impl Contract {
             module,
             optimizer,
             Some(project.clone()),
+            include_metadata_hash,
             debug_config,
         );
         context.set_solidity_data(compiler_llvm_context::ContextSolidityData::default());

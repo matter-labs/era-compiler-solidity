@@ -4,6 +4,8 @@
 
 pub mod arguments;
 
+use std::str::FromStr;
+
 use self::arguments::Arguments;
 
 /// The rayon worker stack size.
@@ -77,12 +79,20 @@ fn main_inner() -> anyhow::Result<()> {
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
+    let include_metadata_hash = match arguments.metadata_hash {
+        Some(metadata_hash) => {
+            let metadata = compiler_llvm_context::MetadataHash::from_str(metadata_hash.as_str())?;
+            metadata != compiler_llvm_context::MetadataHash::None
+        }
+        None => true,
+    };
+
     let build = if arguments.yul {
         compiler_solidity::yul(
             arguments.input_files.as_slice(),
-            &solc,
             optimizer_settings,
             arguments.is_system_mode,
+            include_metadata_hash,
             debug_config,
         )
     } else if arguments.llvm_ir {
@@ -90,6 +100,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.input_files.as_slice(),
             optimizer_settings,
             arguments.is_system_mode,
+            include_metadata_hash,
             debug_config,
         )
     } else if arguments.standard_json {
@@ -113,6 +124,7 @@ fn main_inner() -> anyhow::Result<()> {
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
+            include_metadata_hash,
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,
@@ -130,6 +142,7 @@ fn main_inner() -> anyhow::Result<()> {
             optimizer_settings,
             arguments.force_evmla,
             arguments.is_system_mode,
+            include_metadata_hash,
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,

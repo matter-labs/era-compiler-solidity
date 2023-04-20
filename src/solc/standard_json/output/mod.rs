@@ -1,5 +1,5 @@
 //!
-//! The `solc --standard-json` output representation.
+//! The `solc --standard-json` output.
 //!
 
 pub mod contract;
@@ -26,7 +26,7 @@ use self::error::Error as SolcStandardJsonOutputError;
 use self::source::Source;
 
 ///
-/// The `solc --standard-json` output representation.
+/// The `solc --standard-json` output.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Output {
@@ -52,7 +52,7 @@ pub struct Output {
 
 impl Output {
     ///
-    /// Converts the `solc` JSON output into a convenient project representation.
+    /// Converts the `solc` JSON output into a convenient project.
     ///
     pub fn try_to_project(
         &mut self,
@@ -145,7 +145,7 @@ impl Output {
     ///
     /// Traverses the AST and returns the list of additional errors and warnings.
     ///
-    pub fn preprocess_ast(&mut self) -> anyhow::Result<()> {
+    pub fn preprocess_ast(&mut self, pipeline: SolcPipeline) -> anyhow::Result<()> {
         let sources = match self.sources.as_ref() {
             Some(sources) => sources,
             None => return Ok(()),
@@ -154,7 +154,7 @@ impl Output {
         let mut messages = Vec::new();
         for (path, source) in sources.iter() {
             if let Some(ast) = source.ast.as_ref() {
-                let mut zkevm_messages = ast.get_messages()?;
+                let mut zkevm_messages = Source::get_messages(ast, pipeline);
                 for message in zkevm_messages.iter_mut() {
                     message.push_contract_path(path.as_str());
                 }

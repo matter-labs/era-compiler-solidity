@@ -1,5 +1,5 @@
 //!
-//! The inner JSON legacy assembly code element representation.
+//! The inner JSON legacy assembly code element.
 //!
 
 use serde::Deserialize;
@@ -8,14 +8,14 @@ use serde::Serialize;
 use crate::evmla::assembly::Assembly;
 
 ///
-/// The inner JSON legacy assembly code element representation.
+/// The inner JSON legacy assembly code element.
 ///
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(untagged)]
 pub enum Data {
     /// The assembly code wrapper.
     Assembly(Assembly),
-    /// The hash representation.
+    /// The hash.
     Hash(String),
     /// The full contract path after the factory dependencies replacing pass.
     Path(String),

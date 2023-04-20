@@ -127,7 +127,7 @@ source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#a6c
 [[package]]
 name = "compiler-llvm-context"
 version = "1.3.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#9b4e3220c28f7935880a2af57ff091194dbb2385"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#a08a79a52bae4b3763fe289803720b95ff344a2a"
 dependencies = [
  "anyhow",
  "compiler-common",
@@ -139,6 +139,7 @@ dependencies = [
  "once_cell",
  "regex",
  "semver",
+ "serde",
  "sha2",
  "sha3",
  "zkevm-assembly",
@@ -147,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "compiler-solidity"
-version = "1.3.8"
+version = "1.3.9"
 dependencies = [
  "anyhow",
  "colored",
@@ -923,7 +924,7 @@ checksum = "291a097c63d8497e00160b166a967a4a79c64f3facdd01cbd7502231688d77df"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.14",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -1013,9 +1014,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.14"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcf316d5356ed6847742d036f8a39c3b8435cac10bd528a4bd461928a6ab34d5"
+checksum = "a34fcf3e8b60f57e6a14301a2e916d323af98b0ea63c599441eec8558660c822"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1063,7 +1064,7 @@ checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.14",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -1255,7 +1256,7 @@ checksum = "85e60b0d1b5f99db2556934e21937020776a5d31520bf169e851ac44e6420214"
 [[package]]
 name = "zkevm-assembly"
 version = "1.3.1"
-source = "git+https://github.com/matter-labs/era-zkEVM-assembly?branch=main#f5f9d4ad68833cf37525f96996f09282019e3f40"
+source = "git+https://github.com/matter-labs/era-zkEVM-assembly?branch=main#f3c849dc7d24ea4b55a08852476f0a05b538c665"
 dependencies = [
  "env_logger",
  "hex",

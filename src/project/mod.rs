@@ -1,5 +1,5 @@
 //!
-//! The processed input data representation.
+//! The processed input data.
 //!
 
 pub mod contract;
@@ -24,7 +24,7 @@ use self::contract::state::State as ContractState;
 use self::contract::Contract;
 
 ///
-/// The processes input data representation.
+/// The processes input data.
 ///
 #[derive(Debug)]
 pub struct Project {
@@ -72,6 +72,7 @@ impl Project {
         target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
+        include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) {
         let mut project_guard = project.write().expect("Sync");
@@ -93,6 +94,7 @@ impl Project {
                     target_machine,
                     optimizer_settings,
                     is_system_mode,
+                    include_metadata_hash,
                     debug_config,
                 ) {
                     Ok(build) => {
@@ -144,6 +146,7 @@ impl Project {
         target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
+        include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Build> {
         let project = Arc::new(RwLock::new(self));
@@ -164,6 +167,7 @@ impl Project {
                     target_machine.clone(),
                     optimizer_settings.clone(),
                     is_system_mode,
+                    include_metadata_hash,
                     debug_config.clone(),
                 );
             })
@@ -311,6 +315,7 @@ impl compiler_llvm_context::Dependency for Project {
         target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
+        include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
         let contract_path = project.read().expect("Lock").resolve_path(identifier)?;
@@ -321,6 +326,7 @@ impl compiler_llvm_context::Dependency for Project {
             target_machine,
             optimizer_settings,
             is_system_mode,
+            include_metadata_hash,
             debug_config,
         );
 

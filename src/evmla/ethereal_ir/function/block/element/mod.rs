@@ -774,22 +774,64 @@ where
             }
 
             InstructionName::CALLDATALOAD => {
-                let arguments = self.pop_arguments_llvm(context);
-                compiler_llvm_context::calldata::load(context, arguments[0].into_int_value())
-                    .map(Some)
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        let arguments = self.pop_arguments_llvm(context);
+                        compiler_llvm_context::calldata::load(
+                            context,
+                            arguments[0].into_int_value(),
+                        )
+                        .map(Some)
+                    }
+                }
             }
             InstructionName::CALLDATASIZE => {
-                compiler_llvm_context::calldata::size(context).map(Some)
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        compiler_llvm_context::calldata::size(context).map(Some)
+                    }
+                }
             }
             InstructionName::CALLDATACOPY => {
                 let arguments = self.pop_arguments_llvm(context);
-                compiler_llvm_context::calldata::copy(
-                    context,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                    arguments[2].into_int_value(),
-                )
-                .map(|_| None)
+
+                match context
+                    .code_type()
+                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                {
+                    compiler_llvm_context::CodeType::Deploy => {
+                        let calldata_size = compiler_llvm_context::calldata::size(context)?;
+
+                        compiler_llvm_context::calldata::copy(
+                            context,
+                            arguments[0].into_int_value(),
+                            calldata_size.into_int_value(),
+                            arguments[2].into_int_value(),
+                        )
+                        .map(|_| None)
+                    }
+                    compiler_llvm_context::CodeType::Runtime => {
+                        compiler_llvm_context::calldata::copy(
+                            context,
+                            arguments[0].into_int_value(),
+                            arguments[1].into_int_value(),
+                            arguments[2].into_int_value(),
+                        )
+                        .map(|_| None)
+                    }
+                }
             }
             InstructionName::CODESIZE => {
                 match context
@@ -800,7 +842,10 @@ where
                         compiler_llvm_context::calldata::size(context).map(Some)
                     }
                     compiler_llvm_context::CodeType::Runtime => {
-                        Ok(Some(context.field_const(0).as_basic_value_enum()))
+                        let code_source =
+                            compiler_llvm_context::zkevm_general::code_source(context)?;
+                        compiler_llvm_context::ext_code::size(context, code_source.into_int_value())
+                            .map(Some)
                     }
                 }
             }
@@ -862,7 +907,16 @@ where
                                     arguments[2].into_int_value(),
                                 )
                             }
-                            compiler_llvm_context::CodeType::Runtime => Ok(()),
+                            compiler_llvm_context::CodeType::Runtime => {
+                                let calldata_size = compiler_llvm_context::calldata::size(context)?;
+
+                                compiler_llvm_context::calldata::copy(
+                                    context,
+                                    arguments[0].into_int_value(),
+                                    calldata_size.into_int_value(),
+                                    arguments[2].into_int_value(),
+                                )
+                            }
                         }
                     }
                 }
@@ -1147,20 +1201,20 @@ where
                 compiler_llvm_context::contract_context::msize(context).map(Some)
             }
 
-            name @ InstructionName::CALLCODE => {
+            InstructionName::CALLCODE => {
                 let mut _arguments = self.pop_arguments(context);
-                anyhow::bail!("The `{}` instruction is not supported", name)
+                anyhow::bail!("The `CALLCODE` instruction is not supported");
             }
-            name @ InstructionName::PC => {
-                anyhow::bail!("The `{}` instruction is not supported", name)
+            InstructionName::PC => {
+                anyhow::bail!("The `PC` instruction is not supported");
             }
-            name @ InstructionName::EXTCODECOPY => {
+            InstructionName::EXTCODECOPY => {
                 let _arguments = self.pop_arguments_llvm(context);
-                anyhow::bail!("The `{}` instruction is not supported", name)
+                anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
-            name @ InstructionName::SELFDESTRUCT => {
+            InstructionName::SELFDESTRUCT => {
                 let _arguments = self.pop_arguments_llvm(context);
-                anyhow::bail!("The `{}` instruction is not supported", name)
+                anyhow::bail!("The `SELFDESTRUCT` instruction is not supported");
             }
         }?;
 

@@ -1,5 +1,5 @@
 //!
-//! The Ethereal IR representation of the EVM bytecode.
+//! The Ethereal IR of the EVM bytecode.
 //!
 
 pub mod entry_link;
@@ -14,7 +14,7 @@ use self::function::block::Block;
 use self::function::Function;
 
 ///
-/// The Ethereal IR representation of the EVM bytecode.
+/// The Ethereal IR of the EVM bytecode.
 ///
 /// The Ethereal IR (EthIR) is a special IR between the EVM legacy assembly and LLVM IR. It is
 /// created to facilitate the translation and provide an additional environment for applying some
@@ -29,7 +29,7 @@ use self::function::Function;
 pub struct EtherealIR {
     /// The Solidity compiler version.
     pub solc_version: semver::Version,
-    /// The all-inlined function representation.
+    /// The all-inlined function.
     pub function: Function,
 }
 

@@ -1,5 +1,5 @@
 //!
-//! The `solc --combined-json` output representation.
+//! The `solc --combined-json` output.
 //!
 
 pub mod contract;
@@ -15,7 +15,7 @@ use serde::Serialize;
 use self::contract::Contract;
 
 ///
-/// The `solc --combined-json` output representation.
+/// The `solc --combined-json` output.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CombinedJson {

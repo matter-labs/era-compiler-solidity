@@ -18,6 +18,7 @@ pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContrac
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
 pub use self::solc::pipeline::Pipeline as SolcPipeline;
 pub use self::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFileFlag;
 pub use self::solc::standard_json::input::settings::selection::file::File as SolcStandardJsonInputSettingsSelectionFile;
@@ -32,6 +33,8 @@ pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
+mod tests;
+
 use std::path::PathBuf;
 
 ///
@@ -39,9 +42,9 @@ use std::path::PathBuf;
 ///
 pub fn yul(
     input_files: &[PathBuf],
-    solc: &SolcCompiler,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
+    include_metadata_hash: bool,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<Build> {
     let path = match input_files.len() {
@@ -53,9 +56,7 @@ pub fn yul(
         ),
     };
 
-    if !is_system_mode {
-        solc.yul(input_files)?;
-    }
+    eprintln!("WARNING! Yul is not validated as long as we are using the upstream solc compiler that doesn't provide the Yul validation feature.");
 
     let project = Project::try_from_yul_path(path)?;
 
@@ -64,6 +65,7 @@ pub fn yul(
         target_machine,
         optimizer_settings,
         is_system_mode,
+        include_metadata_hash,
         debug_config,
     )?;
 
@@ -77,6 +79,7 @@ pub fn llvm_ir(
     input_files: &[PathBuf],
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
+    include_metadata_hash: bool,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<Build> {
     let path = match input_files.len() {
@@ -95,6 +98,7 @@ pub fn llvm_ir(
         target_machine,
         optimizer_settings,
         is_system_mode,
+        include_metadata_hash,
         debug_config,
     )?;
 
@@ -113,6 +117,7 @@ pub fn standard_output(
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
+    include_metadata_hash: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -127,6 +132,7 @@ pub fn standard_output(
         libraries,
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
+        None,
         solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
     )?;
     let source_code_files = solc_input
@@ -136,7 +142,13 @@ pub fn standard_output(
         .collect();
 
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(solc_input, base_path, include_paths, allow_paths)?;
+    let mut solc_output = solc.standard_json(
+        solc_input,
+        solc_pipeline,
+        base_path,
+        include_paths,
+        allow_paths,
+    )?;
 
     if let Some(errors) = solc_output.errors.as_deref() {
         let mut has_errors = false;
@@ -167,6 +179,7 @@ pub fn standard_output(
         target_machine,
         optimizer_settings,
         is_system_mode,
+        include_metadata_hash,
         debug_config,
     )?;
 
@@ -204,8 +217,19 @@ pub fn standard_json(
     let optimizer_settings =
         compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
 
+    let include_metadata_hash = match solc_input.settings.metadata {
+        Some(ref metadata) => metadata.bytecode_hash != compiler_llvm_context::MetadataHash::None,
+        None => true,
+    };
+
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(solc_input, base_path, include_paths, allow_paths)?;
+    let mut solc_output = solc.standard_json(
+        solc_input,
+        solc_pipeline,
+        base_path,
+        include_paths,
+        allow_paths,
+    )?;
 
     if let Some(errors) = solc_output.errors.as_deref() {
         for error in errors.iter() {
@@ -229,6 +253,7 @@ pub fn standard_json(
         target_machine,
         optimizer_settings,
         is_system_mode,
+        include_metadata_hash,
         debug_config,
     )?;
 
@@ -250,6 +275,7 @@ pub fn combined_json(
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
+    include_metadata_hash: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -265,6 +291,7 @@ pub fn combined_json(
         optimizer_settings,
         force_evmla,
         is_system_mode,
+        include_metadata_hash,
         base_path,
         include_paths,
         allow_paths,

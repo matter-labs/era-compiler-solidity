@@ -30,7 +30,7 @@ pub struct EVM {
     /// The contract bytecode.
     /// Is reset by that of zkEVM before yielding the compiled project artifacts.
     pub bytecode: Option<Bytecode>,
-    /// The contract function signatures representation.
+    /// The contract function signatures.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub method_identifiers: Option<BTreeMap<String, String>>,
 }

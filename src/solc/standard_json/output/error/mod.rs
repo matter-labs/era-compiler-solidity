@@ -41,7 +41,7 @@ impl Error {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.      │
-│ zkSync era comes with native account abstraction support, therefore it is highly recommended NOT │
+│ zkSync Era comes with native account abstraction support, therefore it is highly recommended NOT │
 │ to rely on the fact that the account has an ECDSA private key attached to it since accounts might│
 │ implement other signature schemes.                                                               │
 │ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │
@@ -67,9 +67,12 @@ impl Error {
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing    │
 │ the gas amount. Such calls will fail depending on the pubdata costs.                             │
-│ This might be a false positive if you are using some interface (like IERC20) instead of the      │
-│ native Solidity send/transfer                                                                    │
-│ Please use 'payable(<address>).call{value: <X>}("")' instead.                                    │
+│ This might be a false positive if you are using an interface (like IERC20) instead of the        │
+│ native Solidity `send/transfer`.                                                                 │
+│ Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the reentrancy │
+│ attack. `send` and `transfer` send limited amount of gas that prevents reentrancy, whereas       │
+│ `<address>.call{value: <X>}` sends all gas to the callee. Learn more on                          │
+│ https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy                  │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
             .to_owned();
 
@@ -90,11 +93,11 @@ impl Error {
     pub fn message_extcodesize(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: It looks like your code or one of its dependencies uses the 'extcodesize' instruction,  │
-│ which is usually needed in the following cases:                                                  │
+│ Warning: Your code or one of its dependencies uses the 'extcodesize' instruction, which is       │
+│ usually needed in the following cases:                                                           │
 │   1. To detect whether an address belongs to a smart contract.                                   │
 │   2. To detect whether the deploy code execution has finished.                                   │
-│ zkSync era comes with native account abstraction support (so accounts are smart contracts,       │
+│ zkSync Era comes with native account abstraction support (so accounts are smart contracts,       │
 │ including private-key controlled EOAs), and you should avoid differentiating between contracts   │
 │ and non-contract addresses.                                                                      │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
@@ -117,10 +120,10 @@ impl Error {
     pub fn message_origin(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: It looks like you are checking for 'tx.origin' in your code, which might lead to        │
-│ unexpected behavior. zkSync era comes with native account abstraction support, and therefore the │
-│ initiator of a transaction might be different from the contract calling your code. It is highly  │
-│ recommended NOT to rely on tx.origin, but use msg.sender instead.                                │
+│ Warning: You are checking for 'tx.origin' in your code, which might lead to unexpected behavior. │
+│ zkSync Era comes with native account abstraction support, and therefore the initiator of a       │
+│ transaction might be different from the contract calling your code. It is highly recommended NOT │
+│ to rely on tx.origin, but use msg.sender instead.                                                │
 │ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
             .to_owned();
@@ -142,9 +145,9 @@ impl Error {
     pub fn message_timestamp(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: It looks like you are checking for 'block.timestamp' in your code, which might lead to  │
-│ unexpected behavior. Due to the nature of the zkEVM, the timestamp of a block actually refers to │
-│ the timestamp of the whole batch that will be sent to L1 (meaning, the timestamp of this batch   │
+│ Warning: You are checking for 'block.timestamp' in your code, which might lead to unexpected     │
+│ behavior. Due to the nature of the zkEVM, the timestamp of a block actually refers to the        │
+│ timestamp of the whole batch that will be sent to L1 (meaning, the timestamp of this batch       │
 │ started being processed).                                                                        │
 │ We will provide a custom method to access the L2 block timestamp from the smart contract code in │
 │ the future.                                                                                      │
@@ -168,9 +171,9 @@ impl Error {
     pub fn message_number(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: It looks like you are checking for 'block.number' in your code, which might lead to     │
-│ unexpected behavior. Due to the nature of the zkEVM, the number of a block actually refers to    │
-│ the number of the whole batch will be sent to L1 (a sequentially generated batch number).        │
+│ Warning: You are checking for 'block.number' in your code, which might lead to unexpected        │
+│ behavior. Due to the nature of the zkEVM, the number of a block actually refers to the number    │
+│ of the whole batch will be sent to L1 (a sequentially generated batch number).                   │
 │ We will provide a custom method to access the L2 block number from the smart contract code in    │
 │ the future.                                                                                      │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
@@ -184,6 +187,28 @@ impl Error {
             severity: "warning".to_owned(),
             source_location: src.map(SourceLocation::from_str).and_then(Result::ok),
             r#type: "Warning".to_owned(),
+        }
+    }
+
+    ///
+    /// Returns the internal function pointer usage error.
+    ///
+    pub fn message_internal_function_pointer(src: Option<&str>) -> Self {
+        let message = r#"
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Error: Internal function pointers are not supported in EVM legacy assembly pipeline.             │
+│ Please use the Yul IR codegen instead.                                                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
+            .to_owned();
+
+        Self {
+            component: "general".to_owned(),
+            error_code: None,
+            formatted_message: message.clone(),
+            message,
+            severity: "error".to_owned(),
+            source_location: src.map(SourceLocation::from_str).and_then(Result::ok),
+            r#type: "Error".to_owned(),
         }
     }
 

@@ -1,5 +1,5 @@
 //!
-//! The `solc <input>.sol --standard-json` representation.
+//! The `solc <input>.sol --standard-json`.
 //!
 
 pub mod input;

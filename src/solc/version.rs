@@ -1,15 +1,15 @@
 //!
-//! The Solidity compiler version representation.
+//! The Solidity compiler version.
 //!
 
 ///
-/// The Solidity compiler version representation.
+/// The Solidity compiler version.
 ///
 #[derive(Debug, Clone)]
 pub struct Version {
     /// The long version string.
     pub long: String,
-    /// The short `semver` representation.
+    /// The short `semver`.
     pub default: semver::Version,
 }
 

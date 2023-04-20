@@ -1,12 +1,12 @@
 //!
-//! The `solc --standard-json` input settings optimizer representation.
+//! The `solc --standard-json` input settings optimizer.
 //!
 
 use serde::Deserialize;
 use serde::Serialize;
 
 ///
-/// The `solc --standard-json` input settings optimizer representation.
+/// The `solc --standard-json` input settings optimizer.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

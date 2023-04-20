@@ -1,5 +1,5 @@
 //!
-//! The `solc --combined-json` contract representation.
+//! The `solc --combined-json` contract.
 //!
 
 use std::collections::BTreeMap;
@@ -8,7 +8,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 ///
-/// The contract representation.
+/// The contract.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]

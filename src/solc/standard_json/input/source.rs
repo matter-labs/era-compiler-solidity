@@ -1,5 +1,5 @@
 //!
-//! The `solc --standard-json` input source representation.
+//! The `solc --standard-json` input source.
 //!
 
 use std::io::Read;
@@ -9,7 +9,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 ///
-/// The `solc --standard-json` input source representation.
+/// The `solc --standard-json` input source.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

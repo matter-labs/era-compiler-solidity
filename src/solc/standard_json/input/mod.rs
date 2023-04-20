@@ -1,5 +1,5 @@
 //!
-//! The `solc --standard-json` input representation.
+//! The `solc --standard-json` input.
 //!
 
 pub mod language;
@@ -15,6 +15,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 
@@ -23,7 +24,7 @@ use self::settings::Settings;
 use self::source::Source;
 
 ///
-/// The `solc --standard-json` input representation.
+/// The `solc --standard-json` input.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -60,6 +61,7 @@ impl Input {
         library_map: Vec<String>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let sources = paths
@@ -77,7 +79,7 @@ impl Input {
         Ok(Self {
             language,
             sources,
-            settings: Settings::new(libraries, output_selection, optimizer, via_ir),
+            settings: Settings::new(libraries, output_selection, optimizer, metadata, via_ir),
         })
     }
 
@@ -91,6 +93,7 @@ impl Input {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let sources = sources
@@ -101,7 +104,7 @@ impl Input {
         Ok(Self {
             language: Language::Solidity,
             sources,
-            settings: Settings::new(libraries, output_selection, optimizer, via_ir),
+            settings: Settings::new(libraries, output_selection, optimizer, metadata, via_ir),
         })
     }
 }

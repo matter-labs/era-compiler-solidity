@@ -11,6 +11,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use self::combined_json::CombinedJson;
+use self::pipeline::Pipeline;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::Output as StandardJsonOutput;
 use self::version::Version;
@@ -60,6 +61,7 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: StandardJsonInput,
+        pipeline: Pipeline,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
@@ -120,7 +122,7 @@ impl Compiler {
                         ),
                 )
             })?;
-        output.preprocess_ast()?;
+        output.preprocess_ast(pipeline)?;
 
         Ok(output)
     }
@@ -201,29 +203,6 @@ impl Compiler {
         }
 
         Ok(combined_json)
-    }
-
-    ///
-    /// The `solc --yul ...` mirror.
-    ///
-    /// Is used to validate manually written Yul.
-    ///
-    pub fn yul(&self, paths: &[PathBuf]) -> anyhow::Result<()> {
-        let mut command = std::process::Command::new(self.executable.as_str());
-        command.arg("--yul");
-        command.args(paths);
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
-            );
-        }
-
-        Ok(())
     }
 
     ///

@@ -66,7 +66,7 @@ impl Type {
     }
 
     ///
-    /// Converts the type into its LLVM representation.
+    /// Converts the type into its LLVM.
     ///
     pub fn into_llvm<'ctx, D>(
         self,
