@@ -13,10 +13,10 @@ This repository contains the compiler from Solidity to zkEVM bytecode.
 
 Supported platforms:
 - **Linux: x86_64**  
-   MUSL-based static builds do not depend on system libraries and run on any recent Linux distribution.
+   MUSL-based static builds do not depend on system libraries and can be run on any recent Linux distribution.
 - **MacOS 11+: x86_64, arm64 (M1, M2)**
 - **Windows: x86_64**  
-   Only Windows 10 has been tested so far, but other versions should be OK as well.
+   Only Windows 10 has been tested so far, but other versions should be OK. 
 
 We recommend at least 4 GB of RAM available for the build process.
 
@@ -34,7 +34,7 @@ We recommend at least 4 GB of RAM available for the build process.
    Also install the `musl` target if you are compiling on Linux in order to distribute the binary:
    `rustup target add x86_64-unknown-linux-musl`
 
-1. Download a version of the [solc](https://docs.soliditylang.org/en/develop/installing-solidity.html) compiler.  If it is not named exactly `solc` in your `$PATH`, see the `--solc` option below
+1. Download a version of the [solc](https://docs.soliditylang.org/en/develop/installing-solidity.html) compiler.  If it is not named exactly `solc` and in your `$PATH`, see the `--solc` option below
 
 1. Check out or clone the appropriate branch of this repository.
 
@@ -144,6 +144,11 @@ Useful for early versions of `solc` 0.8.x, where Yul was considered highly exper
 Enable system contract compilation mode.  
 In this mode, zkEVM extensions are enabled. For example, calls to addresses `0xFFFF` and less are substituted with special
 zkEVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.
+
+#### `--metadata-hash`
+Set the metadata hash mode.  
+The only supported value is `none` that disables appending the metadata hash.  
+Is enabled by default.
 
 #### `--asm`
 Output zkEVM assembly of the contracts.

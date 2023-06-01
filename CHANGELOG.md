@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.3.10] - 2023-04-23
+
+### Fixed
+
+- The evaluation order of Yul function arguments
+
 ## [1.3.9] - 2023-04-18
 
 ### Added

@@ -1,6 +1,6 @@
 [package]
 name = "compiler-solidity"
-version = "1.3.9"
+version = "1.3.10"
 authors = [
     "Alex Zarudnyy <a.zarudnyy@matterlabs.dev>",
 ]

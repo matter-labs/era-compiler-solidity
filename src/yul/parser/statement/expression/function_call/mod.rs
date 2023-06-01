@@ -112,10 +112,11 @@ impl FunctionCall {
                     && context.is_system_mode() =>
             {
                 let mut values = Vec::with_capacity(self.arguments.len());
-                for argument in self.arguments.into_iter() {
+                for argument in self.arguments.into_iter().rev() {
                     let value = argument.into_llvm(context)?.expect("Always exists").value;
                     values.push(value);
                 }
+                values.reverse();
                 let function = context.get_function(name.as_str()).ok_or_else(|| {
                     anyhow::anyhow!("{} Undeclared function `{}`", location, name)
                 })?;
@@ -171,10 +172,11 @@ impl FunctionCall {
             }
             Name::UserDefined(name) => {
                 let mut values = Vec::with_capacity(self.arguments.len());
-                for argument in self.arguments.into_iter() {
+                for argument in self.arguments.into_iter().rev() {
                     let value = argument.into_llvm(context)?.expect("Always exists").value;
                     values.push(value);
                 }
+                values.reverse();
                 let function = context.get_function(name.as_str()).ok_or_else(|| {
                     anyhow::anyhow!("{} Undeclared function `{}`", location, name)
                 })?;
@@ -675,7 +677,7 @@ impl FunctionCall {
             Name::Invalid => compiler_llvm_context::r#return::invalid(context).map(|_| None),
 
             Name::Log0 => {
-                let arguments = self.pop_arguments_llvm_log::<D, 2>(context)?;
+                let arguments = self.pop_arguments_llvm::<D, 2>(context)?;
                 compiler_llvm_context::event::log(
                     context,
                     arguments[0].into_int_value(),
@@ -685,7 +687,7 @@ impl FunctionCall {
                 .map(|_| None)
             }
             Name::Log1 => {
-                let arguments = self.pop_arguments_llvm_log::<D, 3>(context)?;
+                let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
                 compiler_llvm_context::event::log(
                     context,
                     arguments[0].into_int_value(),
@@ -698,7 +700,7 @@ impl FunctionCall {
                 .map(|_| None)
             }
             Name::Log2 => {
-                let arguments = self.pop_arguments_llvm_log::<D, 4>(context)?;
+                let arguments = self.pop_arguments_llvm::<D, 4>(context)?;
                 compiler_llvm_context::event::log(
                     context,
                     arguments[0].into_int_value(),
@@ -711,7 +713,7 @@ impl FunctionCall {
                 .map(|_| None)
             }
             Name::Log3 => {
-                let arguments = self.pop_arguments_llvm_log::<D, 5>(context)?;
+                let arguments = self.pop_arguments_llvm::<D, 5>(context)?;
                 compiler_llvm_context::event::log(
                     context,
                     arguments[0].into_int_value(),
@@ -724,7 +726,7 @@ impl FunctionCall {
                 .map(|_| None)
             }
             Name::Log4 => {
-                let arguments = self.pop_arguments_llvm_log::<D, 6>(context)?;
+                let arguments = self.pop_arguments_llvm::<D, 6>(context)?;
                 compiler_llvm_context::event::log(
                     context,
                     arguments[0].into_int_value(),
@@ -1398,9 +1400,10 @@ impl FunctionCall {
         D: compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N) {
+        for expression in self.arguments.drain(0..N).rev() {
             arguments.push(expression.into_llvm(context)?.expect("Always exists").value);
         }
+        arguments.reverse();
 
         Ok(arguments.try_into().expect("Always successful"))
     }
@@ -1416,31 +1419,10 @@ impl FunctionCall {
         D: compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N) {
+        for expression in self.arguments.drain(0..N).rev() {
             arguments.push(expression.into_llvm(context)?.expect("Always exists"));
         }
-
-        Ok(arguments.try_into().expect("Always successful"))
-    }
-
-    ///
-    /// Pops the specified number of arguments, converted into their LLVM values.
-    ///
-    /// This function inverts the order of event topics, taking into account its behavior in EVM.
-    ///
-    fn pop_arguments_llvm_log<'ctx, D, const N: usize>(
-        &mut self,
-        context: &mut compiler_llvm_context::Context<'ctx, D>,
-    ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
-    where
-        D: compiler_llvm_context::Dependency,
-    {
-        self.arguments[2..].reverse();
-        let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N) {
-            arguments.push(expression.into_llvm(context)?.expect("Always exists").value);
-        }
-        arguments[2..].reverse();
+        arguments.reverse();
 
         Ok(arguments.try_into().expect("Always successful"))
     }
