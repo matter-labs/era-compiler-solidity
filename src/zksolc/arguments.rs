@@ -95,6 +95,12 @@ pub struct Arguments {
     #[structopt(long = "llvm-ir")]
     pub llvm_ir: bool,
 
+    /// Switch to the zkEVM assembly mode.
+    /// Only one input zkEVM assembly file is allowed.
+    /// Cannot be used with the combined and standard JSON modes.
+    #[structopt(long = "zkasm")]
+    pub zkasm: bool,
+
     /// Forcibly switch to the EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
@@ -156,7 +162,7 @@ impl Arguments {
     /// Validates the arguments.
     ///
     pub fn validate(&self) -> anyhow::Result<()> {
-        if self.yul || self.llvm_ir {
+        if self.yul || self.llvm_ir || self.zkasm {
             if self.combined_json.is_some() {
                 anyhow::bail!("The `--combined-json` option is invalid in IR modes");
             }

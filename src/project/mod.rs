@@ -281,6 +281,36 @@ impl Project {
             BTreeMap::new(),
         ))
     }
+
+    ///
+    /// Parses the zkEVM assembly source code file and returns the source data.
+    ///
+    pub fn try_from_zkasm_path(path: &Path) -> anyhow::Result<Self> {
+        let source_code = std::fs::read_to_string(path).map_err(|error| {
+            anyhow::anyhow!("zkEVM assembly file {:?} reading error: {}", path, error)
+        })?;
+        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+        let path = path.to_string_lossy().to_string();
+
+        let mut project_contracts = BTreeMap::new();
+        project_contracts.insert(
+            path.clone(),
+            Contract::new(
+                path.clone(),
+                source_hash,
+                compiler_llvm_context::ZKEVM_VERSION,
+                IR::new_zkasm(path, source_code),
+                None,
+            ),
+        );
+
+        Ok(Self::new(
+            compiler_llvm_context::ZKEVM_VERSION,
+            project_contracts,
+            BTreeMap::new(),
+        ))
+    }
 }
 
 impl Clone for Project {

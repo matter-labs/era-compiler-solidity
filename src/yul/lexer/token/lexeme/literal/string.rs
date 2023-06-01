@@ -50,12 +50,23 @@ impl String {
         }
 
         let mut string = std::string::String::new();
-        while !input[length..].starts_with('"') {
+        loop {
+            if input[length..].starts_with('\\') {
+                string.push(input.chars().nth(length).expect("Always exists"));
+                string.push(input.chars().nth(length + 1).expect("Always exists"));
+                length += 2;
+                continue;
+            }
+
+            if input[length..].starts_with('"') {
+                length += 1;
+                break;
+            }
+
             string.push(input.chars().nth(length).expect("Always exists"));
             length += 1;
         }
 
-        length += 1;
         let string = string
             .strip_prefix('"')
             .and_then(|string| string.strip_suffix('"'))

@@ -32,7 +32,7 @@ contract ECRecoverExample {
             "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
             BTreeMap::new(),
             SolcPipeline::Yul,
-        ).unwrap()
+        ).expect("Test failure")
     );
 }
 
@@ -62,7 +62,7 @@ contract SendExample {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
-        ).unwrap()
+        ).expect("Test failure")
     );
 }
 
@@ -91,7 +91,7 @@ contract TransferExample {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
-        ).unwrap()
+        ).expect("Test failure")
     );
 }
 
@@ -118,7 +118,7 @@ contract ExternalCodeSize {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -140,7 +140,7 @@ contract TxOriginExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -169,7 +169,7 @@ contract TxOriginExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -191,7 +191,7 @@ contract BlockTimestampExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -219,7 +219,7 @@ contract BlockTimestampExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -241,7 +241,7 @@ contract BlockNumberExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -269,7 +269,7 @@ contract BlockNumberExample {
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -311,7 +311,7 @@ contract InternalFunctionPointerExample {
         BTreeMap::new(),
         SolcPipeline::EVMLA,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -347,7 +347,7 @@ contract StackFunctionPointerExample {
         BTreeMap::new(),
         SolcPipeline::EVMLA,
     )
-    .unwrap());
+    .expect("Test failure"));
 }
 
 #[test]
@@ -390,5 +390,5 @@ contract StorageFunctionPointerExample {
         BTreeMap::new(),
         SolcPipeline::EVMLA,
     )
-    .unwrap());
+    .expect("Test failure"));
 }

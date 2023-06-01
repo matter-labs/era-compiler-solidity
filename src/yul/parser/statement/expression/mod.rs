@@ -98,7 +98,18 @@ impl Expression {
         D: compiler_llvm_context::Dependency,
     {
         match self {
-            Self::Literal(literal) => Ok(Some(literal.into_llvm(context))),
+            Self::Literal(literal) => literal
+                .clone()
+                .into_llvm(context)
+                .map_err(|error| {
+                    anyhow::anyhow!(
+                        "{} Invalid literal `{}`: {}",
+                        literal.location,
+                        literal.inner.to_string(),
+                        error
+                    )
+                })
+                .map(Some),
             Self::Identifier(identifier) => {
                 let pointer = context
                     .current_function()
@@ -108,7 +119,7 @@ impl Expression {
                         anyhow::anyhow!(
                             "{} Undeclared variable `{}`",
                             identifier.location,
-                            identifier.inner.as_str()
+                            identifier.inner,
                         )
                     })?;
 

@@ -103,6 +103,12 @@ fn main_inner() -> anyhow::Result<()> {
             include_metadata_hash,
             debug_config,
         )
+    } else if arguments.zkasm {
+        compiler_solidity::zkasm(
+            arguments.input_files.as_slice(),
+            include_metadata_hash,
+            debug_config,
+        )
     } else if arguments.standard_json {
         compiler_solidity::standard_json(
             &mut solc,

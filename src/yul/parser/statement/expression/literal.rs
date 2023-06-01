@@ -79,7 +79,7 @@ impl Literal {
     pub fn into_llvm<'ctx, D>(
         self,
         context: &compiler_llvm_context::Context<'ctx, D>,
-    ) -> compiler_llvm_context::Argument<'ctx>
+    ) -> anyhow::Result<compiler_llvm_context::Argument<'ctx>>
     where
         D: compiler_llvm_context::Dependency,
     {
@@ -103,7 +103,9 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                compiler_llvm_context::Argument::new_with_constant(value, constant)
+                Ok(compiler_llvm_context::Argument::new_with_constant(
+                    value, constant,
+                ))
             }
             LexicalLiteral::Integer(inner) => {
                 let r#type = self.yul_type.unwrap_or_default().into_llvm(context);
@@ -131,46 +133,89 @@ impl Literal {
                 }
                 .expect("Always valid");
 
-                compiler_llvm_context::Argument::new_with_constant(value, constant)
+                Ok(compiler_llvm_context::Argument::new_with_constant(
+                    value, constant,
+                ))
             }
             LexicalLiteral::String(inner) => {
-                let string = inner.to_string();
+                let string = inner.inner;
                 let r#type = self.yul_type.unwrap_or_default().into_llvm(context);
 
-                let mut hex_string = String::with_capacity(compiler_common::BYTE_LENGTH_FIELD * 2);
-                let mut index = 0;
-                loop {
-                    if index >= string.len() {
-                        break;
-                    }
+                let mut hex_string = if inner.is_hexadecimal {
+                    string.clone()
+                } else {
+                    let mut hex_string =
+                        String::with_capacity(compiler_common::BYTE_LENGTH_FIELD * 2);
+                    let mut index = 0;
+                    loop {
+                        if index >= string.len() {
+                            break;
+                        }
 
-                    if string[index..].starts_with("\\x") {
-                        hex_string.push_str(&string[index + 2..index + 4]);
-                        index += 4;
-                    } else if string[index..].starts_with("\\t") {
-                        hex_string.push_str("09");
-                        index += 2;
-                    } else if string[index..].starts_with("\\n") {
-                        hex_string.push_str("0a");
-                        index += 2;
-                    } else if string[index..].starts_with("\\r") {
-                        hex_string.push_str("0d");
-                        index += 2;
-                    } else {
-                        hex_string.push_str(format!("{:02x}", string.as_bytes()[index]).as_str());
-                        index += 1;
+                        if string[index..].starts_with('\\') {
+                            index += 1;
+
+                            if string[index..].starts_with('x') {
+                                hex_string.push_str(&string[index + 1..index + 3]);
+                                index += 3;
+                            } else if string[index..].starts_with('u') {
+                                let codepoint_str = &string[index + 1..index + 5];
+                                let codepoint = u32::from_str_radix(
+                                    codepoint_str,
+                                    compiler_common::BASE_HEXADECIMAL,
+                                )
+                                .map_err(|error| {
+                                    anyhow::anyhow!(
+                                        "Invalid codepoint `{}`: {}",
+                                        codepoint_str,
+                                        error
+                                    )
+                                })?;
+                                let unicode_char = char::from_u32(codepoint).ok_or_else(|| {
+                                    anyhow::anyhow!("Invalid codepoint {}", codepoint)
+                                })?;
+                                let mut unicode_bytes = vec![0u8; 3];
+                                unicode_char.encode_utf8(&mut unicode_bytes);
+
+                                for byte in unicode_bytes.into_iter() {
+                                    hex_string.push_str(format!("{:02x}", byte).as_str());
+                                }
+                                index += 5;
+                            } else if string[index..].starts_with('t') {
+                                hex_string.push_str("09");
+                                index += 1;
+                            } else if string[index..].starts_with('n') {
+                                hex_string.push_str("0a");
+                                index += 1;
+                            } else if string[index..].starts_with('r') {
+                                hex_string.push_str("0d");
+                                index += 1;
+                            } else if string[index..].starts_with('\n') {
+                                index += 1;
+                            } else {
+                                hex_string
+                                    .push_str(format!("{:02x}", string.as_bytes()[index]).as_str());
+                                index += 1;
+                            }
+                        } else {
+                            hex_string
+                                .push_str(format!("{:02x}", string.as_bytes()[index]).as_str());
+                            index += 1;
+                        }
                     }
-                }
+                    hex_string
+                };
 
                 if hex_string.len() > compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return compiler_llvm_context::Argument::new_with_original(
+                    return Ok(compiler_llvm_context::Argument::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
-                    );
+                    ));
                 }
-                if string.len() < compiler_common::BYTE_LENGTH_FIELD {
+
+                if hex_string.len() < compiler_common::BYTE_LENGTH_FIELD * 2 {
                     hex_string.push_str(
-                        "00".repeat(compiler_common::BYTE_LENGTH_FIELD - string.len())
+                        "0".repeat((compiler_common::BYTE_LENGTH_FIELD * 2) - hex_string.len())
                             .as_str(),
                     );
                 }
@@ -182,7 +227,9 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                compiler_llvm_context::Argument::new_with_original(value, string)
+                Ok(compiler_llvm_context::Argument::new_with_original(
+                    value, string,
+                ))
             }
         }
     }

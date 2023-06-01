@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 
 #[test]
+#[should_panic(expected = "runtimeCode is not supported")]
 fn default() {
     let source_code = r#"
 // SPDX-License-Identifier: MIT
@@ -23,11 +24,5 @@ contract Test {
 }
     "#;
 
-    assert!(
-        super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("runtimeCode is not supported")
-    );
+    super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul).expect("Test failure");
 }

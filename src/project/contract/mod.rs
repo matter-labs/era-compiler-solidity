@@ -67,6 +67,7 @@ impl Contract {
             IR::Yul(ref yul) => yul.object.identifier.as_str(),
             IR::EVMLA(ref evm) => evm.assembly.full_path(),
             IR::LLVMIR(ref llvm_ir) => llvm_ir.path.as_str(),
+            IR::ZKASM(ref zkasm) => zkasm.path.as_str(),
         }
     }
 
@@ -78,6 +79,7 @@ impl Contract {
             IR::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
             IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
             IR::LLVMIR(_) => HashSet::new(),
+            IR::ZKASM(_) => HashSet::new(),
         }
     }
 
@@ -110,6 +112,8 @@ impl Contract {
                 None
             };
 
+        let identifier = self.identifier().to_owned();
+
         let module = match self.ir {
             IR::LLVMIR(ref llvm_ir) => {
                 let memory_buffer =
@@ -119,6 +123,20 @@ impl Contract {
                     );
                 llvm.create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
+            }
+            IR::ZKASM(ref zkasm) => {
+                let build = compiler_llvm_context::build_assembly_text(
+                    self.path.as_str(),
+                    zkasm.source.as_str(),
+                    metadata_hash,
+                    debug_config.as_ref(),
+                )?;
+                return Ok(ContractBuild::new(
+                    self.path,
+                    identifier,
+                    build,
+                    metadata_json,
+                ));
             }
             _ => llvm.create_module(self.path.as_str()),
         };
@@ -142,9 +160,9 @@ impl Contract {
                 context.set_evmla_data(evmla_data);
             }
             IR::LLVMIR(_) => {}
+            IR::ZKASM(_) => {}
         }
 
-        let identifier = self.identifier().to_owned();
         let factory_dependencies = self.drain_factory_dependencies();
 
         self.ir.declare(&mut context).map_err(|error| {

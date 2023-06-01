@@ -1,5 +1,26 @@
 # The `zksolc` changelog
 
+## [1.3.11] - 2023-05-29
+
+### Added
+
+- The solc v0.8.20 support
+- The zkEVM assembly compilation mode (`--zkasm`)
+
+### Changed
+
+- `metadata.bytecodeHash` field in standard JSON is now optional
+
+### Removed
+
+- The potentially dangerous compatible block workaround in EVMLA
+
+### Fixed
+
+- Parsing escape sequences in string and hexadecimal literals
+- Some runtime errors with EVMLA from `solc` v0.4
+- The bug where the scrutinee of Yul switch was not executed
+
 ## [1.3.10] - 2023-04-23
 
 ### Fixed
@@ -135,7 +156,7 @@
 
 ### Added
 
-- The `--llvm-ir` compilation mode
+- The LLVM IR compilation mode (`--llvm-ir`)
 
 ### Changed
 

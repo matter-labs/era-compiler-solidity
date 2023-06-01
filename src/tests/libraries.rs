@@ -30,14 +30,10 @@ contract SimpleContract {
     "#;
 
 #[test]
+#[should_panic(expected = "Library `test.sol:SimpleLibrary` not found in the project")]
 fn not_specified() {
-    assert!(
-        super::build_solidity(LIBRARY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("Library `test.sol:SimpleLibrary` not found in the project")
-    );
+    super::build_solidity(LIBRARY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
+        .expect("Test failure");
 }
 
 #[test]
@@ -49,5 +45,5 @@ fn specified() {
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
 
-    assert!(super::build_solidity(LIBRARY_TEST_SOURCE, libraries, SolcPipeline::Yul).is_ok());
+    super::build_solidity(LIBRARY_TEST_SOURCE, libraries, SolcPipeline::Yul).expect("Test failure");
 }

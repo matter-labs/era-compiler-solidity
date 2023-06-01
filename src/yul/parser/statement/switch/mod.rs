@@ -114,6 +114,8 @@ where
     D: compiler_llvm_context::Dependency,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+        let scrutinee = self.expression.into_llvm(context)?;
+
         if self.cases.is_empty() {
             if let Some(block) = self.default {
                 block.into_llvm(context)?;
@@ -126,7 +128,7 @@ where
 
         let mut branches = Vec::with_capacity(self.cases.len());
         for (index, case) in self.cases.into_iter().enumerate() {
-            let constant = case.literal.into_llvm(context).to_llvm();
+            let constant = case.literal.into_llvm(context)?.to_llvm();
 
             let expression_block = context
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());
@@ -149,13 +151,8 @@ where
         };
 
         context.set_basic_block(current_block);
-        let scrutinee = self
-            .expression
-            .into_llvm(context)?
-            .expect("Always exists")
-            .to_llvm();
         context.builder().build_switch(
-            scrutinee.into_int_value(),
+            scrutinee.expect("Always exists").to_llvm().into_int_value(),
             default_block,
             branches.as_slice(),
         );

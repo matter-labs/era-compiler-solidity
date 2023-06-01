@@ -13,12 +13,14 @@ use std::ops::BitAnd;
 
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
-use num::CheckedAdd;
+use num::CheckedDiv;
 use num::CheckedMul;
 use num::CheckedSub;
 use num::Num;
+use num::One;
 use num::ToPrimitive;
 use num::Zero;
+use num::{BigUint, CheckedAdd};
 
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
@@ -113,7 +115,6 @@ impl Function {
                 anyhow::anyhow!("Undeclared destination block {}", queue_element.block_key)
             })?;
         block.initial_stack = queue_element.stack.clone();
-        let block = self.find_compatible_block(block);
         let block = self.insert_block(block);
         block.stack = block.initial_stack.clone();
         if let Some(predecessor) = queue_element.predecessor.take() {
@@ -522,6 +523,14 @@ impl Function {
                 let operand_1 = block_stack.elements.last();
 
                 let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
+                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        match operand_1.checked_add(operand_2) {
+                            Some(result) => Element::Tag(result),
+                            None => Element::Value,
+                        }
+                    }
                     (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
                         match operand_1.checked_add(operand_2) {
                             Some(result) => Element::Constant(result),
@@ -547,6 +556,14 @@ impl Function {
                 let operand_1 = block_stack.elements.last();
 
                 let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
+                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        match operand_1.checked_sub(operand_2) {
+                            Some(result) => Element::Tag(result),
+                            None => Element::Value,
+                        }
+                    }
                     (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
                         match operand_1.checked_sub(operand_2) {
                             Some(result) => Element::Constant(result),
@@ -572,10 +589,94 @@ impl Function {
                 let operand_1 = block_stack.elements.last();
 
                 let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
+                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        match operand_1.checked_mul(operand_2) {
+                            Some(result) => Element::Tag(result),
+                            None => Element::Value,
+                        }
+                    }
                     (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
                         match operand_1.checked_mul(operand_2) {
                             Some(result) => Element::Constant(result),
                             None => Element::Value,
+                        }
+                    }
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+            ref instruction @ Instruction {
+                name: InstructionName::DIV,
+                ..
+            } => {
+                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
+                let operand_1 = block_stack.elements.last();
+
+                let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
+                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        if operand_2.is_zero() {
+                            Element::Tag(BigUint::zero())
+                        } else {
+                            match operand_1.checked_div(operand_2) {
+                                Some(result) => Element::Tag(result),
+                                None => Element::Value,
+                            }
+                        }
+                    }
+                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                        if operand_2.is_zero() {
+                            Element::Constant(BigUint::zero())
+                        } else {
+                            match operand_1.checked_div(operand_2) {
+                                Some(result) => Element::Constant(result),
+                                None => Element::Value,
+                            }
+                        }
+                    }
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+            ref instruction @ Instruction {
+                name: InstructionName::MOD,
+                ..
+            } => {
+                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
+                let operand_1 = block_stack.elements.last();
+
+                let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
+                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
+                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        if operand_2.is_zero() {
+                            Element::Tag(BigUint::zero())
+                        } else {
+                            Element::Tag(operand_1 % operand_2)
+                        }
+                    }
+                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                        if operand_2.is_zero() {
+                            Element::Constant(BigUint::zero())
+                        } else {
+                            Element::Constant(operand_1 % operand_2)
                         }
                     }
                     _ => Element::Value,
@@ -725,6 +826,96 @@ impl Function {
                 block_stack.push(output);
             }
 
+            ref instruction @ Instruction {
+                name: InstructionName::LT,
+                ..
+            } => {
+                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
+                let operand_2 = block_stack.elements.last();
+
+                let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        Element::Constant(num::BigUint::from(u64::from(operand_1 < operand_2)))
+                    }
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+            ref instruction @ Instruction {
+                name: InstructionName::GT,
+                ..
+            } => {
+                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
+                let operand_2 = block_stack.elements.last();
+
+                let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        Element::Constant(num::BigUint::from(u64::from(operand_1 > operand_2)))
+                    }
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+            ref instruction @ Instruction {
+                name: InstructionName::EQ,
+                ..
+            } => {
+                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
+                let operand_2 = block_stack.elements.last();
+
+                let result = match (operand_1, operand_2) {
+                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                        Element::Constant(num::BigUint::from(u64::from(operand_1 == operand_2)))
+                    }
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+            ref instruction @ Instruction {
+                name: InstructionName::ISZERO,
+                ..
+            } => {
+                let operand = block_stack.elements.last();
+
+                let result = match operand {
+                    Some(Element::Tag(operand)) => Element::Constant(if operand.is_zero() {
+                        num::BigUint::one()
+                    } else {
+                        num::BigUint::zero()
+                    }),
+                    _ => Element::Value,
+                };
+
+                block_stack.push(result);
+                block_element.stack = block_stack.clone();
+                let output = block_stack.pop()?;
+                for _ in 0..instruction.input_size(version) {
+                    block_stack.pop()?;
+                }
+                block_stack.push(output);
+            }
+
             ref instruction if instruction.output_size() == 1 => {
                 block_stack.push(StackElement::Value);
                 block_element.stack = block_stack.clone();
@@ -744,36 +935,6 @@ impl Function {
         }
 
         Ok(())
-    }
-
-    ///
-    /// Finds a block with a compatible initial stack state and returns it, adding an
-    /// additional allowed initial stack state hash.
-    ///
-    fn find_compatible_block(&mut self, block: Block) -> Block {
-        let key = block.key.clone();
-
-        if let Some(entry) = self.blocks.get_mut(&key) {
-            for existing_block in entry.iter_mut() {
-                let existing_block_length = existing_block.initial_stack.elements.len();
-                let new_block_length = block.initial_stack.elements.len();
-
-                if new_block_length > existing_block_length {
-                    let stack_subslice =
-                        &block.initial_stack.elements[new_block_length - existing_block_length..];
-                    if stack_subslice == existing_block.initial_stack.elements.as_slice()
-                        && stack_subslice
-                            .iter()
-                            .all(|element| element == &StackElement::Value)
-                    {
-                        existing_block.extra_hashes.push(block.initial_stack.hash());
-                        return existing_block.to_owned();
-                    }
-                }
-            }
-        }
-
-        block
     }
 
     ///

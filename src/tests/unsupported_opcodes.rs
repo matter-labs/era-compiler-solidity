@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 
 #[test]
+#[should_panic(expected = "The `CODECOPY` instruction is not supported")]
 fn codecopy_yul_runtime() {
     let source_code = r#"
 // SPDX-License-Identifier: MIT
@@ -28,13 +29,7 @@ contract FixedCodeCopy {
 }
     "#;
 
-    assert!(
-        super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("The `CODECOPY` instruction is not supported")
-    );
+    super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul).expect("Test failure");
 }
 
 pub const CALLCODE_TEST_SOURCE: &str = r#"
@@ -61,28 +56,21 @@ contract CallcodeTest {
     "#;
 
 #[test]
+#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_evmla() {
-    assert!(
-        super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::EVMLA)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("The `CALLCODE` instruction is not supported")
-    );
+    super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::EVMLA)
+        .expect("Test failure");
 }
 
 #[test]
+#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_yul() {
-    assert!(
-        super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("The `CALLCODE` instruction is not supported")
-    );
+    super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
+        .expect("Test failure");
 }
 
 #[test]
+#[should_panic(expected = "The `PC` instruction is not supported")]
 fn pc_yul() {
     let source_code = r#"
 object "ProgramCounter" {
@@ -103,11 +91,7 @@ object "ProgramCounter" {
 }
     "#;
 
-    assert!(super::build_yul(source_code)
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("The `PC` instruction is not supported"));
+    super::build_yul(source_code).expect("Test failure");
 }
 
 pub const EXTCODECOPY_TEST_SOURCE: &str = r#"
@@ -128,27 +112,21 @@ contract ExternalCodeCopy {
     "#;
 
 #[test]
+#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_evmla() {
-    assert!(super::build_solidity(
+    super::build_solidity(
         EXTCODECOPY_TEST_SOURCE,
         BTreeMap::new(),
-        SolcPipeline::EVMLA
+        SolcPipeline::EVMLA,
     )
-    .err()
-    .unwrap()
-    .to_string()
-    .contains("The `EXTCODECOPY` instruction is not supported"));
+    .expect("Test failure");
 }
 
 #[test]
+#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_yul() {
-    assert!(
-        super::build_solidity(EXTCODECOPY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("The `EXTCODECOPY` instruction is not supported")
-    );
+    super::build_solidity(EXTCODECOPY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
+        .expect("Test failure");
 }
 
 pub const SELFDESTRUCT_TEST_SOURCE: &str = r#"
@@ -170,25 +148,19 @@ contract MinimalDestructible {
     "#;
 
 #[test]
+#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
 fn selfdestruct_evmla() {
-    assert!(super::build_solidity(
+    super::build_solidity(
         SELFDESTRUCT_TEST_SOURCE,
         BTreeMap::new(),
-        SolcPipeline::EVMLA
+        SolcPipeline::EVMLA,
     )
-    .err()
-    .unwrap()
-    .to_string()
-    .contains("The `SELFDESTRUCT` instruction is not supported"));
+    .expect("Test failure");
 }
 
 #[test]
+#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
 fn selfdestruct_yul() {
-    assert!(
-        super::build_solidity(SELFDESTRUCT_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("The `SELFDESTRUCT` instruction is not supported")
-    );
+    super::build_solidity(SELFDESTRUCT_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
+        .expect("Test failure");
 }

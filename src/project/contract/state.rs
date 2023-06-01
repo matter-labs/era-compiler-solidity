@@ -15,7 +15,7 @@ use crate::project::contract::Contract;
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
 pub enum State {
-    /// The contract is waiting for be built.
+    /// The contract is waiting for being built.
     Source(Contract),
     /// The contract is being built.
     Waiter(Arc<(Mutex<()>, Condvar)>),
