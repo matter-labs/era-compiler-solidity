@@ -2,8 +2,12 @@
 //! The `solc --standard-json` input settings optimizer.
 //!
 
+pub mod details;
+
 use serde::Deserialize;
 use serde::Serialize;
+
+use self::details::Details;
 
 ///
 /// The `solc --standard-json` input settings optimizer.
@@ -16,6 +20,8 @@ pub struct Optimizer {
     /// The optimization mode string.
     #[serde(skip_serializing)]
     pub mode: Option<char>,
+    /// The `solc` optimizer details.
+    pub details: Option<Details>,
 }
 
 impl Optimizer {
@@ -23,7 +29,18 @@ impl Optimizer {
     /// A shortcut constructor.
     ///
     pub fn new(enabled: bool, mode: Option<char>) -> Self {
-        Self { enabled, mode }
+        Self {
+            enabled,
+            mode,
+            details: Some(Details::default()),
+        }
+    }
+
+    ///
+    /// Sets the necessary defaults.
+    ///
+    pub fn normalize(&mut self) {
+        self.details = Some(Details::default());
     }
 }
 

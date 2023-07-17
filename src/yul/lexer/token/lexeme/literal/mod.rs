@@ -6,6 +6,9 @@ pub mod boolean;
 pub mod integer;
 pub mod string;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use self::boolean::Boolean;
 use self::integer::Integer;
 use self::string::String;
@@ -13,7 +16,7 @@ use self::string::String;
 ///
 /// The literal lexeme.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum Literal {
     /// A boolean literal, like `true`, or `false`.
     Boolean(Boolean),

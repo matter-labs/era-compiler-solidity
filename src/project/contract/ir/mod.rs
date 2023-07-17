@@ -7,7 +7,11 @@ pub mod llvm_ir;
 pub mod yul;
 pub mod zkasm;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::evmla::assembly::Assembly;
+use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::statement::object::Object;
 
 use self::evmla::EVMLA;
@@ -18,7 +22,7 @@ use self::zkasm::ZKASM;
 ///
 /// The contract source code.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum IR {
@@ -43,8 +47,8 @@ impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_evmla(assembly: Assembly) -> Self {
-        Self::EVMLA(EVMLA::new(assembly))
+    pub fn new_evmla(assembly: Assembly, extra_metadata: ExtraMetadata) -> Self {
+        Self::EVMLA(EVMLA::new(assembly, extra_metadata))
     }
 
     ///
@@ -64,7 +68,7 @@ impl IR {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for IR
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         match self {

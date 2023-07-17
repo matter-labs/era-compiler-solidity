@@ -18,6 +18,7 @@ use crate::project::contract::ir::IR as ProjectContractIR;
 use crate::project::contract::Contract as ProjectContract;
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::version::Version as SolcVersion;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::statement::object::Object;
 
@@ -106,16 +107,16 @@ impl Output {
                         ProjectContractIR::new_yul(ir_optimized.to_owned(), object)
                     }
                     SolcPipeline::EVMLA => {
-                        let assembly = match contract
-                            .evm
-                            .as_ref()
-                            .and_then(|evm| evm.assembly.to_owned())
-                        {
+                        let evm = contract.evm.as_ref();
+                        let assembly = match evm.and_then(|evm| evm.assembly.to_owned()) {
                             Some(assembly) => assembly.to_owned(),
                             None => continue,
                         };
+                        let extra_metadata = evm
+                            .and_then(|evm| evm.extra_metadata.to_owned())
+                            .unwrap_or_default();
 
-                        ProjectContractIR::new_evmla(assembly)
+                        ProjectContractIR::new_evmla(assembly, extra_metadata)
                     }
                 };
 
@@ -145,7 +146,11 @@ impl Output {
     ///
     /// Traverses the AST and returns the list of additional errors and warnings.
     ///
-    pub fn preprocess_ast(&mut self, pipeline: SolcPipeline) -> anyhow::Result<()> {
+    pub fn preprocess_ast(
+        &mut self,
+        version: &SolcVersion,
+        pipeline: SolcPipeline,
+    ) -> anyhow::Result<()> {
         let sources = match self.sources.as_ref() {
             Some(sources) => sources,
             None => return Ok(()),
@@ -154,7 +159,7 @@ impl Output {
         let mut messages = Vec::new();
         for (path, source) in sources.iter() {
             if let Some(ast) = source.ast.as_ref() {
-                let mut zkevm_messages = Source::get_messages(ast, pipeline);
+                let mut zkevm_messages = Source::get_messages(ast, version, pipeline);
                 for message in zkevm_messages.iter_mut() {
                     message.push_contract_path(path.as_str());
                 }

@@ -117,7 +117,7 @@ impl Error {
     ///
     /// Returns the `origin` instruction usage warning.
     ///
-    pub fn message_origin(src: Option<&str>) -> Self {
+    pub fn message_tx_origin(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Warning: You are checking for 'tx.origin' in your code, which might lead to unexpected behavior. │
@@ -142,15 +142,15 @@ impl Error {
     ///
     /// Returns the `timestamp` instruction usage warning.
     ///
-    pub fn message_timestamp(src: Option<&str>) -> Self {
+    pub fn message_block_timestamp(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: You are checking for 'block.timestamp' in your code, which might lead to unexpected     │
-│ behavior. Due to the nature of the zkEVM, the timestamp of a block actually refers to the        │
-│ timestamp of the whole batch that will be sent to L1 (meaning, the timestamp of this batch       │
-│ started being processed).                                                                        │
-│ We will provide a custom method to access the L2 block timestamp from the smart contract code in │
-│ the future.                                                                                      │
+│ Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour. │
+│ 'block.timestamp' actually refers to the timestamp of the whole batch that will be sent to L1.   │
+│ We are planning to change this in the near future so that it returns the timestamp of the L2     │
+│ block. A separate method will be introduced for accessing the timestamp of the L1 batch.         │
+│ More information here:                                                                           │
+│ https://github.com/zkSync-Community-Hub/zkync-developers/discussions/32                          │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
             .to_owned();
 
@@ -168,14 +168,39 @@ impl Error {
     ///
     /// Returns the `number` usage warning.
     ///
-    pub fn message_number(src: Option<&str>) -> Self {
+    pub fn message_block_number(src: Option<&str>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Warning: You are checking for 'block.number' in your code, which might lead to unexpected        │
-│ behavior. Due to the nature of the zkEVM, the number of a block actually refers to the number    │
-│ of the whole batch will be sent to L1 (a sequentially generated batch number).                   │
-│ We will provide a custom method to access the L2 block number from the smart contract code in    │
-│ the future.                                                                                      │
+│ Warning: You are using 'block.number' in your code which we are planning to change in the near   │
+│ future. 'block.number' currently returns the number of the L1 batch. After the changes it will   │
+│ be returning the number of the L2 block.                                                         │
+│ More information here:                                                                           │
+│ https://github.com/zkSync-Community-Hub/zkync-developers/discussions/32                          │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
+            .to_owned();
+
+        Self {
+            component: "general".to_owned(),
+            error_code: None,
+            formatted_message: message.clone(),
+            message,
+            severity: "warning".to_owned(),
+            source_location: src.map(SourceLocation::from_str).and_then(Result::ok),
+            r#type: "Warning".to_owned(),
+        }
+    }
+
+    ///
+    /// Returns the `blockhash` usage warning.
+    ///
+    pub fn message_blockhash(src: Option<&str>) -> Self {
+        let message = r#"
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Warning: You are using 'blockHash' in your code which we are planning to change in the near      │
+│ future. 'blockHash' currently returns the hash of the L1 batch. After the changes, it will be    │
+│ returning the the hash of the L2 block.                                                          │
+│ More information here:                                                                           │
+│ https://github.com/zkSync-Community-Hub/zkync-developers/discussions/32                          │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
             .to_owned();
 

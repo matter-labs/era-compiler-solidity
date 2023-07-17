@@ -2,6 +2,9 @@
 //! The if-conditional statement.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
@@ -12,7 +15,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul if-conditional statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct IfConditional {
     /// The location.
     pub location: Location,
@@ -44,7 +47,7 @@ impl IfConditional {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for IfConditional
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let condition = self

@@ -6,6 +6,8 @@ use inkwell::values::BasicValue;
 use num::Num;
 use num::One;
 use num::Zero;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
@@ -22,7 +24,7 @@ use crate::yul::parser::r#type::Type;
 ///
 /// Represents a literal in YUL without differentiating its type.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Literal {
     /// The location.
     pub location: Location,
@@ -81,7 +83,7 @@ impl Literal {
         context: &compiler_llvm_context::Context<'ctx, D>,
     ) -> anyhow::Result<compiler_llvm_context::Argument<'ctx>>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         match self.inner {
             LexicalLiteral::Boolean(inner) => {

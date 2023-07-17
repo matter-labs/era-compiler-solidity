@@ -4,6 +4,9 @@
 
 use std::collections::HashSet;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::literal::Literal;
@@ -18,7 +21,7 @@ use crate::yul::parser::statement::code::Code;
 ///
 /// The upper-level YUL object, representing the deploy code.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Object {
     /// The location.
     pub location: Location,
@@ -99,6 +102,16 @@ impl Object {
                     ..
                 } => {
                     let mut object = Self::parse(lexer, None)?;
+
+                    if format!("{identifier}_deployed") != object.identifier {
+                        return Err(ParserError::InvalidObjectName {
+                            location: object.location,
+                            expected: format!("{identifier}_deployed"),
+                            found: object.identifier,
+                        }
+                        .into());
+                    }
+
                     factory_dependencies.extend(object.factory_dependencies.drain());
                     Some(Box::new(object))
                 }
@@ -161,7 +174,7 @@ impl Object {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Object
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let mut entry = compiler_llvm_context::EntryFunction::default();
@@ -351,6 +364,38 @@ object "Test" {
                 location: Location::new(8, 5),
                 expected: vec!["object", "}"],
                 found: "class".to_owned(),
+            }
+            .into())
+        );
+    }
+
+    #[test]
+    fn error_invalid_object_name() {
+        let input = r#"
+object "Test" {
+    code {
+        {
+            return(0, 0)
+        }
+    }
+    object "Invalid" {
+        code {
+            {
+                return(0, 0)
+            }
+        }
+    }
+}
+    "#;
+
+        let mut lexer = Lexer::new(input.to_owned());
+        let result = Object::parse(&mut lexer, None);
+        assert_eq!(
+            result,
+            Err(Error::InvalidObjectName {
+                location: Location::new(8, 5),
+                expected: "Test_deployed".to_owned(),
+                found: "Invalid".to_owned(),
             }
             .into())
         );

@@ -10,6 +10,7 @@ use crate::evmla::assembly::instruction::codecopy;
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
 
+use self::stack::element::Element as StackElement;
 use self::stack::Stack;
 
 ///
@@ -23,6 +24,10 @@ pub struct Element {
     pub instruction: Instruction,
     /// The stack data.
     pub stack: Stack,
+    /// The stack input.
+    pub stack_input: Stack,
+    /// The stack output.
+    pub stack_output: Stack,
 }
 
 impl Element {
@@ -30,10 +35,15 @@ impl Element {
     /// A shortcut constructor.
     ///
     pub fn new(solc_version: semver::Version, instruction: Instruction) -> Self {
+        let input_size = instruction.input_size(&solc_version);
+        let output_size = instruction.output_size();
+
         Self {
             solc_version,
             instruction,
             stack: Stack::new(),
+            stack_input: Stack::with_capacity(input_size),
+            stack_output: Stack::with_capacity(output_size),
         }
     }
 
@@ -45,13 +55,14 @@ impl Element {
         context: &mut compiler_llvm_context::Context<'ctx, D>,
     ) -> Vec<inkwell::values::BasicValueEnum<'ctx>>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         let input_size = self.instruction.input_size(&context.evmla().version);
+        let output_size = self.instruction.output_size();
         let mut arguments = Vec::with_capacity(input_size);
         for index in 0..input_size {
             let pointer = context.evmla().stack
-                [self.stack.elements.len() - self.instruction.output_size() - index - 1]
+                [self.stack.elements.len() + input_size - output_size - 1 - index]
                 .to_llvm()
                 .into_pointer_value();
             let value = context.build_load(
@@ -62,41 +73,19 @@ impl Element {
         }
         arguments
     }
-
-    ///
-    /// Pops the specified number of arguments.
-    ///
-    fn pop_arguments<'ctx, D>(
-        &mut self,
-        context: &mut compiler_llvm_context::Context<'ctx, D>,
-    ) -> Vec<compiler_llvm_context::Argument<'ctx>>
-    where
-        D: compiler_llvm_context::Dependency,
-    {
-        let input_size = self.instruction.input_size(&context.evmla().version);
-        let mut arguments = Vec::with_capacity(input_size);
-        for index in 0..input_size {
-            let argument = context.evmla().stack
-                [self.stack.elements.len() - self.instruction.output_size() - index - 1]
-                .to_owned();
-            arguments.push(argument);
-        }
-        arguments
-    }
 }
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Element
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(
         mut self,
         context: &mut compiler_llvm_context::Context<'_, D>,
     ) -> anyhow::Result<()> {
-        let input_size = self.instruction.input_size(&context.evmla().version);
         let mut original = self.instruction.value.clone();
 
-        let value = match self.instruction.name {
+        let result = match self.instruction.name.clone() {
             InstructionName::PUSH
             | InstructionName::PUSH1
             | InstructionName::PUSH2
@@ -149,14 +138,14 @@ where
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?,
             )
-            .map(Some),
+            .map(|argument| Some(argument.value)),
             InstructionName::PUSH_ContractHashSize => compiler_llvm_context::create::header_size(
                 context,
                 self.instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?,
             )
-            .map(Some),
+            .map(|argument| Some(argument.value)),
             InstructionName::PUSHLIB => {
                 let path = self
                     .instruction
@@ -416,7 +405,7 @@ where
                 .map(|_| None)
             }
             InstructionName::JUMP => {
-                let destination = self.stack.pop_tag()?;
+                let destination = self.stack_input.pop_tag()?;
 
                 crate::evmla::assembly::instruction::jump::unconditional(
                     context,
@@ -426,8 +415,8 @@ where
                 .map(|_| None)
             }
             InstructionName::JUMPI => {
-                let destination = self.stack.pop_tag()?;
-                self.stack.pop()?;
+                let destination = self.stack_input.pop_tag()?;
+                let _condition = self.stack_input.pop();
 
                 crate::evmla::assembly::instruction::jump::conditional(
                     context,
@@ -850,52 +839,30 @@ where
                 }
             }
             InstructionName::CODECOPY => {
-                let mut arguments =
-                    Vec::with_capacity(self.instruction.input_size(&self.solc_version));
-                let arguments_with_original = self.pop_arguments(context);
-                for (index, argument) in arguments_with_original.iter().enumerate() {
-                    let pointer = argument.value.into_pointer_value();
-                    let value = context.build_load(
-                        compiler_llvm_context::Pointer::new_stack_field(context, pointer),
-                        format!("argument_{index}").as_str(),
-                    );
-                    arguments.push(value);
-                }
+                let arguments = self.pop_arguments_llvm(context);
 
                 let parent = context.module().get_name().to_str().expect("Always valid");
+                let source = &self.stack_input.elements[1];
+                let destination = &self.stack_input.elements[2];
 
-                let original_destination = arguments_with_original[0].original.as_deref();
-                let original_source = arguments_with_original[1].original.as_deref();
+                let library_marker: u64 = 0x0b;
+                let library_flag: u64 = 0x73;
 
-                match original_source {
-                    Some(source)
-                        if !source.chars().all(|char| char.is_ascii_hexdigit())
-                            && source != parent =>
+                match (source, destination) {
+                    (_, StackElement::Constant(destination))
+                        if destination == &num::BigUint::from(library_marker) =>
                     {
-                        codecopy::contract_hash(
-                            context,
-                            arguments[0].into_int_value(),
-                            arguments[1].into_int_value(),
-                        )
+                        codecopy::library_marker(context, library_marker, library_flag)
                     }
-                    Some(source)
-                        if !source.chars().all(|char| char.is_ascii_hexdigit())
-                            && source == parent =>
-                    {
-                        match original_destination {
-                            Some(length) if length.to_ascii_uppercase().as_str() == "B" => {
-                                codecopy::library_marker(context, length, "73")
-                            }
-                            _ => Ok(()),
-                        }
+                    (StackElement::Data(data), _) => {
+                        codecopy::static_data(context, arguments[0].into_int_value(), data.as_str())
                     }
-                    Some(source)
-                        if source.chars().all(|char| char.is_ascii_hexdigit())
-                            && source.len() >= compiler_common::BYTE_LENGTH_FIELD * 2 =>
-                    {
-                        codecopy::static_data(context, arguments[0].into_int_value(), source)
-                    }
-                    Some(_) | None => {
+                    (StackElement::Path(source), _) if source != parent => codecopy::contract_hash(
+                        context,
+                        arguments[0].into_int_value(),
+                        arguments[1].into_int_value(),
+                    ),
+                    _ => {
                         match context.code_type().ok_or_else(|| {
                             anyhow::anyhow!("The contract code part type is undefined")
                         })? {
@@ -909,7 +876,6 @@ where
                             }
                             compiler_llvm_context::CodeType::Runtime => {
                                 let calldata_size = compiler_llvm_context::calldata::size(context)?;
-
                                 compiler_llvm_context::calldata::copy(
                                     context,
                                     arguments[0].into_int_value(),
@@ -1202,7 +1168,7 @@ where
             }
 
             InstructionName::CALLCODE => {
-                let mut _arguments = self.pop_arguments(context);
+                let mut _arguments = self.pop_arguments_llvm(context);
                 anyhow::bail!("The `CALLCODE` instruction is not supported");
             }
             InstructionName::PC => {
@@ -1216,18 +1182,125 @@ where
                 let _arguments = self.pop_arguments_llvm(context);
                 anyhow::bail!("The `SELFDESTRUCT` instruction is not supported");
             }
+
+            InstructionName::RecursiveCall {
+                name,
+                output_size,
+                return_address,
+                ..
+            } => {
+                let mut arguments = self.pop_arguments_llvm(context);
+                arguments.pop();
+                arguments.reverse();
+                arguments.pop();
+
+                let function = context
+                    .get_function(name.as_str())
+                    .expect("Always exists")
+                    .borrow()
+                    .declaration();
+                let result = context.build_call(
+                    function,
+                    arguments.as_slice(),
+                    format!("call_{}", name).as_str(),
+                );
+                match result {
+                    Some(value) if value.is_int_value() => {
+                        let pointer = context.evmla().stack
+                            [self.stack.elements.len() - output_size]
+                            .to_llvm()
+                            .into_pointer_value();
+                        context.build_store(
+                            compiler_llvm_context::Pointer::new_stack_field(context, pointer),
+                            value,
+                        );
+                    }
+                    Some(value) if value.is_struct_value() => {
+                        let return_value = value.into_struct_value();
+                        for index in 0..output_size {
+                            let value = context
+                                .builder()
+                                .build_extract_value(
+                                    return_value,
+                                    index as u32,
+                                    format!("return_value_element_{}", index).as_str(),
+                                )
+                                .expect("Always exists");
+                            let pointer = compiler_llvm_context::Pointer::new(
+                                context.field_type(),
+                                compiler_llvm_context::AddressSpace::Stack,
+                                context.evmla().stack
+                                    [self.stack.elements.len() - output_size + index]
+                                    .to_llvm()
+                                    .into_pointer_value(),
+                            );
+                            context.build_store(pointer, value);
+                        }
+                    }
+                    Some(_) => {
+                        panic!("Only integers and structures can be returned from Ethir functions")
+                    }
+                    None => {}
+                }
+
+                let return_block = context
+                    .current_function()
+                    .borrow()
+                    .evmla()
+                    .blocks
+                    .get(&return_address)
+                    .expect("Always exists")
+                    .first()
+                    .expect("Always exists")
+                    .inner();
+                context.build_unconditional_branch(return_block);
+                return Ok(());
+            }
+            InstructionName::RecursiveReturn { .. } => {
+                let mut arguments = self.pop_arguments_llvm(context);
+                arguments.reverse();
+                arguments.pop();
+
+                match context.current_function().borrow().r#return() {
+                    compiler_llvm_context::FunctionReturn::None => {}
+                    compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
+                        assert_eq!(arguments.len(), 1);
+                        context.build_store(pointer, arguments.remove(0));
+                    }
+                    compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
+                        for (index, argument) in arguments.into_iter().enumerate() {
+                            let element_pointer = context.build_gep(
+                                pointer,
+                                &[
+                                    context.field_const(0),
+                                    context.integer_const(
+                                        compiler_common::BIT_LENGTH_X32,
+                                        index as u64,
+                                    ),
+                                ],
+                                context.field_type(),
+                                format!("return_value_pointer_element_{}", index).as_str(),
+                            );
+                            context.build_store(element_pointer, argument);
+                        }
+                    }
+                }
+
+                let return_block = context.current_function().borrow().return_block();
+                context.build_unconditional_branch(return_block);
+                Ok(None)
+            }
         }?;
 
-        if let Some(value) = value {
-            let pointer = context.evmla().stack[self.stack.elements.len() - input_size - 1]
+        if let Some(result) = result {
+            let pointer = context.evmla().stack[self.stack.elements.len() - 1]
                 .to_llvm()
                 .into_pointer_value();
             context.build_store(
                 compiler_llvm_context::Pointer::new_stack_field(context, pointer),
-                value,
+                result,
             );
-            context.evmla_mut().stack[self.stack.elements.len() - input_size - 1].original =
-                original;
+            context.evmla_mut().stack[self.stack.elements.len() - 1].original = original;
         }
 
         Ok(())
@@ -1236,32 +1309,18 @@ where
 
 impl std::fmt::Display for Element {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let input_size = self.instruction.input_size(&self.solc_version);
-        let output_size = self.instruction.output_size();
-
         let mut stack = self.stack.to_owned();
-        let output = Stack::new_with_elements(
-            stack
-                .elements
-                .drain(stack.elements.len() - output_size..)
-                .collect(),
-        );
-        let input = Stack::new_with_elements(
-            stack
-                .elements
-                .drain(stack.elements.len() - input_size..)
-                .collect(),
-        );
-
-        write!(f, "{:88}{}", self.instruction.to_string(), stack)?;
-        if input_size != 0 {
-            write!(f, " - {input}")?;
+        for _ in 0..self.stack_output.len() {
+            let _ = stack.pop();
         }
-        if output_size != 0 {
-            write!(f, " + {output}")?;
-        }
-        writeln!(f)?;
 
+        write!(f, "{:80}{}", self.instruction.to_string(), stack)?;
+        if !self.stack_input.is_empty() {
+            write!(f, " - {}", self.stack_input)?;
+        }
+        if !self.stack_output.is_empty() {
+            write!(f, " + {}", self.stack_output)?;
+        }
         Ok(())
     }
 }

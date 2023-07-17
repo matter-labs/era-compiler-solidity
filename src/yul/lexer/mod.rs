@@ -56,26 +56,28 @@ impl Lexer {
             return Ok(peeked);
         }
 
-        while let Some(character) = self.input.chars().nth(self.offset) {
-            if character.is_ascii_whitespace() {
-                if character == '\n' {
+        while self.offset < self.input.len() {
+            let input = &self.input[self.offset..];
+
+            if input.starts_with(|character| char::is_ascii_whitespace(&character)) {
+                if input.starts_with('\n') {
                     self.location.line += 1;
                     self.location.column = 1;
-                } else if character != '\r' {
+                } else if !input.starts_with('\r') {
                     self.location.column += 1;
                 }
                 self.offset += 1;
                 continue;
             }
 
-            if let Some(token) = Comment::parse(&self.input[self.offset..]) {
+            if let Some(token) = Comment::parse(input) {
                 self.offset += token.length;
                 self.location
                     .shift_down(token.location.line, token.location.column);
                 continue;
             }
 
-            if let Some(mut token) = StringLiteral::parse(&self.input[self.offset..]) {
+            if let Some(mut token) = StringLiteral::parse(input) {
                 token.location = self.location;
 
                 self.offset += token.length;
@@ -83,7 +85,7 @@ impl Lexer {
                 return Ok(token);
             }
 
-            if let Some(mut token) = IntegerLiteral::parse(&self.input[self.offset..]) {
+            if let Some(mut token) = IntegerLiteral::parse(input) {
                 token.location = self.location;
 
                 self.offset += token.length;
@@ -91,7 +93,7 @@ impl Lexer {
                 return Ok(token);
             }
 
-            if let Some(mut token) = Identifier::parse(&self.input[self.offset..]) {
+            if let Some(mut token) = Identifier::parse(input) {
                 token.location = self.location;
 
                 self.offset += token.length;
@@ -99,7 +101,7 @@ impl Lexer {
                 return Ok(token);
             }
 
-            if let Some(mut token) = Symbol::parse(&self.input[self.offset..]) {
+            if let Some(mut token) = Symbol::parse(input) {
                 token.location = self.location;
 
                 self.offset += token.length;

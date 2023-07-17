@@ -11,7 +11,7 @@ pub fn contract_hash<'ctx, D>(
     value: inkwell::values::IntValue<'ctx>,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let offset = context.builder().build_int_add(
         offset,
@@ -31,16 +31,16 @@ where
 ///
 pub fn library_marker<D>(
     context: &mut compiler_llvm_context::Context<D>,
-    offset: &str,
-    value: &str,
+    offset: u64,
+    value: u64,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     compiler_llvm_context::memory::store_byte(
         context,
-        context.field_const_str_hex(offset),
-        context.field_const_str_hex(value),
+        context.field_const(offset),
+        context.field_const(value),
     )?;
 
     Ok(())
@@ -55,7 +55,7 @@ pub fn static_data<'ctx, D>(
     source: &str,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let mut offset = 0;
     for (index, chunk) in source

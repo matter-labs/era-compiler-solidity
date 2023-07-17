@@ -124,9 +124,9 @@ Switch to standard JSON input/output mode. Read from `stdin`, write the result t
 This is the default used by the Hardhat plugin.  
 
 #### `--yul`
-Switch to the Yul mode.  
+Switch to Yul mode.
 Only one input Yul file is allowed.  
-Cannot be used with the combined and standard JSON modes.
+Cannot be used with combined and standard JSON modes.
 
 #### `--llvm-ir`
 Switch to LLVM IR mode.  
@@ -148,7 +148,7 @@ In this mode, zkEVM extensions are enabled. For example, calls to addresses `0xF
 zkEVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.
 
 #### `--metadata-hash`
-Set the metadata hash mode.  
+Set metadata hash mode.
 The only supported value is `none` that disables appending the metadata hash.  
 Is enabled by default.
 

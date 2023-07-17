@@ -187,7 +187,7 @@ contract BlockTimestampExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Warning: You are checking for 'block.timestamp' in your code, which might lead to",
+        "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
@@ -215,7 +215,7 @@ contract BlockTimestampExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Warning: You are checking for 'block.timestamp' in your code, which might lead to",
+        "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
@@ -237,7 +237,7 @@ contract BlockNumberExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Warning: You are checking for 'block.number' in your code, which might lead to",
+        "Warning: You are using 'block.number' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
     )
@@ -265,7 +265,53 @@ contract BlockNumberExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Warning: You are checking for 'block.number' in your code, which might lead to",
+        "Warning: You are using 'block.number' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+    )
+    .expect("Test failure"));
+}
+
+#[test]
+fn blockhash() {
+    let source_code = r#"
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BlockHashExample {
+    function getBlockHash(uint blockNumber) public view returns (bytes32) {
+        return blockhash(blockNumber);
+    }
+}
+    "#;
+
+    assert!(super::check_solidity_warning(
+        source_code,
+        "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+    )
+    .expect("Test failure"));
+}
+
+#[test]
+fn blockhash_assembly() {
+    let source_code = r#"
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BlockHashExampleAssembly {
+    function getBlockHash(uint blockNumber) public view returns (bytes32 blockHash) {
+        assembly {
+            blockHash := blockhash(blockNumber)
+        }
+    }
+}
+    "#;
+
+    assert!(super::check_solidity_warning(
+        source_code,
+        "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
     )

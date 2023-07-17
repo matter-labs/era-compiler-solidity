@@ -3,6 +3,8 @@
 //!
 
 use inkwell::types::BasicType;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -22,7 +24,7 @@ use crate::yul::parser::statement::expression::function_call::name::Name as Func
 /// 1. The hoisted declaration
 /// 2. The definition, which now has the access to all function signatures
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct FunctionDefinition {
     /// The location.
     pub location: Location,
@@ -167,7 +169,7 @@ impl FunctionDefinition {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for FunctionDefinition
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
@@ -281,13 +283,12 @@ where
                 .build_unconditional_branch(context.current_function().borrow().return_block()),
         }
 
+        context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
             compiler_llvm_context::FunctionReturn::None => {
-                context.set_basic_block(context.current_function().borrow().return_block());
                 context.build_return(None);
             }
             compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                context.set_basic_block(context.current_function().borrow().return_block());
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
@@ -298,11 +299,9 @@ where
                     .name()
                     .starts_with(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_PREFIX) =>
             {
-                context.set_basic_block(context.current_function().borrow().return_block());
                 context.build_return(Some(&pointer.value));
             }
             compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                context.set_basic_block(context.current_function().borrow().return_block());
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }

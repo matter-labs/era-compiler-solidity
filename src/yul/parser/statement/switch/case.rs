@@ -2,6 +2,9 @@
 //! The switch statement case.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
@@ -14,7 +17,7 @@ use crate::yul::parser::statement::expression::literal::Literal;
 ///
 /// The Yul switch statement case.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Case {
     /// The location.
     pub location: Location,

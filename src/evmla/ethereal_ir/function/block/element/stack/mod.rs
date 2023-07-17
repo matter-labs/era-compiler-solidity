@@ -31,6 +31,15 @@ impl Stack {
     ///
     /// A shortcut constructor.
     ///
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            elements: Vec::with_capacity(capacity),
+        }
+    }
+
+    ///
+    /// A shortcut constructor.
+    ///
     pub fn new_with_elements(elements: Vec<Element>) -> Self {
         Self { elements }
     }
@@ -52,10 +61,17 @@ impl Stack {
     }
 
     ///
-    /// Pushes a stack element.
+    /// Pushes an element onto the stack.
     ///
     pub fn push(&mut self, element: Element) {
         self.elements.push(element);
+    }
+
+    ///
+    /// Appends another stack on top of this one.
+    ///
+    pub fn append(&mut self, other: &mut Self) {
+        self.elements.append(&mut other.elements);
     }
 
     ///
@@ -95,15 +111,26 @@ impl Stack {
     ///
     /// Duplicates a stack element.
     ///
-    pub fn dup(&mut self, index: usize) -> anyhow::Result<()> {
+    pub fn dup(&mut self, index: usize) -> anyhow::Result<Element> {
         if self.elements.len() < index {
             anyhow::bail!("Stack underflow");
         }
 
-        let dupped = self.elements[self.elements.len() - index].to_owned();
-        self.elements.push(dupped);
+        Ok(self.elements[self.elements.len() - index].to_owned())
+    }
 
-        Ok(())
+    ///
+    /// Returns the stack length.
+    ///
+    pub fn len(&self) -> usize {
+        self.elements.len()
+    }
+
+    ///
+    /// Returns an emptiness flag.
+    ///
+    pub fn is_empty(&self) -> bool {
+        self.elements.len() == 0
     }
 }
 

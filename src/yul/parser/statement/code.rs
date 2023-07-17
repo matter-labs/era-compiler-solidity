@@ -2,6 +2,9 @@
 //! The YUL code.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -14,7 +17,7 @@ use crate::yul::parser::statement::block::Block;
 ///
 /// The YUL code entity, which is the first block of the object.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Code {
     /// The location.
     pub location: Location,
@@ -53,7 +56,7 @@ impl Code {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Code
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         self.block.into_llvm(context)?;

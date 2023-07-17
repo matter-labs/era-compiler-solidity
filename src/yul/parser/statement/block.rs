@@ -2,6 +2,9 @@
 //! The source code block.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -16,7 +19,7 @@ use crate::yul::parser::statement::Statement;
 ///
 /// The Yul source code block.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Block {
     /// The location.
     pub location: Location,
@@ -122,7 +125,7 @@ impl Block {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Block
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let current_function = context.current_function().borrow().name().to_owned();

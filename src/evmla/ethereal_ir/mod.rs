@@ -5,12 +5,15 @@
 pub mod entry_link;
 pub mod function;
 
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 use crate::evmla::assembly::instruction::Instruction;
+use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::function::block::Block;
+use self::function::r#type::Type as FunctionType;
 use self::function::Function;
 
 ///
@@ -29,13 +32,17 @@ use self::function::Function;
 pub struct EtherealIR {
     /// The Solidity compiler version.
     pub solc_version: semver::Version,
+    /// The EVMLA extra metadata.
+    pub extra_metadata: ExtraMetadata,
     /// The all-inlined function.
-    pub function: Function,
+    pub entry_function: Function,
+    /// The recursive functions.
+    pub recursive_functions: BTreeMap<compiler_llvm_context::FunctionBlockKey, Function>,
 }
 
 impl EtherealIR {
     /// The default entry function name.
-    pub const DEFAULT_ENTRY_FUNCTION_NAME: &'static str = "function_main";
+    pub const DEFAULT_ENTRY_FUNCTION_NAME: &'static str = "main";
 
     /// The blocks hashmap initial capacity.
     pub const BLOCKS_HASHMAP_DEFAULT_CAPACITY: usize = 64;
@@ -45,14 +52,24 @@ impl EtherealIR {
     ///
     pub fn new(
         solc_version: semver::Version,
+        extra_metadata: ExtraMetadata,
         blocks: HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
     ) -> anyhow::Result<Self> {
-        let mut visited = HashSet::with_capacity(blocks.len());
-        let function = Function::new(solc_version.clone(), &blocks, &mut visited)?;
+        let mut entry_function = Function::new(solc_version.clone(), FunctionType::new_initial());
+        let mut recursive_functions = BTreeMap::new();
+        let mut visited_functions = BTreeSet::new();
+        entry_function.traverse(
+            &blocks,
+            &mut recursive_functions,
+            &extra_metadata,
+            &mut visited_functions,
+        )?;
 
         Ok(Self {
             solc_version,
-            function,
+            extra_metadata,
+            entry_function,
+            recursive_functions,
         })
     }
 
@@ -86,10 +103,14 @@ impl EtherealIR {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for EtherealIR
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        self.function.declare(context)?;
+        self.entry_function.declare(context)?;
+
+        for (_key, function) in self.recursive_functions.iter_mut() {
+            function.declare(context)?;
+        }
 
         Ok(())
     }
@@ -97,7 +118,11 @@ where
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         context.evmla_mut().stack = vec![];
 
-        self.function.into_llvm(context)?;
+        self.entry_function.into_llvm(context)?;
+
+        for (_key, function) in self.recursive_functions.into_iter() {
+            function.into_llvm(context)?;
+        }
 
         Ok(())
     }
@@ -105,7 +130,11 @@ where
 
 impl std::fmt::Display for EtherealIR {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", self.function)?;
+        writeln!(f, "{}", self.entry_function)?;
+
+        for (_key, function) in self.recursive_functions.iter() {
+            writeln!(f, "{}", function)?;
+        }
 
         Ok(())
     }

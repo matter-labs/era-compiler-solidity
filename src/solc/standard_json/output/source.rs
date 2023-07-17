@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
+use crate::solc::version::Version as SolcVersion;
 
 ///
 /// The `solc --standard-json` output source.
@@ -113,7 +114,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_origin(
+        Some(SolcStandardJsonOutputError::message_tx_origin(
             ast.get("src")?.as_str(),
         ))
     }
@@ -139,7 +140,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_origin(
+        Some(SolcStandardJsonOutputError::message_tx_origin(
             ast.get("src")?.as_str(),
         ))
     }
@@ -165,7 +166,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_timestamp(
+        Some(SolcStandardJsonOutputError::message_block_timestamp(
             ast.get("src")?.as_str(),
         ))
     }
@@ -191,7 +192,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_timestamp(
+        Some(SolcStandardJsonOutputError::message_block_timestamp(
             ast.get("src")?.as_str(),
         ))
     }
@@ -215,7 +216,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_number(
+        Some(SolcStandardJsonOutputError::message_block_number(
             ast.get("src")?.as_str(),
         ))
     }
@@ -241,7 +242,51 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_number(
+        Some(SolcStandardJsonOutputError::message_block_number(
+            ast.get("src")?.as_str(),
+        ))
+    }
+
+    ///
+    /// Checks the AST node for the `blockhash` assembly instruction usage.
+    ///
+    pub fn check_assembly_blockhash(
+        ast: &serde_json::Value,
+    ) -> Option<SolcStandardJsonOutputError> {
+        let ast = ast.as_object()?;
+
+        if ast.get("nodeType")?.as_str()? != "YulFunctionCall" {
+            return None;
+        }
+        if ast
+            .get("functionName")?
+            .as_object()?
+            .get("name")?
+            .as_str()?
+            != "blockhash"
+        {
+            return None;
+        }
+
+        Some(SolcStandardJsonOutputError::message_blockhash(
+            ast.get("src")?.as_str(),
+        ))
+    }
+
+    ///
+    /// Checks the AST node for the `blockhash` function usage.
+    ///
+    pub fn check_blockhash(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {
+        let ast = ast.as_object()?;
+
+        if ast.get("nodeType")?.as_str()? != "Identifier" {
+            return None;
+        }
+        if ast.get("name")?.as_str()? != "blockhash" {
+            return None;
+        }
+
+        Some(SolcStandardJsonOutputError::message_blockhash(
             ast.get("src")?.as_str(),
         ))
     }
@@ -262,7 +307,7 @@ impl Source {
         if !type_descriptions
             .get("typeIdentifier")?
             .as_str()?
-            .starts_with("t_function_internal")
+            .contains("function_internal")
         {
             return None;
         }
@@ -279,6 +324,7 @@ impl Source {
     ///
     pub fn get_messages(
         ast: &serde_json::Value,
+        version: &SolcVersion,
         pipeline: SolcPipeline,
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
@@ -309,7 +355,13 @@ impl Source {
         if let Some(message) = Self::check_block_number(ast) {
             messages.push(message);
         }
-        if let SolcPipeline::EVMLA = pipeline {
+        if let Some(message) = Self::check_assembly_blockhash(ast) {
+            messages.push(message);
+        }
+        if let Some(message) = Self::check_blockhash(ast) {
+            messages.push(message);
+        }
+        if SolcPipeline::EVMLA == pipeline && version.l2_revision.is_none() {
             if let Some(message) = Self::check_internal_function_pointer(ast) {
                 messages.push(message);
             }
@@ -318,12 +370,12 @@ impl Source {
         match ast {
             serde_json::Value::Array(array) => {
                 for element in array.iter() {
-                    messages.extend(Self::get_messages(element, pipeline));
+                    messages.extend(Self::get_messages(element, version, pipeline));
                 }
             }
             serde_json::Value::Object(object) => {
                 for (_key, value) in object.iter() {
-                    messages.extend(Self::get_messages(value, pipeline));
+                    messages.extend(Self::get_messages(value, version, pipeline));
                 }
             }
             _ => {}

@@ -9,6 +9,7 @@ use serde::Serialize;
 /// The `solc --standard-json` output contract EVM bytecode.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Bytecode {
     /// The bytecode object.
     pub object: String,

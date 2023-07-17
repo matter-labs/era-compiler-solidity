@@ -23,10 +23,12 @@ pub struct Block {
     pub solc_version: semver::Version,
     /// The block key.
     pub key: compiler_llvm_context::FunctionBlockKey,
+    /// The block instance.
+    pub instance: Option<usize>,
     /// The block elements relevant to the stack consistency.
     pub elements: Vec<Element>,
     /// The block predecessors.
-    pub predecessors: HashSet<compiler_llvm_context::FunctionBlockKey>,
+    pub predecessors: HashSet<(compiler_llvm_context::FunctionBlockKey, usize)>,
     /// The initial stack state.
     pub initial_stack: ElementStack,
     /// The stack.
@@ -68,6 +70,7 @@ impl Block {
         let mut block = Self {
             solc_version: solc_version.clone(),
             key: compiler_llvm_context::FunctionBlockKey::new(code_type, tag),
+            instance: None,
             elements: Vec::with_capacity(Self::ELEMENTS_VECTOR_DEFAULT_CAPACITY),
             predecessors: HashSet::with_capacity(Self::PREDECESSORS_HASHSET_DEFAULT_CAPACITY),
             initial_stack: ElementStack::new(),
@@ -103,14 +106,18 @@ impl Block {
     ///
     /// Inserts a predecessor tag.
     ///
-    pub fn insert_predecessor(&mut self, key: compiler_llvm_context::FunctionBlockKey) {
-        self.predecessors.insert(key);
+    pub fn insert_predecessor(
+        &mut self,
+        key: compiler_llvm_context::FunctionBlockKey,
+        instance: usize,
+    ) {
+        self.predecessors.insert((key, instance));
     }
 }
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Block
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         context.set_code_type(self.key.code_type);
@@ -125,10 +132,27 @@ where
 
 impl std::fmt::Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "block_{}/{}: {}",
+            self.key,
+            self.instance.unwrap_or_default(),
+            if self.predecessors.is_empty() {
+                "".to_owned()
+            } else {
+                format!(
+                    "(predecessors: {})",
+                    self.predecessors
+                        .iter()
+                        .map(|(key, instance)| format!("{}/{}", key, instance))
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                )
+            },
+        )?;
         for element in self.elements.iter() {
-            write!(f, "    {element}")?;
+            writeln!(f, "    {element}")?;
         }
-
         Ok(())
     }
 }

@@ -5,33 +5,34 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
-use std::sync::RwLock;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
+use serde::Deserialize;
+use serde::Serialize;
 use sha3::Digest;
 
+use crate::build::contract::Contract as ContractBuild;
 use crate::build::Build;
+use crate::process::input::Input as ProcessInput;
 use crate::project::contract::ir::IR;
-use crate::project::contract::state::State;
 use crate::solc::Compiler as SolcCompiler;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::statement::object::Object;
 
-use self::contract::state::State as ContractState;
 use self::contract::Contract;
 
 ///
 /// The processes input data.
 ///
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
     /// The source code version.
     pub version: semver::Version,
-    /// The contract data,
-    pub contract_states: BTreeMap<String, ContractState>,
+    /// The project contracts,
+    pub contracts: BTreeMap<String, Contract>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
     /// The library addresses.
@@ -54,172 +55,99 @@ impl Project {
 
         Self {
             version,
-            contract_states: contracts
-                .into_iter()
-                .map(|(path, contract)| (path, ContractState::Source(contract)))
-                .collect(),
+            contracts,
             identifier_paths,
             libraries,
         }
     }
 
     ///
-    /// Compiles the specified contract, setting its build artifacts.
-    ///
-    pub fn compile(
-        project: Arc<RwLock<Self>>,
-        contract_path: &str,
-        target_machine: compiler_llvm_context::TargetMachine,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
-        is_system_mode: bool,
-        include_metadata_hash: bool,
-        debug_config: Option<compiler_llvm_context::DebugConfig>,
-    ) {
-        let mut project_guard = project.write().expect("Sync");
-        match project_guard
-            .contract_states
-            .remove(contract_path)
-            .expect("Always exists")
-        {
-            ContractState::Source(contract) => {
-                let waiter = ContractState::waiter();
-                project_guard.contract_states.insert(
-                    contract_path.to_owned(),
-                    ContractState::Waiter(waiter.clone()),
-                );
-                std::mem::drop(project_guard);
-
-                match contract.compile(
-                    project.clone(),
-                    target_machine,
-                    optimizer_settings,
-                    is_system_mode,
-                    include_metadata_hash,
-                    debug_config,
-                ) {
-                    Ok(build) => {
-                        project
-                            .write()
-                            .expect("Sync")
-                            .contract_states
-                            .insert(contract_path.to_owned(), ContractState::Build(build));
-                        waiter.1.notify_all();
-                    }
-                    Err(error) => {
-                        project
-                            .write()
-                            .expect("Sync")
-                            .contract_states
-                            .insert(contract_path.to_owned(), ContractState::Error(error));
-                        waiter.1.notify_all();
-                    }
-                }
-            }
-            ContractState::Waiter(waiter) => {
-                project_guard.contract_states.insert(
-                    contract_path.to_owned(),
-                    ContractState::Waiter(waiter.clone()),
-                );
-                std::mem::drop(project_guard);
-
-                let _guard = waiter.1.wait(waiter.0.lock().expect("Sync"));
-            }
-            ContractState::Build(build) => {
-                project_guard
-                    .contract_states
-                    .insert(contract_path.to_owned(), ContractState::Build(build));
-            }
-            ContractState::Error(error) => {
-                project_guard
-                    .contract_states
-                    .insert(contract_path.to_owned(), ContractState::Error(error));
-            }
-        }
-    }
-
-    ///
     /// Compiles all contracts, returning their build artifacts.
     ///
-    #[allow(clippy::needless_collect)]
-    pub fn compile_all(
+    pub fn compile(
         self,
-        target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
+        bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Build> {
-        let project = Arc::new(RwLock::new(self));
-
-        let contract_paths: Vec<String> = project
-            .read()
-            .expect("Sync")
-            .contract_states
-            .keys()
-            .cloned()
-            .collect();
-        let _: Vec<()> = contract_paths
+        let project = self.clone();
+        let results: BTreeMap<String, anyhow::Result<ContractBuild>> = self
+            .contracts
             .into_par_iter()
-            .map(|contract_path| {
-                Self::compile(
+            .map(|(full_path, contract)| {
+                let process_output = crate::process::call(ProcessInput::new(
+                    contract,
                     project.clone(),
-                    contract_path.as_str(),
-                    target_machine.clone(),
-                    optimizer_settings.clone(),
                     is_system_mode,
                     include_metadata_hash,
+                    bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
+                    optimizer_settings.clone(),
                     debug_config.clone(),
-                );
+                ));
+
+                (full_path, process_output.map(|output| output.build))
             })
             .collect();
 
-        let project = Arc::try_unwrap(project)
-            .expect("No other references must exist at this point")
-            .into_inner()
-            .expect("Sync");
         let mut build = Build::default();
-        for (path, state) in project.contract_states.into_iter() {
-            match state {
-                State::Build(contract_build) => {
-                    build.contracts.insert(path, contract_build);
+        let mut hashes = HashMap::with_capacity(results.len());
+        for (path, result) in results.iter() {
+            match result {
+                Ok(contract) => {
+                    hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
                 }
-                State::Error(error) => return Err(error),
-                _ => panic!("Contract `{path}` must be built at this point"),
+                Err(error) => {
+                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                }
             }
         }
+        for (path, result) in results.into_iter() {
+            match result {
+                Ok(mut contract) => {
+                    for dependency in contract.factory_dependencies.drain() {
+                        let dependency_path = project
+                            .identifier_paths
+                            .get(dependency.as_str())
+                            .cloned()
+                            .unwrap_or_else(|| {
+                                panic!("Dependency `{dependency}` full path not found")
+                            });
+                        let hash = match hashes.get(dependency_path.as_str()) {
+                            Some(hash) => hash.to_owned(),
+                            None => anyhow::bail!(
+                                "Dependency contract `{}` not found in the project",
+                                dependency_path
+                            ),
+                        };
+                        contract
+                            .build
+                            .factory_dependencies
+                            .insert(hash, dependency_path);
+                    }
+
+                    build.contracts.insert(path, contract);
+                }
+                Err(error) => {
+                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                }
+            }
+        }
+
         Ok(build)
     }
 
     ///
     /// Parses the Yul source code file and returns the source data.
     ///
-    pub fn try_from_yul_path(path: &Path) -> anyhow::Result<Self> {
+    pub fn try_from_yul_path(
+        path: &Path,
+        solc_validator: Option<&SolcCompiler>,
+    ) -> anyhow::Result<Self> {
         let source_code = std::fs::read_to_string(path)
             .map_err(|error| anyhow::anyhow!("Yul file {:?} reading error: {}", path, error))?;
-        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-        let mut lexer = Lexer::new(source_code.clone());
-        let path = path.to_string_lossy().to_string();
-        let object = Object::parse(&mut lexer, None)
-            .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing error: {}", path, error,))?;
-
-        let mut project_contracts = BTreeMap::new();
-        project_contracts.insert(
-            path.clone(),
-            Contract::new(
-                path,
-                source_hash,
-                SolcCompiler::LAST_SUPPORTED_VERSION,
-                IR::new_yul(source_code, object),
-                None,
-            ),
-        );
-
-        Ok(Self::new(
-            SolcCompiler::LAST_SUPPORTED_VERSION,
-            project_contracts,
-            BTreeMap::new(),
-        ))
+        Self::try_from_yul_string(path, source_code.as_str(), solc_validator)
     }
 
     ///
@@ -227,7 +155,16 @@ impl Project {
     ///
     /// Only for integration testing purposes.
     ///
-    pub fn try_from_yul_string(path: &str, source_code: &str) -> anyhow::Result<Self> {
+    pub fn try_from_yul_string(
+        path: &Path,
+        source_code: &str,
+        solc_validator: Option<&SolcCompiler>,
+    ) -> anyhow::Result<Self> {
+        if let Some(solc) = solc_validator {
+            solc.validate_yul(path)?;
+        }
+
+        let path = path.to_string_lossy().to_string();
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
         let mut lexer = Lexer::new(source_code.to_owned());
@@ -238,7 +175,7 @@ impl Project {
         project_contracts.insert(
             path.to_owned(),
             Contract::new(
-                path.to_owned(),
+                path,
                 source_hash,
                 SolcCompiler::LAST_SUPPORTED_VERSION,
                 IR::new_yul(source_code.to_owned(), object),
@@ -313,71 +250,43 @@ impl Project {
     }
 }
 
-impl Clone for Project {
-    fn clone(&self) -> Self {
-        let states = self
-            .contract_states
-            .iter()
-            .map(|(path, state)| {
-                let state = match state {
-                    ContractState::Source(contract) => ContractState::Source(contract.clone()),
-                    _ => {
-                        panic!("The project cannot be cloned when the building has already started")
-                    }
-                };
-                (path.clone(), state)
-            })
-            .collect();
-
-        Self {
-            version: self.version.clone(),
-            contract_states: states,
-            identifier_paths: self.identifier_paths.clone(),
-            libraries: self.libraries.clone(),
-        }
-    }
-}
-
 impl compiler_llvm_context::Dependency for Project {
     fn compile(
-        project: Arc<RwLock<Self>>,
+        project: Self,
         identifier: &str,
-        target_machine: compiler_llvm_context::TargetMachine,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
-        let contract_path = project.read().expect("Lock").resolve_path(identifier)?;
-
-        Self::compile(
-            project.clone(),
-            contract_path.as_str(),
-            target_machine,
-            optimizer_settings,
-            is_system_mode,
-            include_metadata_hash,
-            debug_config,
-        );
-
-        match project
-            .read()
-            .expect("Lock")
-            .contract_states
+        let contract_path = project.resolve_path(identifier)?;
+        let contract = project
+            .contracts
             .get(contract_path.as_str())
-        {
-            Some(ContractState::Build(build)) => Ok(build.build.bytecode_hash.to_owned()),
-            Some(ContractState::Error(error)) => anyhow::bail!(
-                "Dependency contract `{}` compiling error: {}",
-                identifier,
-                error
-            ),
-            Some(_) => panic!("Dependency contract `{contract_path}` must be built at this point"),
-            None => anyhow::bail!(
-                "Dependency contract `{}` not found in the project",
-                contract_path
-            ),
-        }
+            .cloned()
+            .ok_or_else(|| {
+                anyhow::anyhow!(
+                    "Dependency contract `{}` not found in the project",
+                    contract_path
+                )
+            })?;
+
+        contract
+            .compile(
+                project,
+                optimizer_settings,
+                is_system_mode,
+                include_metadata_hash,
+                debug_config,
+            )
+            .map_err(|error| {
+                anyhow::anyhow!(
+                    "Dependency contract `{}` compiling error: {}",
+                    identifier,
+                    error
+                )
+            })
+            .map(|contract| contract.build.bytecode_hash)
     }
 
     fn resolve_path(&self, identifier: &str) -> anyhow::Result<String> {

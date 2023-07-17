@@ -5,6 +5,9 @@
 pub mod function_call;
 pub mod literal;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -20,7 +23,7 @@ use self::literal::Literal;
 ///
 /// The Yul expression statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum Expression {
     /// The function call subexpression.
     FunctionCall(FunctionCall),
@@ -95,7 +98,7 @@ impl Expression {
         context: &mut compiler_llvm_context::Context<'ctx, D>,
     ) -> anyhow::Result<Option<compiler_llvm_context::Argument<'ctx>>>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         match self {
             Self::Literal(literal) => literal

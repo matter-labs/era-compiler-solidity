@@ -116,6 +116,9 @@ impl Instruction {
 
             Name::EXTCODECOPY => 4,
 
+            Name::RecursiveCall { input_size, .. } => input_size,
+            Name::RecursiveReturn { input_size } => input_size,
+
             _ => 0,
         }
     }
@@ -261,6 +264,8 @@ impl Instruction {
             Name::BASEFEE => 1,
             Name::PC => 1,
 
+            Name::RecursiveCall { output_size, .. } => output_size,
+
             _ => 0,
         }
     }
@@ -277,22 +282,23 @@ impl Instruction {
                 Instruction {
                     name: Name::PUSH_ContractHash | Name::PUSH_ContractHashSize,
                     value: Some(value),
+                    ..
                 } => {
-                    *value = mapping
-                        .get(value.as_str())
-                        .cloned()
-                        .ok_or_else(|| anyhow::anyhow!("Alias `{}` data not found", value))?;
+                    *value = mapping.get(value.as_str()).cloned().ok_or_else(|| {
+                        anyhow::anyhow!("Contract alias `{}` data not found", value)
+                    })?;
                 }
                 Instruction {
                     name: Name::PUSH_Data,
                     value: Some(value),
+                    ..
                 } => {
                     let mut key_extended =
                         "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2 - value.len());
                     key_extended.push_str(value.as_str());
 
                     *value = mapping.get(key_extended.as_str()).cloned().ok_or_else(|| {
-                        anyhow::anyhow!("Alias `{}` data not found", key_extended)
+                        anyhow::anyhow!("Data chunk alias `{}` data not found", key_extended)
                     })?;
                 }
                 _ => {}
@@ -303,7 +309,7 @@ impl Instruction {
     }
 
     ///
-    /// Initializes an INVALID instruction to terminate an invalid unreachable block part.
+    /// Initializes an `INVALID` instruction to terminate an invalid unreachable block part.
     ///
     pub fn invalid() -> Self {
         Self {
@@ -311,18 +317,50 @@ impl Instruction {
             value: None,
         }
     }
+
+    ///
+    /// Initializes a recursive function `Call` instruction.
+    ///
+    pub fn recursive_call(
+        name: String,
+        input_size: usize,
+        output_size: usize,
+        return_address: compiler_llvm_context::FunctionBlockKey,
+    ) -> Self {
+        Self {
+            name: Name::RecursiveCall {
+                name,
+                input_size,
+                output_size,
+                return_address,
+            },
+            value: None,
+        }
+    }
+
+    ///
+    /// Initializes a recursive function `Return` instruction.
+    ///
+    pub fn recursive_return(input_size: usize) -> Self {
+        Self {
+            name: Name::RecursiveReturn { input_size },
+            value: None,
+        }
+    }
 }
 
 impl std::fmt::Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:16}{:64}",
-            self.name,
-            match self.value {
-                Some(ref value) => value.as_str(),
-                None => "",
-            }
-        )
+        let name = self.name.to_string();
+        match self.name {
+            Name::Tag => write!(f, "{:4}", name),
+            _ => write!(f, "{:15}", name),
+        }?;
+        match self.value {
+            Some(ref value) if value.len() <= 64 => write!(f, "{}", value)?,
+            Some(ref value) => write!(f, "... {}", &value[value.len() - 60..])?,
+            None => {}
+        }
+        Ok(())
     }
 }

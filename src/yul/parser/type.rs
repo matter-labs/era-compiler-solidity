@@ -2,6 +2,9 @@
 //! The YUL source code type.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -14,7 +17,7 @@ use crate::yul::parser::error::Error as ParserError;
 ///
 /// The type is not currently in use, so all values have the `uint256` type by default.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum Type {
     /// The `bool` type.
     Bool,
@@ -73,7 +76,7 @@ impl Type {
         context: &compiler_llvm_context::Context<'ctx, D>,
     ) -> inkwell::types::IntType<'ctx>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         match self {
             Self::Bool => context.integer_type(compiler_common::BIT_LENGTH_BOOLEAN),

@@ -12,7 +12,7 @@ pub fn push<'ctx, D>(
     value: String,
 ) -> anyhow::Result<inkwell::values::BasicValueEnum<'ctx>>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let result = context
         .field_type()
@@ -33,7 +33,7 @@ pub fn push_tag<'ctx, D>(
     value: String,
 ) -> anyhow::Result<inkwell::values::BasicValueEnum<'ctx>>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let result = context
         .field_type()
@@ -52,7 +52,7 @@ pub fn dup<'ctx, D>(
     original: &mut Option<String>,
 ) -> anyhow::Result<inkwell::values::BasicValueEnum<'ctx>>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let element = &context.evmla().stack[height - offset - 1];
     let value = context.build_load(
@@ -77,7 +77,7 @@ pub fn swap<D>(
     height: usize,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let top_element = context.evmla().stack[height - 1].to_owned();
     let top_pointer = compiler_llvm_context::Pointer::new_stack_field(
@@ -107,7 +107,7 @@ where
 ///
 pub fn pop<D>(_context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     Ok(())
 }

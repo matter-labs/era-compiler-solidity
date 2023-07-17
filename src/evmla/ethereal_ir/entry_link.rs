@@ -28,7 +28,7 @@ impl EntryLink {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for EntryLink
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let target = context

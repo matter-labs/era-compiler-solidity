@@ -2,10 +2,13 @@
 //! The lexical token location.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 ///
 /// The token location in the source code file.
 ///
-#[derive(Debug, Clone, Copy, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq)]
 pub struct Location {
     /// The line number, starting from 1.
     pub line: usize,

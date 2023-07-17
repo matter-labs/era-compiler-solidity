@@ -13,6 +13,7 @@ use serde::Serialize;
 
 use crate::evmla::ethereal_ir::entry_link::EntryLink;
 use crate::evmla::ethereal_ir::EtherealIR;
+use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::data::Data;
 use self::instruction::name::Name as InstructionName;
@@ -21,7 +22,7 @@ use self::instruction::Instruction;
 ///
 /// The JSON assembly.
 ///
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Assembly {
     /// The metadata string.
     #[serde(rename = ".auxdata")]
@@ -34,11 +35,14 @@ pub struct Assembly {
     pub data: Option<BTreeMap<String, Data>>,
 
     /// The full contract path.
-    #[serde(skip)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub full_path: Option<String>,
     /// The factory dependency paths.
-    #[serde(skip)]
+    #[serde(default = "HashSet::new")]
     pub factory_dependencies: HashSet<String>,
+    /// The EVMLA extra metadata.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extra_metadata: Option<ExtraMetadata>,
 }
 
 impl Assembly {
@@ -176,7 +180,7 @@ impl Assembly {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Assembly
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let mut entry = compiler_llvm_context::EntryFunction::default();
@@ -202,7 +206,7 @@ where
         Ok(())
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
 
         if let Some(debug_config) = context.debug_config() {
@@ -241,9 +245,11 @@ where
             runtime_code_instructions.as_slice(),
         )?;
 
+        let extra_metadata = self.extra_metadata.take().unwrap_or_default();
         let mut blocks = deploy_code_blocks;
         blocks.extend(runtime_code_blocks);
-        let mut ethereal_ir = EtherealIR::new(context.evmla().version.to_owned(), blocks)?;
+        let mut ethereal_ir =
+            EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
         if let Some(debug_config) = context.debug_config() {
             debug_config.dump_ethir(full_path.as_str(), ethereal_ir.to_string().as_str())?;
         }

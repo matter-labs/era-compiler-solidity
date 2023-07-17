@@ -4,6 +4,9 @@
 
 pub mod case;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -19,7 +22,7 @@ use self::case::Case;
 ///
 /// The Yul switch statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Switch {
     /// The location.
     pub location: Location,
@@ -111,7 +114,7 @@ impl Switch {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Switch
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let scrutinee = self.expression.into_llvm(context)?;

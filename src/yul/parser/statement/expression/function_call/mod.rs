@@ -7,6 +7,8 @@ pub mod verbatim;
 
 use inkwell::values::BasicValue;
 use num::ToPrimitive;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -22,7 +24,7 @@ use self::name::Name;
 ///
 /// The Yul function call subexpression.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct FunctionCall {
     /// The location.
     pub location: Location,
@@ -101,7 +103,7 @@ impl FunctionCall {
         context: &mut compiler_llvm_context::Context<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         let location = self.location;
 
@@ -862,7 +864,8 @@ impl FunctionCall {
                     anyhow::anyhow!("{} `dataoffset` object identifier is missing", location)
                 })?;
 
-                compiler_llvm_context::create::contract_hash(context, identifier).map(Some)
+                compiler_llvm_context::create::contract_hash(context, identifier)
+                    .map(|argument| Some(argument.value))
             }
             Name::DataSize => {
                 let mut arguments = self.pop_arguments::<D, 1>(context)?;
@@ -871,7 +874,8 @@ impl FunctionCall {
                     anyhow::anyhow!("{} `dataoffset` object identifier is missing", location)
                 })?;
 
-                compiler_llvm_context::create::header_size(context, identifier).map(Some)
+                compiler_llvm_context::create::header_size(context, identifier)
+                    .map(|argument| Some(argument.value))
             }
             Name::DataCopy => {
                 let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
@@ -1397,7 +1401,7 @@ impl FunctionCall {
         context: &mut compiler_llvm_context::Context<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {
@@ -1416,7 +1420,7 @@ impl FunctionCall {
         context: &mut compiler_llvm_context::Context<'ctx, D>,
     ) -> anyhow::Result<[compiler_llvm_context::Argument<'ctx>; N]>
     where
-        D: compiler_llvm_context::Dependency,
+        D: compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {

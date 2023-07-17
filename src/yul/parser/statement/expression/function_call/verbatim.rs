@@ -14,15 +14,8 @@ pub fn verbatim<'ctx, D>(
     output_size: usize,
 ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
-    if !context.is_system_mode() {
-        anyhow::bail!(
-            "{} Verbatim instructions are only allowed in the system mode",
-            call.location
-        );
-    }
-
     if output_size > 1 {
         anyhow::bail!(
             "{} Verbatim instructions with multiple return values are not supported",

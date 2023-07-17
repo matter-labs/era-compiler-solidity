@@ -2,9 +2,13 @@
 //! The Solidity contract build.
 //!
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
@@ -12,7 +16,7 @@ use crate::solc::standard_json::output::contract::Contract as StandardJsonOutput
 ///
 /// The Solidity contract build.
 ///
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Contract {
     /// The contract path.
     pub path: String,
@@ -20,8 +24,10 @@ pub struct Contract {
     pub identifier: String,
     /// The LLVM module build.
     pub build: compiler_llvm_context::Build,
-    /// The metadata.
-    pub metadata: serde_json::Value,
+    /// The metadata JSON.
+    pub metadata_json: serde_json::Value,
+    /// The factory dependencies.
+    pub factory_dependencies: HashSet<String>,
 }
 
 impl Contract {
@@ -32,13 +38,15 @@ impl Contract {
         path: String,
         identifier: String,
         build: compiler_llvm_context::Build,
-        metadata: serde_json::Value,
+        metadata_json: serde_json::Value,
+        factory_dependencies: HashSet<String>,
     ) -> Self {
         Self {
             path,
             identifier,
             build,
-            metadata,
+            metadata_json,
+            factory_dependencies,
         }
     }
 
@@ -111,7 +119,7 @@ impl Contract {
         combined_json_contract: &mut CombinedJsonContract,
     ) -> anyhow::Result<()> {
         if let Some(metadata) = combined_json_contract.metadata.as_mut() {
-            *metadata = self.metadata.to_string();
+            *metadata = self.metadata_json.to_string();
         }
 
         if let Some(asm) = combined_json_contract.asm.as_mut() {
@@ -148,7 +156,7 @@ impl Contract {
         self,
         standard_json_contract: &mut StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
-        standard_json_contract.metadata = Some(self.metadata);
+        standard_json_contract.metadata = Some(self.metadata_json);
 
         let assembly_text = self.build.assembly_text;
         let bytecode = hex::encode(self.build.bytecode.as_slice());

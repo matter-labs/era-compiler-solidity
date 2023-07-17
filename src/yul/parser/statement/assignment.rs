@@ -2,6 +2,10 @@
 //! The assignment expression statement.
 //!
 
+use inkwell::types::BasicType;
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -11,12 +15,11 @@ use crate::yul::lexer::Lexer;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::identifier::Identifier;
 use crate::yul::parser::statement::expression::Expression;
-use inkwell::types::BasicType;
 
 ///
 /// The Yul assignment expression statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Assignment {
     /// The location.
     pub location: Location,
@@ -105,7 +108,7 @@ impl Assignment {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Assignment
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         let value = match self.initializer.into_llvm(context)? {

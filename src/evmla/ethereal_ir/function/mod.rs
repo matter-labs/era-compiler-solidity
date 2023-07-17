@@ -4,15 +4,16 @@
 
 pub mod block;
 pub mod queue_element;
+pub mod r#type;
 pub mod visited_element;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::collections::HashSet;
-use std::ops::BitAnd;
 
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
+use num::CheckedAdd;
 use num::CheckedDiv;
 use num::CheckedMul;
 use num::CheckedSub;
@@ -20,18 +21,20 @@ use num::Num;
 use num::One;
 use num::ToPrimitive;
 use num::Zero;
-use num::{BigUint, CheckedAdd};
 
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::ethereal_ir::function::block::element::stack::element::Element;
 use crate::evmla::ethereal_ir::function::block::element::stack::Stack;
 use crate::evmla::ethereal_ir::EtherealIR;
+use crate::solc::standard_json::output::contract::evm::extra_metadata::recursive_function::RecursiveFunction;
+use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::block::element::stack::element::Element as StackElement;
 use self::block::element::Element as BlockElement;
 use self::block::Block;
 use self::queue_element::QueueElement;
+use self::r#type::Type;
 use self::visited_element::VisitedElement;
 
 ///
@@ -41,8 +44,12 @@ use self::visited_element::VisitedElement;
 pub struct Function {
     /// The Solidity compiler version.
     pub solc_version: semver::Version,
+    /// The function name.
+    pub name: String,
     /// The separately labelled blocks.
     pub blocks: BTreeMap<compiler_llvm_context::FunctionBlockKey, Vec<Block>>,
+    /// The function type.
+    pub r#type: Type,
     /// The function stack size.
     pub stack_size: usize,
 }
@@ -51,41 +58,85 @@ impl Function {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(
-        solc_version: semver::Version,
-        blocks: &HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
-        visited: &mut HashSet<VisitedElement>,
-    ) -> anyhow::Result<Self> {
-        let mut function = Self {
-            solc_version,
-            blocks: BTreeMap::new(),
-            stack_size: 0,
+    pub fn new(solc_version: semver::Version, r#type: Type) -> Self {
+        let name = match r#type {
+            Type::Initial => EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME.to_string(),
+            Type::Recursive { ref name, .. } => name.to_owned(),
         };
-        function.consume_block(
-            blocks,
-            visited,
-            QueueElement::new(
-                compiler_llvm_context::FunctionBlockKey::new(
+
+        Self {
+            solc_version,
+            name,
+            blocks: BTreeMap::new(),
+            r#type,
+            stack_size: 0,
+        }
+    }
+
+    ///
+    /// Runs the function block traversal.
+    ///
+    pub fn traverse(
+        &mut self,
+        blocks: &HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
+        functions: &mut BTreeMap<compiler_llvm_context::FunctionBlockKey, Self>,
+        extra_metadata: &ExtraMetadata,
+        visited_functions: &mut BTreeSet<VisitedElement>,
+    ) -> anyhow::Result<()> {
+        let mut visited_blocks = BTreeSet::new();
+
+        match self.r#type {
+            Type::Initial => {
+                for code_type in [
                     compiler_llvm_context::CodeType::Deploy,
-                    num::BigUint::zero(),
-                ),
-                None,
-                Stack::new(),
-            ),
-        )?;
-        function.consume_block(
-            blocks,
-            visited,
-            QueueElement::new(
-                compiler_llvm_context::FunctionBlockKey::new(
                     compiler_llvm_context::CodeType::Runtime,
-                    num::BigUint::zero(),
-                ),
-                None,
-                Stack::new(),
-            ),
-        )?;
-        Ok(function.finalize())
+                ] {
+                    self.consume_block(
+                        blocks,
+                        functions,
+                        extra_metadata,
+                        visited_functions,
+                        &mut visited_blocks,
+                        QueueElement::new(
+                            compiler_llvm_context::FunctionBlockKey::new(
+                                code_type,
+                                num::BigUint::zero(),
+                            ),
+                            None,
+                            Stack::new(),
+                        ),
+                    )?;
+                }
+            }
+            Type::Recursive {
+                ref block_key,
+                input_size,
+                output_size,
+                ..
+            } => {
+                let mut stack = Stack::with_capacity(1 + input_size);
+                stack.push(Element::ReturnAddress(output_size));
+                stack.append(&mut Stack::new_with_elements(vec![
+                    Element::value(
+                        "ARGUMENT".to_owned()
+                    );
+                    input_size
+                ]));
+
+                self.consume_block(
+                    blocks,
+                    functions,
+                    extra_metadata,
+                    visited_functions,
+                    &mut visited_blocks,
+                    QueueElement::new(block_key.to_owned(), None, stack),
+                )?;
+            }
+        }
+
+        self.finalize();
+
+        Ok(())
     }
 
     ///
@@ -94,19 +145,15 @@ impl Function {
     fn consume_block(
         &mut self,
         blocks: &HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
-        visited: &mut HashSet<VisitedElement>,
+        functions: &mut BTreeMap<compiler_llvm_context::FunctionBlockKey, Self>,
+        extra_metadata: &ExtraMetadata,
+        visited_functions: &mut BTreeSet<VisitedElement>,
+        visited_blocks: &mut BTreeSet<VisitedElement>,
         mut queue_element: QueueElement,
     ) -> anyhow::Result<()> {
         let version = self.solc_version.to_owned();
 
         let mut queue = vec![];
-
-        let visited_element =
-            VisitedElement::new(queue_element.block_key.clone(), queue_element.stack.hash());
-        if visited.contains(&visited_element) {
-            return Ok(());
-        }
-        visited.insert(visited_element);
 
         let mut block = blocks
             .get(&queue_element.block_key)
@@ -118,15 +165,27 @@ impl Function {
         let block = self.insert_block(block);
         block.stack = block.initial_stack.clone();
         if let Some(predecessor) = queue_element.predecessor.take() {
-            block.insert_predecessor(predecessor);
+            block.insert_predecessor(predecessor.0, predecessor.1);
         }
+
+        let visited_element =
+            VisitedElement::new(queue_element.block_key.clone(), queue_element.stack.hash());
+        if visited_blocks.contains(&visited_element) {
+            return Ok(());
+        }
+        visited_blocks.insert(visited_element);
 
         let mut block_size = 0;
         for block_element in block.elements.iter_mut() {
             block_size += 1;
 
             if Self::handle_instruction(
+                blocks,
+                functions,
+                extra_metadata,
+                visited_functions,
                 block.key.code_type,
+                block.instance.unwrap_or_default(),
                 &mut block.stack,
                 block_element,
                 &version,
@@ -135,15 +194,22 @@ impl Function {
             )
             .is_err()
             {
-                block_element.stack = block.stack.clone();
                 block_element.instruction = Instruction::invalid();
+                block_element.stack = block.stack.clone();
                 break;
             }
         }
         block.elements.truncate(block_size);
 
         for element in queue.into_iter() {
-            self.consume_block(blocks, visited, element)?;
+            self.consume_block(
+                blocks,
+                functions,
+                extra_metadata,
+                visited_functions,
+                visited_blocks,
+                element,
+            )?;
         }
 
         Ok(())
@@ -155,85 +221,176 @@ impl Function {
     /// The blocks with an invalid stack state are considered being partially unreachable, and
     /// the invalid part is truncated after terminating with an `INVALID` instruction.
     ///
+    #[allow(clippy::too_many_arguments)]
     fn handle_instruction(
+        blocks: &HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
+        functions: &mut BTreeMap<compiler_llvm_context::FunctionBlockKey, Self>,
+        extra_metadata: &ExtraMetadata,
+        visited_functions: &mut BTreeSet<VisitedElement>,
         code_type: compiler_llvm_context::CodeType,
+        instance: usize,
         block_stack: &mut Stack,
         block_element: &mut BlockElement,
         version: &semver::Version,
         queue: &mut Vec<QueueElement>,
         queue_element: &mut QueueElement,
     ) -> anyhow::Result<()> {
-        match block_element.instruction {
+        let (stack_output, queue_element) = match block_element.instruction {
             Instruction {
                 name: InstructionName::PUSH_Tag,
                 value: Some(ref tag),
+                ..
             } => {
                 let tag: num::BigUint = tag.parse().expect("Always valid");
-                block_stack.push(Element::Tag(tag.bitand(num::BigUint::from(u64::MAX))));
-
-                block_element.stack = block_stack.clone();
+                (vec![Element::Tag(tag & num::BigUint::from(u64::MAX))], None)
             }
-            Instruction {
+            ref instruction @ Instruction {
                 name: InstructionName::JUMP,
                 ..
             } => {
-                queue_element.predecessor = Some(queue_element.block_key.clone());
+                queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
 
-                block_element.stack = block_stack.clone();
-                let destination = block_stack.pop_tag()?;
-                let block_key = if destination > num::BigUint::from(u32::MAX) {
-                    compiler_llvm_context::FunctionBlockKey::new(
-                        compiler_llvm_context::CodeType::Runtime,
-                        destination - num::BigUint::from(1u64 << 32),
-                    )
-                } else {
-                    compiler_llvm_context::FunctionBlockKey::new(code_type, destination)
+                let block_key = match block_stack.elements.last().expect("Always exists") {
+                    Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
+                        compiler_llvm_context::FunctionBlockKey::new(
+                            compiler_llvm_context::CodeType::Runtime,
+                            destination.to_owned() - num::BigUint::from(1u64 << 32),
+                        )
+                    }
+                    Element::Tag(destination) => compiler_llvm_context::FunctionBlockKey::new(
+                        code_type,
+                        destination.to_owned(),
+                    ),
+                    Element::ReturnAddress(output_size) => {
+                        block_element.instruction = Instruction::recursive_return(1 + output_size);
+                        Self::update_io_data(block_stack, block_element, 1 + output_size, vec![])?;
+                        return Ok(());
+                    }
+                    element => {
+                        return Err(anyhow::anyhow!(
+                            "The {} instruction expected a tag or return address, found {}",
+                            instruction.name,
+                            element
+                        ));
+                    }
                 };
-                queue.push(QueueElement::new(
-                    block_key,
-                    queue_element.predecessor.clone(),
-                    block_stack.to_owned(),
-                ));
+
+                let (next_block_key, stack_output) =
+                    if let Some(recursive_function) = extra_metadata.get(&block_key) {
+                        Self::handle_recursive_function_call(
+                            recursive_function,
+                            blocks,
+                            functions,
+                            extra_metadata,
+                            visited_functions,
+                            block_key,
+                            block_stack,
+                            block_element,
+                            version,
+                        )?
+                    } else {
+                        (block_key, vec![])
+                    };
+
+                (
+                    stack_output,
+                    Some(QueueElement::new(
+                        next_block_key,
+                        queue_element.predecessor.clone(),
+                        Stack::new(),
+                    )),
+                )
             }
-            Instruction {
+            ref instruction @ Instruction {
                 name: InstructionName::JUMPI,
                 ..
             } => {
-                queue_element.predecessor = Some(queue_element.block_key.clone());
+                queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
 
-                block_element.stack = block_stack.clone();
-                let destination = block_stack.pop_tag()?;
-                let block_key = if destination > num::BigUint::from(u32::MAX) {
-                    compiler_llvm_context::FunctionBlockKey::new(
-                        compiler_llvm_context::CodeType::Runtime,
-                        destination - num::BigUint::from(1u64 << 32),
-                    )
-                } else {
-                    compiler_llvm_context::FunctionBlockKey::new(code_type, destination)
+                let block_key = match block_stack.elements.last().expect("Always exists") {
+                    Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
+                        compiler_llvm_context::FunctionBlockKey::new(
+                            compiler_llvm_context::CodeType::Runtime,
+                            destination.to_owned() - num::BigUint::from(1u64 << 32),
+                        )
+                    }
+                    Element::Tag(destination) => compiler_llvm_context::FunctionBlockKey::new(
+                        code_type,
+                        destination.to_owned(),
+                    ),
+                    element => {
+                        return Err(anyhow::anyhow!(
+                            "The {} instruction expected a tag or return address, found {}",
+                            instruction.name,
+                            element
+                        ));
+                    }
                 };
-                block_stack.pop()?;
-                queue.push(QueueElement::new(
-                    block_key,
-                    queue_element.predecessor.clone(),
-                    block_stack.to_owned(),
-                ));
+
+                let (next_block_key, stack_output) =
+                    if let Some(recursive_function) = extra_metadata.get(&block_key) {
+                        // TODO: check and fix
+                        Self::handle_recursive_function_call(
+                            recursive_function,
+                            blocks,
+                            functions,
+                            extra_metadata,
+                            visited_functions,
+                            block_key,
+                            block_stack,
+                            block_element,
+                            version,
+                        )?
+                    } else {
+                        (block_key, vec![])
+                    };
+
+                (
+                    stack_output,
+                    Some(QueueElement::new(
+                        next_block_key,
+                        queue_element.predecessor.clone(),
+                        Stack::new(),
+                    )),
+                )
             }
             Instruction {
                 name: InstructionName::Tag,
                 value: Some(ref tag),
+                ..
             } => {
-                block_element.stack = block_stack.clone();
-
                 let tag: num::BigUint = tag.parse().expect("Always valid");
                 let block_key = compiler_llvm_context::FunctionBlockKey::new(code_type, tag);
 
-                queue_element.predecessor = Some(queue_element.block_key.clone());
+                queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
                 queue_element.block_key = block_key.clone();
-                queue.push(QueueElement::new(
-                    block_key,
-                    queue_element.predecessor.clone(),
-                    block_stack.to_owned(),
-                ));
+
+                let (next_block_key, stack_output) =
+                    if let Some(recursive_function) = extra_metadata.get(&block_key) {
+                        // TODO: check and fix
+                        Self::handle_recursive_function_call(
+                            recursive_function,
+                            blocks,
+                            functions,
+                            extra_metadata,
+                            visited_functions,
+                            block_key,
+                            block_stack,
+                            block_element,
+                            version,
+                        )?
+                    } else {
+                        (block_key, vec![])
+                    };
+
+                (
+                    stack_output,
+                    Some(QueueElement::new(
+                        next_block_key,
+                        queue_element.predecessor.clone(),
+                        Stack::new(),
+                    )),
+                )
             }
 
             Instruction {
@@ -241,233 +398,182 @@ impl Function {
                 ..
             } => {
                 block_stack.swap(1)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP2,
                 ..
             } => {
                 block_stack.swap(2)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP3,
                 ..
             } => {
                 block_stack.swap(3)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP4,
                 ..
             } => {
                 block_stack.swap(4)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP5,
                 ..
             } => {
                 block_stack.swap(5)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP6,
                 ..
             } => {
                 block_stack.swap(6)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP7,
                 ..
             } => {
                 block_stack.swap(7)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP8,
                 ..
             } => {
                 block_stack.swap(8)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP9,
                 ..
             } => {
                 block_stack.swap(9)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP10,
                 ..
             } => {
                 block_stack.swap(10)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP11,
                 ..
             } => {
                 block_stack.swap(11)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP12,
                 ..
             } => {
                 block_stack.swap(12)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP13,
                 ..
             } => {
                 block_stack.swap(13)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP14,
                 ..
             } => {
                 block_stack.swap(14)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP15,
                 ..
             } => {
                 block_stack.swap(15)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
             Instruction {
                 name: InstructionName::SWAP16,
                 ..
             } => {
                 block_stack.swap(16)?;
-                block_element.stack = block_stack.clone();
+                (vec![], None)
             }
 
             Instruction {
                 name: InstructionName::DUP1,
                 ..
-            } => {
-                block_stack.dup(1)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(1)?], None),
             Instruction {
                 name: InstructionName::DUP2,
                 ..
-            } => {
-                block_stack.dup(2)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(2)?], None),
             Instruction {
                 name: InstructionName::DUP3,
                 ..
-            } => {
-                block_stack.dup(3)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(3)?], None),
             Instruction {
                 name: InstructionName::DUP4,
                 ..
-            } => {
-                block_stack.dup(4)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(4)?], None),
             Instruction {
                 name: InstructionName::DUP5,
                 ..
-            } => {
-                block_stack.dup(5)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(5)?], None),
             Instruction {
                 name: InstructionName::DUP6,
                 ..
-            } => {
-                block_stack.dup(6)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(6)?], None),
             Instruction {
                 name: InstructionName::DUP7,
                 ..
-            } => {
-                block_stack.dup(7)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(7)?], None),
             Instruction {
                 name: InstructionName::DUP8,
                 ..
-            } => {
-                block_stack.dup(8)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(8)?], None),
             Instruction {
                 name: InstructionName::DUP9,
                 ..
-            } => {
-                block_stack.dup(9)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(9)?], None),
             Instruction {
                 name: InstructionName::DUP10,
                 ..
-            } => {
-                block_stack.dup(10)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(10)?], None),
             Instruction {
                 name: InstructionName::DUP11,
                 ..
-            } => {
-                block_stack.dup(11)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(11)?], None),
             Instruction {
                 name: InstructionName::DUP12,
                 ..
-            } => {
-                block_stack.dup(12)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(12)?], None),
             Instruction {
                 name: InstructionName::DUP13,
                 ..
-            } => {
-                block_stack.dup(13)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(13)?], None),
             Instruction {
                 name: InstructionName::DUP14,
                 ..
-            } => {
-                block_stack.dup(14)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(14)?], None),
             Instruction {
                 name: InstructionName::DUP15,
                 ..
-            } => {
-                block_stack.dup(15)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(15)?], None),
             Instruction {
                 name: InstructionName::DUP16,
                 ..
-            } => {
-                block_stack.dup(16)?;
-                block_element.stack = block_stack.clone();
-            }
+            } => (vec![block_stack.dup(16)?], None),
 
             Instruction {
                 name:
                     InstructionName::PUSH
-                    | InstructionName::PUSH_Data
-                    | InstructionName::PUSH_ContractHash
-                    | InstructionName::PUSH_ContractHashSize
                     | InstructionName::PUSH1
                     | InstructionName::PUSH2
                     | InstructionName::PUSH3
@@ -499,458 +605,469 @@ impl Function {
                     | InstructionName::PUSH29
                     | InstructionName::PUSH30
                     | InstructionName::PUSH31
-                    | InstructionName::PUSH32
-                    | InstructionName::PUSHLIB
-                    | InstructionName::PUSHDEPLOYADDRESS,
+                    | InstructionName::PUSH32,
                 value: Some(ref constant),
-            } => {
-                let element = match num::BigUint::from_str_radix(
+                ..
+            } => (
+                vec![num::BigUint::from_str_radix(
                     constant.as_str(),
                     compiler_common::BASE_HEXADECIMAL,
-                ) {
-                    Ok(value) => StackElement::Constant(value),
-                    Err(_error) => StackElement::Path(constant.to_owned()),
-                };
-                block_stack.push(element);
-                block_element.stack = block_stack.clone();
-            }
+                )
+                .map(StackElement::Constant)?],
+                None,
+            ),
+            Instruction {
+                name:
+                    InstructionName::PUSH_ContractHash
+                    | InstructionName::PUSH_ContractHashSize
+                    | InstructionName::PUSHLIB,
+                value: Some(ref path),
+                ..
+            } => (vec![StackElement::Path(path.to_owned())], None),
+            Instruction {
+                name: InstructionName::PUSH_Data,
+                value: Some(ref data),
+                ..
+            } => (vec![StackElement::Data(data.to_owned())], None),
+            ref instruction @ Instruction {
+                name: InstructionName::PUSHDEPLOYADDRESS,
+                ..
+            } => (
+                vec![StackElement::value(instruction.name.to_string())],
+                None,
+            ),
 
             ref instruction @ Instruction {
                 name: InstructionName::ADD,
                 ..
             } => {
-                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_1 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         match operand_1.checked_add(operand_2) {
                             Some(result) => Element::Tag(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         match operand_1.checked_add(operand_2) {
                             Some(result) => Element::Constant(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::SUB,
                 ..
             } => {
-                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_1 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         match operand_1.checked_sub(operand_2) {
                             Some(result) => Element::Tag(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         match operand_1.checked_sub(operand_2) {
                             Some(result) => Element::Constant(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::MUL,
                 ..
             } => {
-                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_1 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         match operand_1.checked_mul(operand_2) {
                             Some(result) => Element::Tag(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         match operand_1.checked_mul(operand_2) {
                             Some(result) => Element::Constant(result),
-                            None => Element::Value,
+                            None => Element::value(instruction.name.to_string()),
                         }
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::DIV,
                 ..
             } => {
-                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_1 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         if operand_2.is_zero() {
-                            Element::Tag(BigUint::zero())
+                            Element::Tag(num::BigUint::zero())
                         } else {
                             match operand_1.checked_div(operand_2) {
                                 Some(result) => Element::Tag(result),
-                                None => Element::Value,
+                                None => Element::value(instruction.name.to_string()),
                             }
                         }
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         if operand_2.is_zero() {
-                            Element::Constant(BigUint::zero())
+                            Element::Constant(num::BigUint::zero())
                         } else {
                             match operand_1.checked_div(operand_2) {
                                 Some(result) => Element::Constant(result),
-                                None => Element::Value,
+                                None => Element::value(instruction.name.to_string()),
                             }
                         }
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::MOD,
                 ..
             } => {
-                let operand_2 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_1 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         if operand_2.is_zero() {
-                            Element::Tag(BigUint::zero())
+                            Element::Tag(num::BigUint::zero())
                         } else {
                             Element::Tag(operand_1 % operand_2)
                         }
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         if operand_2.is_zero() {
-                            Element::Constant(BigUint::zero())
+                            Element::Constant(num::BigUint::zero())
                         } else {
                             Element::Constant(operand_1 % operand_2)
                         }
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::SHL,
                 ..
             } => {
-                let value = block_stack.elements.get(block_stack.elements.len() - 2);
-                let offset = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (value, offset) {
-                    (Some(Element::Tag(tag)), Some(Element::Constant(offset))) => {
+                let result = match (&operands[0], &operands[1]) {
+                    (Element::Tag(tag), Element::Constant(offset)) => {
+                        let offset = offset % compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         Element::Tag(tag << offset)
                     }
-                    (Some(Element::Constant(constant)), Some(Element::Constant(offset))) => {
+                    (Element::Constant(constant), Element::Constant(offset)) => {
+                        let offset = offset % compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         Element::Constant(constant << offset)
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::SHR,
                 ..
             } => {
-                let value = block_stack.elements.get(block_stack.elements.len() - 2);
-                let offset = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (value, offset) {
-                    (Some(Element::Tag(tag)), Some(Element::Constant(offset))) => {
+                let result = match (&operands[0], &operands[1]) {
+                    (Element::Tag(tag), Element::Constant(offset)) => {
+                        let offset = offset % compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         Element::Tag(tag >> offset)
                     }
-                    (Some(Element::Constant(constant)), Some(Element::Constant(offset))) => {
+                    (Element::Constant(constant), Element::Constant(offset)) => {
+                        let offset = offset % compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         Element::Constant(constant >> offset)
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::OR,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2)) => {
                         Element::Tag(operand_1 | operand_2)
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         Element::Constant(operand_1 | operand_2)
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::XOR,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2)) => {
                         Element::Tag(operand_1 ^ operand_2)
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         Element::Constant(operand_1 ^ operand_2)
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::AND,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2)))
-                    | (Some(Element::Tag(operand_1)), Some(Element::Constant(operand_2)))
-                    | (Some(Element::Constant(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2))
+                    | (Element::Tag(operand_1), Element::Constant(operand_2))
+                    | (Element::Constant(operand_1), Element::Tag(operand_2)) => {
                         Element::Tag(operand_1 & operand_2)
                     }
-                    (Some(Element::Constant(operand_1)), Some(Element::Constant(operand_2))) => {
+                    (Element::Constant(operand_1), Element::Constant(operand_2)) => {
                         Element::Constant(operand_1 & operand_2)
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
 
             ref instruction @ Instruction {
                 name: InstructionName::LT,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         Element::Constant(num::BigUint::from(u64::from(operand_1 < operand_2)))
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::GT,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         Element::Constant(num::BigUint::from(u64::from(operand_1 > operand_2)))
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::EQ,
                 ..
             } => {
-                let operand_1 = block_stack.elements.get(block_stack.elements.len() - 2);
-                let operand_2 = block_stack.elements.last();
+                let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
-                let result = match (operand_1, operand_2) {
-                    (Some(Element::Tag(operand_1)), Some(Element::Tag(operand_2))) => {
+                let result = match (&operands[1], &operands[0]) {
+                    (Element::Tag(operand_1), Element::Tag(operand_2)) => {
                         Element::Constant(num::BigUint::from(u64::from(operand_1 == operand_2)))
                     }
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
             ref instruction @ Instruction {
                 name: InstructionName::ISZERO,
                 ..
             } => {
-                let operand = block_stack.elements.last();
+                let operand = block_stack.elements.last().expect("Always exists");
 
                 let result = match operand {
-                    Some(Element::Tag(operand)) => Element::Constant(if operand.is_zero() {
+                    Element::Tag(operand) => Element::Constant(if operand.is_zero() {
                         num::BigUint::one()
                     } else {
                         num::BigUint::zero()
                     }),
-                    _ => Element::Value,
+                    _ => Element::value(instruction.name.to_string()),
                 };
 
-                block_stack.push(result);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
+                (vec![result], None)
             }
 
-            ref instruction if instruction.output_size() == 1 => {
-                block_stack.push(StackElement::Value);
-                block_element.stack = block_stack.clone();
-                let output = block_stack.pop()?;
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-                block_stack.push(output);
-            }
+            ref instruction => (
+                vec![Element::value(instruction.name.to_string()); instruction.output_size()],
+                None,
+            ),
+        };
 
-            ref instruction => {
-                block_element.stack = block_stack.clone();
-                for _ in 0..instruction.input_size(version) {
-                    block_stack.pop()?;
-                }
-            }
+        Self::update_io_data(
+            block_stack,
+            block_element,
+            block_element.instruction.input_size(version),
+            stack_output,
+        )?;
+
+        if let Some(mut queue_element) = queue_element {
+            queue_element.stack = block_element.stack.to_owned();
+            queue.push(queue_element);
         }
 
         Ok(())
     }
 
     ///
+    /// Updates the stack data with input and output data.
+    ///
+    fn update_io_data(
+        block_stack: &mut Stack,
+        block_element: &mut BlockElement,
+        input_size: usize,
+        output_data: Vec<Element>,
+    ) -> anyhow::Result<()> {
+        if block_stack.len() < input_size {
+            anyhow::bail!("Stack underflow");
+        }
+        block_element.stack_input = Stack::new_with_elements(
+            block_stack
+                .elements
+                .drain(block_stack.len() - input_size..)
+                .collect(),
+        );
+        block_element.stack_output = Stack::new_with_elements(output_data);
+        block_stack.append(&mut block_element.stack_output.clone());
+        block_element.stack = block_stack.clone();
+        Ok(())
+    }
+
+    ///
+    /// Handles the recursive function call.
+    ///
+    #[allow(clippy::too_many_arguments)]
+    fn handle_recursive_function_call(
+        recursive_function: &RecursiveFunction,
+        blocks: &HashMap<compiler_llvm_context::FunctionBlockKey, Block>,
+        functions: &mut BTreeMap<compiler_llvm_context::FunctionBlockKey, Self>,
+        extra_metadata: &ExtraMetadata,
+        visited_functions: &mut BTreeSet<VisitedElement>,
+        block_key: compiler_llvm_context::FunctionBlockKey,
+        block_stack: &mut Stack,
+        block_element: &mut BlockElement,
+        version: &semver::Version,
+    ) -> anyhow::Result<(compiler_llvm_context::FunctionBlockKey, Vec<Element>)> {
+        let return_address_offset = block_stack.elements.len() - 2 - recursive_function.input_size;
+        let input_arguments_offset = return_address_offset + 1;
+        let callee_tag_offset = input_arguments_offset + recursive_function.input_size;
+
+        let return_address = match block_stack.elements[return_address_offset] {
+            Element::Tag(ref return_address) => compiler_llvm_context::FunctionBlockKey::new(
+                block_key.code_type,
+                return_address.to_owned(),
+            ),
+            ref element => anyhow::bail!("Expected the function return address, found {}", element),
+        };
+        let mut stack = Stack::with_capacity(1 + recursive_function.input_size);
+        stack.push(StackElement::ReturnAddress(
+            1 + recursive_function.output_size,
+        ));
+        stack.append(&mut Stack::new_with_elements(
+            block_stack.elements[input_arguments_offset..callee_tag_offset].to_owned(),
+        ));
+
+        let visited_element = VisitedElement::new(block_key.clone(), stack.hash());
+        if !visited_functions.contains(&visited_element) {
+            let mut function = Self::new(
+                version.to_owned(),
+                Type::new_recursive(
+                    recursive_function.name.to_owned(),
+                    block_key.clone(),
+                    recursive_function.input_size,
+                    recursive_function.output_size,
+                ),
+            );
+            visited_functions.insert(visited_element);
+            function.traverse(blocks, functions, extra_metadata, visited_functions)?;
+            functions.insert(block_key, function);
+        }
+        block_element.instruction = Instruction::recursive_call(
+            recursive_function.name.to_owned(),
+            recursive_function.input_size + 2,
+            recursive_function.output_size,
+            return_address.clone(),
+        );
+
+        let stack_output =
+            vec![Element::value("RETURN_VALUE".to_owned()); recursive_function.output_size];
+
+        Ok((return_address, stack_output))
+    }
+
+    ///
     /// Pushes a block into the function.
     ///
-    fn insert_block(&mut self, block: Block) -> &mut Block {
+    fn insert_block(&mut self, mut block: Block) -> &mut Block {
         let key = block.key.clone();
 
         if let Some(entry) = self.blocks.get_mut(&key) {
             if entry.iter().all(|existing_block| {
                 existing_block.initial_stack.hash() != block.initial_stack.hash()
             }) {
+                block.instance = Some(entry.len());
                 entry.push(block);
             }
         } else {
-            self.blocks.insert(key.clone(), vec![block]);
+            block.instance = Some(0);
+            self.blocks.insert(block.key.clone(), vec![block]);
         }
 
         self.blocks
@@ -963,36 +1080,61 @@ impl Function {
     ///
     /// Finalizes the function data.
     ///
-    fn finalize(mut self) -> Self {
+    fn finalize(&mut self) {
         for (_tag, blocks) in self.blocks.iter() {
             for block in blocks.iter() {
                 for block_element in block.elements.iter() {
-                    if block_element.stack.elements.len() > self.stack_size {
-                        self.stack_size = block_element.stack.elements.len();
+                    let total_length = block_element.stack.elements.len()
+                        + block_element.stack_input.len()
+                        + block_element.stack_output.len();
+                    if total_length > self.stack_size {
+                        self.stack_size = total_length;
                     }
                 }
             }
         }
-
-        self
     }
 }
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Function
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+        let (function_type, output_size) = match self.r#type {
+            Type::Initial => {
+                let output_size = 0;
+                let r#type = context.function_type(
+                    vec![context
+                        .integer_type(compiler_common::BIT_LENGTH_BOOLEAN)
+                        .as_basic_type_enum()],
+                    output_size,
+                    false,
+                );
+                (r#type, output_size)
+            }
+            Type::Recursive {
+                input_size,
+                output_size,
+                ..
+            } => {
+                let r#type = context.function_type(
+                    vec![
+                        context
+                            .integer_type(compiler_common::BIT_LENGTH_FIELD)
+                            .as_basic_type_enum();
+                        input_size
+                    ],
+                    output_size,
+                    false,
+                );
+                (r#type, output_size)
+            }
+        };
         let function = context.add_function(
-            EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME,
-            context.function_type(
-                vec![context
-                    .integer_type(compiler_common::BIT_LENGTH_BOOLEAN)
-                    .as_basic_type_enum()],
-                0,
-                false,
-            ),
-            0,
+            self.name.as_str(),
+            function_type,
+            output_size,
             Some(inkwell::module::Linkage::Private),
         )?;
         function
@@ -1005,12 +1147,7 @@ where
     }
 
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        context.set_current_function(EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME)?;
-        let is_deploy_code_flag = context
-            .current_function()
-            .borrow()
-            .get_nth_param(0)
-            .into_int_value();
+        context.set_current_function(self.name.as_str())?;
 
         for (key, blocks) in self.blocks.iter() {
             for (index, block) in blocks.iter().enumerate() {
@@ -1035,31 +1172,68 @@ where
                 context.field_type(),
                 format!("stack_var_{stack_index:03}").as_str(),
             );
+            let value = match self.r#type {
+                Type::Recursive { input_size, .. }
+                    if stack_index >= 1 && stack_index <= input_size =>
+                {
+                    context
+                        .current_function()
+                        .borrow()
+                        .declaration()
+                        .value
+                        .get_nth_param((stack_index - 1) as u32)
+                        .expect("Always valid")
+                }
+                _ => context.field_const(0).as_basic_value_enum(),
+            };
+            context.build_store(pointer, value);
             stack_variables.push(compiler_llvm_context::Argument::new(
                 pointer.value.as_basic_value_enum(),
             ));
         }
         context.evmla_mut().stack = stack_variables;
 
-        let deploy_code_block = context.current_function().borrow().evmla().find_block(
-            &compiler_llvm_context::FunctionBlockKey::new(
-                compiler_llvm_context::CodeType::Deploy,
-                num::BigUint::zero(),
-            ),
-            &Stack::default().hash(),
-        )?;
-        let runtime_code_block = context.current_function().borrow().evmla().find_block(
-            &compiler_llvm_context::FunctionBlockKey::new(
-                compiler_llvm_context::CodeType::Runtime,
-                num::BigUint::zero(),
-            ),
-            &Stack::default().hash(),
-        )?;
-        context.build_conditional_branch(
-            is_deploy_code_flag,
-            deploy_code_block.inner(),
-            runtime_code_block.inner(),
-        );
+        match self.r#type {
+            Type::Initial => {
+                let is_deploy_code_flag = context
+                    .current_function()
+                    .borrow()
+                    .get_nth_param(0)
+                    .into_int_value();
+                let deploy_code_block = context.current_function().borrow().evmla().find_block(
+                    &compiler_llvm_context::FunctionBlockKey::new(
+                        compiler_llvm_context::CodeType::Deploy,
+                        num::BigUint::zero(),
+                    ),
+                    &Stack::default().hash(),
+                )?;
+                let runtime_code_block = context.current_function().borrow().evmla().find_block(
+                    &compiler_llvm_context::FunctionBlockKey::new(
+                        compiler_llvm_context::CodeType::Runtime,
+                        num::BigUint::zero(),
+                    ),
+                    &Stack::default().hash(),
+                )?;
+                context.build_conditional_branch(
+                    is_deploy_code_flag,
+                    deploy_code_block.inner(),
+                    runtime_code_block.inner(),
+                );
+            }
+            Type::Recursive { ref block_key, .. } => {
+                let initial_block = context
+                    .current_function()
+                    .borrow()
+                    .evmla()
+                    .blocks
+                    .get(block_key)
+                    .expect("Always exists")
+                    .first()
+                    .expect("Always exists")
+                    .inner();
+                context.build_unconditional_branch(initial_block);
+            }
+        }
 
         for (key, blocks) in self.blocks.into_iter() {
             for (llvm_block, ir_block) in context
@@ -1080,7 +1254,19 @@ where
         }
 
         context.set_basic_block(context.current_function().borrow().return_block());
-        context.build_return(None);
+        match context.current_function().borrow().r#return() {
+            compiler_llvm_context::FunctionReturn::None => {
+                context.build_return(None);
+            }
+            compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
+                let return_value = context.build_load(pointer, "return_value");
+                context.build_return(Some(&return_value));
+            }
+            compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
+                let return_value = context.build_load(pointer, "return_value");
+                context.build_return(Some(&return_value));
+            }
+        }
 
         Ok(())
     }
@@ -1088,29 +1274,25 @@ where
 
 impl std::fmt::Display for Function {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "function main (max_sp = {}) {{", self.stack_size,)?;
-        for (key, blocks) in self.blocks.iter() {
-            for (index, block) in blocks.iter().enumerate() {
-                writeln!(
-                    f,
-                    "{:92}{}",
-                    format!(
-                        "block_{}/{}: {}",
-                        key,
-                        index,
-                        if block.predecessors.is_empty() {
-                            "".to_owned()
-                        } else {
-                            format!("(predecessors: {:?})", block.predecessors)
-                        }
-                    ),
-                    block.initial_stack,
-                )?;
+        match self.r#type {
+            Type::Initial => writeln!(f, "function {} {{", self.name),
+            Type::Recursive {
+                input_size,
+                output_size,
+                ..
+            } => writeln!(
+                f,
+                "function {}({}) -> {} {{",
+                self.name, input_size, output_size
+            ),
+        }?;
+        writeln!(f, "    stack_usage: {}", self.stack_size)?;
+        for (_key, blocks) in self.blocks.iter() {
+            for block in blocks.iter() {
                 write!(f, "{block}")?;
             }
         }
         writeln!(f, "}}")?;
-
         Ok(())
     }
 }

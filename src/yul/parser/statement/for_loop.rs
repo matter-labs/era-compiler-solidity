@@ -2,6 +2,9 @@
 //! The for-loop statement.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
@@ -12,7 +15,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul for-loop statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct ForLoop {
     /// The location.
     pub location: Location,
@@ -54,7 +57,7 @@ impl ForLoop {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for ForLoop
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         self.initializer.into_llvm(context)?;

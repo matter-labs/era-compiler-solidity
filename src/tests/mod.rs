@@ -10,6 +10,7 @@ mod runtime_code;
 mod unsupported_opcodes;
 
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
@@ -25,6 +26,7 @@ pub fn build_solidity(
 ) -> anyhow::Result<()> {
     inkwell::support::enable_llvm_pretty_stack_trace();
     compiler_llvm_context::initialize_target();
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
     let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
 
     let mut sources = BTreeMap::new();
@@ -38,7 +40,7 @@ pub fn build_solidity(
         pipeline == SolcPipeline::Yul,
     )?;
 
-    let solc = SolcCompiler::new("solc".to_owned());
+    let mut solc = SolcCompiler::new("solc".to_owned());
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
     let project = output.try_to_project(
@@ -48,11 +50,11 @@ pub fn build_solidity(
         &SolcCompiler::LAST_SUPPORTED_VERSION,
         None,
     )?;
-    let _build = project.compile_all(
-        compiler_llvm_context::TargetMachine::new(&optimizer_settings)?,
+    let _build = project.compile(
         optimizer_settings,
         false,
         false,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
     )?;
 
@@ -69,14 +71,14 @@ pub fn check_solidity_warning(
     sources.insert("test.sol".to_string(), source_code.to_string());
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
-        libraries.clone(),
+        libraries,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,
         pipeline == SolcPipeline::Yul,
     )?;
 
-    let solc = SolcCompiler::new("solc".to_owned());
+    let mut solc = SolcCompiler::new("solc".to_owned());
     let output = solc.standard_json(input, pipeline, None, vec![], None)?;
     let contains_warning = output
         .errors
@@ -92,12 +94,13 @@ pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
     compiler_llvm_context::initialize_target();
     let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
 
-    let project = Project::try_from_yul_string("test.yul", source_code)?;
-    let _build = project.compile_all(
-        compiler_llvm_context::TargetMachine::new(&optimizer_settings)?,
+    let project =
+        Project::try_from_yul_string(PathBuf::from("test.yul").as_path(), source_code, None)?;
+    let _build = project.compile(
         optimizer_settings,
         false,
         false,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
     )?;
 

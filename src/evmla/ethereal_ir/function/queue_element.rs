@@ -12,7 +12,7 @@ pub struct QueueElement {
     /// The block key.
     pub block_key: compiler_llvm_context::FunctionBlockKey,
     /// The block predecessor.
-    pub predecessor: Option<compiler_llvm_context::FunctionBlockKey>,
+    pub predecessor: Option<(compiler_llvm_context::FunctionBlockKey, usize)>,
     /// The predecessor's last stack state.
     pub stack: Stack,
 }
@@ -23,7 +23,7 @@ impl QueueElement {
     ///
     pub fn new(
         block_key: compiler_llvm_context::FunctionBlockKey,
-        predecessor: Option<compiler_llvm_context::FunctionBlockKey>,
+        predecessor: Option<(compiler_llvm_context::FunctionBlockKey, usize)>,
         stack: Stack,
     ) -> Self {
         Self {

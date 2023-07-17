@@ -4,33 +4,32 @@
 
 pub mod ir;
 pub mod metadata;
-pub mod state;
 
 use std::collections::HashSet;
-use std::sync::Arc;
-use std::sync::RwLock;
+
+use serde::Deserialize;
+use serde::Serialize;
+use sha3::Digest;
 
 use compiler_llvm_context::WriteLLVM;
-use sha3::Digest;
 
 use crate::build::contract::Contract as ContractBuild;
 use crate::project::Project;
 
 use self::ir::IR;
 use self::metadata::Metadata;
-use self::state::State;
 
 ///
 /// The contract data.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Contract {
     /// The absolute file path.
     pub path: String,
     /// The IR source code data.
     pub ir: IR,
-    /// The metadata.
-    pub metadata: serde_json::Value,
+    /// The metadata JSON.
+    pub metadata_json: serde_json::Value,
 }
 
 impl Contract {
@@ -42,12 +41,12 @@ impl Contract {
         source_hash: [u8; compiler_common::BYTE_LENGTH_FIELD],
         source_version: semver::Version,
         ir: IR,
-        metadata: Option<serde_json::Value>,
+        metadata_json: Option<serde_json::Value>,
     ) -> Self {
         Self {
             path,
             ir,
-            metadata: metadata.unwrap_or_else(|| {
+            metadata_json: metadata_json.unwrap_or_else(|| {
                 serde_json::json!({
                     "source_hash": hex::encode(source_hash.as_slice()),
                     "source_version": source_version.to_string(),
@@ -88,18 +87,17 @@ impl Contract {
     ///
     pub fn compile(
         mut self,
-        project: Arc<RwLock<Project>>,
-        target_machine: compiler_llvm_context::TargetMachine,
+        project: Project,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<ContractBuild> {
         let llvm = inkwell::context::Context::create();
-        let optimizer = compiler_llvm_context::Optimizer::new(target_machine, optimizer_settings);
+        let optimizer = compiler_llvm_context::Optimizer::new(optimizer_settings);
 
         let metadata = Metadata::new(
-            self.metadata.take(),
+            self.metadata_json.take(),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
         );
@@ -112,6 +110,7 @@ impl Contract {
                 None
             };
 
+        let version = project.version.clone();
         let identifier = self.identifier().to_owned();
 
         let module = match self.ir {
@@ -136,6 +135,7 @@ impl Contract {
                     identifier,
                     build,
                     metadata_json,
+                    HashSet::new(),
                 ));
             }
             _ => llvm.create_module(self.path.as_str()),
@@ -144,7 +144,7 @@ impl Contract {
             &llvm,
             module,
             optimizer,
-            Some(project.clone()),
+            Some(project),
             include_metadata_hash,
             debug_config,
         );
@@ -155,7 +155,6 @@ impl Contract {
                 context.set_yul_data(yul_data);
             }
             IR::EVMLA(_) => {
-                let version = project.read().expect("Sync").version.to_owned();
                 let evmla_data = compiler_llvm_context::ContextEVMLAData::new(version);
                 context.set_evmla_data(evmla_data);
             }
@@ -180,46 +179,21 @@ impl Contract {
             )
         })?;
 
-        let mut build = context.build(self.path.as_str(), metadata_hash)?;
-
-        for dependency in factory_dependencies.into_iter() {
-            let full_path = project
-                .read()
-                .expect("Sync")
-                .identifier_paths
-                .get(dependency.as_str())
-                .cloned()
-                .unwrap_or_else(|| panic!("Dependency `{dependency}` full path not found"));
-            let hash = match project
-                .read()
-                .expect("Sync")
-                .contract_states
-                .get(full_path.as_str())
-            {
-                Some(State::Build(build)) => build.build.bytecode_hash.to_owned(),
-                Some(_) => {
-                    panic!("Dependency `{full_path}` must be built at this point")
-                }
-                None => anyhow::bail!(
-                    "Dependency contract `{}` not found in the project",
-                    full_path
-                ),
-            };
-            build.factory_dependencies.insert(hash, full_path);
-        }
+        let build = context.build(self.path.as_str(), metadata_hash)?;
 
         Ok(ContractBuild::new(
             self.path,
             identifier,
             build,
             metadata_json,
+            factory_dependencies,
         ))
     }
 }
 
 impl<D> WriteLLVM<D> for Contract
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         self.ir.declare(context)

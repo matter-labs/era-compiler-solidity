@@ -1,5 +1,20 @@
 # The `zksolc` changelog
 
+## [1.3.13] - 2023-06-29
+
+### Added
+
+- The Yul validation via call to `solc --strict-assembly <path>`
+- A warning for `blockhash` usage
+
+### Fixed
+
+- A bug with `CODECOPY` where the bytecode hash was set to 0
+- An inefficiency in the Yul lexical analyzer
+- A non-deterministic EVMLA output by disabling the `solc` constant optimizer
+- Unclear error message for invalid Yul object names
+- The CLI argument validation to rule out incompatible options
+
 ## [1.3.11] - 2023-05-29
 
 ### Added

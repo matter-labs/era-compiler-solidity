@@ -4,6 +4,8 @@
 
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -19,7 +21,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul variable declaration statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct VariableDeclaration {
     /// The location.
     pub location: Location,
@@ -86,7 +88,7 @@ impl VariableDeclaration {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for VariableDeclaration
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm<'ctx>(
         mut self,

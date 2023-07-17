@@ -2,10 +2,13 @@
 //! The contract zkEVM assembly source code.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 ///
 /// The contract zkEVM assembly source code.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct ZKASM {
     /// The zkEVM assembly file path.

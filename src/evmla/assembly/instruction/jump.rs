@@ -11,7 +11,7 @@ pub fn unconditional<D>(
     stack_hash: md5::Digest,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let code_type = context
         .code_type()
@@ -38,7 +38,7 @@ pub fn conditional<D>(
     stack_height: usize,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     let code_type = context
         .code_type()

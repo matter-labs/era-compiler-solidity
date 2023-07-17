@@ -11,7 +11,7 @@ use serde::Serialize;
 ///
 #[derive(Debug, Serialize)]
 pub struct Metadata {
-    /// The original `solc` metadata.
+    /// The `solc` metadata.
     pub solc_metadata: serde_json::Value,
     /// The zkEVM compiler version.
     pub zk_version: semver::Version,

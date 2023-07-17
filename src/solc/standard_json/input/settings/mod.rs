@@ -27,14 +27,18 @@ pub struct Settings {
     /// The output selection filters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
+    /// Whether to compile via IR. Only for testing with solc >=0.8.13.
+    #[serde(
+        rename = "viaIR",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
+    pub via_ir: Option<bool>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
     /// The metadata settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<Metadata>,
-    /// Whether to compile via IR. Only used by `solc` >=0.8.0.
-    #[serde(rename = "viaIR", skip_serializing_if = "Option::is_none")]
-    pub via_ir: Option<bool>,
 }
 
 impl Settings {
@@ -44,17 +48,24 @@ impl Settings {
     pub fn new(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         output_selection: Selection,
+        via_ir: bool,
         optimizer: Optimizer,
         metadata: Option<Metadata>,
-        via_ir: bool,
     ) -> Self {
         Self {
             libraries: Some(libraries),
             output_selection: Some(output_selection),
+            via_ir: if via_ir { Some(true) } else { None },
             optimizer,
             metadata,
-            via_ir: if via_ir { Some(true) } else { None },
         }
+    }
+
+    ///
+    /// Sets the necessary defaults.
+    ///
+    pub fn normalize(&mut self) {
+        self.optimizer.normalize();
     }
 
     ///

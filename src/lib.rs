@@ -5,15 +5,20 @@
 pub(crate) mod build;
 pub(crate) mod r#const;
 pub(crate) mod evmla;
+pub(crate) mod process;
 pub(crate) mod project;
 pub(crate) mod solc;
 pub(crate) mod yul;
 
 pub use self::build::contract::Contract as ContractBuild;
 pub use self::build::Build;
-pub use self::project::contract::state::State as ContractState;
+pub use self::process::input::Input as ProcessInput;
+pub use self::process::output::Output as ProcessOutput;
+pub use self::process::run as run_process;
+pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
 pub use self::project::Project;
+pub use self::r#const::*;
 pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContract;
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
 pub use self::solc::pipeline::Pipeline as SolcPipeline;
@@ -42,6 +47,7 @@ use std::path::PathBuf;
 ///
 pub fn yul(
     input_files: &[PathBuf],
+    solc: &mut SolcCompiler,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -56,16 +62,26 @@ pub fn yul(
         ),
     };
 
-    eprintln!("WARNING! Yul is not validated as long as we are using the upstream solc compiler that doesn't provide the Yul validation feature.");
+    let solc_validator = if is_system_mode {
+        None
+    } else {
+        if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+            anyhow::bail!(
+                "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
+                SolcCompiler::LAST_SUPPORTED_VERSION,
+            );
+        }
 
-    let project = Project::try_from_yul_path(path)?;
+        Some(&*solc)
+    };
 
-    let target_machine = compiler_llvm_context::TargetMachine::new(&optimizer_settings)?;
-    let build = project.compile_all(
-        target_machine,
+    let project = Project::try_from_yul_path(path, solc_validator)?;
+
+    let build = project.compile(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
 
@@ -93,12 +109,11 @@ pub fn llvm_ir(
 
     let project = Project::try_from_llvm_ir_path(path)?;
 
-    let target_machine = compiler_llvm_context::TargetMachine::new(&optimizer_settings)?;
-    let build = project.compile_all(
-        target_machine,
+    let build = project.compile(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
 
@@ -125,12 +140,11 @@ pub fn zkasm(
     let project = Project::try_from_zkasm_path(path)?;
 
     let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
-    let target_machine = compiler_llvm_context::TargetMachine::new(&optimizer_settings)?;
-    let build = project.compile_all(
-        target_machine,
+    let build = project.compile(
         optimizer_settings,
         false,
         include_metadata_hash,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
 
@@ -165,8 +179,9 @@ pub fn standard_output(
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
         None,
-        solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
+        solc_pipeline == SolcPipeline::Yul,
     )?;
+
     let source_code_files = solc_input
         .sources
         .iter()
@@ -206,12 +221,11 @@ pub fn standard_output(
         debug_config.as_ref(),
     )?;
 
-    let target_machine = compiler_llvm_context::TargetMachine::new(&optimizer_settings)?;
-    let build = project.compile_all(
-        target_machine,
+    let build = project.compile(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
 
@@ -233,13 +247,9 @@ pub fn standard_json(
 ) -> anyhow::Result<()> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
-
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(
-        solc_pipeline,
-        solc_version.default >= SolcCompiler::FIRST_YUL_VERSION && !force_evmla,
-    )?;
+    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -282,12 +292,11 @@ pub fn standard_json(
         debug_config.as_ref(),
     )?;
 
-    let target_machine = compiler_llvm_context::TargetMachine::new(&optimizer_settings)?;
-    let build = project.compile_all(
-        target_machine,
+    let build = project.compile(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
 
@@ -317,6 +326,8 @@ pub fn combined_json(
     output_directory: Option<PathBuf>,
     overwrite: bool,
 ) -> anyhow::Result<()> {
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+
     let build = standard_output(
         input_files,
         libraries,
@@ -331,8 +342,6 @@ pub fn combined_json(
         allow_paths,
         debug_config,
     )?;
-
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
     let mut combined_json = solc.combined_json(input_files, format.as_str())?;
     build.write_to_combined_json(&mut combined_json, &zksolc_version)?;

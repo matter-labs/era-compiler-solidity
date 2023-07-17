@@ -2,6 +2,9 @@
 //! The string literal lexeme.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::lexeme::Literal;
 use crate::yul::lexer::token::location::Location;
@@ -10,7 +13,7 @@ use crate::yul::lexer::token::Token;
 ///
 /// The string literal lexeme.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct String {
     /// The inner string contents.
     pub inner: std::string::String,

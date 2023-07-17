@@ -2,12 +2,15 @@
 //! The contract Yul source code.
 //!
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::parser::statement::object::Object;
 
 ///
 /// The contract Yul source code.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Yul {
     /// The Yul source code.
     pub source_code: String,
@@ -29,7 +32,7 @@ impl Yul {
 
 impl<D> compiler_llvm_context::WriteLLVM<D> for Yul
 where
-    D: compiler_llvm_context::Dependency,
+    D: compiler_llvm_context::Dependency + Clone,
 {
     fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
         self.object.declare(context)

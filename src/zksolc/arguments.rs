@@ -83,38 +83,38 @@ pub struct Arguments {
     #[structopt(long = "standard-json")]
     pub standard_json: bool,
 
-    /// Switch to the Yul mode.
+    /// Switch to Yul mode.
     /// Only one input Yul file is allowed.
-    /// Cannot be used with the combined and standard JSON modes.
+    /// Cannot be used with combined and standard JSON modes.
     #[structopt(long = "yul")]
     pub yul: bool,
 
-    /// Switch to the LLVM IR mode.
+    /// Switch to LLVM IR mode.
     /// Only one input LLVM IR file is allowed.
-    /// Cannot be used with the combined and standard JSON modes.
+    /// Cannot be used with combined and standard JSON modes.
     #[structopt(long = "llvm-ir")]
     pub llvm_ir: bool,
 
-    /// Switch to the zkEVM assembly mode.
+    /// Switch to zkEVM assembly mode.
     /// Only one input zkEVM assembly file is allowed.
-    /// Cannot be used with the combined and standard JSON modes.
+    /// Cannot be used with combined and standard JSON modes.
     #[structopt(long = "zkasm")]
     pub zkasm: bool,
 
-    /// Forcibly switch to the EVM legacy assembly pipeline.
+    /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
 
-    /// Enable the system contract compilation mode.
+    /// Enable system contract compilation mode.
     /// In this mode zkEVM extensions are enabled. For example, calls to addresses `0xFFFF` and below
     /// are substituted by special zkEVM instructions.
     /// In the Yul mode, the `verbatim_*` instruction family is available.
     #[structopt(long = "system-mode")]
     pub is_system_mode: bool,
 
-    /// Set the metadata hash mode.
+    /// Set metadata hash mode.
     /// The only supported value is `none` that disables appending the metadata hash.
     /// Is enabled by default.
     #[structopt(long = "metadata-hash")]
@@ -142,6 +142,11 @@ pub struct Arguments {
     /// Only for testing and debugging.
     #[structopt(long = "llvm-debug-logging")]
     pub llvm_debug_logging: bool,
+
+    /// Run this process recursively and provide JSON input to compile a single contract.
+    /// Only for usage from within the compiler.
+    #[structopt(long = "recursive-process")]
+    pub recursive_process: bool,
 }
 
 impl Default for Arguments {
@@ -161,13 +166,115 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> anyhow::Result<()> {
+        if self.version && std::env::args().count() > 2 {
+            anyhow::bail!("No other options are allowed while getting the compiler version.");
+        }
+
+        if self.recursive_process && std::env::args().count() > 2 {
+            anyhow::bail!("No other options are allowed in recursive mode.");
+        }
+
+        let modes_count = [
+            self.yul,
+            self.llvm_ir,
+            self.zkasm,
+            self.combined_json.is_some(),
+            self.standard_json,
+        ]
+        .iter()
+        .filter(|&&x| x)
+        .count();
+        if modes_count > 1 {
+            anyhow::bail!("Only one modes is allowed at the same time: Yul, LLVM IR, zkEVM assembly, combined JSON, standard JSON.");
+        }
+
         if self.yul || self.llvm_ir || self.zkasm {
-            if self.combined_json.is_some() {
-                anyhow::bail!("The `--combined-json` option is invalid in IR modes");
+            if self.base_path.is_some() {
+                anyhow::bail!("`base-path` is not used in Yul, LLVM IR and zkEVM assembly modes.");
             }
-            if self.standard_json {
-                anyhow::bail!("The `--standard-json` option is invalid in IR modes");
+            if !self.include_paths.is_empty() {
+                anyhow::bail!(
+                    "`include-paths` is not used in Yul, LLVM IR and zkEVM assembly modes."
+                );
+            }
+            if self.allow_paths.is_some() {
+                anyhow::bail!(
+                    "`allow-paths` is not used in Yul, LLVM IR and zkEVM assembly modes."
+                );
+            }
+            if !self.libraries.is_empty() {
+                anyhow::bail!(
+                    "Libraries are not supported in Yul, LLVM IR and zkEVM assembly modes."
+                );
+            }
+
+            if self.force_evmla {
+                anyhow::bail!("EVM legacy assembly mode is not supported in Yul, LLVM IR and zkEVM assembly modes.");
+            }
+
+            if self.disable_solc_optimizer {
+                anyhow::bail!("Disabling the solc optimizer is not supported in Yul, LLVM IR and zkEVM assembly modes.");
+            }
+        }
+
+        if self.llvm_ir || self.zkasm {
+            if self.solc.is_some() {
+                anyhow::bail!("`solc` is not used in LLVM IR and zkEVM assembly modes.");
+            }
+
+            if self.is_system_mode {
+                anyhow::bail!(
+                    "System contract mode is not supported in LLVM IR and zkEVM assembly modes."
+                );
+            }
+        }
+
+        if self.zkasm {
+            if self.optimization.is_some() {
+                anyhow::bail!("LLVM optimizations are not supported in zkEVM assembly mode.");
+            }
+        }
+
+        if self.combined_json.is_some() {
+            if self.output_assembly || self.output_binary {
+                anyhow::bail!(
+                    "Cannot output assembly or binary outside of JSON in combined JSON mode."
+                );
+            }
+        }
+
+        if self.standard_json {
+            if self.output_assembly || self.output_binary {
+                anyhow::bail!(
+                    "Cannot output assembly or binary outside of JSON in standard JSON mode."
+                );
+            }
+
+            if !self.input_files.is_empty() {
+                anyhow::bail!("Input files must be passed via standard JSON input.");
+            }
+            if !self.libraries.is_empty() {
+                anyhow::bail!("Libraries must be passed via standard JSON input.");
+            }
+
+            if self.output_directory.is_some() {
+                anyhow::bail!("Output directory cannot be used in standard JSON mode.");
+            }
+            if self.overwrite {
+                anyhow::bail!("Overwriting flag cannot be used in standard JSON mode.");
+            }
+            if self.disable_solc_optimizer {
+                anyhow::bail!(
+                    "Disabling the solc optimizer must specified in standard JSON input settings."
+                );
+            }
+            if self.optimization.is_some() {
+                anyhow::bail!("LLVM optimizations must specified in standard JSON input settings.");
+            }
+            if self.metadata_hash.is_some() {
+                anyhow::bail!("Metadata hash mode must specified in standard JSON input settings.");
             }
         }
 

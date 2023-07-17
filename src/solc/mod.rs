@@ -8,6 +8,7 @@ pub mod standard_json;
 pub mod version;
 
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 
 use self::combined_json::CombinedJson;
@@ -30,14 +31,14 @@ impl Compiler {
     /// The default executable name.
     pub const DEFAULT_EXECUTABLE_NAME: &'static str = "solc";
 
-    /// The first supported version of `solc` with the standard JSON interface.
+    /// The first version of `solc` with the support of standard JSON interface.
     pub const FIRST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 4, 12);
 
-    /// The first version of `solc`, where Yul is used by default.
+    /// The first version of `solc`, where Yul codegen is considered robust enough.
     pub const FIRST_YUL_VERSION: semver::Version = semver::Version::new(0, 8, 0);
 
-    /// The first version of `solc`, where the `--via-ir` CLI flag is supported.
-    pub const FIRST_CLI_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
+    /// The first version of `solc`, where `--via-ir` codegen mode is supported.
+    pub const FIRST_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
 
     /// The last supported version of `solc`.
     pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 20);
@@ -59,13 +60,15 @@ impl Compiler {
     /// Compiles the Solidity `--standard-json` input into Yul IR.
     ///
     pub fn standard_json(
-        &self,
-        input: StandardJsonInput,
+        &mut self,
+        mut input: StandardJsonInput,
         pipeline: Pipeline,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
+        let version = self.version()?;
+
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
@@ -84,6 +87,7 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
+        input.normalize();
         let input_json = serde_json::to_vec(&input).expect("Always valid");
 
         let process = command.spawn().map_err(|error| {
@@ -122,7 +126,7 @@ impl Compiler {
                         ),
                 )
             })?;
-        output.preprocess_ast(pipeline)?;
+        output.preprocess_ast(&version, pipeline)?;
 
         Ok(output)
     }
@@ -131,19 +135,12 @@ impl Compiler {
     /// The `solc --combined-json abi,hashes...` mirror.
     ///
     pub fn combined_json(
-        &mut self,
+        &self,
         paths: &[PathBuf],
         combined_json_argument: &str,
     ) -> anyhow::Result<CombinedJson> {
         let mut command = std::process::Command::new(self.executable.as_str());
         command.args(paths);
-
-        let version = self.version()?.default;
-        if version >= Self::FIRST_CLI_VIA_IR_VERSION {
-            command.arg("--via-ir");
-        } else if version >= Self::FIRST_YUL_VERSION {
-            command.arg("--experimental-via-ir");
-        }
 
         let mut combined_json_flags = Vec::new();
         let mut combined_json_fake_flag_pushed = false;
@@ -206,6 +203,28 @@ impl Compiler {
     }
 
     ///
+    /// The `solc` Yul validator.
+    ///
+    pub fn validate_yul(&self, path: &Path) -> anyhow::Result<()> {
+        let mut command = std::process::Command::new(self.executable.as_str());
+        command.arg("--strict-assembly");
+        command.arg(path);
+
+        let output = command.output().map_err(|error| {
+            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
+        })?;
+        if !output.status.success() {
+            anyhow::bail!(
+                "{} error: {}",
+                self.executable,
+                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
+            );
+        }
+
+        Ok(())
+    }
+
+    ///
     /// The `solc --version` mini-parser.
     ///
     pub fn version(&mut self) -> anyhow::Result<Version> {
@@ -251,7 +270,13 @@ impl Compiler {
             .parse()
             .map_err(|error| anyhow::anyhow!("{} version parsing: {}", self.executable, error))?;
 
-        let version = Version::new(long, default);
+        let l2_revision: Option<semver::Version> = stdout
+            .lines()
+            .nth(2)
+            .and_then(|line| line.split(' ').nth(1))
+            .and_then(|version| version.parse().ok());
+
+        let version = Version::new(long, default, l2_revision);
         if version.default < Self::FIRST_SUPPORTED_VERSION {
             anyhow::bail!(
                 "`solc` versions <{} are not supported, found {}",

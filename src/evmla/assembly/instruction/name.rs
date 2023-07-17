@@ -10,7 +10,7 @@ use crate::evmla::assembly::instruction::Instruction;
 ///
 /// The EVM instruction name.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Name {
@@ -359,6 +359,25 @@ pub enum Name {
     EXTCODECOPY,
     /// The eponymous EVM instruction.
     SELFDESTRUCT,
+
+    /// The recursive function call instruction.
+    #[serde(skip)]
+    RecursiveCall {
+        /// The called function.
+        name: String,
+        /// The input size.
+        input_size: usize,
+        /// The output size.
+        output_size: usize,
+        /// The return address.
+        return_address: compiler_llvm_context::FunctionBlockKey,
+    },
+    /// The recursive function return instruction.
+    #[serde(skip)]
+    RecursiveReturn {
+        /// The output size.
+        input_size: usize,
+    },
 }
 
 impl From<Name> for Instruction {
@@ -370,10 +389,21 @@ impl From<Name> for Instruction {
 impl std::fmt::Display for Name {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Tag => write!(f, "Tag ",),
+            Self::Tag => write!(f, "Tag"),
+            Self::RecursiveCall {
+                name,
+                input_size,
+                output_size,
+                return_address,
+            } => write!(
+                f,
+                "RECURSIVE_CALL({}, {}, {}, {})",
+                name, input_size, output_size, return_address
+            ),
+            Self::RecursiveReturn { input_size } => write!(f, "RECURSIVE_RETURN({})", input_size),
             _ => write!(
                 f,
-                "{:16}",
+                "{}",
                 serde_json::to_string(self)
                     .expect("Always valid")
                     .trim_matches('\"')

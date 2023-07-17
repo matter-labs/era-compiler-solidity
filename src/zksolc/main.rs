@@ -45,6 +45,17 @@ fn main_inner() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    rayon::ThreadPoolBuilder::new()
+        .stack_size(RAYON_WORKER_STACK_SIZE)
+        .build_global()
+        .expect("Thread pool configuration failure");
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    compiler_llvm_context::initialize_target();
+
+    if arguments.recursive_process {
+        return compiler_solidity::run_process();
+    }
+
     let debug_config = match arguments.debug_output_directory {
         Some(debug_output_directory) => {
             std::fs::create_dir_all(debug_output_directory.as_path())?;
@@ -55,17 +66,9 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
-    rayon::ThreadPoolBuilder::new()
-        .stack_size(RAYON_WORKER_STACK_SIZE)
-        .build_global()
-        .expect("Thread pool configuration failure");
-
     for path in arguments.input_files.iter_mut() {
         *path = path.canonicalize()?;
     }
-
-    inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target();
 
     let mut solc =
         compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
@@ -90,6 +93,7 @@ fn main_inner() -> anyhow::Result<()> {
     let build = if arguments.yul {
         compiler_solidity::yul(
             arguments.input_files.as_slice(),
+            &mut solc,
             optimizer_settings,
             arguments.is_system_mode,
             include_metadata_hash,
