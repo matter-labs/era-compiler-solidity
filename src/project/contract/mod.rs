@@ -11,7 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use sha3::Digest;
 
-use compiler_llvm_context::WriteLLVM;
+use compiler_llvm_context::EraVMWriteLLVM;
 
 use crate::build::contract::Contract as ContractBuild;
 use crate::project::Project;
@@ -124,7 +124,7 @@ impl Contract {
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
             IR::ZKASM(ref zkasm) => {
-                let build = compiler_llvm_context::build_assembly_text(
+                let build = compiler_llvm_context::eravm_build_assembly_text(
                     self.path.as_str(),
                     zkasm.source.as_str(),
                     metadata_hash,
@@ -140,7 +140,7 @@ impl Contract {
             }
             _ => llvm.create_module(self.path.as_str()),
         };
-        let mut context = compiler_llvm_context::Context::new(
+        let mut context = compiler_llvm_context::EraVMContext::new(
             &llvm,
             module,
             optimizer,
@@ -148,14 +148,14 @@ impl Contract {
             include_metadata_hash,
             debug_config,
         );
-        context.set_solidity_data(compiler_llvm_context::ContextSolidityData::default());
+        context.set_solidity_data(compiler_llvm_context::EraVMContextSolidityData::default());
         match self.ir {
             IR::Yul(_) => {
-                let yul_data = compiler_llvm_context::ContextYulData::new(is_system_mode);
+                let yul_data = compiler_llvm_context::EraVMContextYulData::new(is_system_mode);
                 context.set_yul_data(yul_data);
             }
             IR::EVMLA(_) => {
-                let evmla_data = compiler_llvm_context::ContextEVMLAData::new(version);
+                let evmla_data = compiler_llvm_context::EraVMContextEVMLAData::new(version);
                 context.set_evmla_data(evmla_data);
             }
             IR::LLVMIR(_) => {}
@@ -189,17 +189,27 @@ impl Contract {
             factory_dependencies,
         ))
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.ir.get_missing_libraries()
+    }
 }
 
-impl<D> WriteLLVM<D> for Contract
+impl<D> EraVMWriteLLVM<D> for Contract
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         self.ir.declare(context)
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         self.ir.into_llvm(context)
     }
 }

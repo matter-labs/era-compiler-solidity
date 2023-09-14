@@ -80,10 +80,10 @@ impl Literal {
     ///
     pub fn into_llvm<'ctx, D>(
         self,
-        context: &compiler_llvm_context::Context<'ctx, D>,
-    ) -> anyhow::Result<compiler_llvm_context::Argument<'ctx>>
+        context: &compiler_llvm_context::EraVMContext<'ctx, D>,
+    ) -> anyhow::Result<compiler_llvm_context::EraVMArgument<'ctx>>
     where
-        D: compiler_llvm_context::Dependency + Clone,
+        D: compiler_llvm_context::EraVMDependency + Clone,
     {
         match self.inner {
             LexicalLiteral::Boolean(inner) => {
@@ -105,7 +105,7 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                Ok(compiler_llvm_context::Argument::new_with_constant(
+                Ok(compiler_llvm_context::EraVMArgument::new_with_constant(
                     value, constant,
                 ))
             }
@@ -135,7 +135,7 @@ impl Literal {
                 }
                 .expect("Always valid");
 
-                Ok(compiler_llvm_context::Argument::new_with_constant(
+                Ok(compiler_llvm_context::EraVMArgument::new_with_constant(
                     value, constant,
                 ))
             }
@@ -209,7 +209,7 @@ impl Literal {
                 };
 
                 if hex_string.len() > compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return Ok(compiler_llvm_context::Argument::new_with_original(
+                    return Ok(compiler_llvm_context::EraVMArgument::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
                     ));
@@ -229,7 +229,7 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                Ok(compiler_llvm_context::Argument::new_with_original(
+                Ok(compiler_llvm_context::EraVMArgument::new_with_original(
                     value, string,
                 ))
             }

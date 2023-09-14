@@ -50,7 +50,7 @@ fn main_inner() -> anyhow::Result<()> {
         .build_global()
         .expect("Thread pool configuration failure");
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target();
+    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM); // TODO: pass from CLI
 
     if arguments.recursive_process {
         return compiler_solidity::run_process();
@@ -70,6 +70,13 @@ fn main_inner() -> anyhow::Result<()> {
         *path = path.canonicalize()?;
     }
 
+    let suppressed_warnings = match arguments.suppress_warnings {
+        Some(warnings) => Some(compiler_solidity::Warning::try_from_strings(
+            warnings.as_slice(),
+        )?),
+        None => None,
+    };
+
     let mut solc =
         compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
             compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
@@ -84,8 +91,9 @@ fn main_inner() -> anyhow::Result<()> {
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
-            let metadata = compiler_llvm_context::MetadataHash::from_str(metadata_hash.as_str())?;
-            metadata != compiler_llvm_context::MetadataHash::None
+            let metadata =
+                compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
+            metadata != compiler_llvm_context::EraVMMetadataHash::None
         }
         None => true,
     };
@@ -116,6 +124,7 @@ fn main_inner() -> anyhow::Result<()> {
     } else if arguments.standard_json {
         compiler_solidity::standard_json(
             &mut solc,
+            arguments.detect_missing_libraries,
             arguments.force_evmla,
             arguments.is_system_mode,
             arguments.base_path,
@@ -138,6 +147,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,
+            suppressed_warnings,
             debug_config,
             arguments.output_directory,
             arguments.overwrite,
@@ -156,6 +166,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,
+            suppressed_warnings,
             debug_config,
         )
     }?;

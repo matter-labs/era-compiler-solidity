@@ -2,6 +2,8 @@
 //! The variable declaration statement.
 //!
 
+use std::collections::HashSet;
+
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
 use serde::Deserialize;
@@ -84,15 +86,26 @@ impl VariableDeclaration {
             None,
         ))
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.expression
+            .as_ref()
+            .map_or_else(HashSet::new, |expression| {
+                expression.get_missing_libraries()
+            })
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for VariableDeclaration
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for VariableDeclaration
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
     fn into_llvm<'ctx>(
         mut self,
-        context: &mut compiler_llvm_context::Context<'ctx, D>,
+        context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<()> {
         if self.bindings.len() == 1 {
             let identifier = self.bindings.remove(0);

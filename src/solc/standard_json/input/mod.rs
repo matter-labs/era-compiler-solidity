@@ -18,6 +18,7 @@ use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
+use crate::warning::Warning;
 
 use self::language::Language;
 use self::settings::Settings;
@@ -35,6 +36,9 @@ pub struct Input {
     pub sources: BTreeMap<String, Source>,
     /// The compiler settings.
     pub settings: Settings,
+    /// The suppressed warnings.
+    #[serde(skip_serializing)]
+    pub suppressed_warnings: Option<Vec<Warning>>,
 }
 
 impl Input {
@@ -54,6 +58,7 @@ impl Input {
     ///
     /// A shortcut constructor from paths.
     ///
+    #[allow(clippy::too_many_arguments)]
     pub fn try_from_paths(
         language: Language,
         paths: &[PathBuf],
@@ -62,6 +67,7 @@ impl Input {
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_ir: bool,
+        suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let sources = paths
             .into_par_iter()
@@ -79,6 +85,7 @@ impl Input {
             language,
             sources,
             settings: Settings::new(libraries, output_selection, via_ir, optimizer, metadata),
+            suppressed_warnings,
         })
     }
 
@@ -87,6 +94,7 @@ impl Input {
     ///
     /// Only for the integration test purposes.
     ///
+    #[allow(clippy::too_many_arguments)]
     pub fn try_from_sources(
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
@@ -94,6 +102,7 @@ impl Input {
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_ir: bool,
+        suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let sources = sources
             .into_par_iter()
@@ -104,6 +113,7 @@ impl Input {
             language: Language::Solidity,
             sources,
             settings: Settings::new(libraries, output_selection, via_ir, optimizer, metadata),
+            suppressed_warnings,
         })
     }
 

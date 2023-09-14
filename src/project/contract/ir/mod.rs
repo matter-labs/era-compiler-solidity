@@ -7,6 +7,8 @@ pub mod llvm_ir;
 pub mod yul;
 pub mod zkasm;
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -64,13 +66,28 @@ impl IR {
     pub fn new_zkasm(path: String, source: String) -> Self {
         Self::ZKASM(ZKASM::new(path, source))
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        match self {
+            Self::Yul(inner) => inner.get_missing_libraries(),
+            Self::EVMLA(inner) => inner.get_missing_libraries(),
+            Self::LLVMIR(_inner) => HashSet::new(),
+            Self::ZKASM(_inner) => HashSet::new(),
+        }
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for IR
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for IR
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         match self {
             Self::Yul(inner) => inner.declare(context),
             Self::EVMLA(inner) => inner.declare(context),
@@ -79,7 +96,7 @@ where
         }
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         match self {
             Self::Yul(inner) => inner.into_llvm(context),
             Self::EVMLA(inner) => inner.into_llvm(context),

@@ -6,12 +6,12 @@
 /// Translates the contract hash copying.
 ///
 pub fn contract_hash<'ctx, D>(
-    context: &mut compiler_llvm_context::Context<'ctx, D>,
+    context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
     offset: inkwell::values::IntValue<'ctx>,
     value: inkwell::values::IntValue<'ctx>,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
     let offset = context.builder().build_int_add(
         offset,
@@ -21,7 +21,7 @@ where
         "datacopy_contract_hash_offset",
     );
 
-    compiler_llvm_context::memory::store(context, offset, value)?;
+    compiler_llvm_context::eravm_evm_memory::store(context, offset, value)?;
 
     Ok(())
 }
@@ -30,14 +30,14 @@ where
 /// Translates the library marker copying.
 ///
 pub fn library_marker<D>(
-    context: &mut compiler_llvm_context::Context<D>,
+    context: &mut compiler_llvm_context::EraVMContext<D>,
     offset: u64,
     value: u64,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    compiler_llvm_context::memory::store_byte(
+    compiler_llvm_context::eravm_evm_memory::store_byte(
         context,
         context.field_const(offset),
         context.field_const(value),
@@ -50,12 +50,12 @@ where
 /// Translates the static data copying.
 ///
 pub fn static_data<'ctx, D>(
-    context: &mut compiler_llvm_context::Context<'ctx, D>,
+    context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
     destination: inkwell::values::IntValue<'ctx>,
     source: &str,
 ) -> anyhow::Result<()>
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
     let mut offset = 0;
     for (index, chunk) in source
@@ -76,7 +76,11 @@ where
             format!("datacopy_destination_index_{index}").as_str(),
         );
         let datacopy_value = context.field_const_str_hex(value_string.as_str());
-        compiler_llvm_context::memory::store(context, datacopy_destination, datacopy_value)?;
+        compiler_llvm_context::eravm_evm_memory::store(
+            context,
+            datacopy_destination,
+            datacopy_value,
+        )?;
         offset += chunk.len() / 2;
     }
 

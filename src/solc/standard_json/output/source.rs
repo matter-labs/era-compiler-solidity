@@ -8,6 +8,7 @@ use serde::Serialize;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
+use crate::warning::Warning;
 
 ///
 /// The `solc --standard-json` output source.
@@ -326,40 +327,55 @@ impl Source {
         ast: &serde_json::Value,
         version: &SolcVersion,
         pipeline: SolcPipeline,
+        suppressed_warnings: &[Warning],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
-        if let Some(message) = Self::check_ecrecover(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::EcRecover) {
+            if let Some(message) = Self::check_ecrecover(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_send_and_transfer(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::SendTransfer) {
+            if let Some(message) = Self::check_send_and_transfer(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_assembly_extcodesize(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::ExtCodeSize) {
+            if let Some(message) = Self::check_assembly_extcodesize(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_assembly_origin(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::TxOrigin) {
+            if let Some(message) = Self::check_assembly_origin(ast) {
+                messages.push(message);
+            }
+            if let Some(message) = Self::check_tx_origin(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_tx_origin(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::BlockTimestamp) {
+            if let Some(message) = Self::check_assembly_timestamp(ast) {
+                messages.push(message);
+            }
+            if let Some(message) = Self::check_block_timestamp(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_assembly_timestamp(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::BlockNumber) {
+            if let Some(message) = Self::check_assembly_number(ast) {
+                messages.push(message);
+            }
+            if let Some(message) = Self::check_block_number(ast) {
+                messages.push(message);
+            }
         }
-        if let Some(message) = Self::check_block_timestamp(ast) {
-            messages.push(message);
-        }
-        if let Some(message) = Self::check_assembly_number(ast) {
-            messages.push(message);
-        }
-        if let Some(message) = Self::check_block_number(ast) {
-            messages.push(message);
-        }
-        if let Some(message) = Self::check_assembly_blockhash(ast) {
-            messages.push(message);
-        }
-        if let Some(message) = Self::check_blockhash(ast) {
-            messages.push(message);
+        if !suppressed_warnings.contains(&Warning::BlockHash) {
+            if let Some(message) = Self::check_assembly_blockhash(ast) {
+                messages.push(message);
+            }
+            if let Some(message) = Self::check_blockhash(ast) {
+                messages.push(message);
+            }
         }
         if SolcPipeline::EVMLA == pipeline && version.l2_revision.is_none() {
             if let Some(message) = Self::check_internal_function_pointer(ast) {
@@ -370,12 +386,22 @@ impl Source {
         match ast {
             serde_json::Value::Array(array) => {
                 for element in array.iter() {
-                    messages.extend(Self::get_messages(element, version, pipeline));
+                    messages.extend(Self::get_messages(
+                        element,
+                        version,
+                        pipeline,
+                        suppressed_warnings,
+                    ));
                 }
             }
             serde_json::Value::Object(object) => {
                 for (_key, value) in object.iter() {
-                    messages.extend(Self::get_messages(value, version, pipeline));
+                    messages.extend(Self::get_messages(
+                        value,
+                        version,
+                        pipeline,
+                        suppressed_warnings,
+                    ));
                 }
             }
             _ => {}

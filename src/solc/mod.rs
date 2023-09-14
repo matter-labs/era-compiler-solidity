@@ -41,7 +41,7 @@ impl Compiler {
     pub const FIRST_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
 
     /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 20);
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 21);
 
     ///
     /// A shortcut constructor.
@@ -87,6 +87,8 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
+        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
+
         input.normalize();
         let input_json = serde_json::to_vec(&input).expect("Always valid");
 
@@ -126,7 +128,7 @@ impl Compiler {
                         ),
                 )
             })?;
-        output.preprocess_ast(&version, pipeline)?;
+        output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
 
         Ok(output)
     }

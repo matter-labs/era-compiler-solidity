@@ -2,6 +2,8 @@
 //! The if-conditional statement.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -43,13 +45,22 @@ impl IfConditional {
             block,
         })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        let mut libraries = self.condition.get_missing_libraries();
+        libraries.extend(self.block.get_missing_libraries());
+        libraries
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for IfConditional
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         let condition = self
             .condition
             .into_llvm(context)?

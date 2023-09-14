@@ -45,7 +45,7 @@ We recommend at least 4 GB of RAM available for the build process.
    6.a. `cargo install compiler-llvm-builder` on MacOS, or Linux for personal use.  
    6.b. `cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl` on Linux for distribution.  
 
-   The builder is not the [zkEVM LLVM framework](https://github.com/matter-labs/era-compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
+   The builder is not the [zkEVM LLVM framework](https://github.com/matter-labs/compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
    If you need a specific branch of zkEVM LLVM, change it in the `LLVM.lock` file at the root of this repository.  
 
 7. Run the builder to clone and build the zkevm LLVM framework at this repository root:  
@@ -64,10 +64,19 @@ We recommend at least 4 GB of RAM available for the build process.
 
 Check `./target/*/zksolc --help` for the compiler usage.  
 
-The `solc` compiler must be available in `$PATH`, or the `--solc` option must be used instead.  
+The `solc` compiler must be available in `$PATH`, or its path must be passed explicitly with the `--solc` option.
 
 For big projects it is more convenient to use the compiler via the Hardhat plugin. For single-file contracts, or small
 projects, the CLI suffices.  
+
+## Unit testing
+
+For running unit tests, `zksolc` itself must also be available in `$PATH`, because it calls itself recursively to allow
+compiling each contract in a separate process. To successfully run unit tests:
+
+1. Run `cargo build --release`.
+2. Move the binary from `./target/release/zksolc` to a directory from `$PATH`, or add the target directory itself to `$PATH`.
+3. Run `cargo test`.
 
 ## CLI reference
 
@@ -120,55 +129,66 @@ Output a single JSON document containing the specified information.
 Available arguments: `abi`, `hashes`, `metadata`, `devdoc`, `userdoc`, `storage-layout`, `ast`, `asm`, `bin`, `bin-runtime`.  
 
 #### `--standard-json`
-Switch to standard JSON input/output mode. Read from `stdin`, write the result to `stdout`.  
-This is the default used by the Hardhat plugin.  
+Switch to standard JSON input/output mode. Read input from `stdin`, write output to `stdout`.  
+This is the default mode used by the Hardhat plugin.  
+
+#### `--detect-missing-libraries`
+Switch to missing deployable libraries detection mode.  
+Only available for standard JSON input/output mode.  
+Contracts are not compiled in this mode, and all compilation artifacts are not included.  
 
 #### `--yul`
-Switch to Yul mode.
+Switch to Yul mode.  
 Only one input Yul file is allowed.  
-Cannot be used with combined and standard JSON modes.
+Cannot be used with combined and standard JSON modes.  
 
 #### `--llvm-ir`
 Switch to LLVM IR mode.  
 Only one input LLVM IR file is allowed.  
-Cannot be used with combined and standard JSON modes.
+Cannot be used with combined and standard JSON modes.  
+Use this mode at your own risk, as LLVM IR input validation is not implemented.  
 
 #### `--zkasm`
 Switch to zkEVM assembly mode.  
 Only one input zkEVM assembly file is allowed.  
-Cannot be used with combined and standard JSON modes.
+Cannot be used with combined and standard JSON modes.  
+Use this mode at your own risk, as EraVM assembly input validation is not implemented.  
 
 #### `--force-evmla`
 Force use of the EVM legacy assembly pipeline.  
-Useful for early versions of `solc` 0.8.x, where Yul was considered highly experimental and contained more bugs than today.
+Useful for early versions of `solc` 0.8.x, where Yul was considered highly experimental and contained more bugs than today.  
 
 #### `--system-mode`
 Enable system contract compilation mode.  
 In this mode, zkEVM extensions are enabled. For example, calls to addresses `0xFFFF` and less are substituted with special
-zkEVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.
+zkEVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.  
 
 #### `--metadata-hash`
-Set metadata hash mode.
+Set metadata hash mode.  
 The only supported value is `none` that disables appending the metadata hash.  
-Is enabled by default.
+Is enabled by default.  
 
 #### `--asm`
-Output zkEVM assembly of the contracts.
+Output zkEVM assembly of the contracts.  
 
 #### `--bin`
-Output zkEVM bytecode of the contracts.
+Output zkEVM bytecode of the contracts.  
+
+#### `--suppress-warnings`
+Suppress specified warnings.  
+Available arguments: `ecrecover`, `sendtransfer`, `extcodesize`, `txorigin`, `blocktimestamp`, `blocknumber`, `blockhash`.  
 
 #### `--debug-output-dir <path>`
 Dump all IR (Yul, EVMLA, LLVM IR, assembly) to files in the specified directory.  
-Only for testing and debugging.
+Only for testing and debugging.  
 
 #### `--llvm-verify-each`
 Set the verify-each option in LLVM.  
-Only for testing and debugging.
+Only for testing and debugging.  
 
 #### `--llvm-debug-logging`
 Set the debug-logging option in LLVM.  
-Only for testing and debugging.
+Only for testing and debugging.  
 
 ## Troubleshooting
 

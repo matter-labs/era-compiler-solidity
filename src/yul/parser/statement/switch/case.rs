@@ -2,6 +2,8 @@
 //! The switch statement case.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -57,6 +59,13 @@ impl Case {
             literal,
             block,
         })
+    }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.block.get_missing_libraries()
     }
 }
 

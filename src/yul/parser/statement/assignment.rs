@@ -2,6 +2,8 @@
 //! The assignment expression statement.
 //!
 
+use std::collections::HashSet;
+
 use inkwell::types::BasicType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -104,13 +106,23 @@ impl Assignment {
             .into()),
         }
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.initializer.get_missing_libraries()
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Assignment
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         let value = match self.initializer.into_llvm(context)? {
             Some(value) => value,
             None => return Ok(()),

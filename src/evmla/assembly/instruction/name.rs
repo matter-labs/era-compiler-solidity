@@ -363,14 +363,18 @@ pub enum Name {
     /// The recursive function call instruction.
     #[serde(skip)]
     RecursiveCall {
-        /// The called function.
+        /// The called function name.
         name: String,
+        /// The called function key.
+        entry_key: compiler_llvm_context::EraVMFunctionBlockKey,
+        /// The stack state hash after return.
+        stack_hash: md5::Digest,
         /// The input size.
         input_size: usize,
         /// The output size.
         output_size: usize,
         /// The return address.
-        return_address: compiler_llvm_context::FunctionBlockKey,
+        return_address: compiler_llvm_context::EraVMFunctionBlockKey,
     },
     /// The recursive function return instruction.
     #[serde(skip)]
@@ -392,13 +396,15 @@ impl std::fmt::Display for Name {
             Self::Tag => write!(f, "Tag"),
             Self::RecursiveCall {
                 name,
+                entry_key,
                 input_size,
                 output_size,
                 return_address,
+                ..
             } => write!(
                 f,
-                "RECURSIVE_CALL({}, {}, {}, {})",
-                name, input_size, output_size, return_address
+                "RECURSIVE_CALL({}_{}, {}, {}, {})",
+                name, entry_key, input_size, output_size, return_address
             ),
             Self::RecursiveReturn { input_size } => write!(f, "RECURSIVE_RETURN({})", input_size),
             _ => write!(

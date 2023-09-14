@@ -13,6 +13,8 @@ pub mod object;
 pub mod switch;
 pub mod variable_declaration;
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -140,6 +142,27 @@ impl Statement {
                 found: token.lexeme.to_string(),
             }
             .into()),
+        }
+    }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        match self {
+            Self::Object(inner) => inner.get_missing_libraries(),
+            Self::Code(inner) => inner.get_missing_libraries(),
+            Self::Block(inner) => inner.get_missing_libraries(),
+            Self::Expression(inner) => inner.get_missing_libraries(),
+            Self::FunctionDefinition(inner) => inner.get_missing_libraries(),
+            Self::VariableDeclaration(inner) => inner.get_missing_libraries(),
+            Self::Assignment(inner) => inner.get_missing_libraries(),
+            Self::IfConditional(inner) => inner.get_missing_libraries(),
+            Self::Switch(inner) => inner.get_missing_libraries(),
+            Self::ForLoop(inner) => inner.get_missing_libraries(),
+            Self::Continue(_) => HashSet::new(),
+            Self::Break(_) => HashSet::new(),
+            Self::Leave(_) => HashSet::new(),
         }
     }
 

@@ -3,6 +3,7 @@
 //!
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -46,6 +47,9 @@ pub struct Contract {
     /// The factory dependencies.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub factory_deps: Option<BTreeMap<String, String>>,
+    /// The missing libraries.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub missing_libraries: Option<HashSet<String>>,
 }
 
 impl Contract {

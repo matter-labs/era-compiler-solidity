@@ -2,6 +2,8 @@
 //! The inner JSON legacy assembly code element.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -40,6 +42,17 @@ impl Data {
             Self::Assembly(ref mut assembly) => Some(assembly),
             Self::Hash(_) => None,
             Self::Path(_) => None,
+        }
+    }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        match self {
+            Self::Assembly(assembly) => assembly.get_missing_libraries(),
+            Self::Hash(_) => HashSet::new(),
+            Self::Path(_) => HashSet::new(),
         }
     }
 

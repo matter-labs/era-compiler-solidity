@@ -2,6 +2,8 @@
 //! The function definition statement.
 //!
 
+use std::collections::HashSet;
+
 use inkwell::types::BasicType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -90,7 +92,7 @@ impl FunctionDefinition {
         let (mut arguments, next) = Identifier::parse_typed_list(lexer, None)?;
         if identifier
             .inner
-            .contains(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_PREFIX)
+            .contains(compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
         {
             if arguments.is_empty() {
                 return Err(ParserError::InvalidNumberOfArguments {
@@ -106,7 +108,7 @@ impl FunctionDefinition {
         }
         if identifier
             .inner
-            .contains(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER)
+            .contains(compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER)
             && !arguments.is_empty()
         {
             return Err(ParserError::InvalidNumberOfArguments {
@@ -165,13 +167,23 @@ impl FunctionDefinition {
             body,
         })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.body.get_missing_libraries()
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for FunctionDefinition
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
             .arguments
             .iter()
@@ -185,7 +197,7 @@ where
             argument_types,
             self.result.len(),
             self.identifier
-                .starts_with(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_PREFIX),
+                .starts_with(compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX),
         );
 
         let function = context.add_function(
@@ -196,19 +208,22 @@ where
         )?;
         function
             .borrow_mut()
-            .set_yul_data(compiler_llvm_context::FunctionYulData::default());
+            .set_yul_data(compiler_llvm_context::EraVMFunctionYulData::default());
 
         Ok(())
     }
 
-    fn into_llvm(mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         context.set_current_function(self.identifier.as_str())?;
         let r#return = context.current_function().borrow().r#return();
 
         context.set_basic_block(context.current_function().borrow().entry_block());
         match r#return {
-            compiler_llvm_context::FunctionReturn::None => {}
-            compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
+            compiler_llvm_context::EraVMFunctionReturn::None => {}
+            compiler_llvm_context::EraVMFunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
                 context.build_store(pointer, r#type.into_llvm(context).const_zero());
@@ -217,7 +232,7 @@ where
                     .borrow_mut()
                     .insert_stack_pointer(identifier.inner, pointer);
             }
-            compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
+            compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. } => {
                 for (index, identifier) in self.result.into_iter().enumerate() {
                     let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
                     let pointer = context.build_gep(
@@ -256,10 +271,10 @@ where
                 .insert_stack_pointer(argument.inner.clone(), pointer);
             if self
                 .identifier
-                .starts_with(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_PREFIX)
+                .starts_with(compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
                 && matches!(
                     context.current_function().borrow().r#return(),
-                    compiler_llvm_context::FunctionReturn::Compound { .. }
+                    compiler_llvm_context::EraVMFunctionReturn::Compound { .. }
                 )
                 && context.is_system_mode()
             {
@@ -285,23 +300,21 @@ where
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
-            compiler_llvm_context::FunctionReturn::None => {
+            compiler_llvm_context::EraVMFunctionReturn::None => {
                 context.build_return(None);
             }
-            compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
+            compiler_llvm_context::EraVMFunctionReturn::Primitive { pointer } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
-            compiler_llvm_context::FunctionReturn::Compound { pointer, .. }
-                if context
-                    .current_function()
-                    .borrow()
-                    .name()
-                    .starts_with(compiler_llvm_context::Function::ZKSYNC_NEAR_CALL_ABI_PREFIX) =>
+            compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. }
+                if context.current_function().borrow().name().starts_with(
+                    compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX,
+                ) =>
             {
                 context.build_return(Some(&pointer.value));
             }
-            compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
+            compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }

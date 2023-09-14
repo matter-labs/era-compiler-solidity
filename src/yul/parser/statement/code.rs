@@ -2,6 +2,8 @@
 //! The YUL code.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -52,13 +54,20 @@ impl Code {
 
         Ok(Self { location, block })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.block.get_missing_libraries()
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Code
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Code
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         self.block.into_llvm(context)?;
 
         Ok(())

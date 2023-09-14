@@ -23,7 +23,7 @@ pub struct Contract {
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
     /// The LLVM module build.
-    pub build: compiler_llvm_context::Build,
+    pub build: compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
     /// The factory dependencies.
@@ -37,7 +37,7 @@ impl Contract {
     pub fn new(
         path: String,
         identifier: String,
-        build: compiler_llvm_context::Build,
+        build: compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
     ) -> Self {
@@ -66,7 +66,7 @@ impl Contract {
             let file_name = format!(
                 "{}.{}",
                 file_name,
-                compiler_common::EXTENSION_ZKEVM_ASSEMBLY
+                compiler_common::EXTENSION_ERAVM_ASSEMBLY
             );
             let mut file_path = path.to_owned();
             file_path.push(file_name);
@@ -88,7 +88,7 @@ impl Contract {
         }
 
         if output_binary {
-            let file_name = format!("{}.{}", file_name, compiler_common::EXTENSION_ZKEVM_BINARY);
+            let file_name = format!("{}.{}", file_name, compiler_common::EXTENSION_ERAVM_BINARY);
             let mut file_path = path.to_owned();
             file_path.push(file_name);
 
@@ -125,7 +125,6 @@ impl Contract {
         if let Some(asm) = combined_json_contract.asm.as_mut() {
             *asm = serde_json::Value::String(self.build.assembly_text);
         }
-
         let hexadecimal_bytecode = hex::encode(self.build.bytecode);
         match (
             combined_json_contract.bin.as_mut(),

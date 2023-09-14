@@ -2,6 +2,8 @@
 //! The contract Yul source code.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -28,17 +30,27 @@ impl Yul {
             object,
         }
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        self.object.get_missing_libraries()
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Yul
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Yul
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         self.object.declare(context)
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         self.object.into_llvm(context)
     }
 }

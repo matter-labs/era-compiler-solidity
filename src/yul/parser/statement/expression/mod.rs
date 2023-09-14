@@ -5,6 +5,8 @@
 pub mod function_call;
 pub mod literal;
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -80,6 +82,17 @@ impl Expression {
     }
 
     ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        match self {
+            Self::FunctionCall(inner) => inner.get_missing_libraries(),
+            Self::Identifier(_) => HashSet::new(),
+            Self::Literal(_) => HashSet::new(),
+        }
+    }
+
+    ///
     /// Returns the statement location.
     ///
     pub fn location(&self) -> Location {
@@ -95,10 +108,10 @@ impl Expression {
     ///
     pub fn into_llvm<'ctx, D>(
         self,
-        context: &mut compiler_llvm_context::Context<'ctx, D>,
-    ) -> anyhow::Result<Option<compiler_llvm_context::Argument<'ctx>>>
+        context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
+    ) -> anyhow::Result<Option<compiler_llvm_context::EraVMArgument<'ctx>>>
     where
-        D: compiler_llvm_context::Dependency + Clone,
+        D: compiler_llvm_context::EraVMDependency + Clone,
     {
         match self {
             Self::Literal(literal) => literal
@@ -135,15 +148,15 @@ impl Expression {
                 let value = context.build_load(pointer, identifier.inner.as_str());
 
                 match constant {
-                    Some(constant) => Ok(Some(compiler_llvm_context::Argument::new_with_constant(
-                        value, constant,
-                    ))),
+                    Some(constant) => Ok(Some(
+                        compiler_llvm_context::EraVMArgument::new_with_constant(value, constant),
+                    )),
                     None => Ok(Some(value.into())),
                 }
             }
             Self::FunctionCall(call) => Ok(call
                 .into_llvm(context)?
-                .map(compiler_llvm_context::Argument::new)),
+                .map(compiler_llvm_context::EraVMArgument::new)),
         }
     }
 }

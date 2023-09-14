@@ -23,21 +23,53 @@ library SimpleLibrary {
 contract SimpleContract {
     using SimpleLibrary for uint256;
 
-    function addTwoNumbers(uint256 a, uint256 b) public pure returns (uint256) {
-        return a.add(b);
+    function performAlgorithm(uint256 a, uint256 b) public pure returns (uint256) {
+        uint sum = 0;
+        if (a > b) {
+            while (true) {
+                sum += a.add(b);
+            }
+        }
+        return sum;
     }
 }
     "#;
 
 #[test]
-#[should_panic(expected = "Library `test.sol:SimpleLibrary` not found in the project")]
 fn not_specified() {
-    super::build_solidity(LIBRARY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
+
+    for pipeline in [SolcPipeline::EVMLA, SolcPipeline::Yul] {
+        let output = super::build_solidity_and_detect_missing_libraries(
+            sources.clone(),
+            BTreeMap::new(),
+            pipeline,
+        )
         .expect("Test failure");
+        assert!(
+            output
+                .contracts
+                .as_ref()
+                .expect("Always exists")
+                .get("test.sol")
+                .expect("Always exists")
+                .get("SimpleContract")
+                .expect("Always exists")
+                .missing_libraries
+                .as_ref()
+                .expect("Always exists")
+                .contains("test.sol:SimpleLibrary"),
+            "Missing library not detected"
+        );
+    }
 }
 
 #[test]
 fn specified() {
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
+
     let mut libraries = BTreeMap::new();
     libraries
         .entry("test.sol".to_string())
@@ -45,5 +77,28 @@ fn specified() {
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
 
-    super::build_solidity(LIBRARY_TEST_SOURCE, libraries, SolcPipeline::Yul).expect("Test failure");
+    for pipeline in [SolcPipeline::EVMLA, SolcPipeline::Yul] {
+        let output = super::build_solidity_and_detect_missing_libraries(
+            sources.clone(),
+            libraries.clone(),
+            pipeline,
+        )
+        .expect("Test failure");
+        assert!(
+            output
+                .contracts
+                .as_ref()
+                .expect("Always exists")
+                .get("test.sol")
+                .expect("Always exists")
+                .get("SimpleContract")
+                .expect("Always exists")
+                .missing_libraries
+                .as_ref()
+                .cloned()
+                .unwrap_or_default()
+                .is_empty(),
+            "The list of missing libraries must be empty"
+        );
+    }
 }

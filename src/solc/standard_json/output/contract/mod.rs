@@ -5,6 +5,7 @@
 pub mod evm;
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -38,10 +39,13 @@ pub struct Contract {
     /// The contract optimized IR code.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ir_optimized: Option<String>,
-    /// The contract's zkEVM bytecode hash.
+    /// The contract zkEVM bytecode hash.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hash: Option<String>,
-    /// The contracts factory dependencies.
+    /// The contract factory dependencies.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub factory_dependencies: Option<BTreeMap<String, String>>,
+    /// The contract missing libraries.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub missing_libraries: Option<HashSet<String>>,
 }

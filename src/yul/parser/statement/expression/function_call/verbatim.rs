@@ -8,13 +8,13 @@ use crate::yul::parser::statement::expression::function_call::FunctionCall;
 /// Translates the verbatim simulations.
 ///
 pub fn verbatim<'ctx, D>(
-    context: &mut compiler_llvm_context::Context<'ctx, D>,
+    context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
     call: &mut FunctionCall,
     input_size: usize,
     output_size: usize,
 ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
     if output_size > 1 {
         anyhow::bail!(
@@ -43,7 +43,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::to_l1(
+            compiler_llvm_context::eravm_general::to_l1(
                 context,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
@@ -64,7 +64,7 @@ where
                 );
             }
 
-            compiler_llvm_context::zkevm_general::code_source(context).map(Some)
+            compiler_llvm_context::eravm_general::code_source(context).map(Some)
         }
         identifier @ "precompile" => {
             /// The number of arguments expected by this verbatim variant.
@@ -80,7 +80,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::precompile(
+            compiler_llvm_context::eravm_general::precompile(
                 context,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
@@ -100,7 +100,7 @@ where
                 );
             }
 
-            compiler_llvm_context::zkevm_general::meta(context).map(Some)
+            compiler_llvm_context::eravm_general::meta(context).map(Some)
         }
         identifier @ "mimic_call" => {
             /// The number of arguments expected by this verbatim variant.
@@ -116,7 +116,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::mimic(
+            compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call,
                 arguments[0].into_int_value(),
@@ -140,12 +140,12 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::mimic(
+            compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 vec![context.field_const(0), context.field_const(0)],
             )
             .map(Some)
@@ -164,7 +164,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::mimic(
+            compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call,
                 arguments[0].into_int_value(),
@@ -193,12 +193,12 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::mimic(
+            compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 vec![
                     arguments[2].into_int_value(),
                     arguments[3].into_int_value(),
@@ -222,7 +222,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().far_call,
                 arguments[0].into_int_value(),
@@ -246,11 +246,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -270,7 +270,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().far_call,
                 arguments[0].into_int_value(),
@@ -300,11 +300,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 context.field_const(0),
                 context.field_const(0),
                 vec![
@@ -330,7 +330,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().static_call,
                 arguments[0].into_int_value(),
@@ -354,11 +354,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -378,7 +378,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().static_call,
                 arguments[0].into_int_value(),
@@ -403,11 +403,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -428,7 +428,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().delegate_call,
                 arguments[0].into_int_value(),
@@ -452,11 +452,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::raw_far(
+            compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -476,7 +476,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().delegate_call,
                 arguments[0].into_int_value(),
@@ -501,11 +501,11 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_call::system(
+            compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::GLOBAL_ACTIVE_POINTER)?,
+                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -526,7 +526,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::set_context_value(
+            compiler_llvm_context::eravm_general::set_context_value(
                 context,
                 arguments[0].into_int_value(),
             )
@@ -546,7 +546,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::set_pubdata_price(
+            compiler_llvm_context::eravm_general::set_pubdata_price(
                 context,
                 arguments[0].into_int_value(),
             )
@@ -565,7 +565,7 @@ where
                 );
             }
 
-            compiler_llvm_context::zkevm_general::increment_tx_counter(context).map(Some)
+            compiler_llvm_context::eravm_general::increment_tx_counter(context).map(Some)
         }
         identifier @ "event_initialize" => {
             /// The number of arguments expected by this verbatim variant.
@@ -581,7 +581,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::event(
+            compiler_llvm_context::eravm_general::event(
                 context,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
@@ -603,7 +603,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_general::event(
+            compiler_llvm_context::eravm_general::event(
                 context,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
@@ -624,7 +624,7 @@ where
                 );
             }
 
-            compiler_llvm_context::zkevm_abi::calldata_ptr_to_active(context).map(Some)
+            compiler_llvm_context::eravm_abi::calldata_ptr_to_active(context).map(Some)
         }
         identifier @ "return_data_ptr_to_active" => {
             /// The number of arguments expected by this verbatim variant.
@@ -639,7 +639,7 @@ where
                 );
             }
 
-            compiler_llvm_context::zkevm_abi::return_data_ptr_to_active(context).map(Some)
+            compiler_llvm_context::eravm_abi::return_data_ptr_to_active(context).map(Some)
         }
         identifier @ "active_ptr_add_assign" => {
             /// The number of arguments expected by this verbatim variant.
@@ -655,7 +655,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_abi::active_ptr_add_assign(
+            compiler_llvm_context::eravm_abi::active_ptr_add_assign(
                 context,
                 arguments[0].into_int_value(),
             )
@@ -675,7 +675,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_abi::active_ptr_shrink_assign(
+            compiler_llvm_context::eravm_abi::active_ptr_shrink_assign(
                 context,
                 arguments[0].into_int_value(),
             )
@@ -695,7 +695,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_abi::active_ptr_pack_assign(
+            compiler_llvm_context::eravm_abi::active_ptr_pack_assign(
                 context,
                 arguments[0].into_int_value(),
             )
@@ -715,7 +715,7 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            compiler_llvm_context::zkevm_math::multiplication_512(
+            compiler_llvm_context::eravm_math::multiplication_512(
                 context,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
@@ -735,10 +735,11 @@ where
                 );
             }
 
-            compiler_llvm_context::throw(context).map(|_| None)
+            compiler_llvm_context::eravm_utils::throw(context).map(|_| None)
         }
         identifier
-            if identifier.starts_with(compiler_llvm_context::GLOBAL_VERBATIM_GETTER_PREFIX) =>
+            if identifier
+                .starts_with(compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX) =>
         {
             /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
@@ -752,25 +753,32 @@ where
                 );
             }
 
-            match identifier.strip_prefix(compiler_llvm_context::GLOBAL_VERBATIM_GETTER_PREFIX) {
+            match identifier
+                .strip_prefix(compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX)
+            {
                 Some(identifier)
-                    if identifier == compiler_llvm_context::GLOBAL_CALLDATA_POINTER =>
-                {
-                    context.get_global(identifier).map(Some)
-                }
-                Some(identifier) if identifier == compiler_llvm_context::GLOBAL_CALL_FLAGS => {
-                    context.get_global(identifier).map(Some)
-                }
-                Some(identifier)
-                    if identifier == compiler_llvm_context::GLOBAL_RETURN_DATA_POINTER =>
+                    if identifier
+                        == compiler_llvm_context::eravm_const::GLOBAL_CALLDATA_POINTER =>
                 {
                     context.get_global(identifier).map(Some)
                 }
                 Some(identifier)
-                    if identifier.starts_with(compiler_llvm_context::GLOBAL_EXTRA_ABI_DATA) =>
+                    if identifier == compiler_llvm_context::eravm_const::GLOBAL_CALL_FLAGS =>
+                {
+                    context.get_global(identifier).map(Some)
+                }
+                Some(identifier)
+                    if identifier
+                        == compiler_llvm_context::eravm_const::GLOBAL_RETURN_DATA_POINTER =>
+                {
+                    context.get_global(identifier).map(Some)
+                }
+                Some(identifier)
+                    if identifier
+                        .starts_with(compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA) =>
                 {
                     let stripped = identifier
-                        .strip_prefix(compiler_llvm_context::GLOBAL_EXTRA_ABI_DATA)
+                        .strip_prefix(compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA)
                         .expect("Always exists");
                     let stripped = stripped.strip_prefix('_').ok_or_else(|| {
                         anyhow::anyhow!(
@@ -787,13 +795,13 @@ where
                             error,
                         )
                     })?;
-                    if index >= (compiler_llvm_context::EXTRA_ABI_DATA_SIZE as u64) {
+                    if index >= (compiler_llvm_context::eravm_const::EXTRA_ABI_DATA_SIZE as u64) {
                         anyhow::bail!(
                             "{} Extra ABI data overflow. Only indexes `0..=9` are allowed",
                             call.location,
                         );
                     }
-                    compiler_llvm_context::zkevm_abi::get_extra_abi_data(
+                    compiler_llvm_context::eravm_abi::get_extra_abi_data(
                         context,
                         context.field_const(index),
                     )

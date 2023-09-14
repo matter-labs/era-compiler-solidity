@@ -1,5 +1,13 @@
 # The `zksolc` changelog
 
+## [1.3.14] - 2023-09-06
+
+### Added
+
+- A mode for detection of missing deployable library addresses
+- An option to suppress compiler warnings
+- The solc v0.8.21 support
+
 ## [1.3.13] - 2023-06-29
 
 ### Added

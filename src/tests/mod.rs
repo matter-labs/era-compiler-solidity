@@ -4,33 +4,58 @@
 
 #![cfg(test)]
 
+mod factory_dependency;
 mod libraries;
 mod messages;
+mod optimizer;
 mod runtime_code;
 mod unsupported_opcodes;
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
+use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::Compiler as SolcCompiler;
+use crate::warning::Warning;
 
+///
+/// Checks if the required executables are present in `${PATH}`.
+///
+fn check_dependencies() {
+    for executable in [
+        crate::r#const::DEFAULT_EXECUTABLE_NAME,
+        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+    ]
+    .iter()
+    {
+        assert!(
+            which::which(executable).is_ok(),
+            "The `{executable}` executable not found in ${{PATH}}"
+        );
+    }
+}
+
+///
+/// Builds the Solidity project and returns the standard JSON output.
+///
 pub fn build_solidity(
-    source_code: &str,
+    sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     pipeline: SolcPipeline,
-) -> anyhow::Result<()> {
-    inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target();
-    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
-    let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
+    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+) -> anyhow::Result<SolcStandardJsonOutput> {
+    check_dependencies();
 
-    let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_string(), source_code.to_string());
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
@@ -38,9 +63,10 @@ pub fn build_solidity(
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,
         pipeline == SolcPipeline::Yul,
+        None,
     )?;
 
-    let mut solc = SolcCompiler::new("solc".to_owned());
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
     let project = output.try_to_project(
@@ -50,48 +76,76 @@ pub fn build_solidity(
         &SolcCompiler::LAST_SUPPORTED_VERSION,
         None,
     )?;
-    let _build = project.compile(
+
+    let build = project.compile(
         optimizer_settings,
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
     )?;
+    build.write_to_standard_json(
+        &mut output,
+        &solc.version()?,
+        &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
+    )?;
 
-    Ok(())
+    Ok(output)
 }
 
-pub fn check_solidity_warning(
-    source_code: &str,
-    warning_substring: &str,
+///
+/// Builds the Solidity project and returns the standard JSON output.
+///
+pub fn build_solidity_and_detect_missing_libraries(
+    sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     pipeline: SolcPipeline,
-) -> anyhow::Result<bool> {
-    let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_string(), source_code.to_string());
+) -> anyhow::Result<SolcStandardJsonOutput> {
+    check_dependencies();
+
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
-        libraries,
+        libraries.clone(),
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,
         pipeline == SolcPipeline::Yul,
+        None,
     )?;
 
-    let mut solc = SolcCompiler::new("solc".to_owned());
-    let output = solc.standard_json(input, pipeline, None, vec![], None)?;
-    let contains_warning = output
-        .errors
-        .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?
-        .iter()
-        .any(|error| error.formatted_message.contains(warning_substring));
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
-    Ok(contains_warning)
+    let project = output.try_to_project(
+        sources,
+        libraries,
+        pipeline,
+        &SolcCompiler::LAST_SUPPORTED_VERSION,
+        None,
+    )?;
+
+    let missing_libraries = project.get_missing_libraries();
+    missing_libraries.write_to_standard_json(
+        &mut output,
+        &solc.version()?,
+        &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
+    )?;
+
+    Ok(output)
 }
 
+///
+/// Checks if the Yul project can be built without errors.
+///
 pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
+    check_dependencies();
+
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target();
+    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
     let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
 
     let project =
@@ -105,4 +159,39 @@ pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
     )?;
 
     Ok(())
+}
+
+///
+/// Checks if the built Solidity project contains the given warning.
+///
+pub fn check_solidity_warning(
+    source_code: &str,
+    warning_substring: &str,
+    libraries: BTreeMap<String, BTreeMap<String, String>>,
+    pipeline: SolcPipeline,
+    suppressed_warnings: Option<Vec<Warning>>,
+) -> anyhow::Result<bool> {
+    check_dependencies();
+
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_string(), source_code.to_string());
+    let input = SolcStandardJsonInput::try_from_sources(
+        sources.clone(),
+        libraries,
+        SolcStandardJsonInputSettingsSelection::new_required(pipeline),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        None,
+        pipeline == SolcPipeline::Yul,
+        suppressed_warnings,
+    )?;
+
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let output = solc.standard_json(input, pipeline, None, vec![], None)?;
+    let contains_warning = output
+        .errors
+        .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?
+        .iter()
+        .any(|error| error.formatted_message.contains(warning_substring));
+
+    Ok(contains_warning)
 }

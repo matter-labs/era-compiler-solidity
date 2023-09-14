@@ -29,7 +29,16 @@ contract FixedCodeCopy {
 }
     "#;
 
-    super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul).expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), source_code.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }
 
 pub const CALLCODE_TEST_SOURCE: &str = r#"
@@ -58,15 +67,31 @@ contract CallcodeTest {
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_evmla() {
-    super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::EVMLA)
-        .expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::EVMLA,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }
 
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_yul() {
-    super::build_solidity(CALLCODE_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-        .expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }
 
 #[test]
@@ -114,10 +139,14 @@ contract ExternalCodeCopy {
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_evmla() {
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
+
     super::build_solidity(
-        EXTCODECOPY_TEST_SOURCE,
+        sources,
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -125,8 +154,16 @@ fn extcodecopy_evmla() {
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_yul() {
-    super::build_solidity(EXTCODECOPY_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-        .expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }
 
 pub const SELFDESTRUCT_TEST_SOURCE: &str = r#"
@@ -150,10 +187,14 @@ contract MinimalDestructible {
 #[test]
 #[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
 fn selfdestruct_evmla() {
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), SELFDESTRUCT_TEST_SOURCE.to_owned());
+
     super::build_solidity(
-        SELFDESTRUCT_TEST_SOURCE,
+        sources,
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -161,6 +202,14 @@ fn selfdestruct_evmla() {
 #[test]
 #[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
 fn selfdestruct_yul() {
-    super::build_solidity(SELFDESTRUCT_TEST_SOURCE, BTreeMap::new(), SolcPipeline::Yul)
-        .expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), SELFDESTRUCT_TEST_SOURCE.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }

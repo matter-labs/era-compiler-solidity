@@ -6,6 +6,7 @@ pub mod contract;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::path::Path;
 
 use rayon::iter::IntoParallelIterator;
@@ -16,6 +17,7 @@ use sha3::Digest;
 
 use crate::build::contract::Contract as ContractBuild;
 use crate::build::Build;
+use crate::missing_libraries::MissingLibraries;
 use crate::process::input::Input as ProcessInput;
 use crate::project::contract::ir::IR;
 use crate::solc::Compiler as SolcCompiler;
@@ -139,6 +141,33 @@ impl Project {
     }
 
     ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> MissingLibraries {
+        let deployed_libraries = self
+            .libraries
+            .iter()
+            .flat_map(|(file, names)| {
+                names
+                    .iter()
+                    .map(|(name, _address)| format!("{file}:{name}"))
+                    .collect::<HashSet<String>>()
+            })
+            .collect::<HashSet<String>>();
+
+        let mut missing_deployable_libraries = BTreeMap::new();
+        for (contract_path, contract) in self.contracts.iter() {
+            let missing_libraries = contract
+                .get_missing_libraries()
+                .into_iter()
+                .filter(|library| !deployed_libraries.contains(library))
+                .collect::<HashSet<String>>();
+            missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
+        }
+        MissingLibraries::new(missing_deployable_libraries)
+    }
+
+    ///
     /// Parses the Yul source code file and returns the source data.
     ///
     pub fn try_from_yul_path(
@@ -206,14 +235,14 @@ impl Project {
             Contract::new(
                 path.clone(),
                 source_hash,
-                compiler_llvm_context::LLVM_VERSION,
+                compiler_llvm_context::eravm_const::LLVM_VERSION,
                 IR::new_llvm_ir(path, source_code),
                 None,
             ),
         );
 
         Ok(Self::new(
-            compiler_llvm_context::LLVM_VERSION,
+            compiler_llvm_context::eravm_const::LLVM_VERSION,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -236,21 +265,21 @@ impl Project {
             Contract::new(
                 path.clone(),
                 source_hash,
-                compiler_llvm_context::ZKEVM_VERSION,
+                compiler_llvm_context::eravm_const::ZKEVM_VERSION,
                 IR::new_zkasm(path, source_code),
                 None,
             ),
         );
 
         Ok(Self::new(
-            compiler_llvm_context::ZKEVM_VERSION,
+            compiler_llvm_context::eravm_const::ZKEVM_VERSION,
             project_contracts,
             BTreeMap::new(),
         ))
     }
 }
 
-impl compiler_llvm_context::Dependency for Project {
+impl compiler_llvm_context::EraVMDependency for Project {
     fn compile(
         project: Self,
         identifier: &str,

@@ -2,6 +2,8 @@
 //! The for-loop statement.
 //!
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -53,13 +55,24 @@ impl ForLoop {
             body,
         })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        let mut libraries = self.initializer.get_missing_libraries();
+        libraries.extend(self.condition.get_missing_libraries());
+        libraries.extend(self.finalizer.get_missing_libraries());
+        libraries.extend(self.body.get_missing_libraries());
+        libraries
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for ForLoop
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         self.initializer.into_llvm(context)?;
 
         let condition_block = context.append_basic_block("for_condition");

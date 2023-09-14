@@ -13,14 +13,14 @@ use serde::Serialize;
 pub struct Metadata {
     /// The bytecode hash mode.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub bytecode_hash: Option<compiler_llvm_context::MetadataHash>,
+    pub bytecode_hash: Option<compiler_llvm_context::EraVMMetadataHash>,
 }
 
 impl Metadata {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(bytecode_hash: compiler_llvm_context::MetadataHash) -> Self {
+    pub fn new(bytecode_hash: compiler_llvm_context::EraVMMetadataHash) -> Self {
         Self {
             bytecode_hash: Some(bytecode_hash),
         }

@@ -22,13 +22,13 @@ pub struct Block {
     /// The Solidity compiler version.
     pub solc_version: semver::Version,
     /// The block key.
-    pub key: compiler_llvm_context::FunctionBlockKey,
+    pub key: compiler_llvm_context::EraVMFunctionBlockKey,
     /// The block instance.
     pub instance: Option<usize>,
     /// The block elements relevant to the stack consistency.
     pub elements: Vec<Element>,
     /// The block predecessors.
-    pub predecessors: HashSet<(compiler_llvm_context::FunctionBlockKey, usize)>,
+    pub predecessors: HashSet<(compiler_llvm_context::EraVMFunctionBlockKey, usize)>,
     /// The initial stack state.
     pub initial_stack: ElementStack,
     /// The stack.
@@ -48,7 +48,7 @@ impl Block {
     ///
     pub fn try_from_instructions(
         solc_version: semver::Version,
-        code_type: compiler_llvm_context::CodeType,
+        code_type: compiler_llvm_context::EraVMCodeType,
         slice: &[Instruction],
     ) -> anyhow::Result<(Self, usize)> {
         let mut cursor = 0;
@@ -69,7 +69,7 @@ impl Block {
 
         let mut block = Self {
             solc_version: solc_version.clone(),
-            key: compiler_llvm_context::FunctionBlockKey::new(code_type, tag),
+            key: compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, tag),
             instance: None,
             elements: Vec::with_capacity(Self::ELEMENTS_VECTOR_DEFAULT_CAPACITY),
             predecessors: HashSet::with_capacity(Self::PREDECESSORS_HASHSET_DEFAULT_CAPACITY),
@@ -78,18 +78,24 @@ impl Block {
             extra_hashes: vec![],
         };
 
+        let mut dead_code = false;
         while cursor < slice.len() {
-            let element: Element = Element::new(solc_version.clone(), slice[cursor].to_owned());
-            block.elements.push(element);
+            if !dead_code {
+                let element: Element = Element::new(solc_version.clone(), slice[cursor].to_owned());
+                block.elements.push(element);
+            }
 
             match slice[cursor].name {
                 InstructionName::RETURN
                 | InstructionName::REVERT
                 | InstructionName::STOP
-                | InstructionName::INVALID
-                | InstructionName::JUMP => {
+                | InstructionName::INVALID => {
                     cursor += 1;
-                    break;
+                    dead_code = true;
+                }
+                InstructionName::JUMP => {
+                    cursor += 1;
+                    dead_code = true;
                 }
                 InstructionName::Tag => {
                     break;
@@ -108,18 +114,18 @@ impl Block {
     ///
     pub fn insert_predecessor(
         &mut self,
-        key: compiler_llvm_context::FunctionBlockKey,
+        key: compiler_llvm_context::EraVMFunctionBlockKey,
         instance: usize,
     ) {
         self.predecessors.insert((key, instance));
     }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Block
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Block
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         context.set_code_type(self.key.code_type);
 
         for element in self.elements.into_iter() {

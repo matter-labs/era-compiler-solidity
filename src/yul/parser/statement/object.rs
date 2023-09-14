@@ -170,33 +170,48 @@ impl Object {
             factory_dependencies,
         })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        let mut missing_libraries = self.code.get_missing_libraries();
+        if let Some(inner_object) = &self.inner_object {
+            missing_libraries.extend(inner_object.get_missing_libraries());
+        }
+        missing_libraries
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Object
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Object
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        let mut entry = compiler_llvm_context::EntryFunction::default();
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let mut entry = compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
 
-        let mut runtime =
-            compiler_llvm_context::Runtime::new(compiler_llvm_context::AddressSpace::Heap);
+        let mut runtime = compiler_llvm_context::EraVMRuntime::new(
+            compiler_llvm_context::EraVMAddressSpace::Heap,
+        );
         runtime.declare(context)?;
 
-        compiler_llvm_context::DeployCodeFunction::new(
-            compiler_llvm_context::DummyLLVMWritable::default(),
+        compiler_llvm_context::EraVMDeployCodeFunction::new(
+            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
-        compiler_llvm_context::RuntimeCodeFunction::new(
-            compiler_llvm_context::DummyLLVMWritable::default(),
+        compiler_llvm_context::EraVMRuntimeCodeFunction::new(
+            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
 
         for name in [
-            compiler_llvm_context::Runtime::FUNCTION_DEPLOY_CODE,
-            compiler_llvm_context::Runtime::FUNCTION_RUNTIME_CODE,
-            compiler_llvm_context::Runtime::FUNCTION_ENTRY,
+            compiler_llvm_context::EraVMRuntime::FUNCTION_DEPLOY_CODE,
+            compiler_llvm_context::EraVMRuntime::FUNCTION_RUNTIME_CODE,
+            compiler_llvm_context::EraVMRuntime::FUNCTION_ENTRY,
         ]
         .into_iter()
         {
@@ -204,7 +219,7 @@ where
                 .get_function(name)
                 .expect("Always exists")
                 .borrow_mut()
-                .set_yul_data(compiler_llvm_context::FunctionYulData::default());
+                .set_yul_data(compiler_llvm_context::EraVMFunctionYulData::default());
         }
 
         entry.into_llvm(context)?;
@@ -212,11 +227,11 @@ where
         Ok(())
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         if self.identifier.ends_with("_deployed") {
-            compiler_llvm_context::RuntimeCodeFunction::new(self.code).into_llvm(context)?;
+            compiler_llvm_context::EraVMRuntimeCodeFunction::new(self.code).into_llvm(context)?;
         } else {
-            compiler_llvm_context::DeployCodeFunction::new(self.code).into_llvm(context)?;
+            compiler_llvm_context::EraVMDeployCodeFunction::new(self.code).into_llvm(context)?;
         }
 
         match self.inner_object {
@@ -224,8 +239,9 @@ where
                 object.into_llvm(context)?;
             }
             None => {
-                let runtime =
-                    compiler_llvm_context::Runtime::new(compiler_llvm_context::AddressSpace::Heap);
+                let runtime = compiler_llvm_context::EraVMRuntime::new(
+                    compiler_llvm_context::EraVMAddressSpace::Heap,
+                );
                 runtime.into_llvm(context)?;
             }
         }

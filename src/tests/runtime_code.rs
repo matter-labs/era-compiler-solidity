@@ -24,5 +24,14 @@ contract Test {
 }
     "#;
 
-    super::build_solidity(source_code, BTreeMap::new(), SolcPipeline::Yul).expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), source_code.to_owned());
+
+    super::build_solidity(
+        sources,
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
 }

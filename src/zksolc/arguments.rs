@@ -79,9 +79,15 @@ pub struct Arguments {
     pub combined_json: Option<String>,
 
     /// Switch to standard JSON input/output mode. Read from stdin, write the result to stdout.
-    /// This is the default used by the hardhat plugin.
+    /// This is the default used by the Hardhat plugin.
     #[structopt(long = "standard-json")]
     pub standard_json: bool,
+
+    /// Switch to missing deployable libraries detection mode.
+    /// Only available for standard JSON input/output mode.
+    /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
+    #[structopt(long = "detect-missing-libraries")]
+    pub detect_missing_libraries: bool,
 
     /// Switch to Yul mode.
     /// Only one input Yul file is allowed.
@@ -92,12 +98,14 @@ pub struct Arguments {
     /// Switch to LLVM IR mode.
     /// Only one input LLVM IR file is allowed.
     /// Cannot be used with combined and standard JSON modes.
+    /// Use this mode at your own risk, as LLVM IR input validation is not implemented.
     #[structopt(long = "llvm-ir")]
     pub llvm_ir: bool,
 
     /// Switch to zkEVM assembly mode.
     /// Only one input zkEVM assembly file is allowed.
     /// Cannot be used with combined and standard JSON modes.
+    /// Use this mode at your own risk, as EraVM assembly input validation is not implemented.
     #[structopt(long = "zkasm")]
     pub zkasm: bool,
 
@@ -127,6 +135,11 @@ pub struct Arguments {
     /// Output zkEVM bytecode of the contracts.
     #[structopt(long = "bin")]
     pub output_binary: bool,
+
+    /// Suppress specified warnings.
+    /// Available arguments: `ecrecover`, `sendtransfer`, `extcodesize`, `txorigin`, `blocktimestamp`, `blocknumber`, `blockhash`.
+    #[structopt(long = "suppress-warnings")]
+    pub suppress_warnings: Option<Vec<String>>,
 
     /// Dump all IRs to files in the specified directory.
     /// Only for testing and debugging.

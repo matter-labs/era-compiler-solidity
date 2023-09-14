@@ -5,13 +5,16 @@
 pub(crate) mod build;
 pub(crate) mod r#const;
 pub(crate) mod evmla;
+pub(crate) mod missing_libraries;
 pub(crate) mod process;
 pub(crate) mod project;
 pub(crate) mod solc;
+pub(crate) mod warning;
 pub(crate) mod yul;
 
 pub use self::build::contract::Contract as ContractBuild;
 pub use self::build::Build;
+pub use self::missing_libraries::MissingLibraries;
 pub use self::process::input::Input as ProcessInput;
 pub use self::process::output::Output as ProcessOutput;
 pub use self::process::run as run_process;
@@ -37,6 +40,7 @@ pub use self::solc::standard_json::output::contract::Contract as SolcStandardJso
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
+pub use self::warning::Warning;
 
 mod tests;
 
@@ -167,6 +171,7 @@ pub fn standard_output(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<Build> {
     let solc_version = solc.version()?;
@@ -180,6 +185,7 @@ pub fn standard_output(
         SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
         None,
         solc_pipeline == SolcPipeline::Yul,
+        suppressed_warnings,
     )?;
 
     let source_code_files = solc_input
@@ -238,6 +244,7 @@ pub fn standard_output(
 #[allow(clippy::too_many_arguments)]
 pub fn standard_json(
     solc: &mut SolcCompiler,
+    detect_missing_libraries: bool,
     force_evmla: bool,
     is_system_mode: bool,
     base_path: Option<String>,
@@ -261,7 +268,7 @@ pub fn standard_json(
 
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
-            metadata.bytecode_hash != Some(compiler_llvm_context::MetadataHash::None)
+            metadata.bytecode_hash != Some(compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
@@ -292,15 +299,23 @@ pub fn standard_json(
         debug_config.as_ref(),
     )?;
 
-    let build = project.compile(
-        optimizer_settings,
-        is_system_mode,
-        include_metadata_hash,
-        zkevm_assembly::RunningVmEncodingMode::Production,
-        debug_config,
-    )?;
-
-    build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
+    if detect_missing_libraries {
+        let missing_libraries = project.get_missing_libraries();
+        missing_libraries.write_to_standard_json(
+            &mut solc_output,
+            &solc_version,
+            &zksolc_version,
+        )?;
+    } else {
+        let build = project.compile(
+            optimizer_settings,
+            is_system_mode,
+            include_metadata_hash,
+            zkevm_assembly::RunningVmEncodingMode::Production,
+            debug_config,
+        )?;
+        build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
+    }
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
     std::process::exit(0);
 }
@@ -322,6 +337,7 @@ pub fn combined_json(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
     output_directory: Option<PathBuf>,
     overwrite: bool,
@@ -340,6 +356,7 @@ pub fn combined_json(
         base_path,
         include_paths,
         allow_paths,
+        suppressed_warnings,
         debug_config,
     )?;
 

@@ -323,13 +323,17 @@ impl Instruction {
     ///
     pub fn recursive_call(
         name: String,
+        entry_key: compiler_llvm_context::EraVMFunctionBlockKey,
+        stack_hash: md5::Digest,
         input_size: usize,
         output_size: usize,
-        return_address: compiler_llvm_context::FunctionBlockKey,
+        return_address: compiler_llvm_context::EraVMFunctionBlockKey,
     ) -> Self {
         Self {
             name: Name::RecursiveCall {
                 name,
+                entry_key,
+                stack_hash,
                 input_size,
                 output_size,
                 return_address,

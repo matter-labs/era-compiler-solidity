@@ -7,10 +7,9 @@
 use std::collections::BTreeMap;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::warning::Warning;
 
-#[test]
-fn ecrecover() {
-    let source_code = r#"
+pub const ECRECOVER_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -26,19 +25,33 @@ contract ECRecoverExample {
 }
     "#;
 
+#[test]
+fn ecrecover() {
     assert!(
         super::check_solidity_warning(
-            source_code,
+            ECRECOVER_TEST_SOURCE,
             "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            None,
         ).expect("Test failure")
     );
 }
 
 #[test]
-fn send() {
-    let source_code = r#"
+fn ecrecover_suppressed() {
+    assert!(
+        !super::check_solidity_warning(
+            ECRECOVER_TEST_SOURCE,
+            "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
+            BTreeMap::new(),
+            SolcPipeline::Yul,
+            Some(vec![Warning::EcRecover]),
+        ).expect("Test failure")
+    );
+}
+
+pub const SEND_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -56,19 +69,33 @@ contract SendExample {
 }
     "#;
 
+#[test]
+fn send() {
     assert!(
         super::check_solidity_warning(
-            source_code,
+            SEND_TEST_SOURCE,
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            None,
         ).expect("Test failure")
     );
 }
 
 #[test]
-fn transfer() {
-    let source_code = r#"
+fn send_suppressed() {
+    assert!(
+        !super::check_solidity_warning(
+            SEND_TEST_SOURCE,
+            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+            BTreeMap::new(),
+            SolcPipeline::Yul,
+            Some(vec![Warning::SendTransfer]),
+        ).expect("Test failure")
+    );
+}
+
+pub const TRANSFER_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -85,19 +112,33 @@ contract TransferExample {
 }
     "#;
 
+#[test]
+fn transfer() {
     assert!(
         super::check_solidity_warning(
-            source_code,
+            TRANSFER_TEST_SOURCE,
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            None,
         ).expect("Test failure")
     );
 }
 
 #[test]
-fn extcodesize() {
-    let source_code = r#"
+fn transfer_suppressed() {
+    assert!(
+        !super::check_solidity_warning(
+            TRANSFER_TEST_SOURCE,
+            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+            BTreeMap::new(),
+            SolcPipeline::Yul,
+            Some(vec![Warning::SendTransfer]),
+        ).expect("Test failure")
+    );
+}
+
+pub const EXTCODESIZE_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -112,18 +153,31 @@ contract ExternalCodeSize {
 }
     "#;
 
+#[test]
+fn extcodesize() {
     assert!(super::check_solidity_warning(
-        source_code,
+        EXTCODESIZE_TEST_SOURCE,
         "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn tx_origin() {
-    let source_code = r#"
+fn extcodesize_suppressed() {
+    assert!(!super::check_solidity_warning(
+        EXTCODESIZE_TEST_SOURCE,
+        "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::ExtCodeSize]),
+    )
+    .expect("Test failure"));
+}
+
+pub const TX_ORIGIN_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -134,18 +188,31 @@ contract TxOriginExample {
 }
     "#;
 
+#[test]
+fn tx_origin() {
     assert!(super::check_solidity_warning(
-        source_code,
+        TX_ORIGIN_TEST_SOURCE,
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn tx_origin_assembly() {
-    let source_code = r#"
+fn tx_origin_suppressed() {
+    assert!(!super::check_solidity_warning(
+        TX_ORIGIN_TEST_SOURCE,
+        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::TxOrigin]),
+    )
+    .expect("Test failure"));
+}
+
+pub const TX_ORIGIN_ASSEMBLY_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -163,18 +230,31 @@ contract TxOriginExample {
 }
     "#;
 
+#[test]
+fn tx_origin_assembly() {
     assert!(super::check_solidity_warning(
-        source_code,
+        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn block_timestamp() {
-    let source_code = r#"
+fn tx_origin_assembly_suppressed() {
+    assert!(!super::check_solidity_warning(
+        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
+        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::TxOrigin]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_TIMESTAMP_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -185,18 +265,31 @@ contract BlockTimestampExample {
 }
     "#;
 
+#[test]
+fn block_timestamp() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_TIMESTAMP_TEST_SOURCE,
         "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn block_timestamp_assembly() {
-    let source_code = r#"
+fn block_timestamp_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_TIMESTAMP_TEST_SOURCE,
+        "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockTimestamp]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_TIMESTAMP_ASSEMBLY_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -213,18 +306,31 @@ contract BlockTimestampExample {
 }
     "#;
 
+#[test]
+fn block_timestamp_assembly() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_TIMESTAMP_ASSEMBLY_TEST_SOURCE,
         "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn block_number() {
-    let source_code = r#"
+fn block_timestamp_assembly_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_TIMESTAMP_ASSEMBLY_TEST_SOURCE,
+        "Warning: You are using 'block.timestamp' in your code, which might lead to unexpected behaviour.",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockTimestamp]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_NUMBER_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -235,18 +341,31 @@ contract BlockNumberExample {
 }
     "#;
 
+#[test]
+fn block_number() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_NUMBER_TEST_SOURCE,
         "Warning: You are using 'block.number' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn block_number_assembly() {
-    let source_code = r#"
+fn block_number_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_NUMBER_TEST_SOURCE,
+        "Warning: You are using 'block.number' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockNumber]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_NUMBER_ASSEMBLY_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -263,18 +382,31 @@ contract BlockNumberExample {
 }
     "#;
 
+#[test]
+fn block_number_assembly() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_NUMBER_ASSEMBLY_TEST_SOURCE,
         "Warning: You are using 'block.number' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn blockhash() {
-    let source_code = r#"
+fn block_number_assembly_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_NUMBER_ASSEMBLY_TEST_SOURCE,
+        "Warning: You are using 'block.number' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockNumber]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_HASH_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -285,18 +417,31 @@ contract BlockHashExample {
 }
     "#;
 
+#[test]
+fn blockhash() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_HASH_TEST_SOURCE,
         "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
     )
     .expect("Test failure"));
 }
 
 #[test]
-fn blockhash_assembly() {
-    let source_code = r#"
+fn blockhash_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_HASH_TEST_SOURCE,
+        "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockHash]),
+    )
+    .expect("Test failure"));
+}
+
+pub const BLOCK_HASH_ASSEMBLY_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -309,11 +454,26 @@ contract BlockHashExampleAssembly {
 }
     "#;
 
+#[test]
+fn blockhash_assembly() {
     assert!(super::check_solidity_warning(
-        source_code,
+        BLOCK_HASH_ASSEMBLY_TEST_SOURCE,
         "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        None,
+    )
+    .expect("Test failure"));
+}
+
+#[test]
+fn blockhash_assembly_suppressed() {
+    assert!(!super::check_solidity_warning(
+        BLOCK_HASH_ASSEMBLY_TEST_SOURCE,
+        "Warning: You are using 'blockHash' in your code which we are planning to change in the near",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        Some(vec![Warning::BlockHash]),
     )
     .expect("Test failure"));
 }
@@ -356,6 +516,7 @@ contract InternalFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        None,
     )
     .expect("Test failure"));
 }
@@ -392,6 +553,7 @@ contract StackFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        None,
     )
     .expect("Test failure"));
 }
@@ -435,6 +597,7 @@ contract StorageFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        None,
     )
     .expect("Test failure"));
 }

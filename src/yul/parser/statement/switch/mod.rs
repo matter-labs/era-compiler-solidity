@@ -4,6 +4,8 @@
 
 pub mod case;
 
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -110,13 +112,27 @@ impl Switch {
             default,
         })
     }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        let mut libraries = HashSet::new();
+        for case in self.cases.iter() {
+            libraries.extend(case.get_missing_libraries());
+        }
+        if let Some(default) = &self.default {
+            libraries.extend(default.get_missing_libraries());
+        }
+        libraries
+    }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Switch
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Switch
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
         let scrutinee = self.expression.into_llvm(context)?;
 
         if self.cases.is_empty() {

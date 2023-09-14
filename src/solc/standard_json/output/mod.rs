@@ -19,6 +19,7 @@ use crate::project::contract::Contract as ProjectContract;
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::version::Version as SolcVersion;
+use crate::warning::Warning;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::statement::object::Object;
 
@@ -150,6 +151,7 @@ impl Output {
         &mut self,
         version: &SolcVersion,
         pipeline: SolcPipeline,
+        suppressed_warnings: &[Warning],
     ) -> anyhow::Result<()> {
         let sources = match self.sources.as_ref() {
             Some(sources) => sources,
@@ -159,7 +161,8 @@ impl Output {
         let mut messages = Vec::new();
         for (path, source) in sources.iter() {
             if let Some(ast) = source.ast.as_ref() {
-                let mut zkevm_messages = Source::get_messages(ast, version, pipeline);
+                let mut zkevm_messages =
+                    Source::get_messages(ast, version, pipeline, suppressed_warnings);
                 for message in zkevm_messages.iter_mut() {
                     message.push_contract_path(path.as_str());
                 }

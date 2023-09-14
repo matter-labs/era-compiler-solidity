@@ -51,7 +51,7 @@ impl Assembly {
     ///
     pub fn keccak256(&self) -> String {
         let json = serde_json::to_vec(self).expect("Always valid");
-        compiler_llvm_context::keccak256(json.as_slice())
+        compiler_llvm_context::eravm_utils::keccak256(json.as_slice())
     }
 
     ///
@@ -71,6 +71,27 @@ impl Assembly {
         self.full_path
             .as_deref()
             .unwrap_or_else(|| panic!("The full path of some contracts is unset"))
+    }
+
+    ///
+    /// Get the list of missing deployable libraries.
+    ///
+    pub fn get_missing_libraries(&self) -> HashSet<String> {
+        let mut missing_libraries = HashSet::new();
+        if let Some(code) = self.code.as_ref() {
+            for instruction in code.iter() {
+                if let InstructionName::PUSHLIB = instruction.name {
+                    let library_path = instruction.value.to_owned().expect("Always exists");
+                    missing_libraries.insert(library_path);
+                }
+            }
+        }
+        if let Some(data) = self.data.as_ref() {
+            for (_, data) in data.iter() {
+                missing_libraries.extend(data.get_missing_libraries());
+            }
+        }
+        missing_libraries
     }
 
     ///
@@ -178,24 +199,28 @@ impl Assembly {
     }
 }
 
-impl<D> compiler_llvm_context::WriteLLVM<D> for Assembly
+impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Assembly
 where
-    D: compiler_llvm_context::Dependency + Clone,
+    D: compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn declare(&mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
-        let mut entry = compiler_llvm_context::EntryFunction::default();
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let mut entry = compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
 
-        let mut runtime =
-            compiler_llvm_context::Runtime::new(compiler_llvm_context::AddressSpace::Heap);
+        let mut runtime = compiler_llvm_context::EraVMRuntime::new(
+            compiler_llvm_context::EraVMAddressSpace::Heap,
+        );
         runtime.declare(context)?;
 
-        compiler_llvm_context::DeployCodeFunction::new(
-            compiler_llvm_context::DummyLLVMWritable::default(),
+        compiler_llvm_context::EraVMDeployCodeFunction::new(
+            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
-        compiler_llvm_context::RuntimeCodeFunction::new(
-            compiler_llvm_context::DummyLLVMWritable::default(),
+        compiler_llvm_context::EraVMRuntimeCodeFunction::new(
+            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
 
@@ -206,7 +231,10 @@ where
         Ok(())
     }
 
-    fn into_llvm(mut self, context: &mut compiler_llvm_context::Context<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        mut self,
+        context: &mut compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
 
         if let Some(debug_config) = context.debug_config() {
@@ -214,7 +242,7 @@ where
         }
         let deploy_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::CodeType::Deploy,
+            compiler_llvm_context::EraVMCodeType::Deploy,
             self.code
                 .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
@@ -241,7 +269,7 @@ where
         };
         let runtime_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::CodeType::Runtime,
+            compiler_llvm_context::EraVMCodeType::Runtime,
             runtime_code_instructions.as_slice(),
         )?;
 
@@ -256,12 +284,12 @@ where
         ethereal_ir.declare(context)?;
         ethereal_ir.into_llvm(context)?;
 
-        compiler_llvm_context::DeployCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::CodeType::Deploy,
+        compiler_llvm_context::EraVMDeployCodeFunction::new(EntryLink::new(
+            compiler_llvm_context::EraVMCodeType::Deploy,
         ))
         .into_llvm(context)?;
-        compiler_llvm_context::RuntimeCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::CodeType::Runtime,
+        compiler_llvm_context::EraVMRuntimeCodeFunction::new(EntryLink::new(
+            compiler_llvm_context::EraVMCodeType::Runtime,
         ))
         .into_llvm(context)?;
 
