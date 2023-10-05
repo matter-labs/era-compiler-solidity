@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit tests for AST warnings and errors.
+//! The Solidity compiler unit tests for factory dependencies.
 //!
 
 #![cfg(test)]

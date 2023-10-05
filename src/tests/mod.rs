@@ -5,6 +5,7 @@
 #![cfg(test)]
 
 mod factory_dependency;
+mod ir_artifacts;
 mod libraries;
 mod messages;
 mod optimizer;

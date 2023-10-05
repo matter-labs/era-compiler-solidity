@@ -120,7 +120,7 @@ impl Input {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self) {
-        self.settings.normalize();
+    pub fn normalize(&mut self, version: &semver::Version) {
+        self.settings.normalize(version);
     }
 }

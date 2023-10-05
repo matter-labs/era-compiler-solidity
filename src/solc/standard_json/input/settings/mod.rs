@@ -64,8 +64,8 @@ impl Settings {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self) {
-        self.optimizer.normalize();
+    pub fn normalize(&mut self, version: &semver::Version) {
+        self.optimizer.normalize(version);
     }
 
     ///

@@ -89,7 +89,7 @@ impl Compiler {
 
         let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
 
-        input.normalize();
+        input.normalize(&version.default);
         let input_json = serde_json::to_vec(&input).expect("Always valid");
 
         let process = command.spawn().map_err(|error| {
@@ -115,17 +115,19 @@ impl Compiler {
             );
         }
 
-        let mut output: StandardJsonOutput = serde_json::from_slice(output.stdout.as_slice())
-            .map_err(|error| {
+        let mut output: StandardJsonOutput =
+            compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
                 anyhow::anyhow!(
                     "{} subprocess output parsing error: {}\n{}",
                     self.executable,
                     error,
-                    serde_json::from_slice::<serde_json::Value>(output.stdout.as_slice())
-                        .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                        .unwrap_or_else(
-                            |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
-                        ),
+                    compiler_common::deserialize_from_slice::<serde_json::Value>(
+                        output.stdout.as_slice()
+                    )
+                    .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
+                    .unwrap_or_else(
+                        |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
+                    ),
                 )
             })?;
         output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
@@ -173,17 +175,19 @@ impl Compiler {
             );
         }
 
-        let mut combined_json: CombinedJson = serde_json::from_slice(output.stdout.as_slice())
-            .map_err(|error| {
+        let mut combined_json: CombinedJson =
+            compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
                 anyhow::anyhow!(
                     "{} subprocess output parsing error: {}\n{}",
                     self.executable,
                     error,
-                    serde_json::from_slice::<serde_json::Value>(output.stdout.as_slice())
-                        .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                        .unwrap_or_else(
-                            |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
-                        ),
+                    compiler_common::deserialize_from_slice::<serde_json::Value>(
+                        output.stdout.as_slice()
+                    )
+                    .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
+                    .unwrap_or_else(
+                        |_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()
+                    ),
                 )
             })?;
         for filtered_flag in filtered_flags.into_iter() {

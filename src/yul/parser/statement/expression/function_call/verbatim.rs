@@ -2,6 +2,8 @@
 //! Translates the verbatim simulations.
 //!
 
+use anyhow::Ok;
+
 use crate::yul::parser::statement::expression::function_call::FunctionCall;
 
 ///
@@ -30,7 +32,6 @@ where
         .ok_or_else(|| anyhow::anyhow!("{} Verbatim literal is missing", call.location))?;
     match identifier.as_str() {
         identifier @ "to_l1" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -52,7 +53,6 @@ where
             .map(Some)
         }
         identifier @ "code_source" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -67,7 +67,6 @@ where
             compiler_llvm_context::eravm_general::code_source(context).map(Some)
         }
         identifier @ "precompile" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -88,7 +87,6 @@ where
             .map(Some)
         }
         identifier @ "meta" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -103,7 +101,6 @@ where
             compiler_llvm_context::eravm_general::meta(context).map(Some)
         }
         identifier @ "mimic_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -127,7 +124,6 @@ where
             .map(Some)
         }
         identifier @ "mimic_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -151,7 +147,6 @@ where
             .map(Some)
         }
         identifier @ "system_mimic_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 7;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -180,7 +175,6 @@ where
             .map(Some)
         }
         identifier @ "system_mimic_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 6;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -209,7 +203,6 @@ where
             .map(Some)
         }
         identifier @ "raw_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 4;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -233,7 +226,6 @@ where
             .map(Some)
         }
         identifier @ "raw_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -257,7 +249,6 @@ where
             .map(Some)
         }
         identifier @ "system_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 6;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -287,7 +278,6 @@ where
             .map(Some)
         }
         identifier @ "system_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -317,7 +307,6 @@ where
             .map(Some)
         }
         identifier @ "raw_static_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 4;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -341,7 +330,6 @@ where
             .map(Some)
         }
         identifier @ "raw_static_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -365,7 +353,6 @@ where
             .map(Some)
         }
         identifier @ "system_static_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 6;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -390,7 +377,6 @@ where
             .map(Some)
         }
         identifier @ "system_static_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -415,7 +401,6 @@ where
             .map(Some)
         }
         identifier @ "raw_delegate_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 4;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -439,7 +424,6 @@ where
             .map(Some)
         }
         identifier @ "raw_delegate_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -463,7 +447,6 @@ where
             .map(Some)
         }
         identifier @ "system_delegate_call" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 6;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -488,7 +471,6 @@ where
             .map(Some)
         }
         identifier @ "system_delegate_call_byref" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -513,7 +495,6 @@ where
             .map(Some)
         }
         identifier @ "set_context_u128" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -533,7 +514,6 @@ where
             .map(Some)
         }
         identifier @ "set_pubdata_price" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -553,7 +533,6 @@ where
             .map(Some)
         }
         identifier @ "increment_tx_counter" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -568,7 +547,6 @@ where
             compiler_llvm_context::eravm_general::increment_tx_counter(context).map(Some)
         }
         identifier @ "event_initialize" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -590,7 +568,6 @@ where
             .map(Some)
         }
         identifier @ "event_write" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -612,7 +589,6 @@ where
             .map(Some)
         }
         identifier @ "calldata_ptr_to_active" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -627,7 +603,6 @@ where
             compiler_llvm_context::eravm_abi::calldata_ptr_to_active(context).map(Some)
         }
         identifier @ "return_data_ptr_to_active" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -642,7 +617,6 @@ where
             compiler_llvm_context::eravm_abi::return_data_ptr_to_active(context).map(Some)
         }
         identifier @ "active_ptr_add_assign" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -662,7 +636,6 @@ where
             .map(Some)
         }
         identifier @ "active_ptr_shrink_assign" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -682,7 +655,6 @@ where
             .map(Some)
         }
         identifier @ "active_ptr_pack_assign" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -702,7 +674,6 @@ where
             .map(Some)
         }
         identifier @ "mul_high" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -723,7 +694,6 @@ where
             .map(Some)
         }
         identifier @ "throw" => {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -735,13 +705,13 @@ where
                 );
             }
 
-            compiler_llvm_context::eravm_utils::throw(context).map(|_| None)
+            compiler_llvm_context::eravm_utils::throw(context);
+            Ok(None)
         }
         identifier
             if identifier
                 .starts_with(compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX) =>
         {
-            /// The number of arguments expected by this verbatim variant.
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
@@ -813,6 +783,60 @@ where
                     identifier
                 )),
             }
+        }
+        identifier @ "active_ptr_data_load" => {
+            const ARGUMENTS_COUNT: usize = 1;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            compiler_llvm_context::eravm_abi::active_ptr_data_load(
+                context,
+                arguments[0].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "active_ptr_data_size" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            compiler_llvm_context::eravm_abi::active_ptr_data_size(context).map(Some)
+        }
+        identifier @ "active_ptr_data_copy" => {
+            const ARGUMENTS_COUNT: usize = 3;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            compiler_llvm_context::eravm_abi::active_ptr_data_copy(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+                arguments[2].into_int_value(),
+            )
+            .map(|_| None)
         }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",

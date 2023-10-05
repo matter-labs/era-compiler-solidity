@@ -39,7 +39,7 @@ pub struct Contract {
     /// The contract optimized IR code.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ir_optimized: Option<String>,
-    /// The contract zkEVM bytecode hash.
+    /// The contract EraVM bytecode hash.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hash: Option<String>,
     /// The contract factory dependencies.

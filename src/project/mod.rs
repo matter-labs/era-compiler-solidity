@@ -249,11 +249,11 @@ impl Project {
     }
 
     ///
-    /// Parses the zkEVM assembly source code file and returns the source data.
+    /// Parses the EraVM assembly source code file and returns the source data.
     ///
     pub fn try_from_zkasm_path(path: &Path) -> anyhow::Result<Self> {
         let source_code = std::fs::read_to_string(path).map_err(|error| {
-            anyhow::anyhow!("zkEVM assembly file {:?} reading error: {}", path, error)
+            anyhow::anyhow!("EraVM assembly file {:?} reading error: {}", path, error)
         })?;
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 

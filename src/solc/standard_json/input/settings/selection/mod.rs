@@ -37,8 +37,7 @@ impl Selection {
     pub fn extend_with_required(&mut self, pipeline: SolcPipeline) -> &mut Self {
         self.all
             .get_or_insert_with(|| FileSelection::new_required(pipeline))
-            .extend_with_required(pipeline)
-            .remove_unwanted(pipeline);
+            .extend_with_required(pipeline);
         self
     }
 }

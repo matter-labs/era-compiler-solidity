@@ -13,9 +13,9 @@ use serde::Serialize;
 pub struct Metadata {
     /// The `solc` metadata.
     pub solc_metadata: serde_json::Value,
-    /// The zkEVM compiler version.
+    /// The EraVM compiler version.
     pub zk_version: semver::Version,
-    /// The zkEVM compiler stringified optimizer settings.
+    /// The EraVM compiler stringified optimizer settings.
     pub optimizer_settings: String,
 }
 

@@ -669,35 +669,14 @@ where
                 .map(Some)
             }
 
-            InstructionName::SHA3 => {
+            InstructionName::SHA3 | InstructionName::KECCAK256 => {
                 let arguments = self.pop_arguments_llvm(context);
-                let input_offset = arguments[0].into_int_value();
-                let input_length = arguments[1].into_int_value();
-
-                let function = compiler_llvm_context::EraVMRuntime::keccak256(context);
-                Ok(context.build_call(
-                    function,
-                    &[
-                        input_offset.as_basic_value_enum(),
-                        input_length.as_basic_value_enum(),
-                    ],
-                    "sha3_call",
-                ))
-            }
-            InstructionName::KECCAK256 => {
-                let arguments = self.pop_arguments_llvm(context);
-                let input_offset = arguments[0].into_int_value();
-                let input_length = arguments[1].into_int_value();
-
-                let function = compiler_llvm_context::EraVMRuntime::keccak256(context);
-                Ok(context.build_call(
-                    function,
-                    &[
-                        input_offset.as_basic_value_enum(),
-                        input_length.as_basic_value_enum(),
-                    ],
-                    "keccak256_call",
-                ))
+                compiler_llvm_context::eravm_evm_crypto::sha3(
+                    context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
+                )
+                .map(Some)
             }
 
             InstructionName::MLOAD => {

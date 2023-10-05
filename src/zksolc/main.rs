@@ -1,5 +1,5 @@
 //!
-//! Solidity to zkEVM compiler binary.
+//! Solidity to EraVM compiler binary.
 //!
 
 pub mod arguments;

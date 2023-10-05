@@ -479,18 +479,12 @@ impl FunctionCall {
 
             Name::Keccak256 => {
                 let arguments = self.pop_arguments_llvm::<D, 2>(context)?;
-                let input_offset = arguments[0].into_int_value();
-                let input_length = arguments[1].into_int_value();
-
-                let function = compiler_llvm_context::EraVMRuntime::keccak256(context);
-                Ok(context.build_invoke(
-                    function,
-                    &[
-                        input_offset.as_basic_value_enum(),
-                        input_length.as_basic_value_enum(),
-                    ],
-                    "keccak256_call",
-                ))
+                compiler_llvm_context::eravm_evm_crypto::sha3(
+                    context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
+                )
+                .map(Some)
             }
 
             Name::MLoad => {

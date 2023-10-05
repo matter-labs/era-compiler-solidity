@@ -1,5 +1,5 @@
 //!
-//! Solidity to zkEVM compiler constants.
+//! Solidity to EraVM compiler constants.
 //!
 
 #![allow(dead_code)]

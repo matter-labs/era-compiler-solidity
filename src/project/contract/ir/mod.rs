@@ -34,7 +34,7 @@ pub enum IR {
     EVMLA(EVMLA),
     /// The LLVM IR source code.
     LLVMIR(LLVMIR),
-    /// The zkEVM assembly source code.
+    /// The EraVM assembly source code.
     ZKASM(ZKASM),
 }
 

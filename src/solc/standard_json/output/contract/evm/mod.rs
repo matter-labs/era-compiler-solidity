@@ -18,7 +18,7 @@ use self::extra_metadata::ExtraMetadata;
 ///
 /// The `solc --standard-json` output contract EVM data.
 ///
-/// It is replaced by zkEVM data after compiling.
+/// It is replaced by EraVM data after compiling.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -26,11 +26,11 @@ pub struct EVM {
     /// The contract EVM legacy assembly code.
     #[serde(rename = "legacyAssembly")]
     pub assembly: Option<Assembly>,
-    /// The contract zkEVM assembly code.
+    /// The contract EraVM assembly code.
     #[serde(rename = "assembly")]
     pub assembly_text: Option<String>,
     /// The contract bytecode.
-    /// Is reset by that of zkEVM before yielding the compiled project artifacts.
+    /// Is reset by that of EraVM before yielding the compiled project artifacts.
     pub bytecode: Option<Bytecode>,
     /// The contract function signatures.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -42,10 +42,9 @@ pub struct EVM {
 
 impl EVM {
     ///
-    /// Sets the zkEVM assembly and bytecode.
+    /// Sets the EraVM assembly and bytecode.
     ///
     pub fn modify(&mut self, assembly_text: String, bytecode: String) {
-        self.assembly = None;
         self.assembly_text = Some(assembly_text);
         self.bytecode = Some(Bytecode::new(bytecode));
     }

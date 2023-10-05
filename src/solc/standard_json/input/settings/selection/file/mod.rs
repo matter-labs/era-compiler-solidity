@@ -55,14 +55,4 @@ impl File {
             .extend(required.per_contract.unwrap_or_default());
         self
     }
-
-    ///
-    /// Removes selection flags which may be poorly supported or dangerous.
-    ///
-    pub fn remove_unwanted(&mut self, pipeline: SolcPipeline) -> &mut Self {
-        if let (Some(per_contract), SolcPipeline::EVMLA) = (self.per_contract.as_mut(), pipeline) {
-            per_contract.remove(&SelectionFlag::Yul);
-        }
-        self
-    }
 }

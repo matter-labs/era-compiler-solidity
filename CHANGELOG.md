@@ -1,5 +1,25 @@
 # The `zksolc` changelog
 
+## [1.3.15] - 2023-10-05
+
+### Added
+
+- More LLVM optimizations
+
+### Changed
+
+- The `INVALID` instruction now burns all gas
+- Moved the standard library functions to LLVM
+
+### Removed
+
+- The warnings for `block.*` environment variables
+
+### Fixed
+
+- The crash with exceeded JSON deserialization recursion limit
+- The missing `evm.legacyAssembly` field in standard JSON output
+
 ## [1.3.14] - 2023-09-06
 
 ### Added

@@ -229,77 +229,77 @@ pub enum Name {
     /// end execution, destroy current contract and send funds to `a`
     SelfDestruct,
 
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkToL1,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkCodeSource,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkPrecompile,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkMeta,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSetContextU128,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSetPubdataPrice,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkIncrementTxCounter,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkEventInitialize,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkEventWrite,
 
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkMimicCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSystemMimicCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkMimicCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSystemMimicCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkRawCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkRawCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSystemCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkSystemCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkStaticRawCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkStaticRawCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkStaticSystemCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkStaticSystemCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkDelegateRawCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkDelegateRawCallByRef,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkDelegateSystemCall,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkDelegateSystemCallByRef,
 
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkLoadCalldataIntoActivePtr,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkLoadReturndataIntoActivePtr,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkPtrAddIntoActive,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkPtrShrinkIntoActive,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkPtrPackIntoActive,
 
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkMultiplicationHigh,
 
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkGlobalLoad,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkGlobalExtraAbiData,
-    /// The eponymous zkEVM Yul extension instruction.
+    /// The eponymous EraVM Yul extension instruction.
     ZkGlobalStore,
 }
 

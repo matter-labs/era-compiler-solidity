@@ -34,7 +34,7 @@ We recommend at least 4 GB of RAM available for the build process.
    Also install the `musl` target if you are compiling on Linux in order to distribute the binary:  
    `rustup target add x86_64-unknown-linux-musl`  
 
-3. Download a version of the [solc](https://docs.soliditylang.org/en/develop/installing-solidity.html) compiler.  
+3. [Download a version](https://github.com/ethereum/solc-bin) of [the solc compiler](https://docs.soliditylang.org/en/v0.8.21/) compiler.  
    If it is not named exactly `solc` and in your `$PATH`, see the `--solc` option below.  
 
 4. Check out or clone the appropriate branch of this repository.  

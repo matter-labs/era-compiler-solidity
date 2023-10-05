@@ -21,6 +21,7 @@ pub struct Optimizer {
     #[serde(skip_serializing)]
     pub mode: Option<char>,
     /// The `solc` optimizer details.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<Details>,
 }
 
@@ -39,8 +40,12 @@ impl Optimizer {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self) {
-        self.details = Some(Details::default());
+    pub fn normalize(&mut self, version: &semver::Version) {
+        self.details = if version >= &semver::Version::new(0, 5, 5) {
+            Some(Details::default())
+        } else {
+            None
+        };
     }
 }
 

@@ -1,5 +1,5 @@
 //!
-//! Solidity to zkEVM compiler library.
+//! Solidity to EraVM compiler library.
 //!
 
 pub(crate) mod build;
@@ -125,7 +125,7 @@ pub fn llvm_ir(
 }
 
 ///
-/// Runs the zkEVM assembly mode.
+/// Runs the EraVM assembly mode.
 ///
 pub fn zkasm(
     input_files: &[PathBuf],
@@ -136,7 +136,7 @@ pub fn zkasm(
         1 => input_files.first().expect("Always exists"),
         0 => anyhow::bail!("The input file is missing"),
         length => anyhow::bail!(
-            "Only one input file is allowed in the zkEVM assembly mode, but found {}",
+            "Only one input file is allowed in the EraVM assembly mode, but found {}",
             length,
         ),
     };

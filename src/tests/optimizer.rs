@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit tests for AST warnings and errors.
+//! The Solidity compiler unit tests for the optimizer.
 //!
 
 #![cfg(test)]
@@ -48,25 +48,25 @@ contract Test {
 "#;
 
 #[test]
-fn default() {
+fn optimizer() {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
-    let output_unoptimized = super::build_solidity(
+    let build_unoptimized = super::build_solidity(
         sources.clone(),
         BTreeMap::new(),
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
-    let output_optimized_cycles = super::build_solidity(
+    let build_optimized_for_cycles = super::build_solidity(
         sources.clone(),
         BTreeMap::new(),
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");
-    let output_optimized_size = super::build_solidity(
+    let build_optimized_for_size = super::build_solidity(
         sources,
         BTreeMap::new(),
         SolcPipeline::Yul,
@@ -74,7 +74,7 @@ fn default() {
     )
     .expect("Build failure");
 
-    let size_unoptimized = output_unoptimized
+    let size_when_unoptimized = build_unoptimized
         .contracts
         .as_ref()
         .expect("Missing field `contracts`")
@@ -90,7 +90,7 @@ fn default() {
         .expect("Missing bytecode")
         .object
         .len();
-    let size_optimized_cycles = output_optimized_cycles
+    let size_when_optimized_for_cycles = build_optimized_for_cycles
         .contracts
         .as_ref()
         .expect("Missing field `contracts`")
@@ -106,7 +106,7 @@ fn default() {
         .expect("Missing bytecode")
         .object
         .len();
-    let size_optimized_size = output_optimized_size
+    let size_when_optimized_for_size = build_optimized_for_size
         .contracts
         .as_ref()
         .expect("Missing field `contracts`")
@@ -124,11 +124,11 @@ fn default() {
         .len();
 
     assert!(
-        size_optimized_cycles < size_unoptimized,
-        "Expected optimized bytecode to be smaller than unoptimized"
+        size_when_optimized_for_cycles < size_when_unoptimized,
+        "Expected the cycles-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_cycles, size_when_unoptimized,
     );
     assert!(
-        size_optimized_size < size_unoptimized,
-        "Expected optimized bytecode to be smaller than unoptimized"
+        size_when_optimized_for_size < size_when_unoptimized,
+        "Expected the size-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_size, size_when_unoptimized,
     );
 }
