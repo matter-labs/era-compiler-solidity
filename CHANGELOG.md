@@ -48,7 +48,7 @@
 ### Added
 
 - The solc v0.8.20 support
-- The zkEVM assembly compilation mode (`--zkasm`)
+- The EraVM assembly compilation mode (`--zkasm`)
 
 ### Changed
 
@@ -187,7 +187,7 @@
 ### Fixed
 
 - Calls now only copy `min(output_size, return_data_size)` of the return data
-- Missing zkEVM warnings in non-standard-JSON outputs
+- Missing EraVM warnings in non-standard-JSON outputs
 
 ## [1.3.1] - 2023-02-06
 
@@ -205,7 +205,7 @@
 
 - System contract calls now use remaining ergs instead of 0
 - The LLVM optimization manager to the new one
-- The contract ABI to match that of zkEVM v1.3
+- The contract ABI to EraVM v1.3
 - Moved the event decoding to the system contracts
 - Simplified the CLI arguments used for debugging
 

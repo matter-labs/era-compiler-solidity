@@ -7,7 +7,7 @@ or decentralization. As it’s EVM-compatible (with Solidity/Vyper), 99% of Ethe
 needing to refactor or re-audit any code. zkSync Era also uses an LLVM-based compiler that will eventually enable
 developers to write smart contracts in popular languages such as C++ and Rust.
 
-This repository contains the compiler from Solidity to zkEVM bytecode.
+This repository contains the EraVM Solidity compiler.
 
 ## System Requirements
 
@@ -41,14 +41,14 @@ We recommend at least 4 GB of RAM available for the build process.
 
 5. Go to the project root and run `git checkout <ref>` with the tag, branch, or commit you want to build.  
 
-6. Install the zkEVM LLVM framework builder:  
+6. Install the EraVM LLVM framework builder:  
    6.a. `cargo install compiler-llvm-builder` on MacOS, or Linux for personal use.  
    6.b. `cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl` on Linux for distribution.  
 
-   The builder is not the [zkEVM LLVM framework](https://github.com/matter-labs/compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
-   If you need a specific branch of zkEVM LLVM, change it in the `LLVM.lock` file at the root of this repository.  
+   The builder is not the [EraVM LLVM framework](https://github.com/matter-labs/compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
+   If you need a specific branch of EraVM LLVM, change it in the `LLVM.lock` file at the root of this repository.  
 
-7. Run the builder to clone and build the zkevm LLVM framework at this repository root:  
+7. Run the builder to clone and build the EraVM LLVM framework at this repository root:  
    7.1. `zkevm-llvm clone`  
    7.2. `zkevm-llvm build`  
 
@@ -149,8 +149,8 @@ Cannot be used with combined and standard JSON modes.
 Use this mode at your own risk, as LLVM IR input validation is not implemented.  
 
 #### `--zkasm`
-Switch to zkEVM assembly mode.  
-Only one input zkEVM assembly file is allowed.  
+Switch to EraVM assembly mode.  
+Only one input EraVM assembly file is allowed.  
 Cannot be used with combined and standard JSON modes.  
 Use this mode at your own risk, as EraVM assembly input validation is not implemented.  
 
@@ -160,8 +160,8 @@ Useful for early versions of `solc` 0.8.x, where Yul was considered highly exper
 
 #### `--system-mode`
 Enable system contract compilation mode.  
-In this mode, zkEVM extensions are enabled. For example, calls to addresses `0xFFFF` and less are substituted with special
-zkEVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.  
+In this mode, EraVM extensions are enabled. For example, calls to addresses `0xFFFF` and less are substituted with special
+EraVM instructions. In the Yul mode, the `verbatim_*` and `throw` instructions become available.  
 
 #### `--metadata-hash`
 Set metadata hash mode.  
@@ -169,10 +169,10 @@ The only supported value is `none` that disables appending the metadata hash.
 Is enabled by default.  
 
 #### `--asm`
-Output zkEVM assembly of the contracts.  
+Output EraVM assembly of the contracts.  
 
 #### `--bin`
-Output zkEVM bytecode of the contracts.  
+Output EraVM bytecode of the contracts.  
 
 #### `--suppress-warnings`
 Suppress specified warnings.  
