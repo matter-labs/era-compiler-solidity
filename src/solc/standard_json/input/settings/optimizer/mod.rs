@@ -29,11 +29,11 @@ impl Optimizer {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(enabled: bool, mode: Option<char>) -> Self {
+    pub fn new(enabled: bool, mode: Option<char>, version: &semver::Version) -> Self {
         Self {
             enabled,
             mode,
-            details: Some(Details::default()),
+            details: Some(Details::disabled(version)),
         }
     }
 
@@ -42,7 +42,7 @@ impl Optimizer {
     ///
     pub fn normalize(&mut self, version: &semver::Version) {
         self.details = if version >= &semver::Version::new(0, 5, 5) {
-            Some(Details::default())
+            Some(Details::disabled(version))
         } else {
             None
         };

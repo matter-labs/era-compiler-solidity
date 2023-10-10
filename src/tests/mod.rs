@@ -57,17 +57,19 @@ pub fn build_solidity(
     compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let solc_version = solc.version()?;
+
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default),
         None,
         pipeline == SolcPipeline::Yul,
         None,
     )?;
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
     let project = output.try_to_project(
@@ -108,17 +110,18 @@ pub fn build_solidity_and_detect_missing_libraries(
     compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc.version()?.default),
         None,
         pipeline == SolcPipeline::Yul,
         None,
     )?;
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
     let project = output.try_to_project(
@@ -174,19 +177,21 @@ pub fn check_solidity_warning(
 ) -> anyhow::Result<bool> {
     check_dependencies();
 
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let solc_version = solc.version()?;
+
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_string(), source_code.to_string());
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default),
         None,
         pipeline == SolcPipeline::Yul,
         suppressed_warnings,
     )?;
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
     let output = solc.standard_json(input, pipeline, None, vec![], None)?;
     let contains_warning = output
         .errors

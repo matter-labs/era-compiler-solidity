@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Changed
+
+- `solc` optimizer is completely turned off
+
 ## [1.3.15] - 2023-10-05
 
 ### Added
