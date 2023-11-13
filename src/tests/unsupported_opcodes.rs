@@ -35,6 +35,7 @@ contract FixedCodeCopy {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -73,6 +74,7 @@ fn callcode_evmla() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::EVMLA,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -88,6 +90,7 @@ fn callcode_yul() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -145,6 +148,7 @@ fn extcodecopy_evmla() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::EVMLA,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -160,6 +164,7 @@ fn extcodecopy_yul() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -193,6 +198,7 @@ fn selfdestruct_evmla() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::EVMLA,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -208,6 +214,7 @@ fn selfdestruct_yul() {
     super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )

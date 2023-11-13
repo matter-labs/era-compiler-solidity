@@ -32,15 +32,21 @@ impl VisitedElement {
 
 impl PartialOrd for VisitedElement {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for VisitedElement {
+    fn cmp(&self, other: &Self) -> Ordering {
         match (self.block_key.code_type, other.block_key.code_type) {
             (
                 compiler_llvm_context::EraVMCodeType::Deploy,
                 compiler_llvm_context::EraVMCodeType::Runtime,
-            ) => Some(Ordering::Less),
+            ) => Ordering::Less,
             (
                 compiler_llvm_context::EraVMCodeType::Runtime,
                 compiler_llvm_context::EraVMCodeType::Deploy,
-            ) => Some(Ordering::Greater),
+            ) => Ordering::Greater,
             (
                 compiler_llvm_context::EraVMCodeType::Deploy,
                 compiler_llvm_context::EraVMCodeType::Deploy,
@@ -52,20 +58,14 @@ impl PartialOrd for VisitedElement {
                 let tag_comparison = self.block_key.tag.cmp(&other.block_key.tag);
                 if tag_comparison == Ordering::Equal {
                     if self.stack_hash == other.stack_hash {
-                        Some(Ordering::Equal)
+                        Ordering::Equal
                     } else {
-                        Some(Ordering::Less)
+                        Ordering::Less
                     }
                 } else {
-                    Some(tag_comparison)
+                    tag_comparison
                 }
             }
         }
-    }
-}
-
-impl Ord for VisitedElement {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).expect("Always exists")
     }
 }

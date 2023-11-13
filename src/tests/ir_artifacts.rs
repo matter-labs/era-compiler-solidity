@@ -29,6 +29,7 @@ contract Test {
     let build = super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -84,6 +85,7 @@ contract Test {
     let build = super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::EVMLA,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )

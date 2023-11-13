@@ -141,7 +141,8 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 vec![context.field_const(0), context.field_const(0)],
             )
             .map(Some)
@@ -192,7 +193,8 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 vec![
                     arguments[2].into_int_value(),
                     arguments[3].into_int_value(),
@@ -242,7 +244,8 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -294,7 +297,8 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 context.field_const(0),
                 context.field_const(0),
                 vec![
@@ -346,7 +350,8 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -393,7 +398,8 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -440,7 +446,8 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -487,7 +494,8 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
+                context
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?,
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -730,18 +738,18 @@ where
                     if identifier
                         == compiler_llvm_context::eravm_const::GLOBAL_CALLDATA_POINTER =>
                 {
-                    context.get_global(identifier).map(Some)
+                    context.get_global_value(identifier).map(Some)
                 }
                 Some(identifier)
                     if identifier == compiler_llvm_context::eravm_const::GLOBAL_CALL_FLAGS =>
                 {
-                    context.get_global(identifier).map(Some)
+                    context.get_global_value(identifier).map(Some)
                 }
                 Some(identifier)
                     if identifier
                         == compiler_llvm_context::eravm_const::GLOBAL_RETURN_DATA_POINTER =>
                 {
-                    context.get_global(identifier).map(Some)
+                    context.get_global_value(identifier).map(Some)
                 }
                 Some(identifier)
                     if identifier

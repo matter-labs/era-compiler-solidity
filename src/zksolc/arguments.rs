@@ -21,11 +21,11 @@ pub struct Arguments {
     #[structopt(long = "version")]
     pub version: bool,
 
-    /// Specify the input file paths.
+    /// Specify the input paths and remappings.
+    /// If an argument contains a '=', it is considered a remapping.
     /// Multiple Solidity files can be passed in the default Solidity mode.
-    /// Yul and LLVM IR modes currently support only a single file.
-    #[structopt(parse(from_os_str))]
-    pub input_files: Vec<PathBuf>,
+    /// Yul, LLVM IR, and EraVM Assembly modes currently support only a single file.
+    pub inputs: Vec<String>,
 
     /// Set the given path as the root of the source tree instead of the root of the filesystem.
     /// Passed to `solc` without changes.
@@ -265,7 +265,7 @@ impl Arguments {
                 );
             }
 
-            if !self.input_files.is_empty() {
+            if !self.inputs.is_empty() {
                 anyhow::bail!("Input files must be passed via standard JSON input.");
             }
             if !self.libraries.is_empty() {

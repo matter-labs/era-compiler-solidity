@@ -1,5 +1,27 @@
 # The `zksolc` changelog
 
+## [1.3.17] - 2023-11-11
+
+### Added
+
+- The Solidity import remappings support
+- The solc v0.8.22 support
+- The solc v0.8.23 support
+- Simulations to work with constant arrays in code section
+- LLVM attributes to Yul function names via `$llvm_<attrs>_llvm$` syntax
+- More LLVM optimizations
+
+## [1.3.16] - 2023-10-28
+
+### Added
+
+- The missing EVM legacy assembly fields in standard JSON output
+- The LLVM attribute syntax in Yul function identifiers
+
+### Fixed
+
+- The incorrect behavior of complex sequences of modular operations
+
 ## [1.3.15] - 2023-10-05
 
 ### Added
@@ -48,7 +70,7 @@
 ### Added
 
 - The solc v0.8.20 support
-- The EraVM assembly compilation mode (`--zkasm`)
+- The zkEVM assembly compilation mode (`--zkasm`)
 
 ### Changed
 
@@ -187,7 +209,7 @@
 ### Fixed
 
 - Calls now only copy `min(output_size, return_data_size)` of the return data
-- Missing EraVM warnings in non-standard-JSON outputs
+- Missing zkEVM warnings in non-standard-JSON outputs
 
 ## [1.3.1] - 2023-02-06
 
@@ -205,7 +227,7 @@
 
 - System contract calls now use remaining ergs instead of 0
 - The LLVM optimization manager to the new one
-- The contract ABI to EraVM v1.3
+- The contract ABI to match that of zkEVM v1.3
 - Moved the event decoding to the system contracts
 - Simplified the CLI arguments used for debugging
 

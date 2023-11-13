@@ -198,7 +198,7 @@ impl Function {
             )
             .is_err()
             {
-                block_element.instruction = Instruction::invalid();
+                block_element.instruction = Instruction::invalid(&block_element.instruction);
                 block_element.stack = block.stack.clone();
                 break;
             }
@@ -266,7 +266,8 @@ impl Function {
                         destination.to_owned(),
                     ),
                     Element::ReturnAddress(output_size) => {
-                        block_element.instruction = Instruction::recursive_return(1 + output_size);
+                        block_element.instruction =
+                            Instruction::recursive_return(1 + output_size, instruction);
                         Self::update_io_data(block_stack, block_element, 1 + output_size, vec![])?;
                         return Ok(());
                     }
@@ -1067,6 +1068,7 @@ impl Function {
             recursive_function.input_size + 2,
             recursive_function.output_size,
             return_address.clone(),
+            &block_element.instruction,
         );
 
         Ok((return_address, stack_output))

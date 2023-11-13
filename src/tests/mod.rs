@@ -9,10 +9,12 @@ mod ir_artifacts;
 mod libraries;
 mod messages;
 mod optimizer;
+mod remappings;
 mod runtime_code;
 mod unsupported_opcodes;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -48,6 +50,7 @@ fn check_dependencies() {
 pub fn build_solidity(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
+    remappings: Option<BTreeSet<String>>,
     pipeline: SolcPipeline,
     optimizer_settings: compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
@@ -60,6 +63,7 @@ pub fn build_solidity(
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
+        remappings,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,
@@ -111,6 +115,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
+        None,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,
@@ -179,6 +184,7 @@ pub fn check_solidity_warning(
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries,
+        None,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(true, None),
         None,

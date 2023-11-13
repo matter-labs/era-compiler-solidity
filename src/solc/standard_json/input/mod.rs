@@ -7,6 +7,7 @@ pub mod settings;
 pub mod source;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -63,6 +64,7 @@ impl Input {
         language: Language,
         paths: &[PathBuf],
         library_map: Vec<String>,
+        remappings: Option<BTreeSet<String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
@@ -84,7 +86,14 @@ impl Input {
         Ok(Self {
             language,
             sources,
-            settings: Settings::new(libraries, output_selection, via_ir, optimizer, metadata),
+            settings: Settings::new(
+                libraries,
+                remappings,
+                output_selection,
+                via_ir,
+                optimizer,
+                metadata,
+            ),
             suppressed_warnings,
         })
     }
@@ -98,6 +107,7 @@ impl Input {
     pub fn try_from_sources(
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
+        remappings: Option<BTreeSet<String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
@@ -112,7 +122,14 @@ impl Input {
         Ok(Self {
             language: Language::Solidity,
             sources,
-            settings: Settings::new(libraries, output_selection, via_ir, optimizer, metadata),
+            settings: Settings::new(
+                libraries,
+                remappings,
+                output_selection,
+                via_ir,
+                optimizer,
+                metadata,
+            ),
             suppressed_warnings,
         })
     }

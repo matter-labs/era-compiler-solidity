@@ -52,6 +52,7 @@ fn default() {
     let output = super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )

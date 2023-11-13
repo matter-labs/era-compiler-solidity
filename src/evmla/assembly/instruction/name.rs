@@ -5,8 +5,6 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::evmla::assembly::instruction::Instruction;
-
 ///
 /// The EVM instruction name.
 ///
@@ -382,12 +380,6 @@ pub enum Name {
         /// The output size.
         input_size: usize,
     },
-}
-
-impl From<Name> for Instruction {
-    fn from(name: Name) -> Self {
-        Self { name, value: None }
-    }
 }
 
 impl std::fmt::Display for Name {

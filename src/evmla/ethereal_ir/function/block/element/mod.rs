@@ -1026,7 +1026,7 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                    None,
+                    vec![],
                 )
                 .map(Some)
             }
@@ -1050,7 +1050,7 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                    None,
+                    vec![],
                 )
                 .map(Some)
             }
@@ -1074,7 +1074,7 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                    None,
+                    vec![],
                 )
                 .map(Some)
             }

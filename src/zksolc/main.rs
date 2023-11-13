@@ -4,6 +4,8 @@
 
 pub mod arguments;
 
+use std::collections::BTreeSet;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use self::arguments::Arguments;
@@ -32,7 +34,7 @@ fn main() {
 /// The auxiliary `main` function to facilitate the `?` error conversion operator.
 ///
 fn main_inner() -> anyhow::Result<()> {
-    let mut arguments = Arguments::new();
+    let arguments = Arguments::new();
     arguments.validate()?;
 
     if arguments.version {
@@ -66,7 +68,46 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
-    for path in arguments.input_files.iter_mut() {
+    let mut input_files = Vec::with_capacity(arguments.inputs.len());
+    let mut remappings = BTreeSet::new();
+    for input in arguments.inputs.into_iter() {
+        if input.contains('=') {
+            let mut paths = input.split('=');
+            for index in 0..2 {
+                paths
+                    .next()
+                    .ok_or_else(|| {
+                        anyhow::anyhow!(
+                            "Invalid remapping `{}`: path #{} is missing",
+                            input,
+                            index + 1
+                        )
+                    })
+                    .and_then(|path| {
+                        PathBuf::try_from(path).map_err(|error| {
+                            anyhow::anyhow!(
+                                "Invalid remapping `{}`: path #{} error: {}",
+                                input,
+                                index + 1,
+                                error
+                            )
+                        })
+                    })?;
+            }
+            remappings.insert(input);
+        } else {
+            let path = PathBuf::try_from(input.as_str())
+                .map_err(|error| anyhow::anyhow!("Invalid input `{}`: {}", input, error))?;
+            input_files.push(path);
+        }
+    }
+    let remappings = if remappings.is_empty() {
+        None
+    } else {
+        Some(remappings)
+    };
+
+    for path in input_files.iter_mut() {
         *path = path.canonicalize()?;
     }
 
@@ -100,7 +141,7 @@ fn main_inner() -> anyhow::Result<()> {
 
     let build = if arguments.yul {
         compiler_solidity::yul(
-            arguments.input_files.as_slice(),
+            input_files.as_slice(),
             &mut solc,
             optimizer_settings,
             arguments.is_system_mode,
@@ -109,18 +150,14 @@ fn main_inner() -> anyhow::Result<()> {
         )
     } else if arguments.llvm_ir {
         compiler_solidity::llvm_ir(
-            arguments.input_files.as_slice(),
+            input_files.as_slice(),
             optimizer_settings,
             arguments.is_system_mode,
             include_metadata_hash,
             debug_config,
         )
     } else if arguments.zkasm {
-        compiler_solidity::zkasm(
-            arguments.input_files.as_slice(),
-            include_metadata_hash,
-            debug_config,
-        )
+        compiler_solidity::zkasm(input_files.as_slice(), include_metadata_hash, debug_config)
     } else if arguments.standard_json {
         compiler_solidity::standard_json(
             &mut solc,
@@ -136,7 +173,7 @@ fn main_inner() -> anyhow::Result<()> {
     } else if let Some(format) = arguments.combined_json {
         compiler_solidity::combined_json(
             format,
-            arguments.input_files.as_slice(),
+            input_files.as_slice(),
             arguments.libraries,
             &mut solc,
             !arguments.disable_solc_optimizer,
@@ -147,6 +184,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,
+            remappings,
             suppressed_warnings,
             debug_config,
             arguments.output_directory,
@@ -155,7 +193,7 @@ fn main_inner() -> anyhow::Result<()> {
         return Ok(());
     } else {
         compiler_solidity::standard_output(
-            arguments.input_files.as_slice(),
+            input_files.as_slice(),
             arguments.libraries,
             &mut solc,
             !arguments.disable_solc_optimizer,
@@ -166,6 +204,7 @@ fn main_inner() -> anyhow::Result<()> {
             arguments.base_path,
             arguments.include_paths,
             arguments.allow_paths,
+            remappings,
             suppressed_warnings,
             debug_config,
         )

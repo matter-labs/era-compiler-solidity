@@ -7,6 +7,7 @@ pub mod optimizer;
 pub mod selection;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,6 +25,9 @@ pub struct Settings {
     /// The linker library addresses.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub libraries: Option<BTreeMap<String, BTreeMap<String, String>>>,
+    /// The sorted list of remappings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remappings: Option<BTreeSet<String>>,
     /// The output selection filters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
@@ -47,6 +51,7 @@ impl Settings {
     ///
     pub fn new(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
+        remappings: Option<BTreeSet<String>>,
         output_selection: Selection,
         via_ir: bool,
         optimizer: Optimizer,
@@ -54,6 +59,7 @@ impl Settings {
     ) -> Self {
         Self {
             libraries: Some(libraries),
+            remappings,
             output_selection: Some(output_selection),
             via_ir: if via_ir { Some(true) } else { None },
             optimizer,

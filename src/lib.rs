@@ -44,6 +44,7 @@ pub use self::warning::Warning;
 
 mod tests;
 
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 ///
@@ -171,6 +172,7 @@ pub fn standard_output(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    remappings: Option<BTreeSet<String>>,
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<Build> {
@@ -181,6 +183,7 @@ pub fn standard_output(
         SolcStandardJsonInputLanguage::Solidity,
         input_files,
         libraries,
+        remappings,
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
         SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
         None,
@@ -337,6 +340,7 @@ pub fn combined_json(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    remappings: Option<BTreeSet<String>>,
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<compiler_llvm_context::DebugConfig>,
     output_directory: Option<PathBuf>,
@@ -356,6 +360,7 @@ pub fn combined_json(
         base_path,
         include_paths,
         allow_paths,
+        remappings,
         suppressed_warnings,
         debug_config,
     )?;

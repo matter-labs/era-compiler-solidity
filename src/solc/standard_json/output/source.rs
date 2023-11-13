@@ -255,9 +255,7 @@ impl Source {
             .iter()
             .filter_map(
                 |node| match node.get("nodeType").and_then(|node| node.as_str()) {
-                    Some(node_type) if node_type == "ContractDefinition" => {
-                        Some(node.get("name")?.as_str()?.to_owned())
-                    }
+                    Some("ContractDefinition") => Some(node.get("name")?.as_str()?.to_owned()),
                     _ => None,
                 },
             )

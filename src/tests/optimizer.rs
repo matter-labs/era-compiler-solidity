@@ -55,6 +55,7 @@ fn optimizer() {
     let build_unoptimized = super::build_solidity(
         sources.clone(),
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::none(),
     )
@@ -62,6 +63,7 @@ fn optimizer() {
     let build_optimized_for_cycles = super::build_solidity(
         sources.clone(),
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::cycles(),
     )
@@ -69,6 +71,7 @@ fn optimizer() {
     let build_optimized_for_size = super::build_solidity(
         sources,
         BTreeMap::new(),
+        None,
         SolcPipeline::Yul,
         compiler_llvm_context::OptimizerSettings::size(),
     )

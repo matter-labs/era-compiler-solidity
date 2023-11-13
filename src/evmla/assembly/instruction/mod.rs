@@ -23,6 +23,14 @@ pub struct Instruction {
     pub name: Name,
     /// The optional value argument.
     pub value: Option<String>,
+
+    /// The source code identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<isize>,
+    /// The source code location begin.
+    pub begin: isize,
+    /// The source code location end.
+    pub end: isize,
 }
 
 impl Instruction {
@@ -311,10 +319,14 @@ impl Instruction {
     ///
     /// Initializes an `INVALID` instruction to terminate an invalid unreachable block part.
     ///
-    pub fn invalid() -> Self {
+    pub fn invalid(previous: &Self) -> Self {
         Self {
             name: Name::INVALID,
             value: None,
+
+            source: previous.source,
+            begin: previous.begin,
+            end: previous.end,
         }
     }
 
@@ -328,6 +340,7 @@ impl Instruction {
         input_size: usize,
         output_size: usize,
         return_address: compiler_llvm_context::EraVMFunctionBlockKey,
+        previous: &Self,
     ) -> Self {
         Self {
             name: Name::RecursiveCall {
@@ -339,16 +352,24 @@ impl Instruction {
                 return_address,
             },
             value: None,
+
+            source: previous.source,
+            begin: previous.begin,
+            end: previous.end,
         }
     }
 
     ///
     /// Initializes a recursive function `Return` instruction.
     ///
-    pub fn recursive_return(input_size: usize) -> Self {
+    pub fn recursive_return(input_size: usize, previous: &Self) -> Self {
         Self {
             name: Name::RecursiveReturn { input_size },
             value: None,
+
+            source: previous.source,
+            begin: previous.begin,
+            end: previous.end,
         }
     }
 }

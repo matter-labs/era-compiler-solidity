@@ -8,7 +8,6 @@ pub mod verbatim;
 use std::collections::HashSet;
 
 use inkwell::values::BasicValue;
-use num::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -789,7 +788,7 @@ impl FunctionCall {
             }
 
             Name::Call => {
-                let mut arguments = self.pop_arguments::<D, 7>(context)?;
+                let arguments = self.pop_arguments::<D, 7>(context)?;
 
                 let gas = arguments[0].value.into_int_value();
                 let address = arguments[1].value.into_int_value();
@@ -799,10 +798,10 @@ impl FunctionCall {
                 let output_offset = arguments[5].value.into_int_value();
                 let output_size = arguments[6].value.into_int_value();
 
-                let simulation_address = arguments[1]
-                    .constant
-                    .take()
-                    .and_then(|value| value.to_u16());
+                let simulation_address: Vec<Option<num::BigUint>> = arguments
+                    .into_iter()
+                    .map(|mut argument| argument.constant.take())
+                    .collect();
 
                 compiler_llvm_context::eravm_evm_call::default(
                     context,
@@ -819,7 +818,7 @@ impl FunctionCall {
                 .map(Some)
             }
             Name::StaticCall => {
-                let mut arguments = self.pop_arguments::<D, 6>(context)?;
+                let arguments = self.pop_arguments::<D, 6>(context)?;
 
                 let gas = arguments[0].value.into_int_value();
                 let address = arguments[1].value.into_int_value();
@@ -828,10 +827,10 @@ impl FunctionCall {
                 let output_offset = arguments[4].value.into_int_value();
                 let output_size = arguments[5].value.into_int_value();
 
-                let simulation_address = arguments[1]
-                    .constant
-                    .take()
-                    .and_then(|value| value.to_u16());
+                let simulation_address: Vec<Option<num::BigUint>> = arguments
+                    .into_iter()
+                    .map(|mut argument| argument.constant.take())
+                    .collect();
 
                 compiler_llvm_context::eravm_evm_call::default(
                     context,
@@ -848,7 +847,7 @@ impl FunctionCall {
                 .map(Some)
             }
             Name::DelegateCall => {
-                let mut arguments = self.pop_arguments::<D, 6>(context)?;
+                let arguments = self.pop_arguments::<D, 6>(context)?;
 
                 let gas = arguments[0].value.into_int_value();
                 let address = arguments[1].value.into_int_value();
@@ -857,10 +856,10 @@ impl FunctionCall {
                 let output_offset = arguments[4].value.into_int_value();
                 let output_size = arguments[5].value.into_int_value();
 
-                let simulation_address = arguments[1]
-                    .constant
-                    .take()
-                    .and_then(|value| value.to_u16());
+                let simulation_address: Vec<Option<num::BigUint>> = arguments
+                    .into_iter()
+                    .map(|mut argument| argument.constant.take())
+                    .collect();
 
                 compiler_llvm_context::eravm_evm_call::default(
                     context,
@@ -1150,7 +1149,7 @@ impl FunctionCall {
             Name::ZkMimicCallByRef => {
                 let [address, mimic] = self.pop_arguments_llvm::<D, 2>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::mimic(
                     context,
@@ -1166,7 +1165,7 @@ impl FunctionCall {
                 let [address, mimic, extra_value_1, extra_value_2] =
                     self.pop_arguments_llvm::<D, 4>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::mimic(
                     context,
@@ -1199,7 +1198,7 @@ impl FunctionCall {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::raw_far(
                     context,
@@ -1235,7 +1234,7 @@ impl FunctionCall {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::system(
                     context,
@@ -1271,7 +1270,7 @@ impl FunctionCall {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::raw_far(
                     context,
@@ -1307,7 +1306,7 @@ impl FunctionCall {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::system(
                     context,
@@ -1343,7 +1342,7 @@ impl FunctionCall {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::raw_far(
                     context,
@@ -1379,7 +1378,7 @@ impl FunctionCall {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
                 let abi_data = context
-                    .get_global(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
+                    .get_global_value(compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER)?;
 
                 compiler_llvm_context::eravm_call::system(
                     context,
@@ -1449,7 +1448,7 @@ impl FunctionCall {
                     anyhow::anyhow!("{} `$zk_global_load` literal is missing", location)
                 })?;
 
-                context.get_global(key.as_str()).map(Some)
+                context.get_global_value(key.as_str()).map(Some)
             }
             Name::ZkGlobalExtraAbiData => {
                 let [index] = self.pop_arguments_llvm::<D, 1>(context)?;
@@ -1467,7 +1466,12 @@ impl FunctionCall {
                 })?;
                 let value = value.value.into_int_value();
 
-                context.set_global(key.as_str(), context.field_type(), value);
+                context.set_global(
+                    key.as_str(),
+                    context.field_type(),
+                    compiler_llvm_context::EraVMAddressSpace::Stack,
+                    value,
+                );
                 Ok(None)
             }
         }
