@@ -87,9 +87,10 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
+        input.normalize(&version.default);
+
         let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
 
-        input.normalize(&version.default);
         let input_json = serde_json::to_vec(&input).expect("Always valid");
 
         let process = command.spawn().map_err(|error| {
@@ -280,6 +281,7 @@ impl Compiler {
             .lines()
             .nth(2)
             .and_then(|line| line.split(' ').nth(1))
+            .and_then(|line| line.split('-').nth(1))
             .and_then(|version| version.parse().ok());
 
         let version = Version::new(long, default, l2_revision);

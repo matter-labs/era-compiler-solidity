@@ -254,7 +254,11 @@ impl Function {
             } => {
                 queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
 
-                let block_key = match block_stack.elements.last().expect("Always exists") {
+                let block_key = match block_stack
+                    .elements
+                    .last()
+                    .ok_or_else(|| anyhow::anyhow!("Destination tag is missing"))?
+                {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         compiler_llvm_context::EraVMFunctionBlockKey::new(
                             compiler_llvm_context::EraVMCodeType::Runtime,
@@ -312,7 +316,11 @@ impl Function {
             } => {
                 queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
 
-                let block_key = match block_stack.elements.last().expect("Always exists") {
+                let block_key = match block_stack
+                    .elements
+                    .last()
+                    .ok_or_else(|| anyhow::anyhow!("Destination tag is missing"))?
+                {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         compiler_llvm_context::EraVMFunctionBlockKey::new(
                             compiler_llvm_context::EraVMCodeType::Runtime,
@@ -942,7 +950,10 @@ impl Function {
                 name: InstructionName::ISZERO,
                 ..
             } => {
-                let operand = block_stack.elements.last().expect("Always exists");
+                let operand = block_stack
+                    .elements
+                    .last()
+                    .ok_or_else(|| anyhow::anyhow!("Operand is missing"))?;
 
                 let result = match operand {
                     Element::Tag(operand) => Element::Constant(if operand.is_zero() {

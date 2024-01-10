@@ -185,7 +185,12 @@ pub fn standard_output(
         libraries,
         remappings,
         SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(solc_optimizer_enabled, None),
+        SolcStandardJsonInputSettingsOptimizer::new(
+            solc_optimizer_enabled,
+            None,
+            &solc_version.default,
+            optimizer_settings.has_fallback_to_size_enabled,
+        ),
         None,
         solc_pipeline == SolcPipeline::Yul,
         suppressed_warnings,

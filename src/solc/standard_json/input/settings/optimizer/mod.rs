@@ -23,17 +23,26 @@ pub struct Optimizer {
     /// The `solc` optimizer details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<Details>,
+    /// Whether to try to recompile with -Oz if the bytecode is too large.
+    #[serde(skip_serializing)]
+    pub fallback_to_optimizing_for_size: Option<bool>,
 }
 
 impl Optimizer {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(enabled: bool, mode: Option<char>) -> Self {
+    pub fn new(
+        enabled: bool,
+        mode: Option<char>,
+        version: &semver::Version,
+        fallback_to_optimizing_for_size: bool,
+    ) -> Self {
         Self {
             enabled,
             mode,
-            details: Some(Details::default()),
+            details: Some(Details::disabled(version)),
+            fallback_to_optimizing_for_size: Some(fallback_to_optimizing_for_size),
         }
     }
 
@@ -42,7 +51,7 @@ impl Optimizer {
     ///
     pub fn normalize(&mut self, version: &semver::Version) {
         self.details = if version >= &semver::Version::new(0, 5, 5) {
-            Some(Details::default())
+            Some(Details::disabled(version))
         } else {
             None
         };
@@ -53,10 +62,13 @@ impl TryFrom<&Optimizer> for compiler_llvm_context::OptimizerSettings {
     type Error = anyhow::Error;
 
     fn try_from(value: &Optimizer) -> Result<Self, Self::Error> {
-        if let Some(mode) = value.mode {
-            return Self::try_from_cli(mode);
+        let mut result = match value.mode {
+            Some(mode) => Self::try_from_cli(mode)?,
+            None => Self::cycles(),
+        };
+        if value.fallback_to_optimizing_for_size.unwrap_or_default() {
+            result.set_fallback_to_size();
         }
-
-        Ok(Self::cycles())
+        Ok(result)
     }
 }

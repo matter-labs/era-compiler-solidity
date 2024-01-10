@@ -1,5 +1,35 @@
 # The `zksolc` changelog
 
+## [1.3.21] - 2024-01-05
+
+### Added
+
+- An option to fallback to optimizing for size if the bytecode is too large
+
+## [1.3.19] - 2023-12-16
+
+### Added
+
+- The support for the EraVM-friendly edition of solc
+
+### Changed
+
+- Disabled the solc optimizer to prevent unnecessary interference
+
+### Fixed
+
+- The incorrect behavior of complex sequences of overflow flags
+
+## [1.3.18] - 2023-12-04
+
+### Added
+
+- More LLVM optimizations, especially for precompiles
+
+### Fixed
+
+- The incorrect detection of constant addresses in call simulations
+
 ## [1.3.17] - 2023-11-11
 
 ### Added

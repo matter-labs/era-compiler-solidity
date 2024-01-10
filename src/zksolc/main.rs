@@ -127,6 +127,9 @@ fn main_inner() -> anyhow::Result<()> {
         Some(mode) => compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
         None => compiler_llvm_context::OptimizerSettings::cycles(),
     };
+    if arguments.fallback_to_optimizing_for_size {
+        optimizer_settings.set_fallback_to_size();
+    }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 

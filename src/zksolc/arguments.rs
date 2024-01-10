@@ -56,6 +56,10 @@ pub struct Arguments {
     #[structopt(short = "O", long = "optimization")]
     pub optimization: Option<char>,
 
+    /// Try to recompile with -Oz if the bytecode is too large.
+    #[structopt(long = "fallback-Oz")]
+    pub fallback_to_optimizing_for_size: bool,
+
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
     /// Beware that it will prevent libraries from being inlined.
