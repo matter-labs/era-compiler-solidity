@@ -61,7 +61,7 @@ impl Output {
         source_code_files: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         pipeline: SolcPipeline,
-        version: &semver::Version,
+        solc_version: &SolcVersion,
         debug_config: Option<&compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Project> {
         if let SolcPipeline::EVMLA = pipeline {
@@ -129,7 +129,7 @@ impl Output {
                 let project_contract = ProjectContract::new(
                     full_path.clone(),
                     source_hash,
-                    version.to_owned(),
+                    solc_version.to_owned(),
                     source,
                     contract.metadata.to_owned(),
                 );
@@ -138,10 +138,25 @@ impl Output {
         }
 
         Ok(Project::new(
-            version.to_owned(),
+            solc_version.to_owned(),
             project_contracts,
             libraries,
         ))
+    }
+
+    ///
+    /// Removes EVM artifacts to prevent their accidental usage.
+    ///
+    pub fn remove_evm(&mut self) {
+        if let Some(files) = self.contracts.as_mut() {
+            for (_, file) in files.iter_mut() {
+                for (_, contract) in file.iter_mut() {
+                    if let Some(evm) = contract.evm.as_mut() {
+                        evm.bytecode = None;
+                    }
+                }
+            }
+        }
     }
 
     ///

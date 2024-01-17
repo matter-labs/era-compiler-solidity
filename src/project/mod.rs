@@ -20,6 +20,7 @@ use crate::build::Build;
 use crate::missing_libraries::MissingLibraries;
 use crate::process::input::Input as ProcessInput;
 use crate::project::contract::ir::IR;
+use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::statement::object::Object;
@@ -32,7 +33,7 @@ use self::contract::Contract;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
     /// The source code version.
-    pub version: semver::Version,
+    pub version: SolcVersion,
     /// The project contracts,
     pub contracts: BTreeMap<String, Contract>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
@@ -46,7 +47,7 @@ impl Project {
     /// A shortcut constructor.
     ///
     pub fn new(
-        version: semver::Version,
+        version: SolcVersion,
         contracts: BTreeMap<String, Contract>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
     ) -> Self {
@@ -193,6 +194,7 @@ impl Project {
             solc.validate_yul(path)?;
         }
 
+        let source_version = SolcVersion::new_simple(SolcCompiler::LAST_SUPPORTED_VERSION);
         let path = path.to_string_lossy().to_string();
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
@@ -206,14 +208,14 @@ impl Project {
             Contract::new(
                 path,
                 source_hash,
-                SolcCompiler::LAST_SUPPORTED_VERSION,
+                source_version.clone(),
                 IR::new_yul(source_code.to_owned(), object),
                 None,
             ),
         );
 
         Ok(Self::new(
-            SolcCompiler::LAST_SUPPORTED_VERSION,
+            source_version,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -227,6 +229,8 @@ impl Project {
             .map_err(|error| anyhow::anyhow!("LLVM IR file {:?} reading error: {}", path, error))?;
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
+        let source_version =
+            SolcVersion::new_simple(compiler_llvm_context::eravm_const::LLVM_VERSION);
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
@@ -235,14 +239,14 @@ impl Project {
             Contract::new(
                 path.clone(),
                 source_hash,
-                compiler_llvm_context::eravm_const::LLVM_VERSION,
+                source_version.clone(),
                 IR::new_llvm_ir(path, source_code),
                 None,
             ),
         );
 
         Ok(Self::new(
-            compiler_llvm_context::eravm_const::LLVM_VERSION,
+            source_version,
             project_contracts,
             BTreeMap::new(),
         ))
@@ -257,6 +261,8 @@ impl Project {
         })?;
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
+        let source_version =
+            SolcVersion::new_simple(compiler_llvm_context::eravm_const::ZKEVM_VERSION);
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
@@ -265,14 +271,14 @@ impl Project {
             Contract::new(
                 path.clone(),
                 source_hash,
-                compiler_llvm_context::eravm_const::ZKEVM_VERSION,
+                source_version.clone(),
                 IR::new_zkasm(path, source_code),
                 None,
             ),
         );
 
         Ok(Self::new(
-            compiler_llvm_context::eravm_const::ZKEVM_VERSION,
+            source_version,
             project_contracts,
             BTreeMap::new(),
         ))

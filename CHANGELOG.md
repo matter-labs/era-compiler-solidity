@@ -1,5 +1,12 @@
 # The `zksolc` changelog
 
+## [1.3.22] - 2024-01-12
+
+### Fixed
+
+- Incorrect handling of input paths on Windows
+- The issue with different bytecode hash across different platforms
+
 ## [1.3.21] - 2024-01-05
 
 ### Added

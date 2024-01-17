@@ -33,6 +33,7 @@ fn ecrecover() {
             "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             None,
         ).expect("Test failure")
     );
@@ -46,6 +47,7 @@ fn ecrecover_suppressed() {
             "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             Some(vec![Warning::EcRecover]),
         ).expect("Test failure")
     );
@@ -77,6 +79,7 @@ fn send() {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             None,
         ).expect("Test failure")
     );
@@ -90,6 +93,7 @@ fn send_suppressed() {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             Some(vec![Warning::SendTransfer]),
         ).expect("Test failure")
     );
@@ -120,6 +124,7 @@ fn transfer() {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             None,
         ).expect("Test failure")
     );
@@ -133,6 +138,7 @@ fn transfer_suppressed() {
             "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
             BTreeMap::new(),
             SolcPipeline::Yul,
+            false,
             Some(vec![Warning::SendTransfer]),
         ).expect("Test failure")
     );
@@ -160,6 +166,7 @@ fn extcodesize() {
         "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         None,
     )
     .expect("Test failure"));
@@ -172,6 +179,7 @@ fn extcodesize_suppressed() {
         "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         Some(vec![Warning::ExtCodeSize]),
     )
     .expect("Test failure"));
@@ -195,6 +203,7 @@ fn tx_origin() {
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         None,
     )
     .expect("Test failure"));
@@ -207,6 +216,7 @@ fn tx_origin_suppressed() {
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         Some(vec![Warning::TxOrigin]),
     )
     .expect("Test failure"));
@@ -237,6 +247,7 @@ fn tx_origin_assembly() {
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         None,
     )
     .expect("Test failure"));
@@ -249,6 +260,7 @@ fn tx_origin_assembly_suppressed() {
         "Warning: You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
+        false,
         Some(vec![Warning::TxOrigin]),
     )
     .expect("Test failure"));
@@ -292,6 +304,7 @@ contract InternalFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        true,
         None,
     )
     .expect("Test failure"));
@@ -329,6 +342,7 @@ contract StackFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        true,
         None,
     )
     .expect("Test failure"));
@@ -373,6 +387,7 @@ contract StorageFunctionPointerExample {
         "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
+        true,
         None,
     )
     .expect("Test failure"));

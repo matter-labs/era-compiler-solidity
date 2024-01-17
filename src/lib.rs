@@ -231,7 +231,7 @@ pub fn standard_output(
         source_code_files,
         libraries,
         solc_pipeline,
-        &solc_version.default,
+        &solc_version,
         debug_config.as_ref(),
     )?;
 
@@ -303,7 +303,7 @@ pub fn standard_json(
         source_code_files,
         libraries,
         solc_pipeline,
-        &solc_version.default,
+        &solc_version,
         debug_config.as_ref(),
     )?;
 

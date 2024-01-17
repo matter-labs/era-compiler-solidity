@@ -126,22 +126,8 @@ impl Contract {
             *asm = serde_json::Value::String(self.build.assembly_text);
         }
         let hexadecimal_bytecode = hex::encode(self.build.bytecode);
-        match (
-            combined_json_contract.bin.as_mut(),
-            combined_json_contract.bin_runtime.as_mut(),
-        ) {
-            (Some(bin), Some(bin_runtime)) => {
-                *bin = hexadecimal_bytecode;
-                *bin_runtime = bin.clone();
-            }
-            (Some(bin), None) => {
-                *bin = hexadecimal_bytecode;
-            }
-            (None, Some(bin_runtime)) => {
-                *bin_runtime = hexadecimal_bytecode;
-            }
-            (None, None) => {}
-        }
+        combined_json_contract.bin = Some(hexadecimal_bytecode);
+        combined_json_contract.bin_runtime = combined_json_contract.bin.clone();
 
         combined_json_contract.factory_deps = Some(self.build.factory_dependencies);
 

@@ -2,8 +2,11 @@
 //! Solidity to EraVM compiler arguments.
 //!
 
+use std::collections::BTreeSet;
+use std::path::Path;
 use std::path::PathBuf;
 
+use path_slash::PathExt;
 use structopt::StructOpt;
 
 ///
@@ -252,6 +255,10 @@ impl Arguments {
             if self.optimization.is_some() {
                 anyhow::bail!("LLVM optimizations are not supported in EraVM assembly mode.");
             }
+
+            if self.fallback_to_optimizing_for_size {
+                anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
+            }
         }
 
         if self.combined_json.is_some() {
@@ -290,11 +297,71 @@ impl Arguments {
             if self.optimization.is_some() {
                 anyhow::bail!("LLVM optimizations must specified in standard JSON input settings.");
             }
+            if self.fallback_to_optimizing_for_size {
+                anyhow::bail!(
+                    "Falling back to -Oz must specified in standard JSON input settings."
+                );
+            }
             if self.metadata_hash.is_some() {
                 anyhow::bail!("Metadata hash mode must specified in standard JSON input settings.");
             }
         }
 
         Ok(())
+    }
+
+    ///
+    /// Returns remappings from input paths.
+    ///
+    pub fn split_input_files_and_remappings(
+        &self,
+    ) -> anyhow::Result<(Vec<PathBuf>, Option<BTreeSet<String>>)> {
+        let mut input_files = Vec::with_capacity(self.inputs.len());
+        let mut remappings = BTreeSet::new();
+
+        for input in self.inputs.iter() {
+            if input.contains('=') {
+                let mut parts = Vec::with_capacity(2);
+                for path in input.trim().split('=') {
+                    let path = PathBuf::from(path);
+                    parts.push(
+                        Self::path_to_posix(path.as_path())?
+                            .to_string_lossy()
+                            .to_string(),
+                    );
+                }
+                if parts.len() != 2 {
+                    anyhow::bail!(
+                        "Invalid remapping `{}`: expected two parts separated by '='",
+                        input
+                    );
+                }
+                remappings.insert(parts.join("="));
+            } else {
+                let path = PathBuf::from(input.trim());
+                let path = Self::path_to_posix(path.as_path())?;
+                input_files.push(path);
+            }
+        }
+
+        let remappings = if remappings.is_empty() {
+            None
+        } else {
+            Some(remappings)
+        };
+
+        Ok((input_files, remappings))
+    }
+
+    ///
+    /// Normalizes an input path by converting it to POSIX format.
+    ///
+    fn path_to_posix(path: &Path) -> anyhow::Result<PathBuf> {
+        let path = path
+            .to_slash()
+            .ok_or_else(|| anyhow::anyhow!("Input path {:?} POSIX conversion error", path))?
+            .to_string();
+        let path = PathBuf::from(path.as_str());
+        Ok(path)
     }
 }

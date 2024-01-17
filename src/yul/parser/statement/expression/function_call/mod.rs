@@ -109,7 +109,7 @@ impl FunctionCall {
             if let Expression::Literal(Literal {
                 inner: LexicalLiteral::String(library_path),
                 ..
-            }) = self.arguments.get(0).expect("Always exists")
+            }) = self.arguments.first().expect("Always exists")
             {
                 libraries.insert(library_path.to_string());
             }

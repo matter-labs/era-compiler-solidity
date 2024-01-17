@@ -60,7 +60,7 @@ pub fn build_solidity(
     compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
     let solc_version = solc.version()?;
 
     let input = SolcStandardJsonInput::try_from_sources(
@@ -76,13 +76,7 @@ pub fn build_solidity(
 
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
-    let project = output.try_to_project(
-        sources,
-        libraries,
-        pipeline,
-        &SolcCompiler::LAST_SUPPORTED_VERSION,
-        None,
-    )?;
+    let project = output.try_to_project(sources, libraries, pipeline, &solc_version, None)?;
 
     let build = project.compile(
         optimizer_settings,
@@ -93,7 +87,7 @@ pub fn build_solidity(
     )?;
     build.write_to_standard_json(
         &mut output,
-        &solc.version()?,
+        &solc_version,
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
@@ -114,14 +108,15 @@ pub fn build_solidity_and_detect_missing_libraries(
     compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
+    let solc_version = solc.version()?;
 
     let input = SolcStandardJsonInput::try_from_sources(
         sources.clone(),
         libraries.clone(),
         None,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc.version()?.default, false),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
         None,
         pipeline == SolcPipeline::Yul,
         None,
@@ -129,13 +124,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
-    let project = output.try_to_project(
-        sources,
-        libraries,
-        pipeline,
-        &SolcCompiler::LAST_SUPPORTED_VERSION,
-        None,
-    )?;
+    let project = output.try_to_project(sources, libraries, pipeline, &solc_version, None)?;
 
     let missing_libraries = project.get_missing_libraries();
     missing_libraries.write_to_standard_json(
@@ -178,12 +167,16 @@ pub fn check_solidity_warning(
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     pipeline: SolcPipeline,
+    skip_for_zkvm_edition: bool,
     suppressed_warnings: Option<Vec<Warning>>,
 ) -> anyhow::Result<bool> {
     check_dependencies();
 
-    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned());
+    let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
     let solc_version = solc.version()?;
+    if skip_for_zkvm_edition && solc_version.l2_revision.is_some() {
+        return Ok(true);
+    }
 
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_string(), source_code.to_string());

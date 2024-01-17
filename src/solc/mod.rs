@@ -49,11 +49,17 @@ impl Compiler {
     /// Different tools may use different `executable` names. For example, the integration tester
     /// uses `solc-<version>` format.
     ///
-    pub fn new(executable: String) -> Self {
-        Self {
+    pub fn new(executable: String) -> anyhow::Result<Self> {
+        if let Err(error) = which::which(executable.as_str()) {
+            anyhow::bail!(
+                "The `{executable}` executable not found in ${{PATH}}: {}",
+                error
+            );
+        }
+        Ok(Self {
             executable,
             version: None,
-        }
+        })
     }
 
     ///
@@ -132,6 +138,7 @@ impl Compiler {
                 )
             })?;
         output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
+        output.remove_evm();
 
         Ok(output)
     }
@@ -205,6 +212,7 @@ impl Compiler {
             combined_json.source_list = None;
             combined_json.sources = None;
         }
+        combined_json.remove_evm();
 
         Ok(combined_json)
     }

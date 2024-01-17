@@ -4,8 +4,6 @@
 
 pub mod arguments;
 
-use std::collections::BTreeSet;
-use std::path::PathBuf;
 use std::str::FromStr;
 
 use self::arguments::Arguments;
@@ -59,57 +57,16 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     let debug_config = match arguments.debug_output_directory {
-        Some(debug_output_directory) => {
+        Some(ref debug_output_directory) => {
             std::fs::create_dir_all(debug_output_directory.as_path())?;
             Some(compiler_llvm_context::DebugConfig::new(
-                debug_output_directory,
+                debug_output_directory.to_owned(),
             ))
         }
         None => None,
     };
 
-    let mut input_files = Vec::with_capacity(arguments.inputs.len());
-    let mut remappings = BTreeSet::new();
-    for input in arguments.inputs.into_iter() {
-        if input.contains('=') {
-            let mut paths = input.split('=');
-            for index in 0..2 {
-                paths
-                    .next()
-                    .ok_or_else(|| {
-                        anyhow::anyhow!(
-                            "Invalid remapping `{}`: path #{} is missing",
-                            input,
-                            index + 1
-                        )
-                    })
-                    .and_then(|path| {
-                        PathBuf::try_from(path).map_err(|error| {
-                            anyhow::anyhow!(
-                                "Invalid remapping `{}`: path #{} error: {}",
-                                input,
-                                index + 1,
-                                error
-                            )
-                        })
-                    })?;
-            }
-            remappings.insert(input);
-        } else {
-            let path = PathBuf::try_from(input.as_str())
-                .map_err(|error| anyhow::anyhow!("Invalid input `{}`: {}", input, error))?;
-            input_files.push(path);
-        }
-    }
-    let remappings = if remappings.is_empty() {
-        None
-    } else {
-        Some(remappings)
-    };
-
-    for path in input_files.iter_mut() {
-        *path = path.canonicalize()?;
-    }
+    let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
     let suppressed_warnings = match arguments.suppress_warnings {
         Some(warnings) => Some(compiler_solidity::Warning::try_from_strings(
@@ -121,7 +78,7 @@ fn main_inner() -> anyhow::Result<()> {
     let mut solc =
         compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
             compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-        }));
+        }))?;
 
     let mut optimizer_settings = match arguments.optimization {
         Some(mode) => compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,

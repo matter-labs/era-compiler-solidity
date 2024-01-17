@@ -15,6 +15,7 @@ use compiler_llvm_context::EraVMWriteLLVM;
 
 use crate::build::contract::Contract as ContractBuild;
 use crate::project::Project;
+use crate::solc::version::Version as SolcVersion;
 
 use self::ir::IR;
 use self::metadata::Metadata;
@@ -39,19 +40,21 @@ impl Contract {
     pub fn new(
         path: String,
         source_hash: [u8; compiler_common::BYTE_LENGTH_FIELD],
-        source_version: semver::Version,
+        source_version: SolcVersion,
         ir: IR,
         metadata_json: Option<serde_json::Value>,
     ) -> Self {
+        let metadata_json = metadata_json.unwrap_or_else(|| {
+            serde_json::json!({
+                "source_hash": hex::encode(source_hash.as_slice()),
+                "source_version": serde_json::to_value(&source_version).expect("Always valid"),
+            })
+        });
+
         Self {
             path,
             ir,
-            metadata_json: metadata_json.unwrap_or_else(|| {
-                serde_json::json!({
-                    "source_hash": hex::encode(source_hash.as_slice()),
-                    "source_version": source_version.to_string(),
-                })
-            }),
+            metadata_json,
         }
     }
 
@@ -96,8 +99,13 @@ impl Contract {
         let llvm = inkwell::context::Context::create();
         let optimizer = compiler_llvm_context::Optimizer::new(optimizer_settings);
 
+        let version = project.version.clone();
+        let identifier = self.identifier().to_owned();
+
         let metadata = Metadata::new(
             self.metadata_json.take(),
+            version.default.clone(),
+            version.l2_revision.clone(),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
         );
@@ -109,9 +117,6 @@ impl Contract {
             } else {
                 None
             };
-
-        let version = project.version.clone();
-        let identifier = self.identifier().to_owned();
 
         let module = match self.ir {
             IR::LLVMIR(ref llvm_ir) => {
@@ -155,7 +160,7 @@ impl Contract {
                 context.set_yul_data(yul_data);
             }
             IR::EVMLA(_) => {
-                let evmla_data = compiler_llvm_context::EraVMContextEVMLAData::new(version);
+                let evmla_data = compiler_llvm_context::EraVMContextEVMLAData::new(version.default);
                 context.set_evmla_data(evmla_data);
             }
             IR::LLVMIR(_) => {}
