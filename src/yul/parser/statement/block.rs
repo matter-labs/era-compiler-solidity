@@ -206,6 +206,76 @@ where
     }
 }
 
+impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Block
+where
+    D: compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+        let current_function = context.current_function().borrow().name().to_owned();
+        let current_block = context.basic_block();
+
+        let mut functions = Vec::with_capacity(self.statements.len());
+        let mut local_statements = Vec::with_capacity(self.statements.len());
+
+        for statement in self.statements.into_iter() {
+            match statement {
+                Statement::FunctionDefinition(mut statement) => {
+                    statement.declare(context)?;
+                    functions.push(statement);
+                }
+                statement => local_statements.push(statement),
+            }
+        }
+
+        for function in functions.into_iter() {
+            function.into_llvm(context)?;
+        }
+
+        context.set_current_function(current_function.as_str())?;
+        context.set_basic_block(current_block);
+        for statement in local_statements.into_iter() {
+            if context.basic_block().get_terminator().is_some() {
+                break;
+            }
+
+            match statement {
+                Statement::Block(block) => {
+                    block.into_llvm(context)?;
+                }
+                Statement::Expression(expression) => {
+                    expression.into_llvm_evm(context)?;
+                }
+                Statement::VariableDeclaration(statement) => statement.into_llvm(context)?,
+                Statement::Assignment(statement) => statement.into_llvm(context)?,
+                Statement::IfConditional(statement) => statement.into_llvm(context)?,
+                Statement::Switch(statement) => statement.into_llvm(context)?,
+                Statement::ForLoop(statement) => statement.into_llvm(context)?,
+                Statement::Continue(_location) => {
+                    context.build_unconditional_branch(context.r#loop().continue_block);
+                    break;
+                }
+                Statement::Break(_location) => {
+                    context.build_unconditional_branch(context.r#loop().join_block);
+                    break;
+                }
+                Statement::Leave(_location) => {
+                    context.build_unconditional_branch(
+                        context.current_function().borrow().return_block(),
+                    );
+                    break;
+                }
+                statement => anyhow::bail!(
+                    "{} Unexpected local statement: {:?}",
+                    statement.location(),
+                    statement
+                ),
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::yul::lexer::token::location::Location;

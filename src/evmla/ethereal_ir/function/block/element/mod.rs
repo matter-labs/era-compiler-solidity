@@ -758,10 +758,10 @@ where
                     .code_type()
                     .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
                 {
-                    compiler_llvm_context::EraVMCodeType::Deploy => {
+                    compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
                     }
-                    compiler_llvm_context::EraVMCodeType::Runtime => {
+                    compiler_llvm_context::CodeType::Runtime => {
                         let arguments = self.pop_arguments_llvm(context);
                         compiler_llvm_context::eravm_evm_calldata::load(
                             context,
@@ -776,10 +776,10 @@ where
                     .code_type()
                     .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
                 {
-                    compiler_llvm_context::EraVMCodeType::Deploy => {
+                    compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
                     }
-                    compiler_llvm_context::EraVMCodeType::Runtime => {
+                    compiler_llvm_context::CodeType::Runtime => {
                         compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
                     }
                 }
@@ -791,7 +791,7 @@ where
                     .code_type()
                     .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
                 {
-                    compiler_llvm_context::EraVMCodeType::Deploy => {
+                    compiler_llvm_context::CodeType::Deploy => {
                         let calldata_size =
                             compiler_llvm_context::eravm_evm_calldata::size(context)?;
 
@@ -803,7 +803,7 @@ where
                         )
                         .map(|_| None)
                     }
-                    compiler_llvm_context::EraVMCodeType::Runtime => {
+                    compiler_llvm_context::CodeType::Runtime => {
                         compiler_llvm_context::eravm_evm_calldata::copy(
                             context,
                             arguments[0].into_int_value(),
@@ -819,10 +819,10 @@ where
                     .code_type()
                     .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
                 {
-                    compiler_llvm_context::EraVMCodeType::Deploy => {
+                    compiler_llvm_context::CodeType::Deploy => {
                         compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
                     }
-                    compiler_llvm_context::EraVMCodeType::Runtime => {
+                    compiler_llvm_context::CodeType::Runtime => {
                         let code_source =
                             compiler_llvm_context::eravm_general::code_source(context)?;
                         compiler_llvm_context::eravm_evm_ext_code::size(
@@ -861,7 +861,7 @@ where
                         match context.code_type().ok_or_else(|| {
                             anyhow::anyhow!("The contract code part type is undefined")
                         })? {
-                            compiler_llvm_context::EraVMCodeType::Deploy => {
+                            compiler_llvm_context::CodeType::Deploy => {
                                 compiler_llvm_context::eravm_evm_calldata::copy(
                                     context,
                                     arguments[0].into_int_value(),
@@ -869,7 +869,7 @@ where
                                     arguments[2].into_int_value(),
                                 )
                             }
-                            compiler_llvm_context::EraVMCodeType::Runtime => {
+                            compiler_llvm_context::CodeType::Runtime => {
                                 let calldata_size =
                                     compiler_llvm_context::eravm_evm_calldata::size(context)?;
                                 compiler_llvm_context::eravm_evm_calldata::copy(

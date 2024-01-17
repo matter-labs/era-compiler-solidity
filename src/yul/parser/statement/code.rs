@@ -74,6 +74,17 @@ where
     }
 }
 
+impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Code
+where
+    D: compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+        self.block.into_llvm(context)?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::yul::lexer::token::location::Location;

@@ -238,11 +238,11 @@ where
         let full_path = self.full_path().to_owned();
 
         if let Some(debug_config) = context.debug_config() {
-            debug_config.dump_evmla(full_path.as_str(), self.to_string().as_str())?;
+            debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
         }
         let deploy_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::EraVMCodeType::Deploy,
+            compiler_llvm_context::CodeType::Deploy,
             self.code
                 .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
@@ -254,7 +254,7 @@ where
             .remove("0")
             .expect("Always exists");
         if let Some(debug_config) = context.debug_config() {
-            debug_config.dump_evmla(full_path.as_str(), data.to_string().as_str())?;
+            debug_config.dump_evmla(full_path.as_str(), None, data.to_string().as_str())?;
         }
         let runtime_code_instructions = match data {
             Data::Assembly(assembly) => assembly
@@ -269,7 +269,7 @@ where
         };
         let runtime_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::EraVMCodeType::Runtime,
+            compiler_llvm_context::CodeType::Runtime,
             runtime_code_instructions.as_slice(),
         )?;
 
@@ -279,17 +279,17 @@ where
         let mut ethereal_ir =
             EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
         if let Some(debug_config) = context.debug_config() {
-            debug_config.dump_ethir(full_path.as_str(), ethereal_ir.to_string().as_str())?;
+            debug_config.dump_ethir(full_path.as_str(), None, ethereal_ir.to_string().as_str())?;
         }
         ethereal_ir.declare(context)?;
         ethereal_ir.into_llvm(context)?;
 
         compiler_llvm_context::EraVMDeployCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::EraVMCodeType::Deploy,
+            compiler_llvm_context::CodeType::Deploy,
         ))
         .into_llvm(context)?;
         compiler_llvm_context::EraVMRuntimeCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::EraVMCodeType::Runtime,
+            compiler_llvm_context::CodeType::Runtime,
         ))
         .into_llvm(context)?;
 

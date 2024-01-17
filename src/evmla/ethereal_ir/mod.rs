@@ -78,7 +78,7 @@ impl EtherealIR {
     ///
     pub fn get_blocks(
         solc_version: semver::Version,
-        code_type: compiler_llvm_context::EraVMCodeType,
+        code_type: compiler_llvm_context::CodeType,
         instructions: &[Instruction],
     ) -> anyhow::Result<HashMap<compiler_llvm_context::EraVMFunctionBlockKey, Block>> {
         let mut blocks = HashMap::with_capacity(Self::BLOCKS_HASHMAP_DEFAULT_CAPACITY);

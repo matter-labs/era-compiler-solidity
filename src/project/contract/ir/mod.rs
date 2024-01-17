@@ -106,3 +106,33 @@ where
         }
     }
 }
+
+impl<D> compiler_llvm_context::EVMWriteLLVM<D> for IR
+where
+    D: compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        match self {
+            Self::Yul(inner) => inner.declare(context),
+            Self::EVMLA(_inner) => todo!(),
+            Self::LLVMIR(_inner) => Ok(()),
+            Self::ZKASM(_inner) => {
+                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
+            }
+        }
+    }
+
+    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+        match self {
+            Self::Yul(inner) => inner.into_llvm(context),
+            Self::EVMLA(_inner) => todo!(),
+            Self::LLVMIR(_inner) => Ok(()),
+            Self::ZKASM(_inner) => {
+                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
+            }
+        }
+    }
+}

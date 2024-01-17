@@ -48,7 +48,7 @@ impl Block {
     ///
     pub fn try_from_instructions(
         solc_version: semver::Version,
-        code_type: compiler_llvm_context::EraVMCodeType,
+        code_type: compiler_llvm_context::CodeType,
         slice: &[Instruction],
     ) -> anyhow::Result<(Self, usize)> {
         let mut cursor = 0;

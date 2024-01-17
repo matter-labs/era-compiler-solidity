@@ -15,10 +15,15 @@ use serde::Deserialize;
 use serde::Serialize;
 use sha3::Digest;
 
-use crate::build::contract::Contract as ContractBuild;
-use crate::build::Build;
+use crate::build_eravm::contract::Contract as EraVMContractBuild;
+use crate::build_eravm::Build as EraVMBuild;
+use crate::build_evm::contract::Contract as EVMContractBuild;
+use crate::build_evm::Build as EVMBuild;
 use crate::missing_libraries::MissingLibraries;
-use crate::process::input::Input as ProcessInput;
+use crate::process::input_eravm::Input as EraVMProcessInput;
+use crate::process::input_evm::Input as EVMProcessInput;
+use crate::process::output_eravm::Output as EraVMProcessOutput;
+use crate::process::output_evm::Output as EVMProcessOutput;
 use crate::project::contract::ir::IR;
 use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
@@ -65,36 +70,39 @@ impl Project {
     }
 
     ///
-    /// Compiles all contracts, returning their build artifacts.
+    /// Compiles all contracts to EraVM, returning their build artifacts.
     ///
-    pub fn compile(
+    pub fn compile_to_eravm(
         self,
         optimizer_settings: compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<compiler_llvm_context::DebugConfig>,
-    ) -> anyhow::Result<Build> {
+    ) -> anyhow::Result<EraVMBuild> {
         let project = self.clone();
-        let results: BTreeMap<String, anyhow::Result<ContractBuild>> = self
+        let results: BTreeMap<String, anyhow::Result<EraVMContractBuild>> = self
             .contracts
             .into_par_iter()
             .map(|(full_path, contract)| {
-                let process_output = crate::process::call(ProcessInput::new(
-                    contract,
-                    project.clone(),
-                    is_system_mode,
-                    include_metadata_hash,
-                    bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
-                    optimizer_settings.clone(),
-                    debug_config.clone(),
-                ));
+                let process_output: anyhow::Result<EraVMProcessOutput> = crate::process::call(
+                    EraVMProcessInput::new(
+                        contract,
+                        project.clone(),
+                        is_system_mode,
+                        include_metadata_hash,
+                        bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
+                        optimizer_settings.clone(),
+                        debug_config.clone(),
+                    ),
+                    compiler_llvm_context::Target::EraVM,
+                );
 
                 (full_path, process_output.map(|output| output.build))
             })
             .collect();
 
-        let mut build = Build::default();
+        let mut build = EraVMBuild::default();
         let mut hashes = HashMap::with_capacity(results.len());
         for (path, result) in results.iter() {
             match result {
@@ -130,6 +138,50 @@ impl Project {
                             .insert(hash, dependency_path);
                     }
 
+                    build.contracts.insert(path, contract);
+                }
+                Err(error) => {
+                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                }
+            }
+        }
+
+        Ok(build)
+    }
+
+    ///
+    /// Compiles all contracts to EVM, returning their build artifacts.
+    ///
+    pub fn compile_to_evm(
+        self,
+        optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        include_metadata_hash: bool,
+        debug_config: Option<compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<EVMBuild> {
+        let project = self.clone();
+        let results: BTreeMap<String, anyhow::Result<EVMContractBuild>> = self
+            .contracts
+            .into_par_iter()
+            .map(|(full_path, contract)| {
+                let process_output: anyhow::Result<EVMProcessOutput> = crate::process::call(
+                    EVMProcessInput::new(
+                        contract,
+                        project.clone(),
+                        include_metadata_hash,
+                        optimizer_settings.clone(),
+                        debug_config.clone(),
+                    ),
+                    compiler_llvm_context::Target::EVM,
+                );
+
+                (full_path, process_output.map(|output| output.build))
+            })
+            .collect();
+
+        let mut build = EVMBuild::default();
+        for (path, result) in results.into_iter() {
+            match result {
+                Ok(contract) => {
                     build.contracts.insert(path, contract);
                 }
                 Err(error) => {
@@ -255,7 +307,7 @@ impl Project {
     ///
     /// Parses the EraVM assembly source code file and returns the source data.
     ///
-    pub fn try_from_zkasm_path(path: &Path) -> anyhow::Result<Self> {
+    pub fn try_from_eravm_assembly_path(path: &Path) -> anyhow::Result<Self> {
         let source_code = std::fs::read_to_string(path).map_err(|error| {
             anyhow::anyhow!("EraVM assembly file {:?} reading error: {}", path, error)
         })?;
@@ -307,7 +359,7 @@ impl compiler_llvm_context::EraVMDependency for Project {
             })?;
 
         contract
-            .compile(
+            .compile_to_eravm(
                 project,
                 optimizer_settings,
                 is_system_mode,
@@ -347,5 +399,25 @@ impl compiler_llvm_context::EraVMDependency for Project {
         }
 
         anyhow::bail!("Library `{}` not found in the project", path);
+    }
+}
+
+impl compiler_llvm_context::EVMDependency for Project {
+    fn compile(
+        _project: Self,
+        _identifier: &str,
+        _optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        _include_metadata_hash: bool,
+        _debug_config: Option<compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<String> {
+        todo!()
+    }
+
+    fn resolve_path(&self, _identifier: &str) -> anyhow::Result<String> {
+        todo!()
+    }
+
+    fn resolve_library(&self, _path: &str) -> anyhow::Result<String> {
+        todo!()
     }
 }

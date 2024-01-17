@@ -14,14 +14,14 @@ use crate::evmla::ethereal_ir::EtherealIR;
 #[derive(Debug, Clone)]
 pub struct EntryLink {
     /// The code part type.
-    pub code_type: compiler_llvm_context::EraVMCodeType,
+    pub code_type: compiler_llvm_context::CodeType,
 }
 
 impl EntryLink {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(code_type: compiler_llvm_context::EraVMCodeType) -> Self {
+    pub fn new(code_type: compiler_llvm_context::CodeType) -> Self {
         Self { code_type }
     }
 }
@@ -37,10 +37,10 @@ where
             .borrow()
             .declaration();
         let is_deploy_code = match self.code_type {
-            compiler_llvm_context::EraVMCodeType::Deploy => context
+            compiler_llvm_context::CodeType::Deploy => context
                 .integer_type(compiler_common::BIT_LENGTH_BOOLEAN)
                 .const_int(1, false),
-            compiler_llvm_context::EraVMCodeType::Runtime => context
+            compiler_llvm_context::CodeType::Runtime => context
                 .integer_type(compiler_common::BIT_LENGTH_BOOLEAN)
                 .const_int(0, false),
         };

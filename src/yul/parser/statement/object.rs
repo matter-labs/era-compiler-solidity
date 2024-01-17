@@ -250,6 +250,25 @@ where
     }
 }
 
+impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Object
+where
+    D: compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        _context: &mut compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+        let mut entry = compiler_llvm_context::EVMEntryFunction::new(self.code);
+        entry.declare(context)?;
+        entry.into_llvm(context)?;
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::yul::lexer::token::location::Location;

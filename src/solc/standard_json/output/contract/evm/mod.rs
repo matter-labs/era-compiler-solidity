@@ -44,8 +44,17 @@ impl EVM {
     ///
     /// Sets the EraVM assembly and bytecode.
     ///
-    pub fn modify(&mut self, assembly_text: String, bytecode: String) {
+    pub fn modify_eravm(&mut self, assembly_text: String, bytecode: String) {
         self.assembly_text = Some(assembly_text);
         self.bytecode = Some(Bytecode::new(bytecode));
+    }
+
+    ///
+    /// Sets the EVM and deploy and runtime bytecode.
+    ///
+    /// TODO: check and fix the output structure
+    ///
+    pub fn modify_evm(&mut self, deploy_bytecode: String, runtime_bytecode: String) {
+        self.bytecode = Some(Bytecode::new(deploy_bytecode));
     }
 }

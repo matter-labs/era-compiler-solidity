@@ -1,7 +1,7 @@
 //!
 //! Process for compiling a single compilation unit.
 //!
-//! The input data.
+//! The EraVM input data.
 //!
 
 use serde::Deserialize;
@@ -11,7 +11,7 @@ use crate::project::contract::Contract;
 use crate::project::Project;
 
 ///
-/// The input data.
+/// The EraVM input data.
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Input {

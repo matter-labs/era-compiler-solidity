@@ -92,8 +92,8 @@ impl Function {
         match self.r#type {
             Type::Initial => {
                 for code_type in [
-                    compiler_llvm_context::EraVMCodeType::Deploy,
-                    compiler_llvm_context::EraVMCodeType::Runtime,
+                    compiler_llvm_context::CodeType::Deploy,
+                    compiler_llvm_context::CodeType::Runtime,
                 ] {
                     self.consume_block(
                         blocks,
@@ -231,7 +231,7 @@ impl Function {
         functions: &mut BTreeMap<compiler_llvm_context::EraVMFunctionBlockKey, Self>,
         extra_metadata: &ExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
-        code_type: compiler_llvm_context::EraVMCodeType,
+        code_type: compiler_llvm_context::CodeType,
         instance: usize,
         block_stack: &mut Stack,
         block_element: &mut BlockElement,
@@ -261,7 +261,7 @@ impl Function {
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            compiler_llvm_context::EraVMCodeType::Runtime,
+                            compiler_llvm_context::CodeType::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
@@ -323,7 +323,7 @@ impl Function {
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            compiler_llvm_context::EraVMCodeType::Runtime,
+                            compiler_llvm_context::CodeType::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
@@ -1120,10 +1120,10 @@ impl Function {
         tag: &num::BigUint,
     ) -> bool {
         blocks.contains_key(&compiler_llvm_context::EraVMFunctionBlockKey::new(
-            compiler_llvm_context::EraVMCodeType::Deploy,
+            compiler_llvm_context::CodeType::Deploy,
             tag & num::BigUint::from(u32::MAX),
         )) || blocks.contains_key(&compiler_llvm_context::EraVMFunctionBlockKey::new(
-            compiler_llvm_context::EraVMCodeType::Runtime,
+            compiler_llvm_context::CodeType::Runtime,
             tag & num::BigUint::from(u32::MAX),
         ))
     }
@@ -1242,7 +1242,7 @@ where
                 _ => context.field_const(0).as_basic_value_enum(),
             };
             context.build_store(pointer, value);
-            stack_variables.push(compiler_llvm_context::EraVMArgument::new(
+            stack_variables.push(compiler_llvm_context::Argument::new(
                 pointer.value.as_basic_value_enum(),
             ));
         }
@@ -1257,14 +1257,14 @@ where
                     .into_int_value();
                 let deploy_code_block = context.current_function().borrow().evmla().find_block(
                     &compiler_llvm_context::EraVMFunctionBlockKey::new(
-                        compiler_llvm_context::EraVMCodeType::Deploy,
+                        compiler_llvm_context::CodeType::Deploy,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
                 )?;
                 let runtime_code_block = context.current_function().borrow().evmla().find_block(
                     &compiler_llvm_context::EraVMFunctionBlockKey::new(
-                        compiler_llvm_context::EraVMCodeType::Runtime,
+                        compiler_llvm_context::CodeType::Runtime,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),

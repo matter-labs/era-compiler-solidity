@@ -38,13 +38,13 @@ md5 = "0.7"
 zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", branch = "v1.3.2" }
 
 compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-872-integrate-an-evm-execution-environment-into-the-compiler" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"
-branch = "llvm-15"
+branch = "az-evm-support"
 default-features = false
-features = ["llvm15-0", "no-libffi-linking", "target-eravm"]
+features = ["llvm15-0", "no-libffi-linking", "target-eravm", "target-evm"]
 
 [target.'cfg(target_env = "musl")'.dependencies]
 mimalloc = { version = "*", default-features = false }

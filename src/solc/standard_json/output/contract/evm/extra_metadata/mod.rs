@@ -30,14 +30,14 @@ impl ExtraMetadata {
     ) -> Option<&RecursiveFunction> {
         for function in self.recursive_functions.iter() {
             match block_key.code_type {
-                compiler_llvm_context::EraVMCodeType::Deploy => {
+                compiler_llvm_context::CodeType::Deploy => {
                     if let Some(creation_tag) = function.creation_tag {
                         if num::BigUint::from(creation_tag) == block_key.tag {
                             return Some(function);
                         }
                     }
                 }
-                compiler_llvm_context::EraVMCodeType::Runtime => {
+                compiler_llvm_context::CodeType::Runtime => {
                     if let Some(runtime_tag) = function.runtime_tag {
                         if num::BigUint::from(runtime_tag) == block_key.tag {
                             return Some(function);

@@ -45,15 +45,20 @@ fn main_inner() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let target = match arguments.target {
+        Some(ref target) => compiler_llvm_context::Target::from_str(target.as_str())?,
+        None => compiler_llvm_context::Target::EraVM,
+    };
+
     rayon::ThreadPoolBuilder::new()
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM); // TODO: pass from CLI
+    compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        return compiler_solidity::run_process();
+        return compiler_solidity::run_process(target);
     }
 
     let debug_config = match arguments.debug_output_directory {
@@ -99,108 +104,214 @@ fn main_inner() -> anyhow::Result<()> {
         None => true,
     };
 
-    let build = if arguments.yul {
-        compiler_solidity::yul(
-            input_files.as_slice(),
-            &mut solc,
-            optimizer_settings,
-            arguments.is_system_mode,
-            include_metadata_hash,
-            debug_config,
-        )
-    } else if arguments.llvm_ir {
-        compiler_solidity::llvm_ir(
-            input_files.as_slice(),
-            optimizer_settings,
-            arguments.is_system_mode,
-            include_metadata_hash,
-            debug_config,
-        )
-    } else if arguments.zkasm {
-        compiler_solidity::zkasm(input_files.as_slice(), include_metadata_hash, debug_config)
-    } else if arguments.standard_json {
-        compiler_solidity::standard_json(
-            &mut solc,
-            arguments.detect_missing_libraries,
-            arguments.force_evmla,
-            arguments.is_system_mode,
-            arguments.base_path,
-            arguments.include_paths,
-            arguments.allow_paths,
-            debug_config,
-        )?;
-        return Ok(());
-    } else if let Some(format) = arguments.combined_json {
-        compiler_solidity::combined_json(
-            format,
-            input_files.as_slice(),
-            arguments.libraries,
-            &mut solc,
-            !arguments.disable_solc_optimizer,
-            optimizer_settings,
-            arguments.force_evmla,
-            arguments.is_system_mode,
-            include_metadata_hash,
-            arguments.base_path,
-            arguments.include_paths,
-            arguments.allow_paths,
-            remappings,
-            suppressed_warnings,
-            debug_config,
-            arguments.output_directory,
-            arguments.overwrite,
-        )?;
-        return Ok(());
-    } else {
-        compiler_solidity::standard_output(
-            input_files.as_slice(),
-            arguments.libraries,
-            &mut solc,
-            !arguments.disable_solc_optimizer,
-            optimizer_settings,
-            arguments.force_evmla,
-            arguments.is_system_mode,
-            include_metadata_hash,
-            arguments.base_path,
-            arguments.include_paths,
-            arguments.allow_paths,
-            remappings,
-            suppressed_warnings,
-            debug_config,
-        )
-    }?;
+    match target {
+        compiler_llvm_context::Target::EraVM => {
+            let build = if arguments.yul {
+                compiler_solidity::yul_to_eravm(
+                    input_files.as_slice(),
+                    &mut solc,
+                    optimizer_settings,
+                    arguments.is_system_mode,
+                    include_metadata_hash,
+                    debug_config,
+                )
+            } else if arguments.llvm_ir {
+                compiler_solidity::llvm_ir_to_eravm(
+                    input_files.as_slice(),
+                    optimizer_settings,
+                    arguments.is_system_mode,
+                    include_metadata_hash,
+                    debug_config,
+                )
+            } else if arguments.eravm_assembly {
+                compiler_solidity::eravm_assembly(
+                    input_files.as_slice(),
+                    include_metadata_hash,
+                    debug_config,
+                )
+            } else if arguments.standard_json {
+                compiler_solidity::standard_json_eravm(
+                    &mut solc,
+                    arguments.detect_missing_libraries,
+                    arguments.force_evmla,
+                    arguments.is_system_mode,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    debug_config,
+                )?;
+                return Ok(());
+            } else if let Some(format) = arguments.combined_json {
+                compiler_solidity::combined_json_eravm(
+                    format,
+                    input_files.as_slice(),
+                    arguments.libraries,
+                    &mut solc,
+                    !arguments.disable_solc_optimizer,
+                    optimizer_settings,
+                    arguments.force_evmla,
+                    arguments.is_system_mode,
+                    include_metadata_hash,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    remappings,
+                    suppressed_warnings,
+                    debug_config,
+                    arguments.output_directory,
+                    arguments.overwrite,
+                )?;
+                return Ok(());
+            } else {
+                compiler_solidity::standard_output_eravm(
+                    input_files.as_slice(),
+                    arguments.libraries,
+                    &mut solc,
+                    !arguments.disable_solc_optimizer,
+                    optimizer_settings,
+                    arguments.force_evmla,
+                    arguments.is_system_mode,
+                    include_metadata_hash,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    remappings,
+                    suppressed_warnings,
+                    debug_config,
+                )
+            }?;
 
-    if let Some(output_directory) = arguments.output_directory {
-        std::fs::create_dir_all(&output_directory)?;
+            if let Some(output_directory) = arguments.output_directory {
+                std::fs::create_dir_all(&output_directory)?;
 
-        build.write_to_directory(
-            &output_directory,
-            arguments.output_assembly,
-            arguments.output_binary,
-            arguments.overwrite,
-        )?;
+                build.write_to_directory(
+                    &output_directory,
+                    arguments.output_assembly,
+                    arguments.output_binary,
+                    arguments.overwrite,
+                )?;
 
-        eprintln!(
-            "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
-        );
-    } else if arguments.output_assembly || arguments.output_binary {
-        for (path, contract) in build.contracts.into_iter() {
-            if arguments.output_assembly {
-                println!(
-                    "Contract `{}` assembly:\n\n{}",
-                    path, contract.build.assembly_text
+                eprintln!(
+                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 );
-            }
-            if arguments.output_binary {
-                println!(
-                    "Contract `{}` bytecode: 0x{}",
-                    path,
-                    hex::encode(contract.build.bytecode)
+            } else if arguments.output_assembly || arguments.output_binary {
+                for (path, contract) in build.contracts.into_iter() {
+                    if arguments.output_assembly {
+                        println!(
+                            "Contract `{}` assembly:\n\n{}",
+                            path, contract.build.assembly_text
+                        );
+                    }
+                    if arguments.output_binary {
+                        println!(
+                            "Contract `{}` bytecode: 0x{}",
+                            path,
+                            hex::encode(contract.build.bytecode)
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "Compiler run successful. No output requested. Use --asm and --bin flags."
                 );
             }
         }
-    } else {
-        eprintln!("Compiler run successful. No output requested. Use --asm and --bin flags.");
+        compiler_llvm_context::Target::EVM => {
+            let build = if arguments.yul {
+                compiler_solidity::yul_to_evm(
+                    input_files.as_slice(),
+                    &mut solc,
+                    optimizer_settings,
+                    include_metadata_hash,
+                    debug_config,
+                )
+            } else if arguments.llvm_ir {
+                compiler_solidity::llvm_ir_to_evm(
+                    input_files.as_slice(),
+                    optimizer_settings,
+                    include_metadata_hash,
+                    debug_config,
+                )
+            } else if arguments.standard_json {
+                compiler_solidity::standard_json_evm(
+                    &mut solc,
+                    arguments.force_evmla,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    debug_config,
+                )?;
+                return Ok(());
+            } else if let Some(format) = arguments.combined_json {
+                compiler_solidity::combined_json_evm(
+                    format,
+                    input_files.as_slice(),
+                    arguments.libraries,
+                    &mut solc,
+                    !arguments.disable_solc_optimizer,
+                    optimizer_settings,
+                    arguments.force_evmla,
+                    include_metadata_hash,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    remappings,
+                    debug_config,
+                    arguments.output_directory,
+                    arguments.overwrite,
+                )?;
+                return Ok(());
+            } else {
+                compiler_solidity::standard_output_evm(
+                    input_files.as_slice(),
+                    arguments.libraries,
+                    &mut solc,
+                    !arguments.disable_solc_optimizer,
+                    optimizer_settings,
+                    arguments.force_evmla,
+                    include_metadata_hash,
+                    arguments.base_path,
+                    arguments.include_paths,
+                    arguments.allow_paths,
+                    remappings,
+                    debug_config,
+                )
+            }?;
+
+            if let Some(output_directory) = arguments.output_directory {
+                std::fs::create_dir_all(&output_directory)?;
+
+                build.write_to_directory(
+                    &output_directory,
+                    arguments.output_assembly,
+                    arguments.output_binary,
+                    arguments.overwrite,
+                )?;
+
+                eprintln!(
+                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+                );
+            } else if arguments.output_assembly || arguments.output_binary {
+                for (path, contract) in build.contracts.into_iter() {
+                    if arguments.output_binary {
+                        println!(
+                            "Contract `{}` deploy bytecode: 0x{}",
+                            path,
+                            hex::encode(contract.deploy_build.bytecode)
+                        );
+                        println!(
+                            "Contract `{}` runtime bytecode: 0x{}",
+                            path,
+                            hex::encode(contract.runtime_build.bytecode)
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "Compiler run successful. No output requested. Use --asm and --bin flags."
+                );
+            }
+        }
     }
 
     Ok(())

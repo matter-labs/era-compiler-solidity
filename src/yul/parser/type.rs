@@ -85,4 +85,24 @@ impl Type {
             Self::Custom(_) => context.field_type(),
         }
     }
+
+    ///
+    /// Converts the type into its LLVM.
+    ///
+    /// TODO: trait
+    ///
+    pub fn into_llvm_evm<'ctx, D>(
+        self,
+        context: &compiler_llvm_context::EVMContext<'ctx, D>,
+    ) -> inkwell::types::IntType<'ctx>
+    where
+        D: compiler_llvm_context::EVMDependency + Clone,
+    {
+        match self {
+            Self::Bool => context.integer_type(compiler_common::BIT_LENGTH_BOOLEAN),
+            Self::Int(bitlength) => context.integer_type(bitlength),
+            Self::UInt(bitlength) => context.integer_type(bitlength),
+            Self::Custom(_) => context.field_type(),
+        }
+    }
 }

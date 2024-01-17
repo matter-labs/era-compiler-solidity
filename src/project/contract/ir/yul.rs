@@ -32,6 +32,13 @@ impl Yul {
     }
 
     ///
+    /// Extracts the runtime code from the Yul object.
+    ///
+    pub fn take_runtime_code(&mut self) -> Option<Object> {
+        self.object.inner_object.take().map(|object| *object)
+    }
+
+    ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
@@ -51,6 +58,22 @@ where
     }
 
     fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+        self.object.into_llvm(context)
+    }
+}
+
+impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Yul
+where
+    D: compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.object.declare(context)
+    }
+
+    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
         self.object.into_llvm(context)
     }
 }

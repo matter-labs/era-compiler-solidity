@@ -77,8 +77,7 @@ pub fn build_solidity(
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
     let project = output.try_to_project(sources, libraries, pipeline, &solc_version, None)?;
-
-    let build = project.compile(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         false,
         false,
@@ -148,7 +147,7 @@ pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
 
     let project =
         Project::try_from_yul_string(PathBuf::from("test.yul").as_path(), source_code, None)?;
-    let _build = project.compile(
+    let _build = project.compile_to_eravm(
         optimizer_settings,
         false,
         false,

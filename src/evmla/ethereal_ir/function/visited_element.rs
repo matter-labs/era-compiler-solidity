@@ -39,21 +39,16 @@ impl PartialOrd for VisitedElement {
 impl Ord for VisitedElement {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self.block_key.code_type, other.block_key.code_type) {
-            (
-                compiler_llvm_context::EraVMCodeType::Deploy,
-                compiler_llvm_context::EraVMCodeType::Runtime,
-            ) => Ordering::Less,
-            (
-                compiler_llvm_context::EraVMCodeType::Runtime,
-                compiler_llvm_context::EraVMCodeType::Deploy,
-            ) => Ordering::Greater,
-            (
-                compiler_llvm_context::EraVMCodeType::Deploy,
-                compiler_llvm_context::EraVMCodeType::Deploy,
-            )
+            (compiler_llvm_context::CodeType::Deploy, compiler_llvm_context::CodeType::Runtime) => {
+                Ordering::Less
+            }
+            (compiler_llvm_context::CodeType::Runtime, compiler_llvm_context::CodeType::Deploy) => {
+                Ordering::Greater
+            }
+            (compiler_llvm_context::CodeType::Deploy, compiler_llvm_context::CodeType::Deploy)
             | (
-                compiler_llvm_context::EraVMCodeType::Runtime,
-                compiler_llvm_context::EraVMCodeType::Runtime,
+                compiler_llvm_context::CodeType::Runtime,
+                compiler_llvm_context::CodeType::Runtime,
             ) => {
                 let tag_comparison = self.block_key.tag.cmp(&other.block_key.tag);
                 if tag_comparison == Ordering::Equal {
