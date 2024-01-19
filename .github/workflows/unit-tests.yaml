@@ -14,8 +14,6 @@ jobs:
   run-unit-tests:
     runs-on: [self-hosted, macOS, ARM64]
     name: Unit Tests
-    container:
-      image: matterlabs/llvm_runner:latest
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
