@@ -38,7 +38,7 @@ md5 = "0.7"
 zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", branch = "v1.3.2" }
 
 compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-1506-add-optnonenoinline-attributes-to-function-in-m0" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"
