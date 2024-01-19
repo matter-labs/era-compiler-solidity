@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   run-unit-tests:
-    runs-on: matterlabs-ci-runner
+    runs-on: [self-hosted, macOS, ARM64]
     name: Unit Tests
     container:
       image: matterlabs/llvm_runner:latest
@@ -25,14 +25,13 @@ jobs:
 
       - name: Build LLVM framework
         run: |
-          rustup target add x86_64-unknown-linux-musl
-          cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl
+          cargo install compiler-llvm-builder
           zkevm-llvm clone
           zkevm-llvm build
 
       - name: Build compiler
         run: |
-          cargo build --release --target x86_64-unknown-linux-musl
+          cargo build --release
 
       - name: Run unit tests
         run: |
