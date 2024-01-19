@@ -25,10 +25,8 @@ jobs:
           setopt rmstarsilent
           setopt +o nomatch
           rm -rf ${{ github.workspace }}/*
-
       - name: Checkout source
         uses: actions/checkout@v4
-
       - name: Run unit tests
         shell: zsh {0}
         continue-on-error: true
@@ -36,13 +34,11 @@ jobs:
           wget https://github.com/matter-labs/era-solidity/releases/download/0.8.23-1.0.0/solc-macosx-arm64-0.8.23-1.0.0 -O "${PWD}/solc"
           wget https://github.com/matter-labs/zksolc-bin/raw/main/macosx-arm64/zksolc-macosx-arm64-v1.3.22 -O "${PWD}/zksolc"
           cargo install cargo2junit
-#          cargo build --release
           export PATH="${PWD}:${PATH}"
           which solc
           which zksolc
           cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
           cat "${UNIT_TESTS_RESULTS_XML}"
-
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
