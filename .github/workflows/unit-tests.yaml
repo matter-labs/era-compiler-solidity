@@ -37,7 +37,9 @@ jobs:
         shell: zsh {0}
         continue-on-error: true
         run: |
-          wget https://github.com/matter-labs/era-solidity/releases/download/0.8.23-1.0.0/solc-macosx-arm64-0.8.23-1.0.0 -O "${PWD}/solc"          
+          curl -o "${PWD}/solc" https://github.com/matter-labs/era-solidity/releases/download/0.8.23-1.0.0/solc-macosx-arm64-0.8.23-1.0.0
+          chmod a+x "${PWD}/solc"
+          ls -la "${PWD}/solc"
           cargo install cargo2junit
           cargo build --release
           export PATH="${PWD}/target/release:${PWD}:${PATH}"
