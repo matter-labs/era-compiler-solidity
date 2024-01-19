@@ -18,20 +18,30 @@ jobs:
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
     steps:
+      - name: Cleanup workspace
+        shell: zsh {0}
+        run: |
+          setopt rmstarsilent
+          setopt +o nomatch
+          rm -rf ${{ github.workspace }}/*
+
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Build LLVM framework
+        shell: zsh {0}
         run: |
           cargo install compiler-llvm-builder
           zkevm-llvm clone
           zkevm-llvm build
 
       - name: Build compiler
+        shell: zsh {0}
         run: |
           cargo build --release
 
       - name: Run unit tests
+        shell: zsh {0}
         run: |
           cargo install cargo2junit
           cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
