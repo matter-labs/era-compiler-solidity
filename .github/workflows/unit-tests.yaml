@@ -29,13 +29,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-#      - name: Build LLVM framework
-#        shell: zsh {0}
-#        run: |
-#          cargo install compiler-llvm-builder
-#          zkevm-llvm clone
-#          zkevm-llvm build
-
       - name: Run unit tests
         shell: zsh {0}
         continue-on-error: true
