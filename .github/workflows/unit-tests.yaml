@@ -17,6 +17,7 @@ jobs:
     env:
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
+      RUSTC_BOOTSTRAP: 1
     steps:
       - name: Cleanup workspace
         shell: zsh {0}
