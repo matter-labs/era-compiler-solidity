@@ -33,6 +33,8 @@ jobs:
         run: |
           wget https://github.com/matter-labs/era-solidity/releases/download/0.8.23-1.0.0/solc-macosx-arm64-0.8.23-1.0.0 -O "${PWD}/solc"
           wget https://github.com/matter-labs/zksolc-bin/raw/main/macosx-arm64/zksolc-macosx-arm64-v1.3.22 -O "${PWD}/zksolc"
+          cargo install compiler-llvm-builder
+          zkevm-llvm clone
           cargo install cargo2junit
           export PATH="${PWD}:${PATH}"
           which solc
