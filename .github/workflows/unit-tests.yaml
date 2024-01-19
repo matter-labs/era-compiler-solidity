@@ -38,6 +38,10 @@ jobs:
           rm -rf ${{ github.workspace }}/*
       - name: Checkout source
         uses: actions/checkout@v4
+      - name: Prepare environment
+        shell: zsh {0}
+        run: |
+          brew install cmake ninja
       - name: Build LLVM framework
         shell: zsh {0}
         run: |
