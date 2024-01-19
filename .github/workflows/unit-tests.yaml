@@ -1,0 +1,47 @@
+name: Unit Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-unit-tests:
+    runs-on: matterlabs-ci-runner
+    name: Unit Tests
+    container:
+      image: matterlabs/llvm_runner:latest
+    env:
+      CARGO_NET_GIT_FETCH_WITH_CLI: true
+      UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build LLVM framework
+        run: |
+          rustup target add x86_64-unknown-linux-musl
+          cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl
+          zkevm-llvm clone
+          zkevm-llvm build
+
+      - name: Build compiler
+        run: |
+          cargo build --release --target x86_64-unknown-linux-musl
+
+      - name: Run unit tests
+        run: |
+          cargo install cargo2junit
+          cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Unit Tests Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.UNIT_TESTS_RESULTS_XML }}
