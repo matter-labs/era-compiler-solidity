@@ -11,10 +11,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-unit-tests:
-    runs-on: [self-hosted, macOS, ARM64]
-    name: Unit Tests
+  run-unit-tests-macos:
+    strategy:
+      matrix:
+        include:
+          - name: "MacOS x86"
+            runner: macos-12-large
+            solc-name: "solc-macosx-amd64"
+          - name: "MacOS ARM64"
+            runner: [self-hosted, macOS, ARM64]
+            solc-name: "solc-macosx-arm64"
+    runs-on: ${{ matrix.runner }}
+    name: Unit Tests Macos
     env:
+      SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
+      SOLC_VERSION: 0.8.23-1.0.0
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
       RUSTC_BOOTSTRAP: 1
@@ -37,7 +48,8 @@ jobs:
         shell: zsh {0}
         continue-on-error: true
         run: |
-          curl --location -o "${PWD}/solc" https://github.com/matter-labs/era-solidity/releases/download/0.8.23-1.0.0/solc-macosx-arm64-0.8.23-1.0.0
+          echo "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}"
+          curl --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}"
           chmod a+x "${PWD}/solc"
           ls -la "${PWD}/solc"
           cargo install cargo2junit
@@ -50,6 +62,6 @@ jobs:
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
-          check_name: Unit Tests Results
+          check_name: ${{ matrix.name }} Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ env.UNIT_TESTS_RESULTS_XML }}
