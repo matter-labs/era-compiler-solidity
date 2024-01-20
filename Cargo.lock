@@ -161,7 +161,7 @@ dependencies = [
 [[package]]
 name = "compiler-llvm-context"
 version = "1.3.3"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1506-add-optnonenoinline-attributes-to-function-in-m0#5d0f025611eb64a2ba46a2501123d3ff8e08a83e"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1506-add-optnonenoinline-attributes-to-function-in-m0#fc39144564e5f5cd3fee2e0dbb56f3d87fab7bb6"
 dependencies = [
  "anyhow",
  "compiler-common",
