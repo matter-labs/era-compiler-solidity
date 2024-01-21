@@ -258,10 +258,11 @@ where
             self.result.len(),
             Some(inkwell::module::Linkage::Private),
         )?;
-        compiler_llvm_context::EraVMFunction::set_function_attributes(
+        compiler_llvm_context::EraVMFunction::set_attributes(
             context.llvm(),
             function.borrow().declaration(),
             self.attributes.clone().into_iter().collect(),
+            true,
         );
         function
             .borrow_mut()
