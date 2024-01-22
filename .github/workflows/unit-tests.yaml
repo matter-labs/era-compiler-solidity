@@ -1,55 +1,115 @@
 name: Unit Tests
 
+# Execute workflow for each PR and with each merge to the trunk
 on:
   pull_request:
   push:
     branches:
       - main
 
+# Cancel the workflow if any new changes pushed to a feature branch or the trunk
+#
+# if the same workspace is shared between runners (today it's true for ARM64 MacOS host)
+# /Users/hetzner/actions-runner/_work/era-compiler-solidity
+# we cannot allow any concurrent jobs for it, otherwise, CI will fail for 2 PRs tested at the same time
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false # for now, false (put jobs in queue) allowing multiple PR testing consequently (tbd)
 
 jobs:
-  unit-tests-macos:
+#  unit-tests-macos:
+#    strategy:
+#      matrix:
+#        include:
+#          - name: "MacOS x86"
+#            runner: macos-12-large
+#            solc-name: "solc-macosx-amd64"
+#          - name: "MacOS arm64"
+#            runner: [self-hosted, macOS, ARM64]
+#            solc-name: "solc-macosx-arm64"
+#    runs-on: ${{ matrix.runner }}
+#    name: ${{ matrix.name }}
+#    env:
+#      SOLC_VERSION: 0.8.23-1.0.0 # How should we manage solc version updates?
+#      SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
+#      CARGO_NET_GIT_FETCH_WITH_CLI: true
+#      UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
+#      RUSTC_BOOTSTRAP: 1 # Use rustc in bootstrap mode allowing cargo2junit to use experimental --json feature
+#    steps:
+#      # TODO: This step should be done as part of github runners hooks
+#      # Users should always expect clean workspace when a new job starts
+#      # https://github.blog/changelog/2022-04-04-github-actions-job-management-hooks-for-self-hosted-runners/
+#      - name: Cleanup workspace
+#        if: ${{ matrix.name }} == "MacOS ARM64"
+#        shell: zsh {0}
+#        run: |
+#          setopt rmstarsilent
+#          setopt +o nomatch
+#          rm -rf ${{ github.workspace }}/*
+#      - name: Checkout source
+#        uses: actions/checkout@v4
+#      - name: Prepare environment
+#        shell: zsh {0}
+#        run: |
+#          brew install cmake ninja
+#      - name: Build LLVM framework
+#        shell: zsh {0}
+#        run: |
+#          cargo install compiler-llvm-builder
+#          zkevm-llvm clone
+#          zkevm-llvm build
+#      - name: Install solc compiler
+#        shell: zsh {0}
+#        run: |
+#          curl --verbose \
+#            --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
+#            chmod a+x "${PWD}/solc"
+#          echo "${PWD}" >> "${GITHUB_PATH}"
+#      - name: Build zksolc
+#        shell: zsh {0}
+#        run: |
+#          cargo build --release
+#          echo "${PWD}/target/release" >> "${GITHUB_PATH}"
+#      - name: Run unit tests
+#        shell: zsh {0}
+#        continue-on-error: true
+#        run: |
+#          cargo install cargo2junit
+#          cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+#      - name: Upload test results
+#        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+#        with:
+#          check_name: ${{ matrix.name }} Unit Tests Results
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          files: ${{ env.UNIT_TESTS_RESULTS_XML }}
+  unit-tests-linux:
     strategy:
       matrix:
         include:
-          - name: "MacOS x86"
-            runner: macos-12-large
-            solc-name: "solc-macosx-amd64"
-          - name: "MacOS ARM64"
-            runner: [self-hosted, macOS, ARM64]
-            solc-name: "solc-macosx-arm64"
+          - name: "Linux x86"
+            runner: matterlabs-ci-runner
+            solc-name: "solc-linux-amd64"
+            target: "x86_64-unknown-linux-musl"
+          - name: "Linux arm64"
+            runner: matterlabs-ci-runner-arm
+            solc-name: "solc-linux-arm64"
+            target: "aarch64-unknown-linux-musl"
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     env:
+      SOLC_VERSION: 0.8.23-1.0.0 # How should we manage solc version updates?
       SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
-      SOLC_VERSION: 0.8.23-1.0.0
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
-      RUSTC_BOOTSTRAP: 1
+      RUSTC_BOOTSTRAP: 1 # Use rustc in bootstrap mode allowing cargo2junit to use experimental --json feature
+    container:
+      image: matterlabs/llvm_runner:latest
     steps:
-      - name: Cleanup workspace
-        shell: zsh {0}
-        run: |
-          echo "${{ github.workspace }}"
-          ls -la "${{ github.workspace }}"
-          setopt rmstarsilent
-          setopt +o nomatch
-          rm -rf ${{ github.workspace }}/*
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Prepare environment
-        shell: zsh {0}
         run: |
-          brew install cmake ninja
-      - name: Build LLVM framework
-        shell: zsh {0}
-        run: |
-          cargo install compiler-llvm-builder
-          zkevm-llvm clone
-          zkevm-llvm build
+          rustup target add ${{ matrix.target }}
       - name: Install solc compiler
         shell: zsh {0}
         run: |
@@ -57,13 +117,16 @@ jobs:
             --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
             chmod a+x "${PWD}/solc"
           echo "${PWD}" >> "${GITHUB_PATH}"
-      - name: Build zksolc
-        shell: zsh {0}
+      - name: Build LLVM framework
         run: |
-          cargo build --release
+          cargo install compiler-llvm-builder --target ${{ matrix.target }}
+          zkevm-llvm clone
+          zkevm-llvm build
+      - name: Build zksolc
+        run: |
+          cargo build --release --target ${{ matrix.target }}
           echo "${PWD}/target/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
-        shell: zsh {0}
         continue-on-error: true
         run: |
           cargo install cargo2junit
