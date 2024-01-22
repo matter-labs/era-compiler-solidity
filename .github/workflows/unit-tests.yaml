@@ -90,10 +90,10 @@ jobs:
             runner: matterlabs-ci-runner
             solc-name: "solc-linux-amd64"
             target: "x86_64-unknown-linux-musl"
-          - name: "Linux arm64"
-            runner: matterlabs-ci-runner-arm
-            solc-name: "solc-linux-arm64"
-            target: "aarch64-unknown-linux-musl"
+#          - name: "Linux arm64"
+#            runner: matterlabs-ci-runner-arm
+#            solc-name: "solc-linux-arm64"
+#            target: "aarch64-unknown-linux-musl"
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     env:
@@ -111,7 +111,6 @@ jobs:
         run: |
           rustup target add ${{ matrix.target }}
       - name: Install solc compiler
-        shell: zsh {0}
         run: |
           curl --verbose \
             --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
