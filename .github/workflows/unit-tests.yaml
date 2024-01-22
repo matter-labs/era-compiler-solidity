@@ -128,8 +128,6 @@ jobs:
       - name: Run unit tests
         continue-on-error: true
         run: |
-#          cargo install cargo2junit --target ${{ matrix.target }}
-#          cargo test -- -Z unstable-options --format json --verbose --target ${{ matrix.target }} | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
            cargo test -vv --target ${{ matrix.target }}
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action@v2
