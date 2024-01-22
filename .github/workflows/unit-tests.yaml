@@ -129,7 +129,10 @@ jobs:
         continue-on-error: true
         run: |
           cargo install cargo2junit
-          cargo test --target ${{ matrix.target }} -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+          which solc
+          which zksolc
+          cargo test --verbose --target ${{ matrix.target }} -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+          cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
