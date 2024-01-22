@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-unit-tests-macos:
+  unit-tests-macos:
     strategy:
       matrix:
         include:
@@ -22,7 +22,7 @@ jobs:
             runner: [self-hosted, macOS, ARM64]
             solc-name: "solc-macosx-arm64"
     runs-on: ${{ matrix.runner }}
-    name: Unit Tests Macos
+    name: ${{ matrix.name }}
     env:
       SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
       SOLC_VERSION: 0.8.23-1.0.0
@@ -33,6 +33,8 @@ jobs:
       - name: Cleanup workspace
         shell: zsh {0}
         run: |
+          echo "${{ github.workspace }}"
+          ls -la "${{ github.workspace }}"
           setopt rmstarsilent
           setopt +o nomatch
           rm -rf ${{ github.workspace }}/*
@@ -48,21 +50,24 @@ jobs:
           cargo install compiler-llvm-builder
           zkevm-llvm clone
           zkevm-llvm build
+      - name: Install solc compiler
+        shell: zsh {0}
+        run: |
+          curl --verbose \
+            --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
+            chmod a+x "${PWD}/solc"
+          echo "${PWD}" >> "${GITHUB_PATH}"
+      - name: Build zksolc
+        shell: zsh {0}
+        run: |
+          cargo build --release
+          echo "${PWD}/target/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
         shell: zsh {0}
         continue-on-error: true
         run: |
-          echo "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}"
-          curl --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}"
-          chmod a+x "${PWD}/solc"
-          ls -la "${PWD}/solc"
           cargo install cargo2junit
-          cargo build --release
-          export PATH="${PWD}/target/release:${PWD}:${PATH}"
-          which solc
-          which zksolc
           cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
-          cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
