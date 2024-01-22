@@ -123,15 +123,16 @@ jobs:
           zkevm-llvm build
       - name: Build zksolc
         run: |
-          cargo build --release --verbose --target ${{ matrix.target }}
+          cargo build --release -vv --target ${{ matrix.target }}
           echo "${PWD}/target/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
         continue-on-error: true
         run: |
-          cargo install cargo2junit --target ${{ matrix.target }}
-          cargo test -- -Z unstable-options --format json --verbose --target ${{ matrix.target }} | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+#          cargo install cargo2junit --target ${{ matrix.target }}
+#          cargo test -- -Z unstable-options --format json --verbose --target ${{ matrix.target }} | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+           cargo test -vv --target ${{ matrix.target }}
       - name: Upload test results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: ${{ matrix.name }} Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
