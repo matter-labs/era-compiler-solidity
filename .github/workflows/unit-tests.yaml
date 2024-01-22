@@ -124,7 +124,7 @@ jobs:
       - name: Build zksolc
         run: |
           cargo build --release --target ${{ matrix.target }}
-          echo "${PWD}/target/release" >> "${GITHUB_PATH}"
+          echo "${PWD}/target/${{ matrix.target }}/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
         continue-on-error: true
         run: |
