@@ -178,10 +178,9 @@ jobs:
           ./solc.exe --version
       - name: Build LLVM framework
         run: |
-          export PATH="${PATH}:{$PWD}"
+          export PATH="$PATH:$PWD"
           echo $PATH
           ls -la .
-          chmod a+x solc.exe
           solc.exe --version
           cargo install compiler-llvm-builder
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
