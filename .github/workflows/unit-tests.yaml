@@ -17,71 +17,68 @@ concurrency:
   cancel-in-progress: false # for now, false (put jobs in queue) allowing multiple PR testing consequently (tbd)
 
 jobs:
-#  unit-tests-macos:
-#    strategy:
-#      matrix:
-#        include:
-#          - name: "MacOS x86"
-#            runner: macos-12-large
-#            solc-name: "solc-macosx-amd64"
-#          - name: "MacOS arm64"
-#            runner: [self-hosted, macOS, ARM64]
-#            solc-name: "solc-macosx-arm64"
-#    runs-on: ${{ matrix.runner }}
-#    name: ${{ matrix.name }}
-#    env:
-#      SOLC_VERSION: 0.8.23-1.0.0 # How should we manage solc version updates?
-#      SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
-#      CARGO_NET_GIT_FETCH_WITH_CLI: true
-#      UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
-#      RUSTC_BOOTSTRAP: 1 # Use rustc in bootstrap mode allowing cargo2junit to use experimental --json feature
-#    steps:
-#      # TODO: This step should be done as part of github runners hooks
-#      # Users should always expect clean workspace when a new job starts
-#      # https://github.blog/changelog/2022-04-04-github-actions-job-management-hooks-for-self-hosted-runners/
-#      - name: Cleanup workspace
-#        if: ${{ matrix.name }} == "MacOS ARM64"
-#        shell: zsh {0}
-#        run: |
-#          setopt rmstarsilent
-#          setopt +o nomatch
-#          rm -rf ${{ github.workspace }}/*
-#      - name: Checkout source
-#        uses: actions/checkout@v4
-#      - name: Prepare environment
-#        shell: zsh {0}
-#        run: |
-#          brew install cmake ninja
-#      - name: Build LLVM framework
-#        shell: zsh {0}
-#        run: |
-#          cargo install compiler-llvm-builder
-#          zkevm-llvm clone
-#          zkevm-llvm build
-#      - name: Install solc compiler
-#        shell: zsh {0}
-#        run: |
-#          curl --verbose \
-#            --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
-#            chmod a+x "${PWD}/solc"
-#          echo "${PWD}" >> "${GITHUB_PATH}"
-#      - name: Build zksolc
-#        shell: zsh {0}
-#        run: |
-#          cargo build --release
-#          echo "${PWD}/target/release" >> "${GITHUB_PATH}"
-#      - name: Run unit tests
-#        shell: zsh {0}
-#        continue-on-error: true
-#        run: |
-#          cargo install cargo2junit
-#          cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
-#      - name: Upload test results
-#        uses: EnricoMi/publish-unit-test-result-action/composite@v2
-#        with:
-#          check_name: ${{ matrix.name }} Unit Tests Results
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          files: ${{ env.UNIT_TESTS_RESULTS_XML }}
+  unit-tests-macos:
+    strategy:
+      matrix:
+        include:
+          - name: "MacOS x86"
+            runner: macos-12-large
+            solc-name: "solc-macosx-amd64"
+          - name: "MacOS arm64"
+            runner: [self-hosted, macOS, ARM64]
+            solc-name: "solc-macosx-arm64"
+    runs-on: ${{ matrix.runner }}
+    name: ${{ matrix.name }}
+    defaults:
+      run:
+        shell: zsh {0} # For MacOS hosts, .zprofile is pre-configured
+    env:
+      SOLC_VERSION: 0.8.23-1.0.0 # How should we manage solc version updates?
+      SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
+      CARGO_NET_GIT_FETCH_WITH_CLI: true
+      UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
+      RUSTC_BOOTSTRAP: 1 # Use rustc in bootstrap mode allowing cargo2junit to use experimental --json feature
+    steps:
+      # TODO: This step should be done as part of github runners hooks
+      # Users should always expect clean workspace when a new job starts
+      # https://github.blog/changelog/2022-04-04-github-actions-job-management-hooks-for-self-hosted-runners/
+      - name: Cleanup workspace
+        if: ${{ matrix.name }} == "MacOS ARM64"
+        run: |
+          setopt rmstarsilent
+          setopt +o nomatch
+          rm -rf ${{ github.workspace }}/*
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Prepare environment
+        run: |
+          brew install cmake ninja
+      - name: Build LLVM framework
+        run: |
+          cargo install compiler-llvm-builder
+          zkevm-llvm clone
+          zkevm-llvm build
+      - name: Install solc compiler
+        run: |
+          curl --verbose \
+            --location -o "${PWD}/solc" "${SOLC_URL}/${SOLC_VERSION}/${{ matrix.solc-name }}-${SOLC_VERSION}" && \
+            chmod a+x "${PWD}/solc"
+          echo "${PWD}" >> "${GITHUB_PATH}"
+      - name: Build zksolc
+        run: |
+          cargo build --release
+          echo "${PWD}/target/release" >> "${GITHUB_PATH}"
+      - name: Run unit tests
+        continue-on-error: true
+        run: |
+          cargo install cargo2junit
+          cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        with:
+          check_name: ${{ matrix.name }} Unit Tests Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.UNIT_TESTS_RESULTS_XML }}
   unit-tests-linux:
     strategy:
       matrix:
@@ -102,7 +99,6 @@ jobs:
       CARGO_NET_GIT_FETCH_WITH_CLI: true
       UNIT_TESTS_RESULTS_XML: unit-tests-results.xml
       RUSTC_BOOTSTRAP: 1 # Use rustc in bootstrap mode allowing cargo2junit to use experimental --json feature
-      RUSTFLAGS: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
     container:
 #      image: matterlabs/llvm_runner:latest
       image: matterlabs/llvm_runner_jammy:latest
@@ -128,6 +124,9 @@ jobs:
           zkevm-llvm build
       - name: Build zksolc
         run: |
+          if [[ ${{ matrix.target }} == aarch64-unknown-linux-musl ]]; then
+            export RUSTFLAGS="-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
+          fi
           cargo build --release --target ${{ matrix.target }}
           echo "${PWD}/target/${{ matrix.target }}/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
@@ -144,3 +143,40 @@ jobs:
           check_name: ${{ matrix.name }} Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ env.UNIT_TESTS_RESULTS_XML }}
+#  build_windows_amd64:
+#    runs-on: windows-2022-github-hosted-16core
+#    env:
+#      CARGO_NET_GIT_FETCH_WITH_CLI: true
+#      LIBSTDCPP_SOURCE_PATH: "C:/a/_temp/msys64/mingw64/lib/libstdc++.a"
+#    defaults:
+#      run:
+#        shell: msys2 {0}
+#    steps:
+#      - name: Checkout source
+#        uses: actions/checkout@v4
+#      - name: Prepare msys2
+#        uses: msys2/setup-msys2@v2
+#      - name: Prepare env
+#        run: |
+#          pacman-key --refresh
+#          pacman -Sy
+#          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+#          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+#          pacman --noconfirm -S --needed --overwrite \
+#          base-devel \
+#          git \
+#          ninja \
+#          mingw-w64-x86_64-clang \
+#          mingw-w64-x86_64-lld \
+#          mingw-w64-x86_64-rust \
+#          mingw-w64-x86_64-gcc-libs \
+#          mingw-w64-x86_64-gcc
+#      - name: Build LLVM framework
+#        run: |
+#          cargo install compiler-llvm-builder
+#          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
+#          zkevm-llvm clone
+#          zkevm-llvm build
+#      - name: Build compiler
+#        run: |
+#          cargo build --release
