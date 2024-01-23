@@ -175,10 +175,10 @@ jobs:
       - name: Install solc compiler
         run: |
           curl --verbose --location -o solc.exe "${SOLC_URL}/${SOLC_VERSION}/solc-windows-amd64-${SOLC_VERSION}.exe"
-          echo "${PWD}" >> "${GITHUB_PATH}"
           ./solc.exe --version
       - name: Build LLVM framework
         run: |
+          export PATH="${PATH}:{$PWD}"
           solc.exe --version
           cargo install compiler-llvm-builder
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
