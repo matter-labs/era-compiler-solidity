@@ -106,6 +106,9 @@ jobs:
     container:
 #      image: matterlabs/llvm_runner:latest
       image: matterlabs/llvm_runner_jammy:latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
