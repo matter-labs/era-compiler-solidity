@@ -175,10 +175,8 @@ jobs:
       - name: Install solc compiler
         run: |
           curl --verbose --location -o solc.exe "${SOLC_URL}/${SOLC_VERSION}/solc-windows-amd64-${SOLC_VERSION}.exe"
-          ./solc.exe --version
       - name: Build LLVM framework
         run: |
-          export PATH="$PATH:$PWD"
           cargo install compiler-llvm-builder
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
           zkevm-llvm clone
@@ -190,15 +188,15 @@ jobs:
         continue-on-error: true
         run: |
           cargo install cargo2junit
-          export PATH="$PWD/target/release:$PATH"
+          export PATH="$PWD/target/release:$PWD:$PATH:/c/Users/runneradmin/.cargo/bin/"
           echo $PATH
-          ls -la "$PWD/target/release"
           zksolc.exe --version
-          cargo test --verbose -- -Z unstable-options --format json
+          solc.exe --version
+          cargo test --verbose -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
           cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
-          check_name: ${{ matrix.name }} Unit Tests Results
+          check_name: Windows Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ env.UNIT_TESTS_RESULTS_XML }}
