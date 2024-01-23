@@ -157,21 +157,21 @@ jobs:
         uses: actions/checkout@v4
       - name: Prepare msys2
         uses: msys2/setup-msys2@v2
-      - name: Prepare env
-        run: |
-          pacman-key --refresh
-          pacman -Sy
-          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-          pacman --noconfirm -S --needed --overwrite \
-          base-devel \
-          git \
-          ninja \
-          mingw-w64-x86_64-clang \
-          mingw-w64-x86_64-lld \
-          mingw-w64-x86_64-rust \
-          mingw-w64-x86_64-gcc-libs \
-          mingw-w64-x86_64-gcc
+#      - name: Prepare env
+#        run: |
+#          pacman-key --refresh
+#          pacman -Sy
+#          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+#          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+#          pacman --noconfirm -S --needed --overwrite \
+#          base-devel \
+#          git \
+#          ninja \
+#          mingw-w64-x86_64-clang \
+#          mingw-w64-x86_64-lld \
+#          mingw-w64-x86_64-rust \
+#          mingw-w64-x86_64-gcc-libs \
+#          mingw-w64-x86_64-gcc
       - name: Install solc compiler
         run: |
           curl --verbose --location -o solc.exe "${SOLC_URL}/${SOLC_VERSION}/solc-windows-amd64-${SOLC_VERSION}.exe"
@@ -179,6 +179,9 @@ jobs:
       - name: Build LLVM framework
         run: |
           export PATH="${PATH}:{$PWD}"
+          echo $PATH
+          ls -la .
+          chmod a+x solc.exe
           solc.exe --version
           cargo install compiler-llvm-builder
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
