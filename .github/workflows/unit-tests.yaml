@@ -157,32 +157,45 @@ jobs:
         uses: actions/checkout@v4
       - name: Prepare msys2
         uses: msys2/setup-msys2@v2
-#      - name: Prepare env
-#        run: |
-#          pacman-key --refresh
-#          pacman -Sy
-#          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-#          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-#          pacman --noconfirm -S --needed --overwrite \
-#          base-devel \
-#          git \
-#          ninja \
-#          mingw-w64-x86_64-clang \
-#          mingw-w64-x86_64-lld \
-#          mingw-w64-x86_64-rust \
-#          mingw-w64-x86_64-gcc-libs \
-#          mingw-w64-x86_64-gcc
+      - name: Prepare env
+        run: |
+          pacman-key --refresh
+          pacman -Sy
+          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
+          pacman --noconfirm -S --needed --overwrite \
+          base-devel \
+          git \
+          ninja \
+          mingw-w64-x86_64-clang \
+          mingw-w64-x86_64-lld \
+          mingw-w64-x86_64-rust \
+          mingw-w64-x86_64-gcc-libs \
+          mingw-w64-x86_64-gcc
       - name: Install solc compiler
         run: |
           curl --verbose --location -o solc.exe "${SOLC_URL}/${SOLC_VERSION}/solc-windows-amd64-${SOLC_VERSION}.exe"
           echo "${PWD}" >> "${GITHUB_PATH}"
           ./solc.exe --version
-#      - name: Build LLVM framework
-#        run: |
-#          cargo install compiler-llvm-builder
-#          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
-#          zkevm-llvm clone
-#          zkevm-llvm build
-#      - name: Build compiler
-#        run: |
-#          cargo build --release
+      - name: Build LLVM framework
+        run: |
+          solc.exe --version
+          cargo install compiler-llvm-builder
+          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
+          zkevm-llvm clone
+          zkevm-llvm build
+      - name: Build compiler
+        run: |
+          cargo build --release
+      - name: Run unit tests
+        continue-on-error: true
+        run: |
+          cargo install cargo2junit
+          cargo test --verbose -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
+          cat "${UNIT_TESTS_RESULTS_XML}"
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: ${{ matrix.name }} Unit Tests Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.UNIT_TESTS_RESULTS_XML }}
