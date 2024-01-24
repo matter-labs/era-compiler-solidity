@@ -1892,7 +1892,8 @@ impl FunctionCall {
                 Ok(None)
             }
 
-            Name::CodeSize => {
+            Name::CodeSize => compiler_llvm_context::evm_code::size(context).map(Some),
+            Name::CodeCopy => {
                 let arguments = self.pop_arguments_llvm_evm::<D, 3>(context)?;
                 compiler_llvm_context::evm_code::copy(
                     context,
@@ -1902,7 +1903,6 @@ impl FunctionCall {
                 );
                 Ok(None)
             }
-            Name::CodeCopy => compiler_llvm_context::evm_code::size(context).map(Some),
             Name::ExtCodeSize => {
                 let arguments = self.pop_arguments_llvm_evm::<D, 1>(context)?;
                 compiler_llvm_context::evm_code::ext_size(context, arguments[0].into_int_value())
