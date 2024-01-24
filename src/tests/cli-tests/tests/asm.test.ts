@@ -2,7 +2,7 @@ import {executeCommand} from "../src/helper";
 import { paths } from '../src/entities';
 
 
-//id1746
+//id1746 - some change in CLI test 
 describe("Run with --asm by default", () => {
   const command = `zksolc ${paths.pathToBasicSolContract} --asm`;
   const result = executeCommand(command);
