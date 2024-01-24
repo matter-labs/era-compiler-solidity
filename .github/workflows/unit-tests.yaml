@@ -86,14 +86,15 @@ jobs:
     strategy:
       matrix:
         include:
-#          - name: "Linux x86"
-#            runner: matterlabs-ci-runner
-#            solc-name: "solc-linux-amd64"
-#            target: "x86_64-unknown-linux-musl"
+          - name: "Linux x86"
+            runner: matterlabs-ci-runner
+            solc-name: "solc-linux-amd64"
+            target: "x86_64-unknown-linux-musl"
           - name: "Linux arm64"
             runner: matterlabs-ci-runner-arm
             solc-name: "solc-linux-arm64"
             target: "aarch64-unknown-linux-musl"
+            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     container:
@@ -101,6 +102,8 @@ jobs:
       credentials:
         username: ${{ secrets.DOCKERHUB_USER }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    env:
+      RUSTFLAGS: ${{ matrix.rustflags }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -121,19 +124,16 @@ jobs:
       - name: Build zksolc
         run: |
           set -x
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-musl" ]; then
-            export RUSTFLAGS="-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
-          fi
           echo "RUSTFLAGS=${RUSTFLAGS}"
           cargo build -vv --release --target ${{ matrix.target }}
           echo "${PWD}/target/${{ matrix.target }}/release" >> "${GITHUB_PATH}"
       - name: Run unit tests
-        continue-on-error: true
         run: |
           cargo install cargo2junit
           cargo test --verbose --target ${{ matrix.target }} -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
           cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
+        if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: ${{ matrix.name }} Unit Tests Results
