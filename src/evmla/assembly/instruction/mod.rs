@@ -78,9 +78,12 @@ impl Instruction {
             Name::MLOAD => 1,
             Name::MSTORE => 2,
             Name::MSTORE8 => 2,
+            Name::MCOPY => 3,
 
             Name::SLOAD => 1,
             Name::SSTORE => 2,
+            Name::TLOAD => 1,
+            Name::TSTORE => 2,
             Name::PUSHIMMUTABLE => 0,
             Name::ASSIGNIMMUTABLE => {
                 if version.minor >= 8 {
@@ -121,6 +124,7 @@ impl Instruction {
             Name::BALANCE => 1,
 
             Name::BLOCKHASH => 1,
+            Name::BLOBHASH => 1,
 
             Name::EXTCODECOPY => 4,
 
@@ -228,6 +232,7 @@ impl Instruction {
             Name::MLOAD => 1,
 
             Name::SLOAD => 1,
+            Name::TLOAD => 1,
             Name::PUSHIMMUTABLE => 1,
 
             Name::CALLDATALOAD => 1,
@@ -264,12 +269,14 @@ impl Instruction {
             Name::ORIGIN => 1,
             Name::CHAINID => 1,
             Name::BLOCKHASH => 1,
+            Name::BLOBHASH => 1,
             Name::DIFFICULTY => 1,
             Name::PREVRANDAO => 1,
             Name::COINBASE => 1,
             Name::MSIZE => 1,
 
             Name::BASEFEE => 1,
+            Name::BLOBBASEFEE => 1,
             Name::PC => 1,
 
             Name::RecursiveCall { output_size, .. } => output_size,

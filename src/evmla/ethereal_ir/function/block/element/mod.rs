@@ -706,6 +706,32 @@ where
                 )
                 .map(|_| None)
             }
+            InstructionName::MCOPY => {
+                let arguments = self.pop_arguments_llvm(context);
+                let destination = compiler_llvm_context::EraVMPointer::new_with_offset(
+                    context,
+                    compiler_llvm_context::EraVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[0].into_int_value(),
+                    "mcopy_destination",
+                );
+                let source = compiler_llvm_context::EraVMPointer::new_with_offset(
+                    context,
+                    compiler_llvm_context::EraVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[1].into_int_value(),
+                    "mcopy_source",
+                );
+
+                context.build_memcpy(
+                    context.intrinsics().memory_copy,
+                    destination,
+                    source,
+                    arguments[2].into_int_value(),
+                    "mcopy_size",
+                );
+                Ok(None)
+            }
 
             InstructionName::SLOAD => {
                 let arguments = self.pop_arguments_llvm(context);
@@ -723,6 +749,14 @@ where
                     arguments[1].into_int_value(),
                 )
                 .map(|_| None)
+            }
+            InstructionName::TLOAD => {
+                let _arguments = self.pop_arguments_llvm(context);
+                anyhow::bail!("The `TLOAD` instruction is not supported until zkVM v1.5.0");
+            }
+            InstructionName::TSTORE => {
+                let _arguments = self.pop_arguments_llvm(context);
+                anyhow::bail!("The `TSTORE` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::PUSHIMMUTABLE => {
                 let key = self
@@ -1167,6 +1201,10 @@ where
                 compiler_llvm_context::eravm_evm_contract_context::block_hash(context, index)
                     .map(Some)
             }
+            InstructionName::BLOBHASH => {
+                let _arguments = self.pop_arguments_llvm(context);
+                anyhow::bail!("The `BLOBHASH` instruction is not supported until zkVM v1.5.0");
+            }
             InstructionName::DIFFICULTY | InstructionName::PREVRANDAO => {
                 compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
             }
@@ -1175,6 +1213,9 @@ where
             }
             InstructionName::BASEFEE => {
                 compiler_llvm_context::eravm_evm_contract_context::basefee(context).map(Some)
+            }
+            InstructionName::BLOBBASEFEE => {
+                anyhow::bail!("The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::MSIZE => {
                 compiler_llvm_context::eravm_evm_contract_context::msize(context).map(Some)
