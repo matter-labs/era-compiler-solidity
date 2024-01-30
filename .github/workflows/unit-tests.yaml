@@ -98,10 +98,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     container:
-      image: matterlabs/llvm_runner_jammy:latest
-      credentials:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
     env:
       RUSTFLAGS: ${{ matrix.rustflags }}
     steps:

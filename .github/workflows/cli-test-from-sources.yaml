@@ -71,9 +71,6 @@ jobs:
     runs-on: [matterlabs-ci-runner]
     container:
       image: matterlabs/llvm_runner:latest
-      credentials:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
