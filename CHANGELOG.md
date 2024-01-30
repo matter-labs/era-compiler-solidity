@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.3.23] - 2024-01-30
+
+### Added
+
+- More LLVM optimizations
+
 ## [1.3.22] - 2024-01-12
 
 ### Fixed
