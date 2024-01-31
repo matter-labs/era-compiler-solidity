@@ -31,7 +31,7 @@ describe("Run with double zkasm options", () => {
   });
 });
 
-//id1822
+//id1823
 xdescribe("Run with incompatible input format", () => { // !issue because it compiles with incompatible input format
   const command = `zksolc ${paths.pathToBasicSolContract} --zkasm`;
   const result = executeCommand(command);
@@ -42,5 +42,19 @@ xdescribe("Run with incompatible input format", () => { // !issue because it com
 
   it("--zkasm error is presented", () => {
       expect(result.output).toMatch(/(Error: Expected keyword "object")/i);
+  });
+});
+
+//id1824
+describe("Run with incompatible json modes", () => { 
+  const command = `zksolc ${paths.pathToBasicZkasmContract} --zkasm --combined-json anyarg`;
+  const result = executeCommand(command);
+
+  it("Valid command exit code = 1", () => {
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("--zkasm error is presented", () => {
+      expect(result.output).toMatch(/(Only one modes is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.)/i);
   });
 });
