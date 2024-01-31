@@ -50,7 +50,7 @@ describe("Default run a command from the help", () => {
 });
 
 //#1818
-describe("Default run a command from the help", () => {
+describe("Run with multiple output options from the help", () => {
 
     const command = `zksolc ${paths.pathToBasicSolContract} -O3 --bin --asm --output-dir "${paths.pathToOutputDir}"`; // potential issue on zksolc with full path on Windows cmd
     const result = executeCommand(command);
