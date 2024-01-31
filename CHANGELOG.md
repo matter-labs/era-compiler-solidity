@@ -4,7 +4,9 @@
 
 ### Added
 
-- The solc v0.8.24 support with temporarily disabled instructions
+- The solc v0.8.24 support with temporarily unsupported transient storage and blobs
+- The `MCOPY` instruction support
+- The `--evm-version` parameter to the CLI
 
 ## [1.3.22] - 2024-01-12
 

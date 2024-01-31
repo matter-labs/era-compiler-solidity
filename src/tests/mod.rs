@@ -64,6 +64,7 @@ pub fn build_solidity(
     let solc_version = solc.version()?;
 
     let input = SolcStandardJsonInput::try_from_sources(
+        None,
         sources.clone(),
         libraries.clone(),
         remappings,
@@ -112,6 +113,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let solc_version = solc.version()?;
 
     let input = SolcStandardJsonInput::try_from_sources(
+        None,
         sources.clone(),
         libraries.clone(),
         None,
@@ -181,6 +183,7 @@ pub fn check_solidity_warning(
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_string(), source_code.to_string());
     let input = SolcStandardJsonInput::try_from_sources(
+        None,
         sources.clone(),
         libraries,
         None,

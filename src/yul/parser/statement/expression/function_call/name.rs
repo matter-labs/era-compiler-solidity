@@ -372,9 +372,12 @@ impl From<&str> for Name {
             "mload" => Self::MLoad,
             "mstore" => Self::MStore,
             "mstore8" => Self::MStore8,
+            "mcopy" => Self::MCopy,
 
             "sload" => Self::SLoad,
             "sstore" => Self::SStore,
+            "tload" => Self::TLoad,
+            "tstore" => Self::TStore,
             "loadimmutable" => Self::LoadImmutable,
             "setimmutable" => Self::SetImmutable,
 
@@ -430,10 +433,12 @@ impl From<&str> for Name {
             "timestamp" => Self::Timestamp,
             "number" => Self::Number,
             "blockhash" => Self::BlockHash,
+            "blobhash" => Self::BlobHash,
             "difficulty" => Self::Difficulty,
             "prevrandao" => Self::Prevrandao,
             "coinbase" => Self::CoinBase,
             "basefee" => Self::BaseFee,
+            "blobbasefee" => Self::BlobBaseFee,
             "msize" => Self::MSize,
 
             "callcode" => Self::CallCode,

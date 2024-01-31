@@ -146,6 +146,10 @@ In LLVM IR mode, `solc` is unused.
 Specify addresses of deployable libraries. Syntax: `name_1=address_1[,name_N=address_N]*`.  
 Addresses are interpreted as hexadecimal strings prefixed with `0x`.  
 
+#### `--evm-version <version>`
+The EVM version to generate LLL IR for.  
+See [the source code](https://github.com/matter-labs/era-compiler-llvm-context/blob/main/src/evm_version.rs) for reference.  
+
 #### `--combined-json <options>`
 Output a single JSON document containing the specified information.  
 Available arguments: `abi`, `hashes`, `metadata`, `devdoc`, `userdoc`, `storage-layout`, `ast`, `asm`, `bin`, `bin-runtime`.  
