@@ -16,3 +16,31 @@ describe("Run with --zkasm by default", () => {
       expect(result.output).toMatch(/(No output requested)/i);
   });
 });
+
+//id1822
+describe("Run with double zkasm options", () => {
+  const command = `zksolc ${paths.pathToBasicZkasmContract} --zkasm --zkasm`;
+  const result = executeCommand(command);
+
+  it("Valid command exit code = 1", () => {
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("--zkasm error is presented", () => {
+      expect(result.output).toMatch(/(The argument '--zkasm' was provided more than once)/i);
+  });
+});
+
+//id1822
+xdescribe("Run with incompatible input format", () => { // !issue because it compiles with incompatible input format
+  const command = `zksolc ${paths.pathToBasicSolContract} --zkasm`;
+  const result = executeCommand(command);
+
+  it("Valid command exit code = 1", () => {
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("--zkasm error is presented", () => {
+      expect(result.output).toMatch(/(Error: Expected keyword "object")/i);
+  });
+});
