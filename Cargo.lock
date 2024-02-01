@@ -161,7 +161,7 @@ dependencies = [
 [[package]]
 name = "compiler-llvm-context"
 version = "1.3.3"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1523-add-a-flag-to-disable-the-custom-eravm-cse-pass#e451ae151cd0a5311580a2059d9220ad7916045c"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1523-add-a-flag-to-disable-the-custom-eravm-cse-pass#a1a01b6d1ab8eda06063f3954ddf570089da4389"
 dependencies = [
  "anyhow",
  "compiler-common",
@@ -556,7 +556,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#f4d2784d4410559112e0d743910805df4eb13d78"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -570,7 +570,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.6.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#f4d2784d4410559112e0d743910805df4eb13d78"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
 dependencies = [
  "proc-macro2",
  "quote",
