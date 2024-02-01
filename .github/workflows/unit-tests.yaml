@@ -3,6 +3,11 @@ name: Unit Tests
 # Execute workflow for each PR and with each merge to the trunk
 on:
   pull_request:
+    paths-ignore:
+      - '**/cli-tests/**'
+      - '**/workflows/cli*'
+      - '.gitignore'
+      - '**/*.md'
   push:
     branches:
       - main
