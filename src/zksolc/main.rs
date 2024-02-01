@@ -85,7 +85,10 @@ fn main_inner() -> anyhow::Result<()> {
         None => compiler_llvm_context::OptimizerSettings::cycles(),
     };
     if arguments.fallback_to_optimizing_for_size {
-        optimizer_settings.set_fallback_to_size();
+        optimizer_settings.enable_fallback_to_size();
+    }
+    if arguments.disable_system_request_memoization {
+        optimizer_settings.disable_system_request_memoization();
     }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
