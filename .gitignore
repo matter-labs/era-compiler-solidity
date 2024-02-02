@@ -13,3 +13,6 @@
 /.idea/
 /.vscode/
 
+# cli tests
+**/cli-tests/node_modules
+**/cli-tests/artifacts

@@ -63,6 +63,10 @@ pub struct Arguments {
     #[structopt(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
+    /// Disable the system request memoization.
+    #[structopt(long = "disable-system-request-memoization")]
+    pub disable_system_request_memoization: bool,
+
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
     /// Beware that it will prevent libraries from being inlined.
@@ -259,6 +263,9 @@ impl Arguments {
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
             }
+            if self.disable_system_request_memoization {
+                anyhow::bail!("Disabling the system request memoization is not supported in EraVM assembly mode.");
+            }
         }
 
         if self.combined_json.is_some() {
@@ -300,6 +307,11 @@ impl Arguments {
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!(
                     "Falling back to -Oz must specified in standard JSON input settings."
+                );
+            }
+            if self.disable_system_request_memoization {
+                anyhow::bail!(
+                    "Disabling the system request memoization must specified in standard JSON input settings."
                 );
             }
             if self.metadata_hash.is_some() {

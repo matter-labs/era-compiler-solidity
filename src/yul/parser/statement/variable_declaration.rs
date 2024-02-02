@@ -99,13 +99,13 @@ impl VariableDeclaration {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for VariableDeclaration
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for VariableDeclaration
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn into_llvm<'ctx>(
         mut self,
-        context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<()> {
         if self.bindings.len() == 1 {
             let identifier = self.bindings.remove(0);
@@ -195,7 +195,7 @@ where
                 &[
                     context.field_const(0),
                     context
-                        .integer_type(compiler_common::BIT_LENGTH_X32)
+                        .integer_type(era_compiler_common::BIT_LENGTH_X32)
                         .const_int(index as u64, false),
                 ],
                 binding.r#type.unwrap_or_default().into_llvm(context),
