@@ -37,7 +37,7 @@ contract FixedCodeCopy {
         BTreeMap::new(),
         None,
         SolcPipeline::Yul,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -76,7 +76,7 @@ fn callcode_evmla() {
         BTreeMap::new(),
         None,
         SolcPipeline::EVMLA,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -92,7 +92,7 @@ fn callcode_yul() {
         BTreeMap::new(),
         None,
         SolcPipeline::Yul,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -150,7 +150,7 @@ fn extcodecopy_evmla() {
         BTreeMap::new(),
         None,
         SolcPipeline::EVMLA,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -166,7 +166,7 @@ fn extcodecopy_yul() {
         BTreeMap::new(),
         None,
         SolcPipeline::Yul,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -200,7 +200,7 @@ fn selfdestruct_evmla() {
         BTreeMap::new(),
         None,
         SolcPipeline::EVMLA,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
@@ -216,7 +216,7 @@ fn selfdestruct_yul() {
         BTreeMap::new(),
         None,
         SolcPipeline::Yul,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }

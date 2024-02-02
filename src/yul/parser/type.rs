@@ -31,7 +31,7 @@ pub enum Type {
 
 impl Default for Type {
     fn default() -> Self {
-        Self::UInt(compiler_common::BIT_LENGTH_FIELD)
+        Self::UInt(era_compiler_common::BIT_LENGTH_FIELD)
     }
 }
 
@@ -73,13 +73,13 @@ impl Type {
     ///
     pub fn into_llvm<'ctx, D>(
         self,
-        context: &compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> inkwell::types::IntType<'ctx>
     where
-        D: compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
         match self {
-            Self::Bool => context.integer_type(compiler_common::BIT_LENGTH_BOOLEAN),
+            Self::Bool => context.integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN),
             Self::Int(bitlength) => context.integer_type(bitlength),
             Self::UInt(bitlength) => context.integer_type(bitlength),
             Self::Custom(_) => context.field_type(),
