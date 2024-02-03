@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "title": "zksolc CLI Tests",
   "description": "Auto tests for verifying zksolc CLI",
-  "repository": "https://github.com/matter-labs/era-compiler-solidity",
+  "repository": "https://github.com/matter-labs/era_compiler-solidity",
   "main": "index.js",
   "private": true,
   "scripts": {
