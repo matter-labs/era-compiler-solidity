@@ -108,10 +108,10 @@ impl Expression {
     ///
     pub fn into_llvm<'ctx, D>(
         self,
-        context: &mut compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<compiler_llvm_context::Argument<'ctx>>>
+        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Argument<'ctx>>>
     where
-        D: compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
         match self {
             Self::Literal(literal) => literal
@@ -148,15 +148,15 @@ impl Expression {
                 let value = context.build_load(pointer, identifier.inner.as_str());
 
                 match constant {
-                    Some(constant) => Ok(Some(compiler_llvm_context::Argument::new_with_constant(
-                        value, constant,
-                    ))),
+                    Some(constant) => Ok(Some(
+                        era_compiler_llvm_context::Argument::new_with_constant(value, constant),
+                    )),
                     None => Ok(Some(value.into())),
                 }
             }
             Self::FunctionCall(call) => Ok(call
                 .into_llvm(context)?
-                .map(compiler_llvm_context::Argument::new)),
+                .map(era_compiler_llvm_context::Argument::new)),
         }
     }
 
@@ -167,10 +167,10 @@ impl Expression {
     ///
     pub fn into_llvm_evm<'ctx, D>(
         self,
-        context: &mut compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<compiler_llvm_context::Argument<'ctx>>>
+        context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Argument<'ctx>>>
     where
-        D: compiler_llvm_context::EVMDependency + Clone,
+        D: era_compiler_llvm_context::EVMDependency + Clone,
     {
         match self {
             Self::Literal(literal) => literal
@@ -203,7 +203,7 @@ impl Expression {
             }
             Self::FunctionCall(call) => Ok(call
                 .into_llvm_evm(context)?
-                .map(compiler_llvm_context::Argument::new)),
+                .map(era_compiler_llvm_context::Argument::new)),
         }
     }
 }

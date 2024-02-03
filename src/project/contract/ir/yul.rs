@@ -46,34 +46,40 @@ impl Yul {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Yul
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Yul
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn declare(
         &mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         self.object.declare(context)
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         self.object.into_llvm(context)
     }
 }
 
-impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Yul
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Yul
 where
-    D: compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::EVMDependency + Clone,
 {
     fn declare(
         &mut self,
-        context: &mut compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         self.object.declare(context)
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
         self.object.into_llvm(context)
     }
 }

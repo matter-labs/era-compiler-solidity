@@ -56,11 +56,14 @@ impl IfConditional {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         let condition = self
             .condition
             .into_llvm(context)?
@@ -90,11 +93,14 @@ where
     }
 }
 
-impl<D> compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
 where
-    D: compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::EVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
         let condition = self
             .condition
             .into_llvm_evm(context)?

@@ -57,10 +57,10 @@ use std::path::PathBuf;
 pub fn yul_to_eravm(
     input_files: &[PathBuf],
     solc: &mut SolcCompiler,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
@@ -103,9 +103,9 @@ pub fn yul_to_eravm(
 pub fn yul_to_evm(
     input_files: &[PathBuf],
     solc: &mut SolcCompiler,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     include_metadata_hash: bool,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
@@ -135,10 +135,10 @@ pub fn yul_to_evm(
 ///
 pub fn llvm_ir_to_eravm(
     input_files: &[PathBuf],
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
@@ -167,9 +167,9 @@ pub fn llvm_ir_to_eravm(
 ///
 pub fn llvm_ir_to_evm(
     input_files: &[PathBuf],
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     include_metadata_hash: bool,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
@@ -193,7 +193,7 @@ pub fn llvm_ir_to_evm(
 pub fn eravm_assembly(
     input_files: &[PathBuf],
     include_metadata_hash: bool,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
@@ -206,7 +206,7 @@ pub fn eravm_assembly(
 
     let project = Project::try_from_eravm_assembly_path(path)?;
 
-    let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
     let build = project.compile_to_eravm(
         optimizer_settings,
         false,
@@ -227,7 +227,7 @@ pub fn standard_output_eravm(
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
     solc_optimizer_enabled: bool,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -236,7 +236,7 @@ pub fn standard_output_eravm(
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
     suppressed_warnings: Option<Vec<Warning>>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
@@ -251,7 +251,8 @@ pub fn standard_output_eravm(
             solc_optimizer_enabled,
             None,
             &solc_version.default,
-            optimizer_settings.has_fallback_to_size_enabled,
+            optimizer_settings.is_fallback_to_size_enabled(),
+            optimizer_settings.is_system_request_memoization_disabled(),
         ),
         None,
         solc_pipeline == SolcPipeline::Yul,
@@ -317,14 +318,14 @@ pub fn standard_output_evm(
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
     solc_optimizer_enabled: bool,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     include_metadata_hash: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
@@ -339,7 +340,8 @@ pub fn standard_output_evm(
             solc_optimizer_enabled,
             None,
             &solc_version.default,
-            optimizer_settings.has_fallback_to_size_enabled,
+            optimizer_settings.is_fallback_to_size_enabled(),
+            optimizer_settings.is_system_request_memoization_disabled(),
         ),
         None,
         solc_pipeline == SolcPipeline::Yul,
@@ -402,7 +404,7 @@ pub fn standard_json_eravm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
@@ -416,11 +418,11 @@ pub fn standard_json_eravm(
         .collect();
 
     let optimizer_settings =
-        compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
+        era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
 
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
-            metadata.bytecode_hash != Some(compiler_llvm_context::EraVMMetadataHash::None)
+            metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
@@ -481,7 +483,7 @@ pub fn standard_json_evm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
@@ -495,11 +497,11 @@ pub fn standard_json_evm(
         .collect();
 
     let optimizer_settings =
-        compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
+        era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
 
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
-            metadata.bytecode_hash != Some(compiler_llvm_context::EraVMMetadataHash::None)
+            metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
@@ -546,7 +548,7 @@ pub fn combined_json_eravm(
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
     solc_optimizer_enabled: bool,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -555,7 +557,7 @@ pub fn combined_json_eravm(
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
     suppressed_warnings: Option<Vec<Warning>>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     output_directory: Option<PathBuf>,
     overwrite: bool,
 ) -> anyhow::Result<()> {
@@ -607,14 +609,14 @@ pub fn combined_json_evm(
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
     solc_optimizer_enabled: bool,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
     include_metadata_hash: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
-    debug_config: Option<compiler_llvm_context::DebugConfig>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     output_directory: Option<PathBuf>,
     overwrite: bool,
 ) -> anyhow::Result<()> {

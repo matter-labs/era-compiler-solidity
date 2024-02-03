@@ -20,10 +20,10 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 ///
 fn main() {
     std::process::exit(match main_inner() {
-        Ok(()) => compiler_common::EXIT_CODE_SUCCESS,
+        Ok(()) => era_compiler_common::EXIT_CODE_SUCCESS,
         Err(error) => {
             eprintln!("{error}");
-            compiler_common::EXIT_CODE_FAILURE
+            era_compiler_common::EXIT_CODE_FAILURE
         }
     })
 }
@@ -46,8 +46,8 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     let target = match arguments.target {
-        Some(ref target) => compiler_llvm_context::Target::from_str(target.as_str())?,
-        None => compiler_llvm_context::Target::EraVM,
+        Some(ref target) => era_compiler_llvm_context::Target::from_str(target.as_str())?,
+        None => era_compiler_llvm_context::Target::EraVM,
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -55,16 +55,16 @@ fn main_inner() -> anyhow::Result<()> {
         .build_global()
         .expect("Thread pool configuration failure");
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target(target);
+    era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        return compiler_solidity::run_process(target);
+        return era_compiler_solidity::run_process(target);
     }
 
     let debug_config = match arguments.debug_output_directory {
         Some(ref debug_output_directory) => {
             std::fs::create_dir_all(debug_output_directory.as_path())?;
-            Some(compiler_llvm_context::DebugConfig::new(
+            Some(era_compiler_llvm_context::DebugConfig::new(
                 debug_output_directory.to_owned(),
             ))
         }
@@ -74,23 +74,25 @@ fn main_inner() -> anyhow::Result<()> {
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
     let suppressed_warnings = match arguments.suppress_warnings {
-        Some(warnings) => Some(compiler_solidity::Warning::try_from_strings(
+        Some(warnings) => Some(era_compiler_solidity::Warning::try_from_strings(
             warnings.as_slice(),
         )?),
         None => None,
     };
 
-    let mut solc =
-        compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-            compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-        }))?;
+    let mut solc = era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+    }))?;
 
     let mut optimizer_settings = match arguments.optimization {
-        Some(mode) => compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
-        None => compiler_llvm_context::OptimizerSettings::cycles(),
+        Some(mode) => era_compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
+        None => era_compiler_llvm_context::OptimizerSettings::cycles(),
     };
     if arguments.fallback_to_optimizing_for_size {
-        optimizer_settings.set_fallback_to_size();
+        optimizer_settings.enable_fallback_to_size();
+    }
+    if arguments.disable_system_request_memoization {
+        optimizer_settings.disable_system_request_memoization();
     }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
@@ -98,16 +100,16 @@ fn main_inner() -> anyhow::Result<()> {
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
             let metadata =
-                compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
-            metadata != compiler_llvm_context::EraVMMetadataHash::None
+                era_compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
+            metadata != era_compiler_llvm_context::EraVMMetadataHash::None
         }
         None => true,
     };
 
     match target {
-        compiler_llvm_context::Target::EraVM => {
+        era_compiler_llvm_context::Target::EraVM => {
             let build = if arguments.yul {
-                compiler_solidity::yul_to_eravm(
+                era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
                     &mut solc,
                     optimizer_settings,
@@ -116,7 +118,7 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if arguments.llvm_ir {
-                compiler_solidity::llvm_ir_to_eravm(
+                era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
                     arguments.is_system_mode,
@@ -124,13 +126,13 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
-                compiler_solidity::eravm_assembly(
+                era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
             } else if arguments.standard_json {
-                compiler_solidity::standard_json_eravm(
+                era_compiler_solidity::standard_json_eravm(
                     &mut solc,
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
@@ -142,7 +144,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                compiler_solidity::combined_json_eravm(
+                era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -163,7 +165,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else {
-                compiler_solidity::standard_output_eravm(
+                era_compiler_solidity::standard_output_eravm(
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
@@ -216,9 +218,9 @@ fn main_inner() -> anyhow::Result<()> {
                 );
             }
         }
-        compiler_llvm_context::Target::EVM => {
+        era_compiler_llvm_context::Target::EVM => {
             let build = if arguments.yul {
-                compiler_solidity::yul_to_evm(
+                era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
                     &mut solc,
                     optimizer_settings,
@@ -226,14 +228,14 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if arguments.llvm_ir {
-                compiler_solidity::llvm_ir_to_evm(
+                era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
                     include_metadata_hash,
                     debug_config,
                 )
             } else if arguments.standard_json {
-                compiler_solidity::standard_json_evm(
+                era_compiler_solidity::standard_json_evm(
                     &mut solc,
                     arguments.force_evmla,
                     arguments.base_path,
@@ -243,7 +245,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                compiler_solidity::combined_json_evm(
+                era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -262,7 +264,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else {
-                compiler_solidity::standard_output_evm(
+                era_compiler_solidity::standard_output_evm(
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,

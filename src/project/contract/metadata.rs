@@ -32,7 +32,7 @@ impl Metadata {
         solc_version: semver::Version,
         solc_zkvm_edition: Option<semver::Version>,
         zk_version: semver::Version,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     ) -> Self {
         Self {
             solc_metadata,

@@ -27,7 +27,7 @@ pub static EXECUTABLE: OnceCell<PathBuf> = OnceCell::new();
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.
 ///
-pub fn run(target: compiler_llvm_context::Target) -> anyhow::Result<()> {
+pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
     let mut stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
     let mut stderr = std::io::stderr();
@@ -36,8 +36,8 @@ pub fn run(target: compiler_llvm_context::Target) -> anyhow::Result<()> {
     stdin.read_to_end(&mut buffer).expect("Stdin reading error");
 
     match target {
-        compiler_llvm_context::Target::EraVM => {
-            let input: EraVMInput = compiler_common::deserialize_from_slice(buffer.as_slice())?;
+        era_compiler_llvm_context::Target::EraVM => {
+            let input: EraVMInput = era_compiler_common::deserialize_from_slice(buffer.as_slice())?;
 
             if input.enable_test_encoding {
                 zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
@@ -68,8 +68,8 @@ pub fn run(target: compiler_llvm_context::Target) -> anyhow::Result<()> {
                 }
             }
         }
-        compiler_llvm_context::Target::EVM => {
-            let input: EVMInput = compiler_common::deserialize_from_slice(buffer.as_slice())?;
+        era_compiler_llvm_context::Target::EVM => {
+            let input: EVMInput = era_compiler_common::deserialize_from_slice(buffer.as_slice())?;
 
             let result = input.contract.compile_to_evm(
                 input.project,
@@ -102,7 +102,7 @@ pub fn run(target: compiler_llvm_context::Target) -> anyhow::Result<()> {
 ///
 /// Runs this process recursively to compile a single contract.
 ///
-pub fn call<I, O>(input: I, target: compiler_llvm_context::Target) -> anyhow::Result<O>
+pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> anyhow::Result<O>
 where
     I: Serialize,
     O: DeserializeOwned,
@@ -142,7 +142,7 @@ where
     }
 
     let output: O =
-        compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
+        era_compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
             anyhow::anyhow!(
                 "{:?} subprocess output parsing error: {}",
                 executable,

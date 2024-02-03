@@ -52,12 +52,12 @@ pub fn build_solidity(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: Option<BTreeSet<String>>,
     pipeline: SolcPipeline,
-    optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
@@ -68,7 +68,13 @@ pub fn build_solidity(
         libraries.clone(),
         remappings,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
+        SolcStandardJsonInputSettingsOptimizer::new(
+            true,
+            None,
+            &solc_version.default,
+            false,
+            false,
+        ),
         None,
         pipeline == SolcPipeline::Yul,
         None,
@@ -104,7 +110,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     check_dependencies();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
@@ -115,7 +121,13 @@ pub fn build_solidity_and_detect_missing_libraries(
         libraries.clone(),
         None,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
+        SolcStandardJsonInputSettingsOptimizer::new(
+            true,
+            None,
+            &solc_version.default,
+            false,
+            false,
+        ),
         None,
         pipeline == SolcPipeline::Yul,
         None,
@@ -142,8 +154,8 @@ pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
     check_dependencies();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    compiler_llvm_context::initialize_target(compiler_llvm_context::Target::EraVM);
-    let optimizer_settings = compiler_llvm_context::OptimizerSettings::none();
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
     let project =
         Project::try_from_yul_string(PathBuf::from("test.yul").as_path(), source_code, None)?;
@@ -184,7 +196,13 @@ pub fn check_solidity_warning(
         libraries,
         None,
         SolcStandardJsonInputSettingsSelection::new_required(pipeline),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
+        SolcStandardJsonInputSettingsOptimizer::new(
+            true,
+            None,
+            &solc_version.default,
+            false,
+            false,
+        ),
         None,
         pipeline == SolcPipeline::Yul,
         suppressed_warnings,

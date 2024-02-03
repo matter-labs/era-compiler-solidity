@@ -128,11 +128,14 @@ impl Switch {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Switch
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Switch
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         let scrutinee = self.expression.into_llvm(context)?;
 
         if self.cases.is_empty() {
@@ -182,11 +185,14 @@ where
     }
 }
 
-impl<D> compiler_llvm_context::EVMWriteLLVM<D> for Switch
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch
 where
-    D: compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::EVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::EVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
         let scrutinee = self.expression.into_llvm_evm(context)?;
 
         if self.cases.is_empty() {

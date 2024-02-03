@@ -302,7 +302,7 @@ impl Instruction {
                     ..
                 } => {
                     let mut key_extended =
-                        "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2 - value.len());
+                        "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2 - value.len());
                     key_extended.push_str(value.as_str());
 
                     *value = mapping.get(key_extended.as_str()).cloned().ok_or_else(|| {
@@ -335,11 +335,11 @@ impl Instruction {
     ///
     pub fn recursive_call(
         name: String,
-        entry_key: compiler_llvm_context::EraVMFunctionBlockKey,
+        entry_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
         stack_hash: md5::Digest,
         input_size: usize,
         output_size: usize,
-        return_address: compiler_llvm_context::EraVMFunctionBlockKey,
+        return_address: era_compiler_llvm_context::EraVMFunctionBlockKey,
         previous: &Self,
     ) -> Self {
         Self {

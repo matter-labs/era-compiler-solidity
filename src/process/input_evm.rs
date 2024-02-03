@@ -22,9 +22,9 @@ pub struct Input {
     /// Whether to append the metadata hash.
     pub include_metadata_hash: bool,
     /// The optimizer settings.
-    pub optimizer_settings: compiler_llvm_context::OptimizerSettings,
+    pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The debug output config.
-    pub debug_config: Option<compiler_llvm_context::DebugConfig>,
+    pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
 
 impl Input {
@@ -35,8 +35,8 @@ impl Input {
         contract: Contract,
         project: Project,
         include_metadata_hash: bool,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
-        debug_config: Option<compiler_llvm_context::DebugConfig>,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> Self {
         Self {
             contract,

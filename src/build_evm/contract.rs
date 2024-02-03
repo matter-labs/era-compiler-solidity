@@ -22,9 +22,9 @@ pub struct Contract {
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
     /// The LLVM deploy code module build.
-    pub deploy_build: compiler_llvm_context::EVMBuild,
+    pub deploy_build: era_compiler_llvm_context::EVMBuild,
     /// The LLVM runtime code module build.
-    pub runtime_build: compiler_llvm_context::EVMBuild,
+    pub runtime_build: era_compiler_llvm_context::EVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
 }
@@ -36,8 +36,8 @@ impl Contract {
     pub fn new(
         path: String,
         identifier: String,
-        deploy_build: compiler_llvm_context::EVMBuild,
-        runtime_build: compiler_llvm_context::EVMBuild,
+        deploy_build: era_compiler_llvm_context::EVMBuild,
+        runtime_build: era_compiler_llvm_context::EVMBuild,
         metadata_json: serde_json::Value,
     ) -> Self {
         Self {
@@ -65,8 +65,8 @@ impl Contract {
 
         if output_binary {
             for (code_type, bytecode) in [
-                compiler_llvm_context::CodeType::Deploy,
-                compiler_llvm_context::CodeType::Runtime,
+                era_compiler_llvm_context::CodeType::Deploy,
+                era_compiler_llvm_context::CodeType::Runtime,
             ]
             .into_iter()
             .zip([self.deploy_build.bytecode, self.runtime_build.bytecode].into_iter())
@@ -75,7 +75,7 @@ impl Contract {
                     "{}.{}.{}",
                     file_name,
                     code_type,
-                    compiler_common::EXTENSION_EVM_BINARY
+                    era_compiler_common::EXTENSION_EVM_BINARY
                 );
                 let mut file_path = path.to_owned();
                 file_path.push(file_name);

@@ -26,6 +26,9 @@ pub struct Optimizer {
     /// Whether to try to recompile with -Oz if the bytecode is too large.
     #[serde(skip_serializing)]
     pub fallback_to_optimizing_for_size: Option<bool>,
+    /// Whether to disable the system request memoization.
+    #[serde(skip_serializing)]
+    pub disable_system_request_memoization: Option<bool>,
 }
 
 impl Optimizer {
@@ -37,12 +40,14 @@ impl Optimizer {
         mode: Option<char>,
         version: &semver::Version,
         fallback_to_optimizing_for_size: bool,
+        disable_system_request_memoization: bool,
     ) -> Self {
         Self {
             enabled,
             mode,
             details: Some(Details::disabled(version)),
             fallback_to_optimizing_for_size: Some(fallback_to_optimizing_for_size),
+            disable_system_request_memoization: Some(disable_system_request_memoization),
         }
     }
 
@@ -58,7 +63,7 @@ impl Optimizer {
     }
 }
 
-impl TryFrom<&Optimizer> for compiler_llvm_context::OptimizerSettings {
+impl TryFrom<&Optimizer> for era_compiler_llvm_context::OptimizerSettings {
     type Error = anyhow::Error;
 
     fn try_from(value: &Optimizer) -> Result<Self, Self::Error> {
@@ -67,7 +72,10 @@ impl TryFrom<&Optimizer> for compiler_llvm_context::OptimizerSettings {
             None => Self::cycles(),
         };
         if value.fallback_to_optimizing_for_size.unwrap_or_default() {
-            result.set_fallback_to_size();
+            result.enable_fallback_to_size();
+        }
+        if value.disable_system_request_memoization.unwrap_or_default() {
+            result.disable_system_request_memoization();
         }
         Ok(result)
     }

@@ -74,11 +74,11 @@ impl Project {
     ///
     pub fn compile_to_eravm(
         self,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
-        debug_config: Option<compiler_llvm_context::DebugConfig>,
+        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
         let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EraVMContractBuild>> = self
@@ -95,7 +95,7 @@ impl Project {
                         optimizer_settings.clone(),
                         debug_config.clone(),
                     ),
-                    compiler_llvm_context::Target::EraVM,
+                    era_compiler_llvm_context::Target::EraVM,
                 );
 
                 (full_path, process_output.map(|output| output.build))
@@ -154,9 +154,9 @@ impl Project {
     ///
     pub fn compile_to_evm(
         self,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         include_metadata_hash: bool,
-        debug_config: Option<compiler_llvm_context::DebugConfig>,
+        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
         let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EVMContractBuild>> = self
@@ -171,7 +171,7 @@ impl Project {
                         optimizer_settings.clone(),
                         debug_config.clone(),
                     ),
-                    compiler_llvm_context::Target::EVM,
+                    era_compiler_llvm_context::Target::EVM,
                 );
 
                 (full_path, process_output.map(|output| output.build))
@@ -282,7 +282,7 @@ impl Project {
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
         let source_version =
-            SolcVersion::new_simple(compiler_llvm_context::eravm_const::LLVM_VERSION);
+            SolcVersion::new_simple(era_compiler_llvm_context::eravm_const::LLVM_VERSION);
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
@@ -314,7 +314,7 @@ impl Project {
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
         let source_version =
-            SolcVersion::new_simple(compiler_llvm_context::eravm_const::ZKEVM_VERSION);
+            SolcVersion::new_simple(era_compiler_llvm_context::eravm_const::ZKEVM_VERSION);
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
@@ -337,14 +337,14 @@ impl Project {
     }
 }
 
-impl compiler_llvm_context::EraVMDependency for Project {
+impl era_compiler_llvm_context::EraVMDependency for Project {
     fn compile(
         project: Self,
         identifier: &str,
-        optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         is_system_mode: bool,
         include_metadata_hash: bool,
-        debug_config: Option<compiler_llvm_context::DebugConfig>,
+        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
         let contract_path = project.resolve_path(identifier)?;
         let contract = project
@@ -402,13 +402,13 @@ impl compiler_llvm_context::EraVMDependency for Project {
     }
 }
 
-impl compiler_llvm_context::EVMDependency for Project {
+impl era_compiler_llvm_context::EVMDependency for Project {
     fn compile(
         _project: Self,
         _identifier: &str,
-        _optimizer_settings: compiler_llvm_context::OptimizerSettings,
+        _optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         _include_metadata_hash: bool,
-        _debug_config: Option<compiler_llvm_context::DebugConfig>,
+        _debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
         todo!()
     }

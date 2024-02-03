@@ -148,67 +148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler-common"
-version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#e1cb77aebf7006faf1a413099d1b9b241e571ce1"
-dependencies = [
- "anyhow",
- "serde",
- "serde_json",
- "serde_stacker",
-]
-
-[[package]]
-name = "compiler-llvm-context"
-version = "1.3.3"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-872-integrate-an-evm-execution-environment-into-the-compiler#c3bb5492c80e83152c9d906118f891951e8a7d47"
-dependencies = [
- "anyhow",
- "compiler-common",
- "hex",
- "inkwell",
- "itertools",
- "md5",
- "num",
- "once_cell",
- "regex",
- "semver",
- "serde",
- "sha2 0.10.8",
- "sha3 0.10.8",
- "zkevm-assembly",
- "zkevm_opcode_defs",
-]
-
-[[package]]
-name = "compiler-solidity"
-version = "1.3.23"
-dependencies = [
- "anyhow",
- "colored",
- "compiler-common",
- "compiler-llvm-context",
- "hex",
- "inkwell",
- "md5",
- "mimalloc",
- "num",
- "once_cell",
- "path-slash",
- "rand",
- "rayon",
- "regex",
- "semver",
- "serde",
- "serde_json",
- "sha3 0.10.8",
- "structopt",
- "thiserror",
- "which",
- "zkevm-assembly",
-]
-
-[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -353,6 +292,67 @@ name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
+
+[[package]]
+name = "era-compiler-common"
+version = "1.5.0"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#c947120df4f41dcaca17d307cb974d2ca1995a03"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+ "serde_stacker",
+]
+
+[[package]]
+name = "era-compiler-llvm-context"
+version = "1.3.3"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-872-integrate-an-evm-execution-environment-into-the-compiler#7203c1ac46147e3d080a5b500afb14ca0d3ab67e"
+dependencies = [
+ "anyhow",
+ "era-compiler-common",
+ "hex",
+ "inkwell",
+ "itertools",
+ "md5",
+ "num",
+ "once_cell",
+ "regex",
+ "semver",
+ "serde",
+ "sha2 0.10.8",
+ "sha3 0.10.8",
+ "zkevm-assembly",
+ "zkevm_opcode_defs",
+]
+
+[[package]]
+name = "era-compiler-solidity"
+version = "1.3.23"
+dependencies = [
+ "anyhow",
+ "colored",
+ "era-compiler-common",
+ "era-compiler-llvm-context",
+ "hex",
+ "inkwell",
+ "md5",
+ "mimalloc",
+ "num",
+ "once_cell",
+ "path-slash",
+ "rand",
+ "rayon",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha3 0.10.8",
+ "structopt",
+ "thiserror",
+ "which",
+ "zkevm-assembly",
+]
 
 [[package]]
 name = "errno"
@@ -545,9 +545,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.1.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d530e1a18b1cb4c484e6e34556a0d948706958449fca0cab753d649f2bce3d1f"
+checksum = "824b2ae422412366ba479e8111fd301f7b5faece8149317bb81925979a53f520"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -556,7 +556,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-evm-support#007908f6bae142f3a8e2293508449c10f833fe3e"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-evm-support#e88ea0654f29f08d4897cf6aed175372cb3f8bd7"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -570,7 +570,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.6.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-evm-support#007908f6bae142f3a8e2293508449c10f833fe3e"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-evm-support#e88ea0654f29f08d4897cf6aed175372cb3f8bd7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -579,9 +579,9 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.12.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25db6b064527c5d482d0423354fcd07a89a2dfe07b67892e62411946db7f07b0"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
 dependencies = [
  "either",
 ]
@@ -621,9 +621,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.152"
+version = "0.2.153"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
+checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 
 [[package]]
 name = "libmimalloc-sys"
@@ -874,9 +874,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro-crate"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97dc5fea232fc28d2f597b37c4876b348a40e33f3b02cc975c8d006d78d94b1a"
+checksum = "b00f26d3400549137f92511a46ac1cd8ce37cb5598a96d382381458b992a5d24"
 dependencies = [
  "toml_datetime",
  "toml_edit",
@@ -1012,9 +1012,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b7fa1134405e2ec9353fd416b17f8dacd46c473d7d3fd1cf202706a14eb792a"
+checksum = "5bb987efffd3c6d0d8f5f89510bb458559eab11e4f869acb20bf845e016259cd"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1056,9 +1056,9 @@ checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
 
 [[package]]
 name = "rustix"
-version = "0.38.30"
+version = "0.38.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "322394588aaf33c24007e8bb3238ee3e4c5c09c084ab32bc73890b99ff326bca"
+checksum = "6ea3e1a662af26cd7a3ba09c0297a31af215563ecf42817c98df621387f4e949"
 dependencies = [
  "bitflags 2.4.2",
  "errno",
@@ -1104,18 +1104,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.195"
+version = "1.0.196"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63261df402c67811e9ac6def069e4786148c4563f4b50fd4bf30aa370d626b02"
+checksum = "870026e60fa08c69f064aa766c10f10b1d62db9ccd4d0abb206472bee0ce3b32"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.195"
+version = "1.0.196"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46fe8f8603d81ba86327b23a2e9cdf49e1255fb94a4c5f297f6ee0547178ea2c"
+checksum = "33c85360c95e7d137454dc81d9a4ed2b8efd8fbe19cee57357b32b9771fccb67"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1124,9 +1124,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.111"
+version = "1.0.113"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "176e46fa42316f18edd598015a5166857fc835ec732f5215eac6b7bdbf0a84f4"
+checksum = "69801b70b1c3dac963ecb03a364ba0ceda9cf60c71cfe475e99864759c8b8a79"
 dependencies = [
  "itoa",
  "ryu",
@@ -1576,9 +1576,9 @@ checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
 
 [[package]]
 name = "winnow"
-version = "0.5.34"
+version = "0.5.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7cf47b659b318dccbd69cc4797a39ae128f533dce7902a1096044d1967b9c16"
+checksum = "a7cad8365489051ae9f054164e459304af2e7e9bb407c958076c8bf4aef52da5"
 dependencies = [
  "memchr",
 ]
