@@ -235,11 +235,17 @@ pub enum Name {
     MSTORE,
     /// The eponymous EVM instruction.
     MSTORE8,
+    /// The eponymous EVM instruction.
+    MCOPY,
 
     /// The eponymous EVM instruction.
     SLOAD,
     /// The eponymous EVM instruction.
     SSTORE,
+    /// The eponymous EVM instruction.
+    TLOAD,
+    /// The eponymous EVM instruction.
+    TSTORE,
     /// The eponymous EVM instruction.
     PUSHIMMUTABLE,
     /// The eponymous EVM instruction.
@@ -339,6 +345,8 @@ pub enum Name {
     /// The eponymous EVM instruction.
     BLOCKHASH,
     /// The eponymous EVM instruction.
+    BLOBHASH,
+    /// The eponymous EVM instruction.
     DIFFICULTY,
     /// The eponymous EVM instruction.
     PREVRANDAO,
@@ -346,6 +354,8 @@ pub enum Name {
     COINBASE,
     /// The eponymous EVM instruction.
     BASEFEE,
+    /// The eponymous EVM instruction.
+    BLOBBASEFEE,
     /// The eponymous EVM instruction.
     MSIZE,
 

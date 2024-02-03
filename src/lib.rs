@@ -164,6 +164,7 @@ pub fn standard_output(
     input_files: &[PathBuf],
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
+    evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
@@ -181,6 +182,7 @@ pub fn standard_output(
 
     let solc_input = SolcStandardJsonInput::try_from_paths(
         SolcStandardJsonInputLanguage::Solidity,
+        evm_version,
         input_files,
         libraries,
         remappings,
@@ -338,6 +340,7 @@ pub fn combined_json(
     input_files: &[PathBuf],
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
+    evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
@@ -358,6 +361,7 @@ pub fn combined_json(
         input_files,
         libraries,
         solc,
+        evm_version,
         solc_optimizer_enabled,
         optimizer_settings,
         force_evmla,

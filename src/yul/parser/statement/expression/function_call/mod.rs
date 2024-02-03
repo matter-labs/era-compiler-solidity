@@ -514,6 +514,32 @@ impl FunctionCall {
                 )
                 .map(|_| None)
             }
+            Name::MCopy => {
+                let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
+                let destination = era_compiler_llvm_context::EraVMPointer::new_with_offset(
+                    context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[0].into_int_value(),
+                    "mcopy_destination",
+                );
+                let source = era_compiler_llvm_context::EraVMPointer::new_with_offset(
+                    context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[1].into_int_value(),
+                    "mcopy_source",
+                );
+
+                context.build_memcpy(
+                    context.intrinsics().memory_copy,
+                    destination,
+                    source,
+                    arguments[2].into_int_value(),
+                    "mcopy_size",
+                );
+                Ok(None)
+            }
 
             Name::SLoad => {
                 let arguments = self.pop_arguments_llvm::<D, 1>(context)?;
@@ -531,6 +557,20 @@ impl FunctionCall {
                     arguments[1].into_int_value(),
                 )
                 .map(|_| None)
+            }
+            Name::TLoad => {
+                let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
+                anyhow::bail!(
+                    "{} The `TLOAD` instruction is not supported until zkVM v1.5.0",
+                    location
+                );
+            }
+            Name::TStore => {
+                let _arguments = self.pop_arguments_llvm::<D, 2>(context)?;
+                anyhow::bail!(
+                    "{} The `TSTORE` instruction is not supported until zkVM v1.5.0",
+                    location
+                );
             }
             Name::LoadImmutable => {
                 let mut arguments = self.pop_arguments::<D, 1>(context)?;
@@ -1015,6 +1055,13 @@ impl FunctionCall {
                 era_compiler_llvm_context::eravm_evm_contract_context::block_hash(context, index)
                     .map(Some)
             }
+            Name::BlobHash => {
+                let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
+                anyhow::bail!(
+                    "{} The `BLOBHASH` instruction is not supported until zkVM v1.5.0",
+                    location
+                );
+            }
             Name::Difficulty | Name::Prevrandao => {
                 era_compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
             }
@@ -1023,6 +1070,12 @@ impl FunctionCall {
             }
             Name::BaseFee => {
                 era_compiler_llvm_context::eravm_evm_contract_context::basefee(context).map(Some)
+            }
+            Name::BlobBaseFee => {
+                anyhow::bail!(
+                    "{} The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0",
+                    location
+                );
             }
             Name::MSize => {
                 era_compiler_llvm_context::eravm_evm_contract_context::msize(context).map(Some)

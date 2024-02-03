@@ -78,11 +78,17 @@ pub enum Name {
     MStore,
     /// `mem[p] := v & 0xff` (only modifies a single byte)
     MStore8,
+    /// heap memory copy
+    MCopy,
 
     /// `storage[p]`
     SLoad,
     /// `storage[p] := v`
     SStore,
+    /// transient `storage[p]`
+    TLoad,
+    /// transient `storage[p] := v`
+    TStore,
     /// `loadimmutable` storage read
     LoadImmutable,
     /// `setimmutable` storage write
@@ -202,6 +208,8 @@ pub enum Name {
     Timestamp,
     /// hash of block nr b - only for last 256 blocks excluding current
     BlockHash,
+    /// versioned hash of transaction’s i-th blob
+    BlobHash,
     /// difficulty of the current block
     Difficulty,
     /// https://eips.ethereum.org/EIPS/eip-4399
@@ -220,8 +228,10 @@ pub enum Name {
         output_size: usize,
     },
 
-    /// the base fee
+    /// current block’s base fee (EIP-3198 and EIP-1559)
     BaseFee,
+    /// current block’s blob base fee (EIP-7516 and EIP-4844)
+    BlobBaseFee,
     /// current position in code
     Pc,
     /// like `codecopy(t, f, s)` but take code at address `a`
@@ -362,9 +372,12 @@ impl From<&str> for Name {
             "mload" => Self::MLoad,
             "mstore" => Self::MStore,
             "mstore8" => Self::MStore8,
+            "mcopy" => Self::MCopy,
 
             "sload" => Self::SLoad,
             "sstore" => Self::SStore,
+            "tload" => Self::TLoad,
+            "tstore" => Self::TStore,
             "loadimmutable" => Self::LoadImmutable,
             "setimmutable" => Self::SetImmutable,
 
@@ -420,10 +433,12 @@ impl From<&str> for Name {
             "timestamp" => Self::Timestamp,
             "number" => Self::Number,
             "blockhash" => Self::BlockHash,
+            "blobhash" => Self::BlobHash,
             "difficulty" => Self::Difficulty,
             "prevrandao" => Self::Prevrandao,
             "coinbase" => Self::CoinBase,
             "basefee" => Self::BaseFee,
+            "blobbasefee" => Self::BlobBaseFee,
             "msize" => Self::MSize,
 
             "callcode" => Self::CallCode,

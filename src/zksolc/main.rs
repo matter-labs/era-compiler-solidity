@@ -79,6 +79,13 @@ fn main_inner() -> anyhow::Result<()> {
         era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
     }))?;
 
+    let evm_version = match arguments.evm_version {
+        Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
+            evm_version.as_str(),
+        )?),
+        None => None,
+    };
+
     let mut optimizer_settings = match arguments.optimization {
         Some(mode) => era_compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
         None => era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -138,6 +145,7 @@ fn main_inner() -> anyhow::Result<()> {
             input_files.as_slice(),
             arguments.libraries,
             &mut solc,
+            evm_version,
             !arguments.disable_solc_optimizer,
             optimizer_settings,
             arguments.force_evmla,
@@ -158,6 +166,7 @@ fn main_inner() -> anyhow::Result<()> {
             input_files.as_slice(),
             arguments.libraries,
             &mut solc,
+            evm_version,
             !arguments.disable_solc_optimizer,
             optimizer_settings,
             arguments.force_evmla,

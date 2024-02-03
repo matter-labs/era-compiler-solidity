@@ -19,8 +19,8 @@ pub struct Metadata {
     pub solc_zkvm_edition: Option<semver::Version>,
     /// The EraVM compiler version.
     pub zk_version: semver::Version,
-    /// The EraVM compiler stringified optimizer settings.
-    pub optimizer_settings: String,
+    /// The EraVM compiler optimizer settings.
+    pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 }
 
 impl Metadata {
@@ -39,7 +39,7 @@ impl Metadata {
             solc_version,
             solc_zkvm_edition,
             zk_version,
-            optimizer_settings: optimizer_settings.to_string(),
+            optimizer_settings,
         }
     }
 }
