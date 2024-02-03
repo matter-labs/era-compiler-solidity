@@ -115,13 +115,13 @@ impl Assignment {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn into_llvm(
         mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         let value = match self.initializer.into_llvm(context)? {
             Some(value) => value,
@@ -155,7 +155,7 @@ where
                 &[
                     context.field_const(0),
                     context
-                        .integer_type(compiler_common::BIT_LENGTH_X32)
+                        .integer_type(era_compiler_common::BIT_LENGTH_X32)
                         .const_int(index as u64, false),
                 ],
                 context.field_type().as_basic_type_enum(),

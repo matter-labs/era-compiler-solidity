@@ -148,67 +148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler-common"
-version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#e1cb77aebf7006faf1a413099d1b9b241e571ce1"
-dependencies = [
- "anyhow",
- "serde",
- "serde_json",
- "serde_stacker",
-]
-
-[[package]]
-name = "compiler-llvm-context"
-version = "1.3.3"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#ffba25ef45c424b9807a483e0408f5a82fe8e94e"
-dependencies = [
- "anyhow",
- "compiler-common",
- "hex",
- "inkwell",
- "itertools",
- "md5",
- "num",
- "once_cell",
- "regex",
- "semver",
- "serde",
- "sha2 0.10.8",
- "sha3 0.10.8",
- "zkevm-assembly",
- "zkevm_opcode_defs",
-]
-
-[[package]]
-name = "compiler-solidity"
-version = "1.3.23"
-dependencies = [
- "anyhow",
- "colored",
- "compiler-common",
- "compiler-llvm-context",
- "hex",
- "inkwell",
- "md5",
- "mimalloc",
- "num",
- "once_cell",
- "path-slash",
- "rand",
- "rayon",
- "regex",
- "semver",
- "serde",
- "serde_json",
- "sha3 0.10.8",
- "structopt",
- "thiserror",
- "which",
- "zkevm-assembly",
-]
-
-[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -353,6 +292,67 @@ name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
+
+[[package]]
+name = "era-compiler-common"
+version = "1.5.0"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#c947120df4f41dcaca17d307cb974d2ca1995a03"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+ "serde_stacker",
+]
+
+[[package]]
+name = "era-compiler-llvm-context"
+version = "1.3.3"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#57593e06328d52329ad4aab806303be5114ef413"
+dependencies = [
+ "anyhow",
+ "era-compiler-common",
+ "hex",
+ "inkwell",
+ "itertools",
+ "md5",
+ "num",
+ "once_cell",
+ "regex",
+ "semver",
+ "serde",
+ "sha2 0.10.8",
+ "sha3 0.10.8",
+ "zkevm-assembly",
+ "zkevm_opcode_defs",
+]
+
+[[package]]
+name = "era-compiler-solidity"
+version = "1.3.23"
+dependencies = [
+ "anyhow",
+ "colored",
+ "era-compiler-common",
+ "era-compiler-llvm-context",
+ "hex",
+ "inkwell",
+ "md5",
+ "mimalloc",
+ "num",
+ "once_cell",
+ "path-slash",
+ "rand",
+ "rayon",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha3 0.10.8",
+ "structopt",
+ "thiserror",
+ "which",
+ "zkevm-assembly",
+]
 
 [[package]]
 name = "errno"
@@ -545,9 +545,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.2.1"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "433de089bd45971eecf4668ee0ee8f4cec17db4f8bd8f7bc3197a6ce37aa7d9b"
+checksum = "824b2ae422412366ba479e8111fd301f7b5faece8149317bb81925979a53f520"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -556,7 +556,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#f4d2784d4410559112e0d743910805df4eb13d78"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -570,7 +570,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.6.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#f4d2784d4410559112e0d743910805df4eb13d78"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1056,9 +1056,9 @@ checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
 
 [[package]]
 name = "rustix"
-version = "0.38.30"
+version = "0.38.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "322394588aaf33c24007e8bb3238ee3e4c5c09c084ab32bc73890b99ff326bca"
+checksum = "6ea3e1a662af26cd7a3ba09c0297a31af215563ecf42817c98df621387f4e949"
 dependencies = [
  "bitflags 2.4.2",
  "errno",
@@ -1576,9 +1576,9 @@ checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
 
 [[package]]
 name = "winnow"
-version = "0.5.36"
+version = "0.5.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "818ce546a11a9986bc24f93d0cdf38a8a1a400f1473ea8c82e59f6e0ffab9249"
+checksum = "a7cad8365489051ae9f054164e459304af2e7e9bb407c958076c8bf4aef52da5"
 dependencies = [
  "memchr",
 ]

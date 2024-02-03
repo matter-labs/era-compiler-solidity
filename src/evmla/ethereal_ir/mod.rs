@@ -37,7 +37,7 @@ pub struct EtherealIR {
     /// The all-inlined function.
     pub entry_function: Function,
     /// The recursive functions.
-    pub recursive_functions: BTreeMap<compiler_llvm_context::EraVMFunctionBlockKey, Function>,
+    pub recursive_functions: BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Function>,
 }
 
 impl EtherealIR {
@@ -53,7 +53,7 @@ impl EtherealIR {
     pub fn new(
         solc_version: semver::Version,
         extra_metadata: ExtraMetadata,
-        blocks: HashMap<compiler_llvm_context::EraVMFunctionBlockKey, Block>,
+        blocks: HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
     ) -> anyhow::Result<Self> {
         let mut entry_function = Function::new(solc_version.clone(), FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
@@ -78,9 +78,9 @@ impl EtherealIR {
     ///
     pub fn get_blocks(
         solc_version: semver::Version,
-        code_type: compiler_llvm_context::EraVMCodeType,
+        code_type: era_compiler_llvm_context::EraVMCodeType,
         instructions: &[Instruction],
-    ) -> anyhow::Result<HashMap<compiler_llvm_context::EraVMFunctionBlockKey, Block>> {
+    ) -> anyhow::Result<HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>> {
         let mut blocks = HashMap::with_capacity(Self::BLOCKS_HASHMAP_DEFAULT_CAPACITY);
         let mut offset = 0;
 
@@ -91,7 +91,10 @@ impl EtherealIR {
                 &instructions[offset..],
             )?;
             blocks.insert(
-                compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, block.key.tag.clone()),
+                era_compiler_llvm_context::EraVMFunctionBlockKey::new(
+                    code_type,
+                    block.key.tag.clone(),
+                ),
                 block,
             );
             offset += size;
@@ -101,13 +104,13 @@ impl EtherealIR {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for EtherealIR
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for EtherealIR
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn declare(
         &mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         self.entry_function.declare(context)?;
 
@@ -118,7 +121,10 @@ where
         Ok(())
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         context.evmla_mut().stack = vec![];
 
         self.entry_function.into_llvm(context)?;

@@ -81,13 +81,13 @@ impl IR {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for IR
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IR
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn declare(
         &mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         match self {
             Self::Yul(inner) => inner.declare(context),
@@ -97,7 +97,10 @@ where
         }
     }
 
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         match self {
             Self::Yul(inner) => inner.into_llvm(context),
             Self::EVMLA(inner) => inner.into_llvm(context),
