@@ -63,6 +63,10 @@ pub struct Arguments {
     #[structopt(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
+    /// Disable the system request memoization.
+    #[structopt(long = "disable-system-request-memoization")]
+    pub disable_system_request_memoization: bool,
+
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
     /// Beware that it will prevent libraries from being inlined.
@@ -74,6 +78,11 @@ pub struct Arguments {
     /// LLVM IR mode: `solc` is unused.
     #[structopt(long = "solc")]
     pub solc: Option<String>,
+
+    /// The EVM target version to generate IR for.
+    /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
+    #[structopt(long = "evm-version")]
+    pub evm_version: Option<String>,
 
     /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
@@ -230,6 +239,12 @@ impl Arguments {
                 );
             }
 
+            if self.evm_version.is_some() {
+                anyhow::bail!(
+                    "`evm-version` is not used in Yul, LLVM IR and EraVM assembly modes."
+                );
+            }
+
             if self.force_evmla {
                 anyhow::bail!("EVM legacy assembly mode is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
@@ -259,6 +274,9 @@ impl Arguments {
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
             }
+            if self.disable_system_request_memoization {
+                anyhow::bail!("Disabling the system request memoization is not supported in EraVM assembly mode.");
+            }
         }
 
         if self.combined_json.is_some() {
@@ -282,6 +300,9 @@ impl Arguments {
             if !self.libraries.is_empty() {
                 anyhow::bail!("Libraries must be passed via standard JSON input.");
             }
+            if self.evm_version.is_some() {
+                anyhow::bail!("EVM version must be passed via standard JSON input.");
+            }
 
             if self.output_directory.is_some() {
                 anyhow::bail!("Output directory cannot be used in standard JSON mode.");
@@ -300,6 +321,11 @@ impl Arguments {
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!(
                     "Falling back to -Oz must specified in standard JSON input settings."
+                );
+            }
+            if self.disable_system_request_memoization {
+                anyhow::bail!(
+                    "Disabling the system request memoization must specified in standard JSON input settings."
                 );
             }
             if self.metadata_hash.is_some() {

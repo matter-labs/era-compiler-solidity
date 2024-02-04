@@ -80,10 +80,10 @@ impl Literal {
     ///
     pub fn into_llvm<'ctx, D>(
         self,
-        context: &compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<compiler_llvm_context::EraVMArgument<'ctx>>
+        context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
+    ) -> anyhow::Result<era_compiler_llvm_context::EraVMArgument<'ctx>>
     where
-        D: compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
         match self.inner {
             LexicalLiteral::Boolean(inner) => {
@@ -105,7 +105,7 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                Ok(compiler_llvm_context::EraVMArgument::new_with_constant(
+                Ok(era_compiler_llvm_context::EraVMArgument::new_with_constant(
                     value, constant,
                 ))
             }
@@ -125,17 +125,18 @@ impl Literal {
                 .as_basic_value_enum();
 
                 let constant = match inner {
-                    IntegerLiteral::Decimal { ref inner } => {
-                        num::BigUint::from_str_radix(inner.as_str(), compiler_common::BASE_DECIMAL)
-                    }
+                    IntegerLiteral::Decimal { ref inner } => num::BigUint::from_str_radix(
+                        inner.as_str(),
+                        era_compiler_common::BASE_DECIMAL,
+                    ),
                     IntegerLiteral::Hexadecimal { ref inner } => num::BigUint::from_str_radix(
                         &inner["0x".len()..],
-                        compiler_common::BASE_HEXADECIMAL,
+                        era_compiler_common::BASE_HEXADECIMAL,
                     ),
                 }
                 .expect("Always valid");
 
-                Ok(compiler_llvm_context::EraVMArgument::new_with_constant(
+                Ok(era_compiler_llvm_context::EraVMArgument::new_with_constant(
                     value, constant,
                 ))
             }
@@ -147,7 +148,7 @@ impl Literal {
                     string.clone()
                 } else {
                     let mut hex_string =
-                        String::with_capacity(compiler_common::BYTE_LENGTH_FIELD * 2);
+                        String::with_capacity(era_compiler_common::BYTE_LENGTH_FIELD * 2);
                     let mut index = 0;
                     loop {
                         if index >= string.len() {
@@ -164,7 +165,7 @@ impl Literal {
                                 let codepoint_str = &string[index + 1..index + 5];
                                 let codepoint = u32::from_str_radix(
                                     codepoint_str,
-                                    compiler_common::BASE_HEXADECIMAL,
+                                    era_compiler_common::BASE_HEXADECIMAL,
                                 )
                                 .map_err(|error| {
                                     anyhow::anyhow!(
@@ -208,16 +209,16 @@ impl Literal {
                     hex_string
                 };
 
-                if hex_string.len() > compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return Ok(compiler_llvm_context::EraVMArgument::new_with_original(
+                if hex_string.len() > era_compiler_common::BYTE_LENGTH_FIELD * 2 {
+                    return Ok(era_compiler_llvm_context::EraVMArgument::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
                     ));
                 }
 
-                if hex_string.len() < compiler_common::BYTE_LENGTH_FIELD * 2 {
+                if hex_string.len() < era_compiler_common::BYTE_LENGTH_FIELD * 2 {
                     hex_string.push_str(
-                        "0".repeat((compiler_common::BYTE_LENGTH_FIELD * 2) - hex_string.len())
+                        "0".repeat((era_compiler_common::BYTE_LENGTH_FIELD * 2) - hex_string.len())
                             .as_str(),
                     );
                 }
@@ -229,7 +230,7 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                Ok(compiler_llvm_context::EraVMArgument::new_with_original(
+                Ok(era_compiler_llvm_context::EraVMArgument::new_with_original(
                     value, string,
                 ))
             }

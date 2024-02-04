@@ -68,11 +68,14 @@ impl ForLoop {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
-    fn into_llvm(self, context: &mut compiler_llvm_context::EraVMContext<D>) -> anyhow::Result<()> {
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
         self.initializer.into_llvm(context)?;
 
         let condition_block = context.append_basic_block("for_condition");

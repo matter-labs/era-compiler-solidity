@@ -31,7 +31,7 @@ contract Test {
         BTreeMap::new(),
         None,
         SolcPipeline::Yul,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 
@@ -87,7 +87,7 @@ contract Test {
         BTreeMap::new(),
         None,
         SolcPipeline::EVMLA,
-        compiler_llvm_context::OptimizerSettings::cycles(),
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
     assert!(

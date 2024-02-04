@@ -78,9 +78,12 @@ impl Instruction {
             Name::MLOAD => 1,
             Name::MSTORE => 2,
             Name::MSTORE8 => 2,
+            Name::MCOPY => 3,
 
             Name::SLOAD => 1,
             Name::SSTORE => 2,
+            Name::TLOAD => 1,
+            Name::TSTORE => 2,
             Name::PUSHIMMUTABLE => 0,
             Name::ASSIGNIMMUTABLE => {
                 if version.minor >= 8 {
@@ -121,6 +124,7 @@ impl Instruction {
             Name::BALANCE => 1,
 
             Name::BLOCKHASH => 1,
+            Name::BLOBHASH => 1,
 
             Name::EXTCODECOPY => 4,
 
@@ -228,6 +232,7 @@ impl Instruction {
             Name::MLOAD => 1,
 
             Name::SLOAD => 1,
+            Name::TLOAD => 1,
             Name::PUSHIMMUTABLE => 1,
 
             Name::CALLDATALOAD => 1,
@@ -264,12 +269,14 @@ impl Instruction {
             Name::ORIGIN => 1,
             Name::CHAINID => 1,
             Name::BLOCKHASH => 1,
+            Name::BLOBHASH => 1,
             Name::DIFFICULTY => 1,
             Name::PREVRANDAO => 1,
             Name::COINBASE => 1,
             Name::MSIZE => 1,
 
             Name::BASEFEE => 1,
+            Name::BLOBBASEFEE => 1,
             Name::PC => 1,
 
             Name::RecursiveCall { output_size, .. } => output_size,
@@ -302,7 +309,7 @@ impl Instruction {
                     ..
                 } => {
                     let mut key_extended =
-                        "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2 - value.len());
+                        "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2 - value.len());
                     key_extended.push_str(value.as_str());
 
                     *value = mapping.get(key_extended.as_str()).cloned().ok_or_else(|| {
@@ -335,11 +342,11 @@ impl Instruction {
     ///
     pub fn recursive_call(
         name: String,
-        entry_key: compiler_llvm_context::EraVMFunctionBlockKey,
+        entry_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
         stack_hash: md5::Digest,
         input_size: usize,
         output_size: usize,
-        return_address: compiler_llvm_context::EraVMFunctionBlockKey,
+        return_address: era_compiler_llvm_context::EraVMFunctionBlockKey,
         previous: &Self,
     ) -> Self {
         Self {

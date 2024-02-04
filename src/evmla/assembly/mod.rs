@@ -51,7 +51,7 @@ impl Assembly {
     ///
     pub fn keccak256(&self) -> String {
         let json = serde_json::to_vec(self).expect("Always valid");
-        compiler_llvm_context::eravm_utils::keccak256(json.as_slice())
+        era_compiler_llvm_context::eravm_utils::keccak256(json.as_slice())
     }
 
     ///
@@ -103,7 +103,7 @@ impl Assembly {
         hash_data_mapping: &BTreeMap<String, String>,
     ) -> anyhow::Result<BTreeMap<String, String>> {
         let mut index_path_mapping = BTreeMap::new();
-        let index = "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2);
+        let index = "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2);
         index_path_mapping.insert(index, full_path.to_owned());
 
         let dependencies = match self.data.as_mut() {
@@ -116,7 +116,7 @@ impl Assembly {
             }
 
             let mut index_extended =
-                "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2 - index.len());
+                "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2 - index.len());
             index_extended.push_str(index.as_str());
 
             *data = match data {
@@ -154,7 +154,7 @@ impl Assembly {
         hash_data_mapping: &BTreeMap<String, String>,
     ) -> anyhow::Result<BTreeMap<String, String>> {
         let mut index_path_mapping = BTreeMap::new();
-        let index = "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2);
+        let index = "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2);
         index_path_mapping.insert(index, full_path.to_owned());
 
         let dependencies = match self
@@ -169,7 +169,7 @@ impl Assembly {
         };
         for (index, data) in dependencies.iter_mut() {
             let mut index_extended =
-                "0".repeat(compiler_common::BYTE_LENGTH_FIELD * 2 - index.len());
+                "0".repeat(era_compiler_common::BYTE_LENGTH_FIELD * 2 - index.len());
             index_extended.push_str(index.as_str());
 
             *data = match data {
@@ -199,28 +199,28 @@ impl Assembly {
     }
 }
 
-impl<D> compiler_llvm_context::EraVMWriteLLVM<D> for Assembly
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assembly
 where
-    D: compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::EraVMDependency + Clone,
 {
     fn declare(
         &mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        let mut entry = compiler_llvm_context::EraVMEntryFunction::default();
+        let mut entry = era_compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
 
-        let mut runtime = compiler_llvm_context::EraVMRuntime::new(
-            compiler_llvm_context::EraVMAddressSpace::Heap,
+        let mut runtime = era_compiler_llvm_context::EraVMRuntime::new(
+            era_compiler_llvm_context::EraVMAddressSpace::Heap,
         );
         runtime.declare(context)?;
 
-        compiler_llvm_context::EraVMDeployCodeFunction::new(
-            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
+        era_compiler_llvm_context::EraVMDeployCodeFunction::new(
+            era_compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
-        compiler_llvm_context::EraVMRuntimeCodeFunction::new(
-            compiler_llvm_context::EraVMDummyLLVMWritable::default(),
+        era_compiler_llvm_context::EraVMRuntimeCodeFunction::new(
+            era_compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
 
@@ -233,7 +233,7 @@ where
 
     fn into_llvm(
         mut self,
-        context: &mut compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
 
@@ -242,7 +242,7 @@ where
         }
         let deploy_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::EraVMCodeType::Deploy,
+            era_compiler_llvm_context::EraVMCodeType::Deploy,
             self.code
                 .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
@@ -269,7 +269,7 @@ where
         };
         let runtime_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            compiler_llvm_context::EraVMCodeType::Runtime,
+            era_compiler_llvm_context::EraVMCodeType::Runtime,
             runtime_code_instructions.as_slice(),
         )?;
 
@@ -284,12 +284,12 @@ where
         ethereal_ir.declare(context)?;
         ethereal_ir.into_llvm(context)?;
 
-        compiler_llvm_context::EraVMDeployCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::EraVMCodeType::Deploy,
+        era_compiler_llvm_context::EraVMDeployCodeFunction::new(EntryLink::new(
+            era_compiler_llvm_context::EraVMCodeType::Deploy,
         ))
         .into_llvm(context)?;
-        compiler_llvm_context::EraVMRuntimeCodeFunction::new(EntryLink::new(
-            compiler_llvm_context::EraVMCodeType::Runtime,
+        era_compiler_llvm_context::EraVMRuntimeCodeFunction::new(EntryLink::new(
+            era_compiler_llvm_context::EraVMCodeType::Runtime,
         ))
         .into_llvm(context)?;
 

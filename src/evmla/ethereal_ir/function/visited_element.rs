@@ -10,7 +10,7 @@ use std::cmp::Ordering;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VisitedElement {
     /// The block key.
-    pub block_key: compiler_llvm_context::EraVMFunctionBlockKey,
+    pub block_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
     /// The initial stack state hash.
     pub stack_hash: md5::Digest,
 }
@@ -20,7 +20,7 @@ impl VisitedElement {
     /// A shortcut constructor.
     ///
     pub fn new(
-        block_key: compiler_llvm_context::EraVMFunctionBlockKey,
+        block_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
         stack_hash: md5::Digest,
     ) -> Self {
         Self {
@@ -40,20 +40,20 @@ impl Ord for VisitedElement {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self.block_key.code_type, other.block_key.code_type) {
             (
-                compiler_llvm_context::EraVMCodeType::Deploy,
-                compiler_llvm_context::EraVMCodeType::Runtime,
+                era_compiler_llvm_context::EraVMCodeType::Deploy,
+                era_compiler_llvm_context::EraVMCodeType::Runtime,
             ) => Ordering::Less,
             (
-                compiler_llvm_context::EraVMCodeType::Runtime,
-                compiler_llvm_context::EraVMCodeType::Deploy,
+                era_compiler_llvm_context::EraVMCodeType::Runtime,
+                era_compiler_llvm_context::EraVMCodeType::Deploy,
             ) => Ordering::Greater,
             (
-                compiler_llvm_context::EraVMCodeType::Deploy,
-                compiler_llvm_context::EraVMCodeType::Deploy,
+                era_compiler_llvm_context::EraVMCodeType::Deploy,
+                era_compiler_llvm_context::EraVMCodeType::Deploy,
             )
             | (
-                compiler_llvm_context::EraVMCodeType::Runtime,
-                compiler_llvm_context::EraVMCodeType::Runtime,
+                era_compiler_llvm_context::EraVMCodeType::Runtime,
+                era_compiler_llvm_context::EraVMCodeType::Runtime,
             ) => {
                 let tag_comparison = self.block_key.tag.cmp(&other.block_key.tag);
                 if tag_comparison == Ordering::Equal {

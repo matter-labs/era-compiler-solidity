@@ -62,6 +62,7 @@ impl Input {
     #[allow(clippy::too_many_arguments)]
     pub fn try_from_paths(
         language: Language,
+        evm_version: Option<era_compiler_common::EVMVersion>,
         paths: &[PathBuf],
         library_map: Vec<String>,
         remappings: Option<BTreeSet<String>>,
@@ -87,6 +88,7 @@ impl Input {
             language,
             sources,
             settings: Settings::new(
+                evm_version,
                 libraries,
                 remappings,
                 output_selection,
@@ -105,6 +107,7 @@ impl Input {
     ///
     #[allow(clippy::too_many_arguments)]
     pub fn try_from_sources(
+        evm_version: Option<era_compiler_common::EVMVersion>,
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: Option<BTreeSet<String>>,
@@ -123,6 +126,7 @@ impl Input {
             language: Language::Solidity,
             sources,
             settings: Settings::new(
+                evm_version,
                 libraries,
                 remappings,
                 output_selection,
