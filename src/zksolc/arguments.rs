@@ -79,6 +79,11 @@ pub struct Arguments {
     #[structopt(long = "solc")]
     pub solc: Option<String>,
 
+    /// The EVM target version to generate IR for.
+    /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
+    #[structopt(long = "evm-version")]
+    pub evm_version: Option<String>,
+
     /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
     #[structopt(short = "l", long = "libraries")]
@@ -242,6 +247,12 @@ impl Arguments {
                 );
             }
 
+            if self.evm_version.is_some() {
+                anyhow::bail!(
+                    "`evm-version` is not used in Yul, LLVM IR and EraVM assembly modes."
+                );
+            }
+
             if self.force_evmla {
                 anyhow::bail!("EVM legacy assembly mode is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
@@ -299,6 +310,9 @@ impl Arguments {
             }
             if !self.libraries.is_empty() {
                 anyhow::bail!("Libraries must be passed via standard JSON input.");
+            }
+            if self.evm_version.is_some() {
+                anyhow::bail!("EVM version must be passed via standard JSON input.");
             }
 
             if self.output_directory.is_some() {
