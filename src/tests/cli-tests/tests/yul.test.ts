@@ -60,7 +60,7 @@ describe("Run with double yul options", () => {
 });
 
 //id1821
-describe("Run with incompatible input format", () => {
+describe("Run with incompatible input format - solidity contract", () => {
   const command = `zksolc ${paths.pathToBasicSolContract} --yul`;
   const result = executeCommand(command);
 
@@ -81,7 +81,7 @@ describe("Run with incompatible input format", () => {
 
 //id1819:1
 describe("Run with incompatible json modes --combined-json", () => {
-  const command = `zksolc ${paths.pathToBasicSolContract} --yul --combined-json anyarg`;
+  const command = `zksolc ${paths.pathToBasicYulContract} --yul --combined-json anyarg`;
   const result = executeCommand(command);
 
   it("Valid command exit code = 1", () => {
@@ -93,7 +93,7 @@ describe("Run with incompatible json modes --combined-json", () => {
   });
 
   it("solc exit code == zksolc exit code", () => {
-      const command = `solc ${paths.pathToBasicSolContract} --yul --combined-json anyarg`;
+      const command = `solc ${paths.pathToBasicYulContract} --yul --combined-json anyarg`;
       const solcResult = executeCommand(command);
       expect(solcResult.exitCode).toBe(result.exitCode);
   });
@@ -101,7 +101,7 @@ describe("Run with incompatible json modes --combined-json", () => {
 
 //id1819:2
 describe("Run with incompatible json modes --standard-json", () => {
-  const command = `zksolc ${paths.pathToBasicSolContract} --yul --standard-json`;
+  const command = `zksolc ${paths.pathToBasicYulContract} --yul --standard-json`;
   const result = executeCommand(command);
 
   it("Valid command exit code = 1", () => {
@@ -113,7 +113,7 @@ describe("Run with incompatible json modes --standard-json", () => {
   });
 
   it("solc exit code == zksolc exit code", () => {
-      const command = `solc ${paths.pathToBasicSolContract} --yul --standard-json`;
+      const command = `solc ${paths.pathToBasicYulContract} --yul --standard-json`;
       const solcResult = executeCommand(command);
       expect(solcResult.exitCode).toBe(result.exitCode);
   });
