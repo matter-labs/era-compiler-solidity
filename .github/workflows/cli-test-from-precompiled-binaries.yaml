@@ -10,16 +10,16 @@ on:
         type: string
         description: "zksolc version, (repo: https://github.com/matter-labs/zksolc-bin/raw/main) e.g. 1.3.23"
         required: true
-        default: "1.3.23"
+        default: "1.3.22"
       solc:
         type: string
         description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases) e.g. 0.8.23"
         required: true
-        default: "0.8.24"
+        default: "0.8.23"
 
 env:
-  ZKSOLC_VERSION: ${{ github.event.inputs.zksolc || '1.3.23'}}
-  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.24' }}
+  ZKSOLC_VERSION: ${{ github.event.inputs.zksolc || '1.3.22'}}
+  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.23' }}
 
 jobs:
   build_macos_amd64:

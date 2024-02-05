@@ -12,10 +12,10 @@ on:
         type: string
         description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases) e.g. 0.8.23"
         required: true
-        default: "0.8.24"
+        default: "0.8.23"
 
 env:
-  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.24' }}
+  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.23' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
