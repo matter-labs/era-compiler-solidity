@@ -281,8 +281,53 @@ impl Contract {
                     metadata_json,
                 ))
             }
-            IR::EVMLA(ref evmla) => {
-                unimplemented!()
+            IR::EVMLA(mut evmla) => {
+                let runtime_code_assembly = evmla.assembly.get_runtime_code()?.to_owned();
+                let deploy_code_assembly = evmla.assembly;
+
+                let [deploy_build, runtime_build]: [anyhow::Result<era_compiler_llvm_context::EVMBuild>; 2] = [
+                    (era_compiler_llvm_context::CodeType::Deploy, deploy_code_assembly),
+                    (era_compiler_llvm_context::CodeType::Runtime, runtime_code_assembly),
+                ].into_iter().map(|(code_type, mut code)| {
+                    let llvm = inkwell::context::Context::create();
+                    let module = llvm
+                        .create_module(format!("{}.{}", self.path, code_type).as_str());
+                    let mut context = era_compiler_llvm_context::EVMContext::new(
+                        &llvm,
+                        module,
+                        code_type,
+                        optimizer.clone(),
+                        Some(project.clone()),
+                        include_metadata_hash,
+                        debug_config.clone(),
+                    );
+                    code.declare(&mut context).map_err(|error| {
+                        anyhow::anyhow!(
+                            "The contract `{}` deploy code LLVM IR generator declaration pass error: {}",
+                            self.path,
+                            error
+                        )
+                    })?;
+                    code
+                        .into_llvm(&mut context)
+                        .map_err(|error| {
+                            anyhow::anyhow!(
+                            "The contract `{}` deploy code LLVM IR generator definition pass error: {}",
+                            self.path,
+                            error
+                        )
+                        })?;
+                    let build = context.build(self.path.as_str(), metadata_hash)?;
+                    Ok(build)
+                }).collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>().try_into().expect("Always valid");
+
+                Ok(EVMContractBuild::new(
+                    self.path,
+                    identifier,
+                    deploy_build?,
+                    runtime_build?,
+                    metadata_json,
+                ))
             }
             IR::LLVMIR(ref llvm_ir) => {
                 let llvm = inkwell::context::Context::create();

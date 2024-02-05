@@ -74,6 +74,25 @@ impl Assembly {
     }
 
     ///
+    /// Returns the runtime code from the deploy code assembly.
+    ///
+    pub fn get_runtime_code(&self) -> anyhow::Result<&Assembly> {
+        match self
+            .data
+            .and_then(|data| data.get("0"))
+            .ok_or_else(|| anyhow::anyhow!("Runtime code data not found"))?
+        {
+            Data::Assembly(assembly) => Ok(assembly),
+            Data::Hash(hash) => {
+                anyhow::bail!("Expected runtime code, found hash `{}`", hash);
+            }
+            Data::Path(path) => {
+                anyhow::bail!("Expected runtime code, found path `{}`", path);
+            }
+        }
+    }
+
+    ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
@@ -292,6 +311,77 @@ where
             era_compiler_llvm_context::CodeType::Runtime,
         ))
         .into_llvm(context)?;
+
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Assembly
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let mut entry = era_compiler_llvm_context::EVMEntryFunction::default();
+        entry.declare(context)?;
+        entry.into_llvm(context)?;
+        Ok(())
+    }
+
+    fn into_llvm(
+        mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let full_path = self.full_path().to_owned();
+
+        if let Some(debug_config) = context.debug_config() {
+            debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
+        }
+        let deploy_code_blocks = EtherealIR::get_blocks(
+            context.evmla().version.to_owned(),
+            era_compiler_llvm_context::CodeType::Deploy,
+            self.code
+                .as_deref()
+                .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
+        )?;
+
+        let data = self
+            .data
+            .ok_or_else(|| anyhow::anyhow!("Runtime code data not found"))?
+            .remove("0")
+            .expect("Always exists");
+        if let Some(debug_config) = context.debug_config() {
+            debug_config.dump_evmla(full_path.as_str(), None, data.to_string().as_str())?;
+        }
+        let runtime_code_instructions = match data {
+            Data::Assembly(assembly) => assembly
+                .code
+                .ok_or_else(|| anyhow::anyhow!("Runtime code instructions not found"))?,
+            Data::Hash(hash) => {
+                anyhow::bail!("Expected runtime code instructions, found hash `{}`", hash)
+            }
+            Data::Path(path) => {
+                anyhow::bail!("Expected runtime code instructions, found path `{}`", path)
+            }
+        };
+        let runtime_code_blocks = EtherealIR::get_blocks(
+            context.evmla().version.to_owned(),
+            era_compiler_llvm_context::CodeType::Runtime,
+            runtime_code_instructions.as_slice(),
+        )?;
+
+        let extra_metadata = self.extra_metadata.take().unwrap_or_default();
+        let mut blocks = deploy_code_blocks;
+        blocks.extend(runtime_code_blocks);
+        let mut ethereal_ir =
+            EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
+        if let Some(debug_config) = context.debug_config() {
+            debug_config.dump_ethir(full_path.as_str(), None, ethereal_ir.to_string().as_str())?;
+        }
+        ethereal_ir.declare(context)?;
+        ethereal_ir.into_llvm(context)?;
 
         Ok(())
     }

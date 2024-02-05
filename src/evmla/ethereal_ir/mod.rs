@@ -137,6 +137,39 @@ where
     }
 }
 
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EtherealIR
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.entry_function.declare(context)?;
+
+        for (_key, function) in self.recursive_functions.iter_mut() {
+            function.declare(context)?;
+        }
+
+        Ok(())
+    }
+
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        context.evmla_mut().stack = vec![];
+
+        self.entry_function.into_llvm(context)?;
+
+        for (_key, function) in self.recursive_functions.into_iter() {
+            function.into_llvm(context)?;
+        }
+
+        Ok(())
+    }
+}
+
 impl std::fmt::Display for EtherealIR {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", self.entry_function)?;

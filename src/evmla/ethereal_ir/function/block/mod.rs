@@ -139,6 +139,22 @@ where
     }
 }
 
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        for element in self.elements.into_iter() {
+            element.into_llvm(context)?;
+        }
+
+        Ok(())
+    }
+}
+
 impl std::fmt::Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(
