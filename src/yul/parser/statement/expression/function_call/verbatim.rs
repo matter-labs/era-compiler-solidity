@@ -2,7 +2,7 @@
 //! Translates the verbatim simulations.
 //!
 
-use anyhow::Ok;
+use era_compiler_llvm_context::IContext;
 
 use crate::yul::parser::statement::expression::function_call::FunctionCall;
 

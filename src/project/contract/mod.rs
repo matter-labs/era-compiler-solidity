@@ -11,6 +11,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use sha3::Digest;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::project::Project;

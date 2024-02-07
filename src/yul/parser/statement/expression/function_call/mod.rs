@@ -11,6 +11,8 @@ use inkwell::values::BasicValue;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -151,9 +153,8 @@ impl FunctionCall {
                 })?;
                 let r#return = function.borrow().r#return();
 
-                if let era_compiler_llvm_context::EraVMFunctionReturn::Compound {
-                    pointer, ..
-                } = r#return
+                if let era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } =
+                    r#return
                 {
                     let pointer = context.build_alloca(
                         pointer.r#type,
@@ -189,11 +190,10 @@ impl FunctionCall {
                     format!("{name}_near_call").as_str(),
                 );
 
-                if let era_compiler_llvm_context::EraVMFunctionReturn::Compound {
-                    pointer, ..
-                } = r#return
+                if let era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } =
+                    r#return
                 {
-                    let pointer = era_compiler_llvm_context::EraVMPointer::new(
+                    let pointer = era_compiler_llvm_context::Pointer::new(
                         pointer.r#type,
                         era_compiler_llvm_context::EraVMAddressSpace::Stack,
                         return_value.expect("Always exists").into_pointer_value(),
@@ -516,14 +516,14 @@ impl FunctionCall {
             }
             Name::MCopy => {
                 let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
-                let destination = era_compiler_llvm_context::EraVMPointer::new_with_offset(
+                let destination = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[0].into_int_value(),
                     "mcopy_destination",
                 );
-                let source = era_compiler_llvm_context::EraVMPointer::new_with_offset(
+                let source = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     context.byte_type(),
@@ -1571,7 +1571,7 @@ impl FunctionCall {
     fn pop_arguments<'ctx, D, const N: usize>(
         &mut self,
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<[era_compiler_llvm_context::Argument<'ctx>; N]>
+    ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
         D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
@@ -2300,7 +2300,7 @@ impl FunctionCall {
     fn pop_arguments_evm<'ctx, D, const N: usize>(
         &mut self,
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<[era_compiler_llvm_context::Argument<'ctx>; N]>
+    ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
         D: era_compiler_llvm_context::EVMDependency + Clone,
     {

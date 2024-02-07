@@ -11,6 +11,8 @@ use std::collections::HashSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::evmla::ethereal_ir::entry_link::EntryLink;
 use crate::evmla::ethereal_ir::EtherealIR;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
@@ -79,6 +81,7 @@ impl Assembly {
     pub fn get_runtime_code(&self) -> anyhow::Result<&Assembly> {
         match self
             .data
+            .as_ref()
             .and_then(|data| data.get("0"))
             .ok_or_else(|| anyhow::anyhow!("Runtime code data not found"))?
         {
@@ -324,7 +327,9 @@ where
         &mut self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        let mut entry = era_compiler_llvm_context::EVMEntryFunction::default();
+        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(
+            era_compiler_llvm_context::EVMDummyLLVMWritable {},
+        );
         entry.declare(context)?;
         entry.into_llvm(context)?;
         Ok(())

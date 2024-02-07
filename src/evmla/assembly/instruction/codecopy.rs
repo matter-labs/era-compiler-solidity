@@ -2,6 +2,8 @@
 //! Translates the CODECOPY use cases.
 //!
 
+use era_compiler_llvm_context::IContext;
+
 ///
 /// Translates the contract hash copying.
 ///

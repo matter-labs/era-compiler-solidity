@@ -9,6 +9,8 @@ use inkwell::types::BasicType;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -279,8 +281,8 @@ where
 
         context.set_basic_block(context.current_function().borrow().entry_block());
         match r#return {
-            era_compiler_llvm_context::EraVMFunctionReturn::None => {}
-            era_compiler_llvm_context::EraVMFunctionReturn::Primitive { pointer } => {
+            era_compiler_llvm_context::FunctionReturn::None => {}
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
                 context.build_store(pointer, r#type.into_llvm(context).const_zero());
@@ -289,7 +291,7 @@ where
                     .borrow_mut()
                     .insert_stack_pointer(identifier.inner, pointer);
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. } => {
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 for (index, identifier) in self.result.into_iter().enumerate() {
                     let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
                     let pointer = context.build_gep(
@@ -331,7 +333,7 @@ where
                 .starts_with(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
                 && matches!(
                     context.current_function().borrow().r#return(),
-                    era_compiler_llvm_context::EraVMFunctionReturn::Compound { .. }
+                    era_compiler_llvm_context::FunctionReturn::Compound { .. }
                 )
                 && context.is_system_mode()
             {
@@ -357,21 +359,21 @@ where
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
-            era_compiler_llvm_context::EraVMFunctionReturn::None => {
+            era_compiler_llvm_context::FunctionReturn::None => {
                 context.build_return(None);
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Primitive { pointer } => {
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. }
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. }
                 if context.current_function().borrow().name().starts_with(
                     era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX,
                 ) =>
             {
                 context.build_return(Some(&pointer.value));
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. } => {
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
@@ -419,8 +421,8 @@ where
 
         context.set_basic_block(context.current_function().borrow().entry_block());
         match r#return {
-            era_compiler_llvm_context::EVMFunctionReturn::None => {}
-            era_compiler_llvm_context::EVMFunctionReturn::Primitive { pointer } => {
+            era_compiler_llvm_context::FunctionReturn::None => {}
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
                 context.build_store(pointer, r#type.into_llvm_evm(context).const_zero());
@@ -429,7 +431,7 @@ where
                     .borrow_mut()
                     .insert_stack_pointer(identifier.inner, pointer);
             }
-            era_compiler_llvm_context::EVMFunctionReturn::Compound { pointer, .. } => {
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 for (index, identifier) in self.result.into_iter().enumerate() {
                     let r#type = identifier.r#type.unwrap_or_default().into_llvm_evm(context);
                     let pointer = context.build_gep(
@@ -486,14 +488,14 @@ where
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
-            era_compiler_llvm_context::EVMFunctionReturn::None => {
+            era_compiler_llvm_context::FunctionReturn::None => {
                 context.build_return(None);
             }
-            era_compiler_llvm_context::EVMFunctionReturn::Primitive { pointer } => {
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
-            era_compiler_llvm_context::EVMFunctionReturn::Compound { pointer, .. } => {
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }

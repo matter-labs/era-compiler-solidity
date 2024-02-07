@@ -9,6 +9,8 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::evmla::assembly::instruction::Instruction;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
@@ -37,7 +39,7 @@ pub struct EtherealIR {
     /// The all-inlined function.
     pub entry_function: Function,
     /// The recursive functions.
-    pub recursive_functions: BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Function>,
+    pub recursive_functions: BTreeMap<era_compiler_llvm_context::BlockKey, Function>,
 }
 
 impl EtherealIR {
@@ -53,7 +55,7 @@ impl EtherealIR {
     pub fn new(
         solc_version: semver::Version,
         extra_metadata: ExtraMetadata,
-        blocks: HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
+        blocks: HashMap<era_compiler_llvm_context::BlockKey, Block>,
     ) -> anyhow::Result<Self> {
         let mut entry_function = Function::new(solc_version.clone(), FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
@@ -80,7 +82,7 @@ impl EtherealIR {
         solc_version: semver::Version,
         code_type: era_compiler_llvm_context::CodeType,
         instructions: &[Instruction],
-    ) -> anyhow::Result<HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>> {
+    ) -> anyhow::Result<HashMap<era_compiler_llvm_context::BlockKey, Block>> {
         let mut blocks = HashMap::with_capacity(Self::BLOCKS_HASHMAP_DEFAULT_CAPACITY);
         let mut offset = 0;
 
@@ -91,10 +93,7 @@ impl EtherealIR {
                 &instructions[offset..],
             )?;
             blocks.insert(
-                era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                    code_type,
-                    block.key.tag.clone(),
-                ),
+                era_compiler_llvm_context::BlockKey::new(code_type, block.key.tag.clone()),
                 block,
             );
             offset += size;

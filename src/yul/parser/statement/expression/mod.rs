@@ -10,6 +10,8 @@ use std::collections::HashSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -109,7 +111,7 @@ impl Expression {
     pub fn into_llvm<'ctx, D>(
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<era_compiler_llvm_context::Argument<'ctx>>>
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
     where
         D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
@@ -149,14 +151,14 @@ impl Expression {
 
                 match constant {
                     Some(constant) => Ok(Some(
-                        era_compiler_llvm_context::Argument::new_with_constant(value, constant),
+                        era_compiler_llvm_context::Value::new_with_constant(value, constant),
                     )),
                     None => Ok(Some(value.into())),
                 }
             }
             Self::FunctionCall(call) => Ok(call
                 .into_llvm(context)?
-                .map(era_compiler_llvm_context::Argument::new)),
+                .map(era_compiler_llvm_context::Value::new)),
         }
     }
 
@@ -168,7 +170,7 @@ impl Expression {
     pub fn into_llvm_evm<'ctx, D>(
         self,
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<era_compiler_llvm_context::Argument<'ctx>>>
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
     where
         D: era_compiler_llvm_context::EVMDependency + Clone,
     {
@@ -203,7 +205,7 @@ impl Expression {
             }
             Self::FunctionCall(call) => Ok(call
                 .into_llvm_evm(context)?
-                .map(era_compiler_llvm_context::Argument::new)),
+                .map(era_compiler_llvm_context::Value::new)),
         }
     }
 }

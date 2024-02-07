@@ -10,7 +10,7 @@ use std::cmp::Ordering;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VisitedElement {
     /// The block key.
-    pub block_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
+    pub block_key: era_compiler_llvm_context::BlockKey,
     /// The initial stack state hash.
     pub stack_hash: md5::Digest,
 }
@@ -19,10 +19,7 @@ impl VisitedElement {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(
-        block_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
-        stack_hash: md5::Digest,
-    ) -> Self {
+    pub fn new(block_key: era_compiler_llvm_context::BlockKey, stack_hash: md5::Digest) -> Self {
         Self {
             block_key,
             stack_hash,

@@ -8,6 +8,8 @@ use std::collections::HashSet;
 
 use num::Zero;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
 
@@ -22,13 +24,13 @@ pub struct Block {
     /// The Solidity compiler version.
     pub solc_version: semver::Version,
     /// The block key.
-    pub key: era_compiler_llvm_context::EraVMFunctionBlockKey,
+    pub key: era_compiler_llvm_context::BlockKey,
     /// The block instance.
     pub instance: Option<usize>,
     /// The block elements relevant to the stack consistency.
     pub elements: Vec<Element>,
     /// The block predecessors.
-    pub predecessors: HashSet<(era_compiler_llvm_context::EraVMFunctionBlockKey, usize)>,
+    pub predecessors: HashSet<(era_compiler_llvm_context::BlockKey, usize)>,
     /// The initial stack state.
     pub initial_stack: ElementStack,
     /// The stack.
@@ -69,7 +71,7 @@ impl Block {
 
         let mut block = Self {
             solc_version: solc_version.clone(),
-            key: era_compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, tag),
+            key: era_compiler_llvm_context::BlockKey::new(code_type, tag),
             instance: None,
             elements: Vec::with_capacity(Self::ELEMENTS_VECTOR_DEFAULT_CAPACITY),
             predecessors: HashSet::with_capacity(Self::PREDECESSORS_HASHSET_DEFAULT_CAPACITY),
@@ -114,7 +116,7 @@ impl Block {
     ///
     pub fn insert_predecessor(
         &mut self,
-        key: era_compiler_llvm_context::EraVMFunctionBlockKey,
+        key: era_compiler_llvm_context::BlockKey,
         instance: usize,
     ) {
         self.predecessors.insert((key, instance));

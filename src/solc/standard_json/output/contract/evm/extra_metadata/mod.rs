@@ -26,7 +26,7 @@ impl ExtraMetadata {
     ///
     pub fn get(
         &self,
-        block_key: &era_compiler_llvm_context::EraVMFunctionBlockKey,
+        block_key: &era_compiler_llvm_context::BlockKey,
     ) -> Option<&RecursiveFunction> {
         for function in self.recursive_functions.iter() {
             match block_key.code_type {

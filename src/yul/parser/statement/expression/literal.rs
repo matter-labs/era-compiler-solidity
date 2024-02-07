@@ -81,7 +81,7 @@ impl Literal {
     pub fn into_llvm<'ctx, D>(
         self,
         context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<era_compiler_llvm_context::Argument<'ctx>>
+    ) -> anyhow::Result<era_compiler_llvm_context::Value<'ctx>>
     where
         D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
@@ -105,7 +105,7 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                Ok(era_compiler_llvm_context::Argument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -136,7 +136,7 @@ impl Literal {
                 }
                 .expect("Always valid");
 
-                Ok(era_compiler_llvm_context::Argument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -210,7 +210,7 @@ impl Literal {
                 };
 
                 if hex_string.len() > era_compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return Ok(era_compiler_llvm_context::Argument::new_with_original(
+                    return Ok(era_compiler_llvm_context::Value::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
                     ));
@@ -230,7 +230,7 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                Ok(era_compiler_llvm_context::Argument::new_with_original(
+                Ok(era_compiler_llvm_context::Value::new_with_original(
                     value, string,
                 ))
             }
@@ -245,7 +245,7 @@ impl Literal {
     pub fn into_llvm_evm<'ctx, D>(
         self,
         context: &era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<era_compiler_llvm_context::Argument<'ctx>>
+    ) -> anyhow::Result<era_compiler_llvm_context::Value<'ctx>>
     where
         D: era_compiler_llvm_context::EVMDependency + Clone,
     {
@@ -269,7 +269,7 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                Ok(era_compiler_llvm_context::Argument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -300,7 +300,7 @@ impl Literal {
                 }
                 .expect("Always valid");
 
-                Ok(era_compiler_llvm_context::Argument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -374,7 +374,7 @@ impl Literal {
                 };
 
                 if hex_string.len() > era_compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return Ok(era_compiler_llvm_context::Argument::new_with_original(
+                    return Ok(era_compiler_llvm_context::Value::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
                     ));
@@ -394,7 +394,7 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                Ok(era_compiler_llvm_context::Argument::new_with_original(
+                Ok(era_compiler_llvm_context::Value::new_with_original(
                     value, string,
                 ))
             }
