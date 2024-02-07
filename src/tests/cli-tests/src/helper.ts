@@ -1,29 +1,21 @@
-import * as shell from 'shelljs';
 import * as fs from 'fs';
+import { spawnSync } from "child_process";
 
-interface CommandResult {
-    output: string;
-    exitCode: number;
+
+export function executeCommand(command: string, args: string[]) {
+  const result = spawnSync(command, args, { encoding: 'utf-8', shell: true, stdio: 'pipe' });
+  return {
+      exitCode: result.status,
+      output: result.stdout.trim() || result.stderr.trim()
+  };
 }
 
-export const executeCommand = (command: string): CommandResult  => {
-    const result  = shell.exec(command, {async: false});
-    return {
-        exitCode: result.code,
-        output: result.stdout.trim() || result.stderr.trim(),
-    };
-};
-
-export const isFolderExist = (folder: string): boolean  => {
-    return shell.test('-d', folder);
-};
-
-export const isFileExist = (pathToFileDir: string, fileName: string, fileExtension:string): boolean  => {     
-    return shell.ls(pathToFileDir).stdout.includes(fileName + fileExtension); 
+export const isDestinationExist = (destination: string): boolean  => {
+    return fs.existsSync(destination);
 };
 
 export const isFileEmpty = (file: string): boolean  => {
-    if (fs.existsSync(file)) {
+    if (isDestinationExist(file)) {
         return (fs.readFileSync(file).length === 0);
     } 
 };

@@ -1,78 +1,98 @@
-import {executeCommand, isFolderExist, isFileExist, isFileEmpty} from "../src/helper";
+import {executeCommand, isDestinationExist, isFileEmpty} from "../src/helper";
 import { paths } from '../src/entities';
 
 
-//id1762
-describe("Run zksolc without any options", () => {
-    const command = 'zksolc';
-    const result = executeCommand(command);
+describe("Common tests", () => {
+    const zksolcCommand = 'zksolc';
+    const solcCommand = 'solc';
 
-    it("Info with help is presented", () => {
-        expect(result.output).toMatch(/(No input sources specified|Error(s) found.)/i);
+    //id1762
+    describe(`Run ${zksolcCommand} without any args`, () => {
+        const args = [''];
+        const result = executeCommand(zksolcCommand, args);
+
+        it("Info with help is presented", () => {
+            expect(result.output).toMatch(/(No input sources specified|Error(s) found.)/i);
+        });
+
+        it("Exit code = 1", () => {
+            expect(result.exitCode).toBe(1);
+        });
+
+        it("solc exit code == zksolc exit code", () => {
+            const solcResult = executeCommand(solcCommand, args);
+            expect(solcResult.exitCode).toBe(result.exitCode);
+        });
     });
 
-    it("Exit code = 1", () => {
-        expect(result.exitCode).toBe(1);
+    //#1713
+    describe(`Default run of ${zksolcCommand} from the help`, () => {
+        const args = [
+            `"${paths.pathToBasicSolContract}"`,
+            `-O3`,
+            `--bin`,
+            `--output-dir`,
+            `"${paths.pathToOutputDir}"`
+        ]; // potential issue on zksolc with full path on Windows cmd
+        const result = executeCommand(zksolcCommand, args);
+        
+
+        it("Compiler run successful", () => {
+            expect(result.output).toMatch(/(Compiler run successful.)/i);
+        });
+
+        it("Exit code = 0", () => {
+            expect(result.exitCode).toBe(0);
+        });
+
+        it("Output dir is created", () => {
+            expect(isDestinationExist(paths.pathToOutputDir)).toBe(true);
+        });
+
+        xit("Output file is created", () => { // a bug on windows
+            expect(isDestinationExist(paths.pathToSolBinOutputFile)).toBe(true);
+        });
+
+        it("the output file is not empty", () => {
+            expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
+        });
+
+        it("No 'Error'/'Warning'/'Fail' in the output", () => {
+            expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+        });
     });
 
-    it("solc exit code == zksolc exit code", () => {
-        const command = 'solc';
-        const solcResult = executeCommand(command);
-        expect(solcResult.exitCode).toBe(result.exitCode);
-    });
-});
+    //#1818
+    describe(`Run ${zksolcCommand} with multiple output options from the help`, () => {
+        const args = [
+            `"${paths.pathToBasicSolContract}"`,
+            `-O3`,
+            `--bin`,
+            `--asm`,
+            `--output-dir`,
+            `"${paths.pathToOutputDir}"`
+        ]; // potential issue on zksolc with full path on Windows cmd
+        const result = executeCommand(zksolcCommand, args);
 
-
-//#1713
-describe("Default run a command from the help", () => {
-
-    const command = `zksolc ${paths.pathToBasicSolContract} -O3 --bin --output-dir "${paths.pathToOutputDir}"`; // potential issue on zksolc with full path on Windows cmd
-    const result = executeCommand(command);
-
-    it("Compiler run successful", () => {
-        expect(result.output).toMatch(/(Compiler run successful.)/i);
-    });
-    it("Exit code = 0", () => {
-        expect(result.exitCode).toBe(0);
-    });
-    it("Output dir is created", () => {
-        expect(isFolderExist(paths.pathToOutputDir)).toBe(true);
-    });
-    xit("Output file is created", () => { // a bug on windows
-        expect(isFileExist(paths.pathToOutputDir, paths.contractSolFilename, paths.binExtension)).toBe(true);
-    });
-    it("the output file is not empty", () => {
-        expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
-    });
-    it("No 'Error'/'Warning'/'Fail' in the output", () => {
-        expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
-    });
-});
-
-//#1818
-describe("Run with multiple output options from the help", () => {
-
-    const command = `zksolc ${paths.pathToBasicSolContract} -O3 --bin --asm --output-dir "${paths.pathToOutputDir}"`; // potential issue on zksolc with full path on Windows cmd
-    const result = executeCommand(command);
-
-    it("Compiler run successful", () => {
-        expect(result.output).toMatch(/(Compiler run successful.)/i);
-    });
-    it("Exit code = 0", () => {
-        expect(result.exitCode).toBe(0);
-    });
-    it("Output dir is created", () => {
-        expect(isFolderExist(paths.pathToOutputDir)).toBe(true);
-    });
-    xit("Output files are created", () => { // a bug on windows
-        expect(isFileExist(paths.pathToOutputDir, paths.contractSolFilename, paths.binExtension)).toBe(true);
-        expect(isFileExist(paths.pathToOutputDir, paths.contractSolFilename, paths.asmExtension)).toBe(true);
-    });
-    it("the output files are not empty", () => {
-        expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
-        expect(isFileEmpty(paths.pathToSolAsmOutputFile)).toBe(false);
-    });
-    it("No 'Error'/'Warning'/'Fail' in the output", () => {
-        expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+        it("Compiler run successful", () => {
+            expect(result.output).toMatch(/(Compiler run successful.)/i);
+        });
+        it("Exit code = 0", () => {
+            expect(result.exitCode).toBe(0);
+        });
+        it("Output dir is created", () => {
+            expect(isDestinationExist(paths.pathToOutputDir)).toBe(true);
+        });
+        xit("Output files are created", () => { // a bug on windows
+            expect(isDestinationExist(paths.pathToSolBinOutputFile)).toBe(true);
+            expect(isDestinationExist(paths.pathToSolAsmOutputFile)).toBe(true);
+        });
+        it("the output files are not empty", () => {
+            expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
+            expect(isFileEmpty(paths.pathToSolAsmOutputFile)).toBe(false);
+        });
+        it("No 'Error'/'Warning'/'Fail' in the output", () => {
+            expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+        });
     });
 });
