@@ -177,7 +177,7 @@ impl Expression {
         match self {
             Self::Literal(literal) => literal
                 .clone()
-                .into_llvm_evm(context)
+                .into_llvm(context)
                 .map_err(|error| {
                     anyhow::anyhow!(
                         "{} Invalid literal `{}`: {}",

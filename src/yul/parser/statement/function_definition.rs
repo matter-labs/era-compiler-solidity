@@ -396,7 +396,7 @@ where
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm_evm(context).as_basic_type_enum()
+                yul_type.into_llvm(context).as_basic_type_enum()
             })
             .collect();
 
@@ -425,7 +425,7 @@ where
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
-                context.build_store(pointer, r#type.into_llvm_evm(context).const_zero());
+                context.build_store(pointer, r#type.into_llvm(context).const_zero());
                 context
                     .current_function()
                     .borrow_mut()
@@ -433,7 +433,7 @@ where
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 for (index, identifier) in self.result.into_iter().enumerate() {
-                    let r#type = identifier.r#type.unwrap_or_default().into_llvm_evm(context);
+                    let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
                     let pointer = context.build_gep(
                         pointer,
                         &[
@@ -459,7 +459,7 @@ where
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm_evm(context)
+                yul_type.into_llvm(context)
             })
             .collect();
         for (index, argument) in self.arguments.iter().enumerate() {

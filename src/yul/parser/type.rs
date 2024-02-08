@@ -5,8 +5,6 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use era_compiler_llvm_context::IContext;
-
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -73,32 +71,9 @@ impl Type {
     ///
     /// Converts the type into its LLVM.
     ///
-    pub fn into_llvm<'ctx, D>(
-        self,
-        context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> inkwell::types::IntType<'ctx>
+    pub fn into_llvm<'ctx, C>(self, context: &C) -> inkwell::types::IntType<'ctx>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
-    {
-        match self {
-            Self::Bool => context.integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN),
-            Self::Int(bitlength) => context.integer_type(bitlength),
-            Self::UInt(bitlength) => context.integer_type(bitlength),
-            Self::Custom(_) => context.field_type(),
-        }
-    }
-
-    ///
-    /// Converts the type into its LLVM.
-    ///
-    /// TODO: trait
-    ///
-    pub fn into_llvm_evm<'ctx, D>(
-        self,
-        context: &era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> inkwell::types::IntType<'ctx>
-    where
-        D: era_compiler_llvm_context::EVMDependency + Clone,
+        C: era_compiler_llvm_context::IContext<'ctx>,
     {
         match self {
             Self::Bool => context.integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN),

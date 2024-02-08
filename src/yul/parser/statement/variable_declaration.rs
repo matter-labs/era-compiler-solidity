@@ -233,7 +233,7 @@ where
     ) -> anyhow::Result<()> {
         if self.bindings.len() == 1 {
             let identifier = self.bindings.remove(0);
-            let r#type = identifier.r#type.unwrap_or_default().into_llvm_evm(context);
+            let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
             let pointer = context.build_alloca(r#type, identifier.inner.as_str());
             context
                 .current_function()
@@ -257,7 +257,7 @@ where
                 .r#type
                 .to_owned()
                 .unwrap_or_default()
-                .into_llvm_evm(context);
+                .into_llvm(context);
             let pointer = context.build_alloca(
                 yul_type.as_basic_type_enum(),
                 format!("binding_{index}_pointer").as_str(),
@@ -287,7 +287,7 @@ where
                         .r#type
                         .to_owned()
                         .unwrap_or_default()
-                        .into_llvm_evm(context)
+                        .into_llvm(context)
                         .as_basic_type_enum()
                 })
                 .collect::<Vec<inkwell::types::BasicTypeEnum<'ctx>>>()
@@ -312,7 +312,7 @@ where
                         .integer_type(era_compiler_common::BIT_LENGTH_X32)
                         .const_int(index as u64, false),
                 ],
-                binding.r#type.unwrap_or_default().into_llvm_evm(context),
+                binding.r#type.unwrap_or_default().into_llvm(context),
                 format!("binding_{index}_gep_pointer").as_str(),
             );
 

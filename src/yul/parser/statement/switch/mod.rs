@@ -209,7 +209,7 @@ where
 
         let mut branches = Vec::with_capacity(self.cases.len());
         for (index, case) in self.cases.into_iter().enumerate() {
-            let constant = case.literal.into_llvm_evm(context)?.to_llvm();
+            let constant = case.literal.into_llvm(context)?.to_llvm();
 
             let expression_block = context
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());

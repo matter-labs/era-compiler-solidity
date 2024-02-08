@@ -281,8 +281,7 @@ impl Project {
             .map_err(|error| anyhow::anyhow!("LLVM IR file {:?} reading error: {}", path, error))?;
         let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
-        let source_version =
-            SolcVersion::new_simple(era_compiler_llvm_context::eravm_const::LLVM_VERSION);
+        let source_version = SolcVersion::new_simple(era_compiler_llvm_context::LLVM_VERSION);
         let path = path.to_string_lossy().to_string();
 
         let mut project_contracts = BTreeMap::new();
