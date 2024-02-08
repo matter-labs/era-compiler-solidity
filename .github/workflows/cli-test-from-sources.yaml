@@ -2,7 +2,7 @@ name: Use sources and call the CLI testing
 on:
   pull_request:
     paths-ignore:
-      - '**/cli-tests/**'
+      - 'cli-tests/**'
       - '**/workflows/cli*'
       - '.gitignore'
       - '**/*.md'

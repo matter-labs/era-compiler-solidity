@@ -46,7 +46,7 @@ jobs:
 
       - name: Install npm packages
         run: |
-          cd src/tests/cli-tests 
+          cd cli-tests 
           npm ci
 
       - name: Download '${{ inputs.name }}' artifact
@@ -86,11 +86,11 @@ jobs:
         name: Run tests
         shell: sh
         run: |
-          cd src/tests/cli-tests
+          cd cli-tests
           npx jest --verbose --testPathPattern=${{ matrix.test-pattern }}
       
       - if: runner.os == 'Linux' || runner.os == 'macOS'
         name: Run tests
         run: |
-          cd src/tests/cli-tests 
+          cd cli-tests 
           npx jest --verbose --testPathPattern=${{ matrix.test-pattern }}

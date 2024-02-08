@@ -4,7 +4,7 @@ name: Unit Tests
 on:
   pull_request:
     paths-ignore:
-      - '**/cli-tests/**'
+      - 'cli-tests/**'
       - '**/workflows/cli*'
       - '.gitignore'
       - '**/*.md'
