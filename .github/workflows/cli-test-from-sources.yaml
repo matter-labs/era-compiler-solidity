@@ -2,7 +2,7 @@ name: Use sources and call the CLI testing
 on:
   pull_request:
     paths-ignore:
-      - '**/cli-tests/**'
+      - 'cli-tests/**'
       - '**/workflows/cli*'
       - '.gitignore'
       - '**/*.md'
@@ -10,12 +10,12 @@ on:
     inputs:
       solc:
         type: string
-        description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases) e.g. 0.8.23"
+        description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases) e.g. 0.8.24"
         required: true
-        default: "0.8.23"
+        default: "0.8.24"
 
 env:
-  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.23' }}
+  SOLC_VERSION: ${{ github.event.inputs.solc || '0.8.24' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
