@@ -55,9 +55,11 @@ impl EtherealIR {
     pub fn new(
         solc_version: semver::Version,
         extra_metadata: ExtraMetadata,
+        code_type: Option<era_compiler_llvm_context::CodeType>,
         blocks: HashMap<era_compiler_llvm_context::BlockKey, Block>,
     ) -> anyhow::Result<Self> {
-        let mut entry_function = Function::new(solc_version.clone(), FunctionType::new_initial());
+        let mut entry_function =
+            Function::new(solc_version.clone(), code_type, FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
         let mut visited_functions = BTreeSet::new();
         entry_function.traverse(

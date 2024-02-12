@@ -19,7 +19,17 @@ where
     let code_type = context
         .code_type()
         .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
-    let block_key = era_compiler_llvm_context::BlockKey::new(code_type, destination);
+    let block_key = match code_type {
+        era_compiler_llvm_context::CodeType::Deploy
+            if destination > num::BigUint::from(u32::MAX) =>
+        {
+            era_compiler_llvm_context::BlockKey::new(
+                era_compiler_llvm_context::CodeType::Runtime,
+                destination.to_owned() - num::BigUint::from(1u64 << 32),
+            )
+        }
+        code_type => era_compiler_llvm_context::BlockKey::new(code_type, destination),
+    };
 
     let block = context
         .current_function()
@@ -45,7 +55,17 @@ where
     let code_type = context
         .code_type()
         .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
-    let block_key = era_compiler_llvm_context::BlockKey::new(code_type, destination);
+    let block_key = match code_type {
+        era_compiler_llvm_context::CodeType::Deploy
+            if destination > num::BigUint::from(u32::MAX) =>
+        {
+            era_compiler_llvm_context::BlockKey::new(
+                era_compiler_llvm_context::CodeType::Runtime,
+                destination.to_owned() - num::BigUint::from(1u64 << 32),
+            )
+        }
+        code_type => era_compiler_llvm_context::BlockKey::new(code_type, destination),
+    };
 
     let condition_pointer = context
         .evmla()

@@ -49,6 +49,8 @@ pub struct Function {
     pub solc_version: semver::Version,
     /// The function name.
     pub name: String,
+    /// The optional code type. Only used for the EVM target.
+    pub code_type: Option<era_compiler_llvm_context::CodeType>,
     /// The separately labelled blocks.
     pub blocks: BTreeMap<era_compiler_llvm_context::BlockKey, Vec<Block>>,
     /// The function type.
@@ -61,7 +63,11 @@ impl Function {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(solc_version: semver::Version, r#type: Type) -> Self {
+    pub fn new(
+        solc_version: semver::Version,
+        code_type: Option<era_compiler_llvm_context::CodeType>,
+        r#type: Type,
+    ) -> Self {
         let name = match r#type {
             Type::Initial => EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME.to_string(),
             Type::Recursive {
@@ -74,6 +80,7 @@ impl Function {
         Self {
             solc_version,
             name,
+            code_type,
             blocks: BTreeMap::new(),
             r#type,
             stack_size: 0,
@@ -92,12 +99,17 @@ impl Function {
     ) -> anyhow::Result<()> {
         let mut visited_blocks = BTreeSet::new();
 
+        let code_types = match self.code_type {
+            Some(ref code_type) => vec![*code_type],
+            None => vec![
+                era_compiler_llvm_context::CodeType::Deploy,
+                era_compiler_llvm_context::CodeType::Runtime,
+            ],
+        };
+
         match self.r#type {
             Type::Initial => {
-                for code_type in [
-                    era_compiler_llvm_context::CodeType::Deploy,
-                    era_compiler_llvm_context::CodeType::Runtime,
-                ] {
+                for code_type in code_types {
                     self.consume_block(
                         blocks,
                         functions,
@@ -1052,6 +1064,7 @@ impl Function {
         if !visited_functions.contains(&visited_element) {
             let mut function = Self::new(
                 version.to_owned(),
+                Some(block_key.code_type),
                 Type::new_recursive(
                     recursive_function.name.to_owned(),
                     block_key.clone(),
@@ -1331,7 +1344,7 @@ where
     }
 }
 
-impl<'ctx, D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
 where
     D: era_compiler_llvm_context::EVMDependency + Clone,
 {

@@ -310,7 +310,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#d9b72fabade69c57c86938d778e5c3f0545def4a"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-872-integrate-an-evm-execution-environment-into-the-compiler#00c925d47ed355f929ec557952acdb655f4af68c"
 dependencies = [
  "anyhow",
  "era-compiler-common",

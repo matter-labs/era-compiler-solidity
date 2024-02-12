@@ -298,8 +298,12 @@ where
         let extra_metadata = self.extra_metadata.take().unwrap_or_default();
         let mut blocks = deploy_code_blocks;
         blocks.extend(runtime_code_blocks);
-        let mut ethereal_ir =
-            EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
+        let mut ethereal_ir = EtherealIR::new(
+            context.evmla().version.to_owned(),
+            extra_metadata,
+            None,
+            blocks,
+        )?;
         if let Some(debug_config) = context.debug_config() {
             debug_config.dump_ethir(full_path.as_str(), None, ethereal_ir.to_string().as_str())?;
         }
@@ -373,8 +377,12 @@ where
             let extra_metadata = self.extra_metadata.take().unwrap_or_default();
             let mut blocks = deploy_code_blocks;
             blocks.extend(runtime_code_blocks);
-            let mut ethereal_ir =
-                EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
+            let mut ethereal_ir = EtherealIR::new(
+                context.evmla().version.to_owned(),
+                extra_metadata,
+                Some(era_compiler_llvm_context::CodeType::Deploy),
+                blocks,
+            )?;
             if let Some(debug_config) = context.debug_config() {
                 debug_config.dump_ethir(
                     full_path.as_str(),
@@ -397,8 +405,12 @@ where
             )?;
 
             let extra_metadata = self.extra_metadata.take().unwrap_or_default();
-            let mut ethereal_ir =
-                EtherealIR::new(context.evmla().version.to_owned(), extra_metadata, blocks)?;
+            let mut ethereal_ir = EtherealIR::new(
+                context.evmla().version.to_owned(),
+                extra_metadata,
+                Some(era_compiler_llvm_context::CodeType::Runtime),
+                blocks,
+            )?;
             if let Some(debug_config) = context.debug_config() {
                 debug_config.dump_ethir(
                     full_path.as_str(),
