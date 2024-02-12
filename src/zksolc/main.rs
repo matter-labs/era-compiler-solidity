@@ -60,6 +60,9 @@ fn main_inner() -> anyhow::Result<()> {
     if arguments.recursive_process {
         return era_compiler_solidity::run_process(target);
     }
+    if let era_compiler_llvm_context::Target::EVM = target {
+        anyhow::bail!("The EVM target is under development and not supported yet.")
+    }
 
     let debug_config = match arguments.debug_output_directory {
         Some(ref debug_output_directory) => {

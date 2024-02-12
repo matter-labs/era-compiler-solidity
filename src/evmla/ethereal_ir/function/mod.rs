@@ -1331,7 +1331,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
+impl<'ctx, D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
 where
     D: era_compiler_llvm_context::EVMDependency + Clone,
 {
@@ -1342,12 +1342,8 @@ where
         let (function_type, output_size) = match self.r#type {
             Type::Initial => {
                 let output_size = 0;
-                let r#type = context.function_type(
-                    vec![context
-                        .integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN)
-                        .as_basic_type_enum()],
-                    output_size,
-                );
+                let r#type =
+                    context.function_type::<inkwell::types::BasicTypeEnum<'_>>(vec![], output_size);
                 (r#type, output_size)
             }
             Type::Recursive {
@@ -1435,30 +1431,14 @@ where
 
         match self.r#type {
             Type::Initial => {
-                let is_deploy_code_flag = context
-                    .current_function()
-                    .borrow()
-                    .get_nth_param(0)
-                    .into_int_value();
-                let deploy_code_block = context.current_function().borrow().find_block(
+                let initial_block = context.current_function().borrow().find_block(
                     &era_compiler_llvm_context::BlockKey::new(
-                        era_compiler_llvm_context::CodeType::Deploy,
+                        context.code_type().expect("Must be set at this point"),
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
                 )?;
-                let runtime_code_block = context.current_function().borrow().find_block(
-                    &era_compiler_llvm_context::BlockKey::new(
-                        era_compiler_llvm_context::CodeType::Runtime,
-                        num::BigUint::zero(),
-                    ),
-                    &Stack::default().hash(),
-                )?;
-                context.build_conditional_branch(
-                    is_deploy_code_flag,
-                    deploy_code_block.inner(),
-                    runtime_code_block.inner(),
-                );
+                context.build_unconditional_branch(initial_block.inner());
             }
             Type::Recursive { ref block_key, .. } => {
                 let initial_block = context

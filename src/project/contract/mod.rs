@@ -283,9 +283,10 @@ impl Contract {
                     metadata_json,
                 ))
             }
-            IR::EVMLA(mut evmla) => {
-                let runtime_code_assembly = evmla.assembly.get_runtime_code()?.to_owned();
+            IR::EVMLA(evmla) => {
+                let mut runtime_code_assembly = evmla.assembly.get_runtime_code()?.to_owned();
                 let deploy_code_assembly = evmla.assembly;
+                runtime_code_assembly.set_full_path(deploy_code_assembly.full_path().to_owned());
 
                 let [deploy_build, runtime_build]: [anyhow::Result<era_compiler_llvm_context::EVMBuild>; 2] = [
                     (era_compiler_llvm_context::CodeType::Deploy, deploy_code_assembly),
@@ -303,6 +304,9 @@ impl Contract {
                         include_metadata_hash,
                         debug_config.clone(),
                     );
+                    let evmla_data =
+                        era_compiler_llvm_context::EVMContextEVMLAData::new(version.default.to_owned());
+                    context.set_evmla_data(evmla_data);
                     code.declare(&mut context).map_err(|error| {
                         anyhow::anyhow!(
                             "The contract `{}` deploy code LLVM IR generator declaration pass error: {}",
