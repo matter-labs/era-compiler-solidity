@@ -329,13 +329,8 @@ where
 {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        _context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(
-            era_compiler_llvm_context::EVMDummyLLVMWritable {},
-        );
-        entry.declare(context)?;
-        entry.into_llvm(context)?;
         Ok(())
     }
 
@@ -344,11 +339,11 @@ where
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
+        if let Some(debug_config) = context.debug_config() {
+            debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
+        }
 
-        if let Ok(runtime_code) = self.get_runtime_code() {
-            if let Some(debug_config) = context.debug_config() {
-                debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
-            }
+        let (code_type, blocks) = if let Ok(runtime_code) = self.get_runtime_code() {
             let deploy_code_blocks = EtherealIR::get_blocks(
                 context.evmla().version.to_owned(),
                 era_compiler_llvm_context::CodeType::Deploy,
@@ -374,28 +369,10 @@ where
                 runtime_code_instructions.as_slice(),
             )?;
 
-            let extra_metadata = self.extra_metadata.take().unwrap_or_default();
             let mut blocks = deploy_code_blocks;
             blocks.extend(runtime_code_blocks);
-            let mut ethereal_ir = EtherealIR::new(
-                context.evmla().version.to_owned(),
-                extra_metadata,
-                Some(era_compiler_llvm_context::CodeType::Deploy),
-                blocks,
-            )?;
-            if let Some(debug_config) = context.debug_config() {
-                debug_config.dump_ethir(
-                    full_path.as_str(),
-                    None,
-                    ethereal_ir.to_string().as_str(),
-                )?;
-            }
-            ethereal_ir.declare(context)?;
-            ethereal_ir.into_llvm(context)?;
+            (era_compiler_llvm_context::CodeType::Deploy, blocks)
         } else {
-            if let Some(debug_config) = context.debug_config() {
-                debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
-            }
             let blocks = EtherealIR::get_blocks(
                 context.evmla().version.to_owned(),
                 era_compiler_llvm_context::CodeType::Runtime,
@@ -403,24 +380,25 @@ where
                     .as_deref()
                     .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
             )?;
+            (era_compiler_llvm_context::CodeType::Runtime, blocks)
+        };
 
-            let extra_metadata = self.extra_metadata.take().unwrap_or_default();
-            let mut ethereal_ir = EtherealIR::new(
-                context.evmla().version.to_owned(),
-                extra_metadata,
-                Some(era_compiler_llvm_context::CodeType::Runtime),
-                blocks,
-            )?;
-            if let Some(debug_config) = context.debug_config() {
-                debug_config.dump_ethir(
-                    full_path.as_str(),
-                    None,
-                    ethereal_ir.to_string().as_str(),
-                )?;
-            }
-            ethereal_ir.declare(context)?;
-            ethereal_ir.into_llvm(context)?;
+        let extra_metadata = self.extra_metadata.take().unwrap_or_default();
+        let mut ethereal_ir = EtherealIR::new(
+            context.evmla().version.to_owned(),
+            extra_metadata,
+            Some(code_type),
+            blocks,
+        )?;
+        if let Some(debug_config) = context.debug_config() {
+            debug_config.dump_ethir(full_path.as_str(), None, ethereal_ir.to_string().as_str())?;
         }
+        ethereal_ir.declare(context)?;
+        ethereal_ir.into_llvm(context)?;
+
+        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(EntryLink::new(code_type));
+        entry.declare(context)?;
+        entry.into_llvm(context)?;
 
         Ok(())
     }

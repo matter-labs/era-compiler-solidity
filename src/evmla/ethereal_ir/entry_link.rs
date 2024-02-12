@@ -58,3 +58,26 @@ where
         Ok(())
     }
 }
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EntryLink
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let target = context
+            .get_function(EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME)
+            .expect("Always exists")
+            .borrow()
+            .declaration();
+        context.build_invoke(
+            target,
+            &[],
+            format!("call_link_{}", EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME).as_str(),
+        );
+
+        Ok(())
+    }
+}
