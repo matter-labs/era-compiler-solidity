@@ -50,7 +50,7 @@ describe("Common tests", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
 
-        xit("Output file is created", () => { // a bug on windows
+        it("Output file is created", () => { // a bug on windows
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
 
@@ -86,7 +86,7 @@ describe("Common tests", () => {
         it("Output dir is created", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
-        xit("Output files are created", () => { // a bug on windows
+        it("Output files are created", () => { // a bug on windows
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
             expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
