@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # Cancel the workflow if any new changes pushed to a feature branch or the trunk
 #
@@ -80,7 +81,7 @@ jobs:
           cargo test -- -Z unstable-options --format json | cargo2junit > "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2.12.0
         with:
           check_name: ${{ matrix.name }} Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -134,7 +135,7 @@ jobs:
           cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2.12.0
         with:
           check_name: ${{ matrix.name }} Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -189,7 +190,7 @@ jobs:
           cat "${UNIT_TESTS_RESULTS_XML}"
       - name: Upload test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2.12.0
         with:
           check_name: Windows Unit Tests Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
