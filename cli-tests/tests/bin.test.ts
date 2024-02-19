@@ -58,7 +58,7 @@ describe("Set of --bin tests", () => {
     });
   });
 
-  //id1817
+  //id1815
   describe(`Run ${zksolcCommand} with --bin with wrong input format`, () => {
     const args = [`${paths.pathToBasicYulContract}`, `--bin`];
     const result = executeCommand(zksolcCommand, args);
