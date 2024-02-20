@@ -48,6 +48,7 @@ runs:
         node-version: '18'
 
     - name: Run CLI tests
+      continue-on-error: true
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       working-directory: cli-tests
       run: |

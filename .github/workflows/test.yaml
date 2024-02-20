@@ -13,7 +13,7 @@ on:
         type: string
         description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
         required: true
-        default: "0.8.23"
+        default: "0.8.24-1.0.0"
   pull_request:
     paths-ignore:
       - 'cli-tests/**'
@@ -107,6 +107,7 @@ jobs:
         uses: ./.github/actions/unit-tests
         with:
           target: ${{ matrix.target || '' }}
+          rustflags: ${{ matrix.rustflags }}
 
       - name: Run CLI tests
         uses: ./.github/actions/cli-tests

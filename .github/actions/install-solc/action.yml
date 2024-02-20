@@ -4,7 +4,7 @@ inputs:
   solc-version:
     description: 'Version of solc compiler to download.'
     required: false
-    default: '0.8.23-1.0.0'
+    default: '0.8.24-1.0.0'
 runs:
   using: "composite"
   steps:
@@ -12,7 +12,7 @@ runs:
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       env:
         SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
-        SOLC_VERSION: ${{ inputs.solc-version || '0.8.23-1.0.0' }}
+        SOLC_VERSION: ${{ inputs.solc-version || '0.8.24-1.0.0' }}
       run: |
         OUTPUT=solc
         case "${RUNNER_OS}-${RUNNER_ARCH}" in
