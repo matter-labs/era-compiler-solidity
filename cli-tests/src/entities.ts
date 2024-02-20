@@ -12,6 +12,9 @@ const contractLlvmFilename = 'contract.ll';
 const contractJSONFilename = 'contract.json';
 const pathToOutputDir = path.join( __dirname, '..', outputDir);
 const pathToContracts = path.join( __dirname, '..', 'src', 'contracts');
+const pathToCliTmpDir = path.join(__dirname, '..','tmp');
+const pathDirSpecSymb = path.join(__dirname, '..', `./#@#$^%&*( wqerqwURU/`);
+const pathToRootTestDir = path.join(__dirname, '..');
 const pathToBasicYulContract = path.join(pathToContracts, 'yul', contractYulFilename);
 const pathToBasicZkasmContract = path.join(pathToContracts, 'zkasm', contractZkasmFilename);
 const pathToBasicSolContract = path.join(pathToContracts, 'solidity', contractSolFilename);
@@ -23,6 +26,9 @@ const pathToLlvmContractsFile = path.join(pathToOutputDir, contractLlvmFilename 
 
 export const paths = {
   outputDir: outputDir,
+  testTmpDir: pathToCliTmpDir,
+  DirSpecSymb: pathDirSpecSymb,
+  TestRootDir: pathToRootTestDir,
   binExtension: binExtension,
   asmExtension: asmExtension,
   libraryDefault: libraryDefault,
