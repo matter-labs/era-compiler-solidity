@@ -86,6 +86,26 @@ where
             )
             .map(Some)
         }
+        identifier @ "decommit" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_general::decommit(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+            )
+            .map(Some)
+        }
         identifier @ "meta" => {
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {

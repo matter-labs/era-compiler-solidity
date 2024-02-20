@@ -32,7 +32,8 @@ jobs:
                 "asm.test.ts",
                 "common.test.ts",
                 "yul.test.ts",
-                "zkasm.test.ts"
+                "zkasm.test.ts",
+                "bin.test.ts"
               ]
 
     name: '${{ matrix.test-pattern }}'
@@ -46,7 +47,7 @@ jobs:
 
       - name: Install npm packages
         run: |
-          cd src/tests/cli-tests 
+          cd cli-tests
           npm ci
 
       - name: Download '${{ inputs.name }}' artifact
@@ -62,14 +63,14 @@ jobs:
           Invoke-WebRequest -Uri ${{ inputs.solc_url }} -OutFile ${{ inputs.path }}\${{ inputs.name }}\solc.exe
           ls ${{ inputs.path }}\${{ inputs.name }}
         shell: powershell
-      
+
       - if: runner.os == 'Linux' || runner.os == 'macOS'
         name: Download solc for '${{ inputs.name }}'
         run: |
             wget ${{ inputs.solc_url }} -O ${{ inputs.path }}/${{ inputs.name }}/solc
             ls ${{ inputs.path }}/${{ inputs.name }}
-      
-      - if: runner.os == 'Windows'      
+
+      - if: runner.os == 'Windows'
         name: Add File to PATH
         run: |
           echo "$pwd\${{ inputs.path }}\${{ inputs.name }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -82,15 +83,15 @@ jobs:
           chmod +x ./${{ inputs.path }}/${{ inputs.name }}/zksolc
           echo "$(pwd)/${{ inputs.path }}/${{ inputs.name }}" >> $GITHUB_PATH
 
-      - if: runner.os == 'Windows' 
+      - if: runner.os == 'Windows'
         name: Run tests
         shell: sh
         run: |
-          cd src/tests/cli-tests
+          cd cli-tests
           npx jest --verbose --testPathPattern=${{ matrix.test-pattern }}
-      
+
       - if: runner.os == 'Linux' || runner.os == 'macOS'
         name: Run tests
         run: |
-          cd src/tests/cli-tests 
+          cd cli-tests
           npx jest --verbose --testPathPattern=${{ matrix.test-pattern }}

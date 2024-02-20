@@ -532,7 +532,7 @@ impl FunctionCall {
                 );
 
                 context.build_memcpy(
-                    context.intrinsics().memory_copy,
+                    context.intrinsics().memory_move,
                     destination,
                     source,
                     arguments[2].into_int_value(),
@@ -930,6 +930,7 @@ impl FunctionCall {
 
                 era_compiler_llvm_context::eravm_evm_create::create(
                     context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     value,
                     input_offset,
                     input_length,
@@ -946,6 +947,7 @@ impl FunctionCall {
 
                 era_compiler_llvm_context::eravm_evm_create::create2(
                     context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     value,
                     input_offset,
                     input_length,
