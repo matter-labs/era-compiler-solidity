@@ -652,6 +652,20 @@ where
 
             era_compiler_llvm_context::eravm_abi::return_data_ptr_to_active(context).map(Some)
         }
+        identifier @ "decommit_ptr_to_active" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::decommit_ptr_to_active(context).map(Some)
+        }
         identifier @ "active_ptr_add_assign" => {
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
