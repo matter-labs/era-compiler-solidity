@@ -54,7 +54,7 @@ We recommend at least 4 GB of RAM available for the build process.
    6.a. `cargo install compiler-llvm-builder` on MacOS, or Linux for personal use.  
    6.b. `cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl` on Linux for distribution.  
 
-   The builder is not the [EraVM LLVM framework](https://github.com/matter-labs/compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
+   The builder is not the [EraVM LLVM framework](https://github.com/matter-labs/era-compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
    If you need a specific branch of EraVM LLVM, change it in the `LLVM.lock` file at the root of this repository.  
 
 7. Run the builder to clone and build the EraVM LLVM framework at this repository root:  
