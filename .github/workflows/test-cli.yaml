@@ -1,0 +1,113 @@
+name: Tests
+
+# Execute workflow for each PR and with each merge to the trunk
+on:
+  workflow_dispatch:
+    inputs:
+      zksolc-version:
+        type: string
+        description: "zksolc version, (repo: https://github.com/matter-labs/zksolc-bin/raw/main)"
+        required: true
+        default: "1.4.0"
+      solc-version:
+        type: string
+        description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
+        required: true
+        default: "0.8.24-1.0.0"
+  pull_request:
+    paths:
+      - 'cli-tests/**'
+      - '.github/workflows/test-cli.yaml'
+      - '.github/actions/cli-tests/**'
+  push:
+    branches:
+      - main
+
+# Cancel the workflow if any new changes pushed to a feature branch or the trunk
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ZKSOLC_PREBUILT_VERSION: ${{ github.event.inputs.zksolc-version || '1.4.0' }}
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false # finalize testing of all targets even if one failed
+      matrix:
+        include:
+          - name: "MacOS x86"
+            runner: macos-12-large
+          - name: "MacOS arm64"
+            runner: [self-hosted, macOS, ARM64]
+          - name: "Linux x86"
+            runner: matterlabs-ci-runner
+            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            target: "x86_64-unknown-linux-musl"
+          - name: "Linux ARM64"
+            runner: matterlabs-ci-runner-arm
+            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            target: "aarch64-unknown-linux-musl"
+            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
+          - name: "Windows"
+            runner: windows-2022-github-hosted-16core
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
+    name: ${{ matrix.name }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Windows prepare msys2
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit # Important to correctly update PATH
+
+      - name: Prepare env
+        if: runner.os == 'Windows'
+        shell: 'msys2 {0}'
+        env:
+          MINGW64_DOWNLOAD_URL: "https://repo.msys2.org/mingw/mingw64"
+          MINGW64_DOWNLOAD_FILENAME: "mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst"
+        run: |
+          pacman-key --refresh
+          pacman -Sy
+          curl -LO "$MINGW64_DOWNLOAD_URL/$MINGW64_DOWNLOAD_FILENAME"
+          pacman --noconfirm -U "$MINGW64_DOWNLOAD_FILENAME"
+          pacman --noconfirm -S --needed --overwrite \
+            base-devel \
+            git \
+            ninja \
+            mingw-w64-x86_64-clang \
+            mingw-w64-x86_64-lld \
+            mingw-w64-x86_64-rust \
+            mingw-w64-x86_64-gcc-libs \
+            mingw-w64-x86_64-gcc
+          echo "/c/Users/runneradmin/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Build LLVM
+        if: github.event.pull_request.draft == false
+        uses: ./.github/actions/build-llvm
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build zksolc
+        if: github.event.pull_request.draft == false
+        uses: ./.github/actions/build
+        with:
+          target: ${{ matrix.target }}
+          rustflags: ${{ matrix.rustflags }}
+
+      - name: Install solc compiler
+        uses: ./.github/actions/install-solc
+        with:
+          solc-version: ${{ github.event.inputs.solc-version }}
+
+      - name: Run CLI tests
+        uses: ./.github/actions/cli-tests
+        with:
+          use-prebuilt-zksolc: ${{ github.event.pull_request.draft || 'true' }}
+          zksolc-version: ${{ github.event.inputs.zksolc-version || env.ZKSOLC_PREBUILT_VERSION }}

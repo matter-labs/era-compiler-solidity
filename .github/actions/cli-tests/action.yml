@@ -22,10 +22,10 @@ runs:
         OUTPUT=zksolc
         case "${RUNNER_OS}-${RUNNER_ARCH}" in
           Linux-ARM64*)
-            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-arm64-v${ZKSOLC_VERSION}"
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-arm64-musl-v${ZKSOLC_VERSION}"
             ;;
           Linux-X64*)
-            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-amd64-v${ZKSOLC_VERSION}"
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-amd64-musl-v${ZKSOLC_VERSION}"
             ;;
           macOS-ARM64*)
             ZKSOLC_DOWNLOAD_FILENAME="zksolc-macosx-arm64-v${ZKSOLC_VERSION}"
