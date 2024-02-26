@@ -150,3 +150,27 @@ jobs:
           gh release create ${{ steps.version_or_sha.outputs.version_or_sha }} \
             --title ${{ steps.version_or_sha.outputs.version_or_sha }} \
             "${BINARIES[@]}"
+
+      - name: Get changelog
+        if: github.ref_type == 'tag'
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          validation_level: warn
+          path: ./CHANGELOG.md
+
+      - name: Prepare CHANGELOG for publishing
+        if: github.ref_type == 'tag'
+        run: |
+          echo "## ${{ github.event.repository.name }}" >> ./release_changelog.md
+          echo "## [${{ steps.changelog_reader.outputs.version }}] - ${{ steps.changelog_reader.outputs.date }}" >> ./release_changelog.md
+          echo '${{ steps.changelog_reader.outputs.changes }}' >> ./release_changelog.md
+          echo "{\"text\":\"$(cat ./release_changelog.md)\"}" > ./slack-payload.json
+
+      - name: Send Slack notification
+        if: github.ref_type == 'tag'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload-file-path: "./slack-payload.json"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
