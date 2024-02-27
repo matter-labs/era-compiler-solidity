@@ -857,6 +857,34 @@ where
             )
             .map(|_| None)
         }
+        identifier @ "active_ptr_return_forward" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::active_ptr_return_forward(context).map(Some)
+        }
+        identifier @ "active_ptr_revert_forward" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::active_ptr_revert_forward(context).map(Some)
+        }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",
             call.location,
