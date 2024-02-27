@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=vr-cpr-1574-add-runtime-functions-for-forwarding-return-pointers#6b36ddfb6f17202e53ad3b23e121fcc73e934738"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#47bb46eef283d897cf98f2afd92fd44b7610f742"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -328,7 +328,7 @@ dependencies = [
 
 [[package]]
 name = "era-compiler-solidity"
-version = "1.4.0"
+version = "1.4.1"
 dependencies = [
  "anyhow",
  "colored",
