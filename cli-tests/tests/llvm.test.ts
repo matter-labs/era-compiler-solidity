@@ -55,7 +55,7 @@ describe("Set of --llvm-ir tests", () => {
 
   //id1826
   describe(`Run ${zksolcCommand} with --llvm-ir with wrong input format`, () => {
-    const args = [`${paths.pathToBasicYulContract}`, `--llvm-ir`];
+    const args = [`${paths.pathToBasicSolContract}`, `--llvm-ir`];
     const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 1", () => {
