@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1566-support-two-active-pointers#b93a92d45864a815c6121656202ffcddd819d903"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#0dc021522d1d6ff41c34e4b8ef8c0bd0714a87d4"
 dependencies = [
  "anyhow",
  "era-compiler-common",
