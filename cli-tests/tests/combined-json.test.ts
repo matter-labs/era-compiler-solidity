@@ -94,11 +94,11 @@ describe("Set of --combined-json tests", () => {
             const result = executeCommand(zksolcCommand, args);
 
             it("Valid command exit code = 1", () => {
-                expect([1, 101]).toContain(result.exitCode);
+                expect(result.exitCode).toBe(1);
             });
 
             it("--combined-json error is presented", () => {
-                expect(result.output).toMatch(/(No such file or directory)/i); // Hopefully we should have more precise message here!
+                expect(result.output).toMatch(/(No such file or directory|cannot find the file specified)/i); // Hopefully we should have more precise message here!
             });
 
             it("solc exit code == zksolc exit code", () => {
