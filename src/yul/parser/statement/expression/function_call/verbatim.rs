@@ -2,7 +2,7 @@
 //! Translates the verbatim simulations.
 //!
 
-use anyhow::Ok;
+use inkwell::values::BasicValue;
 
 use crate::yul::parser::statement::expression::function_call::FunctionCall;
 
@@ -141,9 +141,9 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 vec![context.field_const(0), context.field_const(0)],
             )
             .map(Some)
@@ -194,9 +194,9 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 vec![
                     arguments[2].into_int_value(),
                     arguments[3].into_int_value(),
@@ -246,9 +246,9 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -300,9 +300,9 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 context.field_const(0),
                 context.field_const(0),
                 vec![
@@ -354,9 +354,9 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -403,9 +403,9 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -452,9 +452,9 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -501,9 +501,9 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
