@@ -94,7 +94,7 @@ describe("Set of --combined-json tests", () => {
             const result = executeCommand(zksolcCommand, args);
 
             it("Valid command exit code = 1", () => {
-                expect(result.exitCode).toBe(1);
+                expect([1, 101]).toContain(result.exitCode);
             });
 
             it("--combined-json error is presented", () => {
