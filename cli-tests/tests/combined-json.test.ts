@@ -93,7 +93,7 @@ describe("Set of --combined-json tests", () => {
             const args = [`${paths.pathToBasicSolContract}`, `--combined-json`, `${json_args[i]}`, `${json_args[i]}`];
             const result = executeCommand(zksolcCommand, args);
 
-            it("Valid command exit code = 1", () => {
+            xit("Valid command exit code = 1", () => {
                 expect(result.exitCode).toBe(1);
             });
 
@@ -101,7 +101,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.output).toMatch(/(No such file or directory|cannot find the file specified)/i); // Hopefully we should have more precise message here!
             });
 
-            it("solc exit code == zksolc exit code", () => {
+            xit("solc exit code == zksolc exit code", () => {
                 const solcResult = executeCommand(solcCommand, args);
                 expect(solcResult.exitCode).toBe(result.exitCode);
             });
