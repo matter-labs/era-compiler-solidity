@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as os from 'os';
 
 const outputDir = 'artifacts';
 const binExtension = ':C.zbin';
@@ -19,6 +20,11 @@ const pathToBasicJSONContract = path.join(pathToContracts, "json", contractJSONF
 const pathToSolBinOutputFile = path.join(pathToOutputDir, contractSolFilename + binExtension);
 const pathToSolAsmOutputFile = path.join(pathToOutputDir, contractSolFilename + asmExtension);
 const pathToLlvmContractsFile = path.join(pathToOutputDir, contractLlvmFilename + llvmExtension);
+let solcName = 'solc';
+if ( os.platform() === 'win32' ) {
+  solcName = 'solc.exe'
+}
+const pathToCustomSolc = path.join( __dirname, '..', solcName)
 
 export const paths = {
   outputDir: outputDir,
@@ -36,5 +42,6 @@ export const paths = {
   pathToBasicJSONContract: pathToBasicJSONContract,
   pathToSolBinOutputFile: pathToSolBinOutputFile,
   pathToSolAsmOutputFile: pathToSolAsmOutputFile,
-  pathToLlvmOutputFile: pathToLlvmContractsFile
+  pathToLlvmOutputFile: pathToLlvmContractsFile,
+  pathToCustomSolc: pathToCustomSolc
 };
