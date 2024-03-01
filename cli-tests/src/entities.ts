@@ -24,7 +24,7 @@ let solcName = 'solc';
 if ( os.platform() === 'win32' ) {
   solcName = 'solc.exe'
 }
-const pathToCustomSolc = path.join( __dirname, '..', solcName)
+const pathToCustomSolc = path.join( __dirname, '..')
 
 export const paths = {
   outputDir: outputDir,

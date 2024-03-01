@@ -8,8 +8,7 @@ describe("Set of --solc tests", () => {
 
     //id1748
     describe(`Run ${zksolcCommand} with --solc }`, () => {
-        console.log(executeCommand('ls', [] ));
-        console.log(executeCommand('cd .. && ls', [] ));
+        console.log(executeCommand('ls', [`${paths.pathToCustomSolc}`] ));
         const args = [`${paths.pathToBasicSolContract}`, `--solc`, `${paths.pathToCustomSolc}`];
         const result = executeCommand(zksolcCommand, args);
 
