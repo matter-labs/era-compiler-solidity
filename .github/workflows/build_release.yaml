@@ -84,6 +84,10 @@ jobs:
         if: ${{ matrix.required == 'true' }} # Important to use 'true' here, because the value is a string here
         uses: actions/checkout@v4
 
+      - name: Prepare Windows env
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/prepare-msys
+
       - name: Build LLVM
         if: ${{ matrix.required == 'true' }}
         uses: ./.github/actions/build-llvm
