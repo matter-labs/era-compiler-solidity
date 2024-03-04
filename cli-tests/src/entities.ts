@@ -5,6 +5,7 @@ const outputDir = 'artifacts';
 const binExtension = ':C.zbin';
 const asmExtension = ':C.zasm';
 const llvmExtension = ':C.bc';
+const libraryDefault = 'MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC';
 const contractSolFilename = 'contract.sol';
 const contractYulFilename = 'contract.yul';
 const contractZkasmFilename = 'contract.zkasm';
@@ -30,6 +31,7 @@ export const paths = {
   outputDir: outputDir,
   binExtension: binExtension,
   asmExtension: asmExtension,
+  libraryDefault: libraryDefault,
   contractSolFilename: contractSolFilename,
   contractZkasmFilename: contractZkasmFilename,
   contractYulFilename: contractYulFilename,
