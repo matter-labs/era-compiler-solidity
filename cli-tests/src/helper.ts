@@ -63,7 +63,6 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
     }
   } else {
     command = 'chmod'
-    console.log(executeCommand(`ls`, [`-al`, `${directoryPath}`]));
     switch (permission) {
       case 'r':
         args = ['-wx', directoryPath]; // Read-only
@@ -76,7 +75,6 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
 
   try {
     executeCommand(command, args);
-    console.log(executeCommand(`ls`, [`-al`, `${directoryPath}/..`]));
   } catch (error) {
     console.error(`Error changing permissions for directory '${directoryPath}':`, error);
   }

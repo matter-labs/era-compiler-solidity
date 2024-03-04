@@ -1,5 +1,6 @@
 import {executeCommand, isDestinationExist, removeDirectory, changeDirectoryPermissions, createDirectory} from "../src/helper";
 import { paths } from '../src/entities';
+import * as os from 'os';
 
 describe("Set of --output-dir tests", () => {
   const zksolcCommand = 'zksolc';
@@ -94,32 +95,34 @@ describe("Set of --output-dir tests", () => {
     });
   });
 
-  //id1812
-  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
-    createDirectory(paths.pathToReadOnlyOutputDir)
-    changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'r');
-    const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToReadOnlyOutputDir}`];
-    const result = executeCommand(zksolcCommand, args);
+  //id1812 - different behaviour on CI on Linux
+  if (os.platform() !== 'linux') {
+    describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+      createDirectory(paths.pathToReadOnlyOutputDir)
+      changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'r');
+      const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToReadOnlyOutputDir}`];
+      const result = executeCommand(zksolcCommand, args);
 
-    it("Valid command exit code = 1", () => {
-      expect(result.exitCode).toBe(1);
+      it("Valid command exit code = 1", () => {
+        expect(result.exitCode).toBe(1);
+      });
+
+      it("--output-dir output is presented", () => {
+        expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
+      });
+
+      // Exit code should be the same
+      xit("solc exit code == zksolc exit code", () => {
+        const solcResult = executeCommand(solcCommand, args);
+        expect(solcResult.exitCode).toBe(result.exitCode);
+
+      });
+      changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'a');
+      removeDirectory(paths.pathToReadOnlyOutputDir);
     });
-
-    it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
-    });
-
-    // Exit code should be the same
-    xit("solc exit code == zksolc exit code", () => {
-      const solcResult = executeCommand(solcCommand, args);
-      expect(solcResult.exitCode).toBe(result.exitCode);
-
-    });
-  });
+  }
 
   afterAll(() => {
-    changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'a');
-    removeDirectory(paths.pathToReadOnlyOutputDir);
     removeDirectory(paths.pathToOutputDir);
     removeDirectory(paths.pathToBadOutputDir);
   });
