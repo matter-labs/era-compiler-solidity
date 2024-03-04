@@ -8,7 +8,6 @@ describe("Set of --output-dir tests", () => {
 
   //id1749:I
   describe(`Run ${zksolcCommand} with --output-dir by default`, () => {
-
     const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToOutputDir}`];
     const result = executeCommand(zksolcCommand, args);
 
@@ -33,7 +32,6 @@ describe("Set of --output-dir tests", () => {
 
   //id1749:II
   describe(`Run ${zksolcCommand} with --output-dir invalid arg - no path`, () => {
-
     const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`];
     const invalidResult = executeCommand(zksolcCommand, args);
 
