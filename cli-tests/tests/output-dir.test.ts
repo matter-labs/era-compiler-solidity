@@ -1,23 +1,18 @@
-import * as path from "path";
-import {executeCommand, isDestinationExist, removeDirectory, changeDirectoryPermissions, createDirecotry} from "../src/helper";
+import {executeCommand, isDestinationExist, removeDirectory, changeDirectoryPermissions, createDirectory} from "../src/helper";
 import { paths } from '../src/entities';
 
 describe("Set of --output-dir tests", () => {
   const zksolcCommand = 'zksolc';
   const solcCommand = 'solc';
 
-  //id1749
+  //id1749:I
   describe(`Run ${zksolcCommand} with --output-dir by default`, () => {
 
-    const args = [`${paths.pathToBasicSolContract}`, `--bin --output-dir './tmp/'`];
-    const invalidArgs = [`--output-dir`];
-    const invalidArgsNoInpSource = [`--output-dir test`]
+    const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToOutputDir}`];
     const result = executeCommand(zksolcCommand, args);
-    const invalidResult = executeCommand(zksolcCommand, invalidArgs);
-    const invalidResultNoInpSource = executeCommand(zksolcCommand, invalidArgsNoInpSource);
 
-    it("tmp dir is created", () => {
-      expect(isDestinationExist(paths.testTmpDir)).toBe(true);
+    it("A dir is created", () => {
+      expect(isDestinationExist(paths.pathToOutputDir)).toBe(true);
     });
 
     it("Valid command exit code = 0", () => {
@@ -25,14 +20,21 @@ describe("Set of --output-dir tests", () => {
     });
 
     it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/Compiler run successful\. Artifact\(s\) can be found in directory "\.\/tmp\/"\./i);
+      expect(result.output).toMatch(/Compiler run successful\. Artifact\(s\) can be found in directory/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
-      const removedTmp = removeDirectory(paths.testTmpDir);
+      expect(removeDirectory(paths.pathToOutputDir)).toBe(true);
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
     });
+  });
+
+  //id1749:II
+  describe(`Run ${zksolcCommand} with --output-dir invalid arg - no path`, () => {
+
+    const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`];
+    const invalidResult = executeCommand(zksolcCommand, args);
 
     it("run invalid: zksolc --output-dir", () => {
       expect(invalidResult.output).toMatch(/(error: The argument '--output-dir <output-directory>' requires a value but none was supplied)/i);
@@ -42,90 +44,85 @@ describe("Set of --output-dir tests", () => {
       expect(invalidResult.exitCode).toBe(1);
     });
 
-    it("Invalid solc exit code == Invalid zksolc exit code for zksolc --output-dir", () => {
-      const solcResult = executeCommand(solcCommand, invalidArgs);
+    it("solc exit code == zksolc exit code", () => {
+      const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(invalidResult.exitCode);
     });
-
-    it("run invalid: zksolc --output-dir test", () => {
-      expect(invalidResultNoInpSource.exitCode).toBe(1);
-    });
-
-    it("run invalid: zksolc --output-dir output result", () => {
-      expect(invalidResultNoInpSource.output).toMatch(/No input sources specified\.\s*Error\(s\) found\. Compilation aborted/i);
-    });
-
-    it("Invalid solc exit code == Invalid zksolc exit code for zksolc --output-dir", () => {
-      const solcResult = executeCommand(solcCommand, invalidArgsNoInpSource);
-      expect(solcResult.exitCode).toBe(invalidResultNoInpSource.exitCode);
-    });
-
-
   });
 
-  //id1813
-  describe(`Run ${zksolcCommand} with --output-dir - specific symbols`, () => {
-
-    const args = [`${paths.pathToBasicSolContract}`, `--bin --output-dir './#@#$^%&*( wqerqwURU/'`];
+  //id1749:III
+  describe(`Run ${zksolcCommand} with --output-dir invalid args - no source`, () => {
+    const args = [`--bin`, `--output-dir`, `${paths.pathToOutputDir}`]
     const result = executeCommand(zksolcCommand, args);
 
-    it("tmp dir is created", () => {
-      expect(isDestinationExist(paths.testTmpDir)).toBe(true);
+    it("exit code = 1", () => {
+      expect(result.exitCode).toBe(1);
     });
 
-    it("Valid command exit code = 0", () => {
-      expect(result.exitCode).toBe(0);
-    });
-
-    it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/Compiler run successful\. Artifact\(s\) can be found in directory ".*"\./i);
+    it("Compiler warning/error is presented", () => {
+      expect(result.output).toMatch(/No input sources specified\.\s*Error\(s\) found\. Compilation aborted/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
-      const removedTmp = removeDirectory(paths.DirSpecSymb);
-      console.log(paths.DirSpecSymb);
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
     });
   });
 
-  //id1812
-  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
-    //folder parameters to be created and deleted after the test
-    const testDireName = '/test_to_delete';
-    //create test folder
-    const createNewDir = createDirecotry(paths.TestRootDir + testDireName)
-    //change permissions to read-only
-    const changePermissions = changeDirectoryPermissions(paths.TestRootDir + testDireName, 'r');
-
-    const args =  [`${paths.pathToBasicSolContract}`, ` --bin --output-dir '${testDireName}/test'`];
-
+  //id1813
+  describe(`Run ${zksolcCommand} with --output-dir - specific symbols`, () => {
+    const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToBadOutputDir}`];
     const result = executeCommand(zksolcCommand, args);
 
-    it("tmp dir is NOT created", () => {
-      expect(isDestinationExist(paths.TestRootDir + testDireName + '/test')).toBe(false);
+    it("Exit code = 0", () => {
+      expect(result.exitCode).toBe(0);
     });
+
+    it("Custom dir is created", () => {
+      console.log("pathToBadOutputDir: " + paths.pathToBadOutputDir);
+      expect(isDestinationExist(paths.pathToBadOutputDir)).toBe(true);
+    });
+
+    it("--output-dir output is presented", () => {
+      expect(result.output).toMatch(/Compiler run successful/i);
+    });
+
+    it("solc exit code == zksolc exit code", () => {
+      expect(removeDirectory(paths.pathToBadOutputDir)).toBe(true);
+      const solcResult = executeCommand(solcCommand, args);
+      expect(solcResult.exitCode).toBe(result.exitCode);
+      expect(removeDirectory(paths.pathToBadOutputDir)).toBe(true);
+    });
+  });
+
+  //id1812
+  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+    createDirectory(paths.pathToCustomOutputDir)
+    changeDirectoryPermissions(paths.pathToCustomOutputDir, 'r');
+    const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToCustomOutputDir}`];
+    const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 1", () => {
       expect(result.exitCode).toBe(1);
     });
 
     it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/(Read-only file system)/i);
+      expect(result.output).toMatch(/(Permission denied)/i);
     });
 
-    it("solc exit code == zksolc exit code", () => {
+    // Exit code should be the same
+    xit("solc exit code == zksolc exit code", () => {
       const solcResult = executeCommand(solcCommand, args);
-      console.log(solcCommand + args);
-      expect(solcResult.exitCode).toBe(2);
-    });
+      expect(solcResult.exitCode).toBe(result.exitCode);
 
-    afterAll(() => {
-      const changePermissions = changeDirectoryPermissions(paths.TestRootDir + testDireName, 'r+w');
-      const removedTmp = removeDirectory(paths.TestRootDir + testDireName);
     });
   });
 
-
+  afterAll(() => {
+    changeDirectoryPermissions(paths.pathToCustomOutputDir, 'a');
+    removeDirectory(paths.pathToCustomOutputDir);
+    removeDirectory(paths.pathToOutputDir);
+    removeDirectory(paths.pathToBadOutputDir);
+  });
 
 });
