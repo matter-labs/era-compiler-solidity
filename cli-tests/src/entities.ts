@@ -13,6 +13,7 @@ const contractJSONFilename = 'contract.json';
 const pathToOutputDir = path.join( __dirname, '..', outputDir);
 const pathToContracts = path.join( __dirname, '..', 'src', 'contracts');
 const pathToCustomOutputDir = path.join(pathToOutputDir, `tmp`);
+const pathToReadOnlyOutputDir = path.join(pathToOutputDir, `read-only`);
 const pathToBadOutputDir = path.join( __dirname, '..', `File!and#$%`);
 const pathToBasicYulContract = path.join(pathToContracts, 'yul', contractYulFilename);
 const pathToBasicZkasmContract = path.join(pathToContracts, 'zkasm', contractZkasmFilename);
@@ -26,6 +27,7 @@ const pathToLlvmContractsFile = path.join(pathToOutputDir, contractLlvmFilename 
 export const paths = {
   outputDir: outputDir,
   pathToCustomOutputDir: pathToCustomOutputDir,
+  pathToReadOnlyOutputDir: pathToReadOnlyOutputDir,
   pathToBadOutputDir: pathToBadOutputDir,
   binExtension: binExtension,
   asmExtension: asmExtension,

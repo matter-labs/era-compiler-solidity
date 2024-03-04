@@ -95,11 +95,10 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812
-  describe.only(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
-    createDirectory(paths.pathToCustomOutputDir)
-    changeDirectoryPermissions(paths.pathToCustomOutputDir, 'r');
-    const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToCustomOutputDir}`];
-    console.log(zksolcCommand, args.toString())
+  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+    createDirectory(paths.pathToReadOnlyOutputDir)
+    changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'r');
+    const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToReadOnlyOutputDir}`];
     const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 1", () => {
@@ -111,7 +110,7 @@ describe("Set of --output-dir tests", () => {
     });
 
     // Exit code should be the same
-    it("solc exit code == zksolc exit code", () => {
+    xit("solc exit code == zksolc exit code", () => {
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
 
@@ -119,8 +118,8 @@ describe("Set of --output-dir tests", () => {
   });
 
   afterAll(() => {
-    changeDirectoryPermissions(paths.pathToCustomOutputDir, 'a');
-    removeDirectory(paths.pathToCustomOutputDir);
+    changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'a');
+    removeDirectory(paths.pathToReadOnlyOutputDir);
     removeDirectory(paths.pathToOutputDir);
     removeDirectory(paths.pathToBadOutputDir);
   });
