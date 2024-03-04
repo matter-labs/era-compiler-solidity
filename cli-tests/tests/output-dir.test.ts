@@ -79,7 +79,6 @@ describe("Set of --output-dir tests", () => {
     });
 
     it("Custom dir is created", () => {
-      console.log("pathToBadOutputDir: " + paths.pathToBadOutputDir);
       expect(isDestinationExist(paths.pathToBadOutputDir)).toBe(true);
     });
 
@@ -107,7 +106,7 @@ describe("Set of --output-dir tests", () => {
     });
 
     it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/(Permission denied)/i);
+      expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
     });
 
     // Exit code should be the same
