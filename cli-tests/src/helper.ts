@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { spawnSync } from "child_process";
+import * as os from 'os';
 
 
 export function executeCommand(command: string, args: string[]) {
@@ -23,63 +24,58 @@ export const isFileEmpty = (file: string): boolean  => {
 export const createDirectory = (file: string): boolean => {
   try {
     fs.mkdirSync(file);
-    // console.log(`Folder '${file}' created successfully.`);
     return true;
   } catch (error) {
-    // console.error(`Error creating folder '${file}':`, error);
     return false;
   }
 };
 
 export const removeDirectory = (file: string): boolean => {
   if (fs.existsSync(file)) {
-    // Check if it's a directory
     const stats = fs.statSync(file);
     if (stats.isDirectory()) {
       try {
-        // Remove directory recursively
         fs.rmSync(file, { recursive: true });
-        // console.log(`Directory '${file}' removed successfully.`);
-        return true; // Return true if removal was successful
+        return true;
       } catch (error) {
-        // console.error(`Error removing directory '${file}':`, error);
-        return false; // Return false if there was an error during removal
       }
     } else {
-      // console.error(`'${file}' is not a directory.`);
-      return false; // Return false if the path exists but is not a directory
+      return false;
     }
   } else {
-    // console.error(`Directory '${file}' does not exist.`);
-    return false; // Return false if the directory does not exist
+    return false;
   }
 };
 
-export const changeDirectoryPermissions = (directoryPath: string, permission: string): boolean => {
-  let mode: number;
+export const changeDirectoryPermissions = (directoryPath: string, permission: string): void => {
+  let args: string[];
+  let command: string;
 
-  switch (permission) {
-    case 'r':
-      mode = 0o444; // Read-only
-      break;
-    case 'w':
-      mode = 0o222; // Write-only
-      break;
-    case 'r+w':
-      mode = 0o666; // Read-write
-      break;
-    case 'a':
-      mode = 0o777; // All
-      break;
-    default:
-      // console.error('Invalid permission. Please choose "a", "r", "w", or "r+w".');
-      return true;
+  if ( os.platform() === 'win32' ) {
+    command = 'icacls'
+    switch (permission) {
+      case 'r':
+        args = [directoryPath, '/deny "Everyone:(OI)(CI)(W)" /grant:r "Everyone:(OI)(CI)(R)']; // Read-only
+        break;
+      case 'a':
+        args = [directoryPath, '/grant "Everyone:(OI)(CI)(F)']; // All
+        break;
+    }
+  } else {
+    command = 'chmod'
+    switch (permission) {
+      case 'r':
+        args = ['-R 444', directoryPath]; // Read-only
+        break;
+      case 'a':
+        args = ['-R 777', directoryPath]; // All
+        break;
+    }
   }
 
   try {
-    fs.chmodSync(directoryPath, mode);
-    // console.log(`Permissions changed for directory '${directoryPath}' to '${permission}'.`);
+    executeCommand(command, args);
   } catch (error) {
-    // console.error(`Error changing permissions for directory '${directoryPath}':`, error);
+    console.error(`Error changing permissions for directory '${directoryPath}':`, error);
   }
 };
