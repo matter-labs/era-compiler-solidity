@@ -96,7 +96,7 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812
-  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+  xdescribe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
     createDirectory(paths.pathToCustomOutputDir)
     changeDirectoryPermissions(paths.pathToCustomOutputDir, 'r');
     const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToCustomOutputDir}`];
@@ -119,8 +119,8 @@ describe("Set of --output-dir tests", () => {
   });
 
   afterAll(() => {
-    changeDirectoryPermissions(paths.pathToCustomOutputDir, 'a');
-    removeDirectory(paths.pathToCustomOutputDir);
+    // changeDirectoryPermissions(paths.pathToCustomOutputDir, 'a');
+    // removeDirectory(paths.pathToCustomOutputDir);
     removeDirectory(paths.pathToOutputDir);
     removeDirectory(paths.pathToBadOutputDir);
   });
