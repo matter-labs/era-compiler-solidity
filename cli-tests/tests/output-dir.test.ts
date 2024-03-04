@@ -95,10 +95,11 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812
-  describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+  describe.only(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
     createDirectory(paths.pathToCustomOutputDir)
     changeDirectoryPermissions(paths.pathToCustomOutputDir, 'r');
     const args =  [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${paths.pathToCustomOutputDir}`];
+    console.log(zksolcCommand, args.toString())
     const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 1", () => {
@@ -110,7 +111,7 @@ describe("Set of --output-dir tests", () => {
     });
 
     // Exit code should be the same
-    xit("solc exit code == zksolc exit code", () => {
+    it("solc exit code == zksolc exit code", () => {
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
 
