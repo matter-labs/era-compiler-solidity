@@ -25,7 +25,7 @@ runs:
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
         cargo install compiler-llvm-builder ${{ steps.build-target.outputs.target }} \
-          --git https://github.com/matter-labs/era-compiler-llvm-builder
+          --git https://github.com/matter-labs/era-compiler-llvm-builder --branch v1.0.18
         zkevm-llvm clone
 
     - name: Define ccache key
@@ -35,6 +35,11 @@ runs:
         LLVM_BRANCH="$(git -C ./llvm rev-parse --abbrev-ref HEAD)"
         LLVM_SHORT_SHA="$(git -C ./llvm rev-parse --short HEAD)"
         echo "key=llvm-${LLVM_BRANCH}-${LLVM_SHORT_SHA}-${{ runner.os }}-${{ runner.arch }}" | tee -a "${GITHUB_OUTPUT}"
+
+    - name: Prepare ccache installation
+      if: runner.os == 'Linux'
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      run: apt update
 
     - name: Set up compiler cache
       uses: hendrikmuhs/ccache-action@v1.2
