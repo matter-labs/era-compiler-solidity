@@ -36,6 +36,11 @@ runs:
         LLVM_SHORT_SHA="$(git -C ./llvm rev-parse --short HEAD)"
         echo "key=llvm-${LLVM_BRANCH}-${LLVM_SHORT_SHA}-${{ runner.os }}-${{ runner.arch }}" | tee -a "${GITHUB_OUTPUT}"
 
+    - name: Prepare ccache installation
+      if: runner.os == 'Linux'
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      run: apt update
+
     - name: Set up compiler cache
       uses: hendrikmuhs/ccache-action@v1.2
       env:
