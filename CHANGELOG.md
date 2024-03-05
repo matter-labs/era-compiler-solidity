@@ -1,5 +1,12 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- Simulations to forward return data pointers
+- Simulations to manipulate multiple active pointers
+
 ## [1.4.0] - 2024-02-19
 
 ### Added
