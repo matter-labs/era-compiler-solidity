@@ -2,7 +2,7 @@
 //! Translates the verbatim simulations.
 //!
 
-use anyhow::Ok;
+use inkwell::values::BasicValue;
 
 use crate::yul::parser::statement::expression::function_call::FunctionCall;
 
@@ -161,9 +161,9 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 vec![context.field_const(0), context.field_const(0)],
             )
             .map(Some)
@@ -214,9 +214,9 @@ where
                 context.llvm_runtime().mimic_call_byref,
                 arguments[0].into_int_value(),
                 arguments[1].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 vec![
                     arguments[2].into_int_value(),
                     arguments[3].into_int_value(),
@@ -266,9 +266,9 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -320,9 +320,9 @@ where
                 context,
                 context.llvm_runtime().far_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 context.field_const(0),
                 context.field_const(0),
                 vec![
@@ -374,9 +374,9 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -423,9 +423,9 @@ where
                 context,
                 context.llvm_runtime().static_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -472,9 +472,9 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[1].into_int_value(),
                 arguments[2].into_int_value(),
             )
@@ -521,9 +521,9 @@ where
                 context,
                 context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
-                context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?,
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
@@ -890,6 +890,54 @@ where
                 arguments[2].into_int_value(),
             )
             .map(|_| None)
+        }
+        identifier @ "active_ptr_return_forward" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::active_ptr_return_forward(context).map(Some)
+        }
+        identifier @ "active_ptr_revert_forward" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::active_ptr_revert_forward(context).map(Some)
+        }
+        identifier @ "active_ptr_swap" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_abi::active_ptr_swap(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+            )
+            .map(Some)
         }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",

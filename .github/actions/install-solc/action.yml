@@ -1,0 +1,38 @@
+name: 'Install Solc'
+description: 'Installs the Solc compiler.'
+inputs:
+  solc-version:
+    description: 'Version of solc compiler to download.'
+    required: false
+    default: '0.8.24-1.0.0'
+runs:
+  using: "composite"
+  steps:
+    - name: Install solc compiler
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      env:
+        SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
+        SOLC_VERSION: ${{ inputs.solc-version || '0.8.24-1.0.0' }}
+      run: |
+        OUTPUT=solc
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-ARM64*)
+            SOLC_DOWNLOAD_FILENAME="solc-linux-arm64-${SOLC_VERSION}"
+            ;;
+          Linux-X64*)
+            SOLC_DOWNLOAD_FILENAME="solc-linux-amd64-${SOLC_VERSION}"
+            ;;
+          macOS-ARM64*)
+            SOLC_DOWNLOAD_FILENAME="solc-macosx-arm64-${SOLC_VERSION}"
+            ;;
+          macOS-X64*)
+            SOLC_DOWNLOAD_FILENAME="solc-macosx-amd64-${SOLC_VERSION}"
+            ;;
+          Windows*)
+            OUTPUT=solc.exe
+            SOLC_DOWNLOAD_FILENAME="solc-windows-amd64-${SOLC_VERSION}.exe"
+            ;;
+        esac
+        curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
+        chmod a+x ${OUTPUT}
+        echo "${PWD}" >> "${GITHUB_PATH}"

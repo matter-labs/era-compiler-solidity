@@ -1,0 +1,72 @@
+name: 'ZKSolc CLI Tests'
+description: 'Executes zksolc CLI tests'
+inputs:
+  use-prebuilt-zksolc:
+    description: 'Whether to use prebuilt zksolc executable (set to `true` if testing prebuilt binaries).'
+    required: false
+    default: 'false'
+  zksolc-version:
+    description: 'Prebuilt version of zksolc compiler to download and use in tests.'
+    required: true
+    default: '1.4.0'
+runs:
+  using: "composite"
+  steps:
+    - name: Download prebuilt zksolc
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      if: inputs.use-prebuilt-zksolc == 'true'
+      env:
+        ZKSOLC_DOWNLOAD_URL: "https://github.com/matter-labs/era-compiler-solidity/releases/download"
+        ZKSOLC_VERSION: ${{ inputs.zksolc-version }}
+      run: |
+        OUTPUT=zksolc
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-ARM64*)
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-arm64-musl-v${ZKSOLC_VERSION}"
+            ;;
+          Linux-X64*)
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-linux-amd64-musl-v${ZKSOLC_VERSION}"
+            ;;
+          macOS-ARM64*)
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-macosx-arm64-v${ZKSOLC_VERSION}"
+            ;;
+          macOS-X64*)
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-macosx-amd64-v${ZKSOLC_VERSION}"
+            ;;
+          Windows*)
+            OUTPUT=zksolc.exe
+            ZKSOLC_DOWNLOAD_FILENAME="zksolc-windows-amd64-gnu-v${ZKSOLC_VERSION}.exe"
+            ;;
+        esac
+        curl --location -o "${OUTPUT}" "${ZKSOLC_DOWNLOAD_URL}/${ZKSOLC_VERSION}/${ZKSOLC_DOWNLOAD_FILENAME}"
+        chmod a+x "${OUTPUT}"
+        echo "${PWD}" >> "${GITHUB_PATH}"
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run CLI tests
+      continue-on-error: true
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      working-directory: cli-tests
+      run: |
+        npm install
+        npx jest --ci --reporters=default --reporters=jest-junit
+
+    - name: Upload results (MacOS and Windows)
+      if: runner.os != 'Linux'
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2.12.0
+      with:
+        check_name: CLI Tests Results ${{ runner.os }} ${{ runner.arch }}
+        files: cli-tests/junit.xml
+        action_fail_on_inconclusive: true
+
+    - name: Upload results (Linux)
+      if: runner.os == 'Linux'
+      uses: EnricoMi/publish-unit-test-result-action@v2.12.0
+      with:
+        check_name: CLI Tests Results ${{ runner.os }} ${{ runner.arch }}
+        files: cli-tests/junit.xml
+        action_fail_on_inconclusive: true
