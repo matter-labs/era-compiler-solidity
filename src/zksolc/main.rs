@@ -83,10 +83,6 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
-    let mut solc = era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-    }))?;
-
     let evm_version = match arguments.evm_version {
         Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
             evm_version.as_str(),
@@ -121,7 +117,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
-                    &mut solc,
+                    arguments.solc,
                     optimizer_settings,
                     arguments.is_system_mode,
                     include_metadata_hash,
@@ -142,6 +138,10 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if arguments.standard_json {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::standard_json_eravm(
                     &mut solc,
                     arguments.detect_missing_libraries,
@@ -154,6 +154,10 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
@@ -176,6 +180,10 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::standard_output_eravm(
                     input_files.as_slice(),
                     arguments.libraries,
@@ -234,7 +242,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
-                    &mut solc,
+                    arguments.solc,
                     optimizer_settings,
                     include_metadata_hash,
                     debug_config,
@@ -247,6 +255,10 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if arguments.standard_json {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::standard_json_evm(
                     &mut solc,
                     arguments.force_evmla,
@@ -257,6 +269,10 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
@@ -277,6 +293,10 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else {
+                let mut solc =
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
+                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
+                    }))?;
                 era_compiler_solidity::standard_output_evm(
                     input_files.as_slice(),
                     arguments.libraries,
