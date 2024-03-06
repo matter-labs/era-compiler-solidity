@@ -15,7 +15,7 @@ export const isDestinationExist = (destination: string): boolean  => {
     return fs.existsSync(destination);
 };
 
-export const isFileEmpty = (file: string): boolean  => {
+export function isFileEmpty(file: string): boolean {
     if (isDestinationExist(file)) {
       console.log("File exists");
       console.log("readfile: ");
