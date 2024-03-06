@@ -11,16 +11,15 @@ export function executeCommand(command: string, args: string[]) {
   };
 }
 
-export const isDestinationExist = (destination: string): boolean  => {
+export function isDestinationExist(destination: string): boolean {
     return fs.existsSync(destination);
-};
+}
 
 export function isFileEmpty(file: string): boolean {
     let result: boolean = true;
     if (isDestinationExist(file)) {
       console.log("File exists");
       console.log("readfile: ");
-
       let readfile: Buffer = fs.readFileSync(file);
       console.log("IM HERE IM HERE IM HERE 1");
       console.log(readfile.length == 0);
