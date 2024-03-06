@@ -5,26 +5,26 @@ describe("Common tests", () => {
     const zksolcCommand = 'zksolc';
     const solcCommand = 'solc';
 
-    //id1762
-    // describe(`Run ${zksolcCommand} without any args`, () => {
-    //     const args = [''];
-    //     const result = executeCommand(zksolcCommand, args);
-    //
-    //     it("Info with help is presented", () => {
-    //         expect(result.output).toMatch(/(No input sources specified|Error(s) found.)/i);
-    //     });
-    //
-    //     it("Exit code = 1", () => {
-    //         expect(result.exitCode).toBe(1);
-    //     });
-    //
-    //     it("solc exit code == zksolc exit code", () => {
-    //         const solcResult = executeCommand(solcCommand, args);
-    //         expect(solcResult.exitCode).toBe(result.exitCode);
-    //     });
-    // });
-    //
-    // //#1713
+    // id1762
+    describe(`Run ${zksolcCommand} without any args`, () => {
+        const args = [''];
+        const result = executeCommand(zksolcCommand, args);
+
+        it("Info with help is presented", () => {
+            expect(result.output).toMatch(/(No input sources specified|Error(s) found.)/i);
+        });
+
+        it("Exit code = 1", () => {
+            expect(result.exitCode).toBe(1);
+        });
+
+        it("solc exit code == zksolc exit code", () => {
+            const solcResult = executeCommand(solcCommand, args);
+            expect(solcResult.exitCode).toBe(result.exitCode);
+        });
+    });
+
+    //#1713
     describe(`Default run of ${zksolcCommand} from the help`, () => {
         const args = [
             `"${paths.pathToBasicSolContract}"`,
