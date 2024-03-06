@@ -12,12 +12,14 @@ export function executeCommand(command: string, args: string[]) {
 }
 
 export function isDestinationExist(destination: string): boolean {
-    return fs.existsSync(destination);
+    let result: boolean = fs.existsSync(destination);
+    console.log("Destination exists: " + result);
+    return result;
 }
 
 export function isFileEmpty(file: string): boolean {
     let result: boolean = true;
-    if (isDestinationExist(file)) {
+    if (fs.existsSync(file)) {
       console.log("File exists");
       console.log("readfile: ");
       let readfile: Buffer = fs.readFileSync(file);
