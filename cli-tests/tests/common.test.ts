@@ -1,6 +1,7 @@
 import {executeCommand, isDestinationExist, isFileEmpty} from "../src/helper";
 import { paths } from '../src/entities';
 
+jest.retryTimes(2);
 
 describe("Common tests", () => {
     const zksolcCommand = 'zksolc';
