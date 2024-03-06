@@ -72,6 +72,11 @@ describe("Common tests", () => {
             `--output-dir`,
             `"${paths.pathToOutputDir}"`
         ]; // potential issue on zksolc with full path on Windows cmd
+
+        console.log(__dirname);
+        console.log(zksolcCommand);
+        console.log(args);
+
         const result = executeCommand(zksolcCommand, args);
 
         it("Compiler run successful", () => {
