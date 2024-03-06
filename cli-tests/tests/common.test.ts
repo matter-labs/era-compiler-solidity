@@ -77,6 +77,7 @@ describe("Common tests", () => {
         console.log(__dirname);
         console.log(zksolcCommand);
         console.log(args);
+        console.log(paths.pathToSolBinOutputFile);
 
         const result = executeCommand(zksolcCommand, args);
 
