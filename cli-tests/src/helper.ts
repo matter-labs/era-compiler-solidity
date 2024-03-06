@@ -20,11 +20,12 @@ export const isFileEmpty = (file: string): boolean  => {
       console.log("File exists");
       console.log("readfile: ");
       let readfile: Buffer = fs.readFileSync(file);
+      let length: number = readfile.length;
       console.log(readfile);
       console.log("length: ")
       console.log(readfile.length);
       console.log(fs.readFileSync(file).length === 0);
-      return fs.readFileSync(file).length == 0;
+      return length == 0;
     }
 };
 
