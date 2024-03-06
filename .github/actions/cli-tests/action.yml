@@ -53,7 +53,7 @@ runs:
       working-directory: cli-tests
       run: |
         npm install
-        npx jest --ci --reporters=default --reporters=jest-junit
+        npx jest --ci --runInBand --reporters=default --reporters=jest-junit
 
     - name: Upload results (MacOS and Windows)
       if: runner.os != 'Linux'
