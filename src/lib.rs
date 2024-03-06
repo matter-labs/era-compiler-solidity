@@ -52,7 +52,7 @@ use std::path::PathBuf;
 ///
 pub fn yul(
     input_files: &[PathBuf],
-    solc: &mut SolcCompiler,
+    solc: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -70,6 +70,9 @@ pub fn yul(
     let solc_validator = if is_system_mode {
         None
     } else {
+        let mut solc = SolcCompiler::new(
+            solc.unwrap_or_else(|| SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()),
+        )?;
         if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
                 "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
@@ -77,10 +80,10 @@ pub fn yul(
             );
         }
 
-        Some(&*solc)
+        Some(solc)
     };
 
-    let project = Project::try_from_yul_path(path, solc_validator)?;
+    let project = Project::try_from_yul_path(path, solc_validator.as_ref())?;
 
     let build = project.compile(
         optimizer_settings,
