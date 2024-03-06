@@ -4,10 +4,22 @@
 
 ### Added
 
+- Simulations to forward return data pointers
+- Simulations to manipulate multiple active pointers
+
+## [1.4.0] - 2024-02-19
+
+### Added
+
 - The solc v0.8.24 support with temporarily unsupported transient storage and blobs
 - The `MCOPY` instruction support
 - The `--evm-version` parameter to the CLI
 - An option to disable the system request memoization
+- More compiler optimizations
+
+### Fixed
+
+- An issue with `MCOPY` for overlapping memory regions
 
 ## [1.3.23] - 2024-01-30
 

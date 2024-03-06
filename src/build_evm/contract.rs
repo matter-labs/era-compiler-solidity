@@ -57,7 +57,7 @@ impl Contract {
     pub fn write_to_directory(
         self,
         path: &Path,
-        output_assembly: bool,
+        _output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {

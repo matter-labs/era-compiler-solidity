@@ -1,4 +1,3 @@
-# TODO: refactor ugly copy-pasted build jobs
 name: Build and release binaries
 
 on:
@@ -38,7 +37,6 @@ on:
         required: false
         type: boolean
         default: true
-
   push:
     tags:
       - "v*.*.*"
@@ -48,360 +46,79 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_macos_arm64:
-    if: github.event.inputs.release_macos_arm64 || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: [self-hosted, macOS, ARM64]
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
-    steps:
-      - name: Cleanup workspace
-        shell: zsh {0}
-        run: |
-          setopt rmstarsilent
-          setopt +o nomatch
-          rm -rf ${{ github.workspace }}/*
-
-      - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
-
-      - name: Build LLVM framework
-        shell: zsh {0}
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo install compiler-llvm-builder
-          zkevm-llvm clone
-          zkevm-llvm build
-
-      - name: Build compiler
-        shell: zsh {0}
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo build --release
-
-      - name: Prepare binary file name
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        shell: zsh {0}
-        run: |
-          mkdir -p ./releases/macosx-arm64
-          strip ./target/release/zksolc
-          mv ./target/release/zksolc ./releases/macosx-arm64/zksolc-macosx-arm64-${{ github.ref_name }}
-
-      - name: Prepare binary file name
-        if: github.event_name == 'workflow_dispatch'
-        shell: zsh {0}
-        run: |
-          mkdir -p ./releases/macosx-arm64
-          strip ./target/release/zksolc
-          mv ./target/release/zksolc ./releases/macosx-arm64/zksolc-macosx-arm64
-
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
-        with:
-          name: release_macos_arm64
-          path: releases
-
-      # Always removing global git config since it breakes next checkout action and local config does not work with cargo for some reason
-      - name: Cleanup leftovers
-        shell: zsh {0}
-        if: always()
-        run: |
-          rm -rf ~/.gitconfig
-
-  build_macos_amd64:
-    if: github.event.inputs.release_macos_amd64 || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: macos-12-large
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
-
-      - name: Prepare environment
-        shell: zsh {0}
-        run: |
-          brew install cmake ninja
-
-      - name: Build LLVM framework
-        shell: zsh {0}
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo install compiler-llvm-builder
-          zkevm-llvm clone
-          zkevm-llvm build
-
-      - name: Build compiler
-        shell: zsh {0}
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo build --release
-
-      - name: Prepare binary file name
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        shell: zsh {0}
-        run: |
-          mkdir -p ./releases/macosx-amd64
-          mv ./target/release/zksolc ./releases/macosx-amd64/zksolc-macosx-amd64-${{ github.ref_name }}
-
-      - name: Prepare binary file name
-        if: github.event_name == 'workflow_dispatch'
-        shell: zsh {0}
-        run: |
-          mkdir -p ./releases/macosx-amd64
-          mv ./target/release/zksolc ./releases/macosx-amd64/zksolc-macosx-amd64
-
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
-        with:
-          name: release_macos_amd64
-          path: releases
-
-  build_linux_amd64:
-    if: github.event.inputs.release_linux_amd64 || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: [matterlabs-ci-runner]
-    container:
-      image: matterlabs/llvm_runner:latest
+  build:
     strategy:
-      fail-fast: false
       matrix:
-        target:
-          - musl
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
-
-      - name: Prepare environment
-        run: |
-          rustup target add x86_64-unknown-linux-${{ matrix.target }}
-
-      - name: Build LLVM framework
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo install compiler-llvm-builder --target x86_64-unknown-linux-${{ matrix.target }}
-          export PATH="${PATH}:/usr/local/cargo/bin/"
-          zkevm-llvm clone
-          zkevm-llvm build
-
-      - name: Build compiler
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo build --release --target x86_64-unknown-linux-${{ matrix.target }}
-
-      - name: Prepare binary file name
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        run: |
-          mkdir -p releases/linux-amd64
-          mv ./target/x86_64-unknown-linux-${{ matrix.target }}/release/zksolc releases/linux-amd64/zksolc-linux-amd64-${{ matrix.target }}-${{ github.ref_name }}
-
-      - name: Prepare binary file name
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p releases/linux-amd64
-          mv ./target/x86_64-unknown-linux-${{ matrix.target }}/release/zksolc releases/linux-amd64/zksolc-linux-amd64-${{ matrix.target }}
-
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
-        with:
-          name: release_linux_amd64
-          path: releases
-
-  build_linux_arm64:
-    if: github.event.inputs.release_linux_arm64 || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: matterlabs-ci-runner-arm
+        include:
+          - name: "MacOS x86"
+            runner: macos-12-large
+            release-suffix: macosx-amd64
+            required: ${{ github.event.inputs.release_macos_amd64 || 'true' }}
+          - name: "MacOS arm64"
+            runner: [self-hosted, macOS, ARM64]
+            release-suffix: macosx-arm64
+            required: ${{ github.event.inputs.release_macos_arm64 || 'true' }}
+          - name: "Linux x86"
+            runner: matterlabs-ci-runner
+            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            target: "x86_64-unknown-linux-musl"
+            release-suffix: linux-amd64-musl
+            required: ${{ github.event.inputs.release_linux_amd64 || 'true' }}
+          - name: "Linux ARM64"
+            runner: matterlabs-ci-runner-arm
+            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            target: "aarch64-unknown-linux-musl"
+            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
+            release-suffix: linux-arm64-musl
+            required: ${{ github.event.inputs.release_linux_arm64 || 'true' }}
+          - name: "Windows"
+            runner: windows-2022-github-hosted-16core
+            release-suffix: windows-amd64-gnu
+            required: ${{ github.event.inputs.release_windows_amd64 || 'true' }}
+    runs-on: ${{ matrix.runner }}
     container:
-      image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - musl
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
+      image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
+    name: ${{ matrix.name }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+        if: ${{ matrix.required == 'true' }} # Important to use 'true' here, because the value is a string here
+        uses: actions/checkout@v4
+
+      - name: Prepare Windows env
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/prepare-msys
+
+      - name: Build LLVM
+        if: ${{ matrix.required == 'true' }}
+        uses: ./.github/actions/build-llvm
         with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
+          target: ${{ matrix.target }}
 
-      - name: Prepare environment
-        run: |
-          rustup target add aarch64-unknown-linux-${{ matrix.target }}
-
-      - name: Build LLVM framework
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-        run: |
-          cargo install compiler-llvm-builder --target aarch64-unknown-linux-${{ matrix.target }}
-          export PATH="${PATH}:/usr/local/cargo/bin/"
-          zkevm-llvm clone
-          zkevm-llvm build
-
-      - name: Build compiler
-        env:
-          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-          # lib path might change over time since LLVM 15 version is not strictly pinned in our CI runner image
-          # https://github.com/rust-lang/rust/issues/89626#issuecomment-1727368240
-          RUSTFLAGS: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
-        run: |
-          cargo build --release --target aarch64-unknown-linux-${{ matrix.target }}
-
-      - name: Prepare binary file name
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        run: |
-          mkdir -p releases/linux-arm64
-          mv ./target/aarch64-unknown-linux-${{ matrix.target }}/release/zksolc releases/linux-arm64/zksolc-linux-arm64-${{ matrix.target }}-${{ github.ref_name }}
-
-      - name: Prepare binary file name
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p releases/linux-arm64
-          mv ./target/aarch64-unknown-linux-${{ matrix.target }}/release/zksolc releases/linux-arm64/zksolc-linux-arm64-${{ matrix.target }}
-
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3
+      - name: Build zksolc
+        if: ${{ matrix.required == 'true' }}
+        uses: ./.github/actions/build
         with:
-          name: release_linux_arm64
-          path: releases
+          target: ${{ matrix.target }}
+          rustflags: ${{ matrix.rustflags }}
+          release-suffix: ${{ matrix.release-suffix }}
 
-  build_windows_amd64:
-    if: github.event.inputs.release_windows_amd64 || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-    runs-on: windows-2022-github-hosted-16core
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
-      LIBSTDCPP_SOURCE_PATH: "C:/a/_temp/msys64/mingw64/lib/libstdc++.a"
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
-
-      - name: Prepare msys2
-        uses: msys2/setup-msys2@d40200dc2db4c351366b048a9565ad82919e1c24
-
-      - name: Update pacman keys
-        shell: msys2 {0}
-        run: |
-          pacman-key --refresh
-
-      - name: Update pacman deps
-        shell: msys2 {0}
-        run: |
-          pacman -Sy
-
-      - name: Install msys deps
-        shell: msys2 {0}
-        run: |
-          curl -LO https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-          pacman --noconfirm -U mingw-w64-x86_64-cmake-3.27.7-3-any.pkg.tar.zst
-          pacman --noconfirm -S --needed --overwrite \
-          base-devel \
-          git \
-          ninja \
-          mingw-w64-x86_64-clang \
-          mingw-w64-x86_64-lld \
-          mingw-w64-x86_64-rust \
-          mingw-w64-x86_64-gcc-libs \
-          mingw-w64-x86_64-gcc
-
-      - name: Build LLVM framework
-        shell: msys2 {0}
-        run: |
-          cargo install compiler-llvm-builder
-          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin/"
-          zkevm-llvm clone
-          zkevm-llvm build
-
-      - name: Build compiler
-        shell: msys2 {0}
-        run: |
-          cargo build --release
-
-      - name: Prepare binary file name
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        run: |
-          mkdir -p releases/windows-amd64
-          mv ./target/release/zksolc.exe releases/windows-amd64/zksolc-windows-amd64-gnu-${{ github.ref_name }}.exe
-
-      - name: Prepare binary file name
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p releases/windows-amd64
-          mv ./target/release/zksolc.exe releases/windows-amd64/zksolc-windows-amd64-gnu.exe
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: release_windows_amd64
-          path: releases
-
-  prepare_release:
+  prepare-release:
+    name: Prepare release
     runs-on: ubuntu-latest
     needs:
-      - build_macos_arm64
-      - build_macos_amd64
-      - build_linux_amd64
-      - build_linux_arm64
-      - build_windows_amd64
+      - build
     steps:
       - name: Checkout source
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
 
-      - name: Download MacOS arm64 artifact
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: release_macos_arm64
+          pattern: release*
           path: releases
-
-      - name: Download MacOS amd64 artifact
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
-        with:
-          name: release_macos_amd64
-          path: releases
-
-      - name: Download Linux arm64 artifact
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
-        with:
-          name: release_linux_arm64
-          path: releases
-
-      - name: Download Linux amd64 artifact
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
-        with:
-          name: release_linux_amd64
-          path: releases
-
-      - name: Download Windows amd64 artifact
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
-        with:
-          name: release_windows_amd64
-          path: releases
-
-      - name: Checkout repo with binaries
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-        with:
-          repository: matter-labs/zksolc-bin
-          path: public_repo
-          ref: main
 
       - name: Generate Version or SHA
         id: version_or_sha
@@ -418,39 +135,28 @@ jobs:
 
       - name: Publish pre-release
         if: github.event_name == 'workflow_dispatch'
-        run: |
-            BINARIES=($(find ./releases -type f))
-            gh release create --prerelease prerelease-${{ steps.version_or_sha.outputs.version_or_sha }}-${{ github.event.inputs.prerelease_suffix }} \
-              --target ${{ github.event.inputs.ref }} --title prerelease-${{ steps.version_or_sha.outputs.version_or_sha }}-${{ github.event.inputs.prerelease_suffix }} \
-              "${BINARIES[@]}"
         env:
-            GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BINARIES=($(find ./releases -type f))
+          gh release create \
+            --prerelease prerelease-${{ steps.version_or_sha.outputs.version_or_sha }}-${{ github.event.inputs.prerelease_suffix }} \
+            --target ${{ github.event.inputs.ref }} \
+            --title prerelease-${{ steps.version_or_sha.outputs.version_or_sha }}-${{ github.event.inputs.prerelease_suffix }} \
+            "${BINARIES[@]}"
 
-      # to-do rename step after depcreation - matter-labs/zksolc-bin
       - name: Publish release (this repository)
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        run: |
-            BINARIES=($(find ./releases -type f))
-            gh release create ${{ steps.version_or_sha.outputs.version_or_sha }} \
-              --title ${{ steps.version_or_sha.outputs.version_or_sha }} \
-              "${BINARIES[@]}"
+        if: github.ref_type == 'tag'
         env:
-            GH_TOKEN: ${{ github.token }}
-
-      - name: Publish release
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+          GH_TOKEN: ${{ github.token }}
         run: |
-            chmod -R +x releases/
-            cp -R releases/* public_repo/
-            cd public_repo
-            git config --global user.email "dev-robot@matterlabs.dev"
-            git config --global user.name "zksync-admin-bot2"
-            git add .
-            git commit -m "Release: ${{ steps.version_or_sha.outputs.version_or_sha }}"
-            git push
+          BINARIES=($(find ./releases -type f))
+          gh release create ${{ steps.version_or_sha.outputs.version_or_sha }} \
+            --title ${{ steps.version_or_sha.outputs.version_or_sha }} \
+            "${BINARIES[@]}"
 
-      - name: Get CHANGELOG Entry
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+      - name: Get changelog
+        if: github.ref_type == 'tag'
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
         with:
@@ -458,20 +164,17 @@ jobs:
           path: ./CHANGELOG.md
 
       - name: Prepare CHANGELOG for publishing
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+        if: github.ref_type == 'tag'
         run: |
           echo "## ${{ github.event.repository.name }}" >> ./release_changelog.md
           echo "## [${{ steps.changelog_reader.outputs.version }}] - ${{ steps.changelog_reader.outputs.date }}" >> ./release_changelog.md
           echo '${{ steps.changelog_reader.outputs.changes }}' >> ./release_changelog.md
+          echo "{\"text\":\"$(cat ./release_changelog.md)\"}" > ./slack-payload.json
 
-      - name: Create the Mattermost Message
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
-        run: |
-          echo "{\"text\":\"$(cat ./release_changelog.md)\"}" > mattermost.json
-          cat mattermost.json
-
-      - uses: mattermost/action-mattermost-notify@master
-        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+      - name: Send Slack notification
+        if: github.ref_type == 'tag'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload-file-path: "./slack-payload.json"
         env:
-          MATTERMOST_USERNAME: "Compiler Release Bot"
-          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASES }}

@@ -196,9 +196,7 @@ where
         let mut entry = era_compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
 
-        let mut runtime = era_compiler_llvm_context::EraVMRuntime::new(
-            era_compiler_llvm_context::EraVMAddressSpace::Heap,
-        );
+        let mut runtime = era_compiler_llvm_context::EraVMRuntime::default();
         runtime.declare(context)?;
 
         era_compiler_llvm_context::EraVMDeployCodeFunction::new(
@@ -246,9 +244,7 @@ where
                 object.into_llvm(context)?;
             }
             None => {
-                let runtime = era_compiler_llvm_context::EraVMRuntime::new(
-                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
-                );
+                let runtime = era_compiler_llvm_context::EraVMRuntime::default();
                 runtime.into_llvm(context)?;
             }
         }

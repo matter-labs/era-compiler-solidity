@@ -532,7 +532,7 @@ impl FunctionCall {
                 );
 
                 context.build_memcpy(
-                    context.intrinsics().memory_copy,
+                    context.intrinsics().memory_move,
                     destination,
                     source,
                     arguments[2].into_int_value(),
@@ -927,6 +927,7 @@ impl FunctionCall {
 
                 era_compiler_llvm_context::eravm_evm_create::create(
                     context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     value,
                     input_offset,
                     input_length,
@@ -943,6 +944,7 @@ impl FunctionCall {
 
                 era_compiler_llvm_context::eravm_evm_create::create2(
                     context,
+                    era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     value,
                     input_offset,
                     input_length,
@@ -1208,16 +1210,14 @@ impl FunctionCall {
             }
             Name::ZkMimicCallByRef => {
                 let [address, mimic] = self.pop_arguments_llvm::<D, 2>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::mimic(
                     context,
                     context.llvm_runtime().mimic_call_byref,
                     address.into_int_value(),
                     mimic.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     vec![],
                 )
                 .map(Some)
@@ -1225,16 +1225,14 @@ impl FunctionCall {
             Name::ZkSystemMimicCallByRef => {
                 let [address, mimic, extra_value_1, extra_value_2] =
                     self.pop_arguments_llvm::<D, 4>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::mimic(
                     context,
                     context.llvm_runtime().mimic_call_byref,
                     address.into_int_value(),
                     mimic.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     vec![
                         extra_value_1.into_int_value(),
                         extra_value_2.into_int_value(),
@@ -1259,15 +1257,13 @@ impl FunctionCall {
             Name::ZkRawCallByRef => {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::raw_far(
                     context,
                     context.llvm_runtime().far_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     output_offset.into_int_value(),
                     output_length.into_int_value(),
                 )
@@ -1296,15 +1292,13 @@ impl FunctionCall {
             Name::ZkSystemCallByRef => {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::system(
                     context,
                     context.llvm_runtime().far_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     context.field_const(0),
                     context.field_const(0),
                     vec![
@@ -1333,15 +1327,13 @@ impl FunctionCall {
             Name::ZkStaticRawCallByRef => {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::raw_far(
                     context,
                     context.llvm_runtime().static_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     output_offset.into_int_value(),
                     output_length.into_int_value(),
                 )
@@ -1370,15 +1362,13 @@ impl FunctionCall {
             Name::ZkStaticSystemCallByRef => {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::system(
                     context,
                     context.llvm_runtime().static_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     context.field_const(0),
                     context.field_const(0),
                     vec![
@@ -1407,15 +1397,13 @@ impl FunctionCall {
             Name::ZkDelegateRawCallByRef => {
                 let [address, output_offset, output_length] =
                     self.pop_arguments_llvm::<D, 3>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::raw_far(
                     context,
                     context.llvm_runtime().delegate_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     output_offset.into_int_value(),
                     output_length.into_int_value(),
                 )
@@ -1444,15 +1432,13 @@ impl FunctionCall {
             Name::ZkDelegateSystemCallByRef => {
                 let [address, extra_value_1, extra_value_2, extra_value_3, extra_value_4] =
                     self.pop_arguments_llvm::<D, 5>(context)?;
-                let abi_data = context.get_global_value(
-                    era_compiler_llvm_context::eravm_const::GLOBAL_ACTIVE_POINTER,
-                )?;
+                let abi_data = context.get_active_pointer(context.field_const(0))?;
 
                 era_compiler_llvm_context::eravm_call::system(
                     context,
                     context.llvm_runtime().delegate_call_byref,
                     address.into_int_value(),
-                    abi_data,
+                    abi_data.as_basic_value_enum(),
                     context.field_const(0),
                     context.field_const(0),
                     vec![

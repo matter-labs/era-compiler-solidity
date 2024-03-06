@@ -20,12 +20,6 @@ pub enum Warning {
     ExtCodeSize,
     /// The warning for eponymous feature.
     TxOrigin,
-    /// The warning for eponymous feature.
-    BlockTimestamp,
-    /// The warning for eponymous feature.
-    BlockNumber,
-    /// The warning for eponymous feature.
-    BlockHash,
 }
 
 impl Warning {
@@ -49,9 +43,6 @@ impl FromStr for Warning {
             "sendtransfer" => Ok(Self::SendTransfer),
             "extcodesize" => Ok(Self::ExtCodeSize),
             "txorigin" => Ok(Self::TxOrigin),
-            "blocktimestamp" => Ok(Self::BlockTimestamp),
-            "blocknumber" => Ok(Self::BlockNumber),
-            "blockhash" => Ok(Self::BlockHash),
             _ => Err(anyhow::anyhow!("Invalid warning: {}", string)),
         }
     }
