@@ -1634,7 +1634,7 @@ dependencies = [
 [[package]]
 name = "zkevm_opcode_defs"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#31dc076e1c60aed8d23c8f121b6f7e913d663d65"
+source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#92a0915a34f48f1063749954c88a7aeb8475ab9a"
 dependencies = [
  "bitflags 2.4.2",
  "blake2",
