@@ -1,8 +1,6 @@
 import {executeCommand, isDestinationExist, isFileEmpty} from "../src/helper";
 import { paths } from '../src/entities';
 
-jest.retryTimes(2);
-
 describe("Common tests", () => {
     const zksolcCommand = 'zksolc';
     const solcCommand = 'solc';
@@ -98,10 +96,6 @@ describe("Common tests", () => {
             let result = isFileEmpty(paths.pathToSolBinOutputFile);
             console.log("Result: ");
             console.log(result);
-            console.log("Expect result: ");
-            console.log(expect(result));
-            console.log("Expect isfileempty: ");
-            console.log(expect(isFileEmpty(paths.pathToSolAsmOutputFile)));
             expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
             expect(isFileEmpty(paths.pathToSolAsmOutputFile)).toBe(false);
         });

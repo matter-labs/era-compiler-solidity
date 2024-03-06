@@ -21,12 +21,11 @@ export function isFileEmpty(file: string): boolean {
       console.log("File exists");
       console.log("readfile: ");
       let readfile: Buffer = fs.readFileSync(file);
-      let length: number = readfile.length;
-      console.log(readfile);
-      console.log("length: ")
-      console.log(readfile.length);
+      console.log("IM HERE IM HERE IM HERE 1");
       console.log(fs.readFileSync(file).length === 0);
+      console.log("IM HERE IM HERE IM HERE 2");
       result = length == 0;
+      console.log("IM HERE IM HERE IM HERE 3");
     }
     return result;
 }
