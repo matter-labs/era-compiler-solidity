@@ -16,7 +16,7 @@ export const isDestinationExist = (destination: string): boolean  => {
 };
 
 export function isFileEmpty(file: string): boolean {
-    let result: boolean = false;
+    let result: boolean = true;
     if (isDestinationExist(file)) {
       console.log("File exists");
       console.log("readfile: ");
@@ -29,7 +29,7 @@ export function isFileEmpty(file: string): boolean {
       result = length == 0;
     }
     return result;
-};
+}
 
 export const createDirectory = (file: string): boolean => {
   try {
