@@ -95,6 +95,13 @@ describe("Common tests", () => {
             expect(isDestinationExist(paths.pathToSolAsmOutputFile)).toBe(true);
         });
         it("the output files are not empty", () => {
+            let result = isFileEmpty(paths.pathToSolBinOutputFile);
+            console.log("Result: ");
+            console.log(result);
+            console.log("Expect result: ");
+            console.log(expect(result));
+            console.log("Expect isfileempty: ");
+            console.log(expect(isFileEmpty(paths.pathToSolAsmOutputFile)));
             expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
             expect(isFileEmpty(paths.pathToSolAsmOutputFile)).toBe(false);
         });
