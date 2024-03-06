@@ -18,8 +18,11 @@ export const isDestinationExist = (destination: string): boolean  => {
 export const isFileEmpty = (file: string): boolean  => {
     if (isDestinationExist(file)) {
       console.log("File exists");
-      console.log("Length: ");
-      console.log(fs.readFileSync(file).length);
+      console.log("readfile: ");
+      let readfile: Buffer = fs.readFileSync(file);
+      console.log(readfile);
+      console.log("length: ")
+      console.log(readfile.length);
       console.log(fs.readFileSync(file).length === 0);
       return (fs.readFileSync(file).length === 0);
     }
