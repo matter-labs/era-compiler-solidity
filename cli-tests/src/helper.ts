@@ -24,7 +24,7 @@ export const isFileEmpty = (file: string): boolean  => {
       console.log("length: ")
       console.log(readfile.length);
       console.log(fs.readFileSync(file).length === 0);
-      return (fs.readFileSync(file).length === 0);
+      return fs.readFileSync(file).length == 0;
     }
 };
 
