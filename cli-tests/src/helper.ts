@@ -20,7 +20,13 @@ export function isFileEmpty(file: string): boolean {
     if (isDestinationExist(file)) {
       console.log("File exists");
       console.log("readfile: ");
-      let readfile: Buffer = fs.readFileSync(file);
+
+      try {
+        let readfile: Buffer = fs.readFileSync(file);
+      } catch (error) {
+        console.log("Error reading file !!!");
+        console.log(error.message);
+      }
       console.log("IM HERE IM HERE IM HERE 1");
       console.log(fs.readFileSync(file).length === 0);
       console.log("IM HERE IM HERE IM HERE 2");
