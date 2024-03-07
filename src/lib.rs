@@ -105,7 +105,7 @@ pub fn yul_to_eravm(
 ///
 pub fn yul_to_evm(
     input_files: &[PathBuf],
-    solc: &mut SolcCompiler,
+    solc: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -119,6 +119,9 @@ pub fn yul_to_evm(
         ),
     };
 
+    let mut solc = SolcCompiler::new(
+        solc.unwrap_or_else(|| SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()),
+    )?;
     if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
         anyhow::bail!(
             "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
@@ -126,7 +129,7 @@ pub fn yul_to_evm(
         );
     }
 
-    let project = Project::try_from_yul_path(path, Some(&*solc))?;
+    let project = Project::try_from_yul_path(path, Some(&solc))?;
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
 

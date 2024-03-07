@@ -139,9 +139,9 @@ fn main_inner() -> anyhow::Result<()> {
                 )
             } else if arguments.standard_json {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::standard_json_eravm(
                     &mut solc,
                     arguments.detect_missing_libraries,
@@ -155,9 +155,9 @@ fn main_inner() -> anyhow::Result<()> {
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
@@ -181,9 +181,9 @@ fn main_inner() -> anyhow::Result<()> {
                 return Ok(());
             } else {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::standard_output_eravm(
                     input_files.as_slice(),
                     arguments.libraries,
@@ -256,9 +256,9 @@ fn main_inner() -> anyhow::Result<()> {
                 )
             } else if arguments.standard_json {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::standard_json_evm(
                     &mut solc,
                     arguments.force_evmla,
@@ -270,9 +270,9 @@ fn main_inner() -> anyhow::Result<()> {
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
@@ -294,9 +294,9 @@ fn main_inner() -> anyhow::Result<()> {
                 return Ok(());
             } else {
                 let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(|| {
-                        era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()
-                    }))?;
+                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
+                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                    ))?;
                 era_compiler_solidity::standard_output_evm(
                     input_files.as_slice(),
                     arguments.libraries,
