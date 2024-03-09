@@ -9,6 +9,8 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::evmla::assembly::instruction::Instruction;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
@@ -37,7 +39,7 @@ pub struct EtherealIR {
     /// The all-inlined function.
     pub entry_function: Function,
     /// The recursive functions.
-    pub recursive_functions: BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Function>,
+    pub recursive_functions: BTreeMap<era_compiler_llvm_context::BlockKey, Function>,
 }
 
 impl EtherealIR {
@@ -53,9 +55,11 @@ impl EtherealIR {
     pub fn new(
         solc_version: semver::Version,
         extra_metadata: ExtraMetadata,
-        blocks: HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
+        code_type: Option<era_compiler_llvm_context::CodeType>,
+        blocks: HashMap<era_compiler_llvm_context::BlockKey, Block>,
     ) -> anyhow::Result<Self> {
-        let mut entry_function = Function::new(solc_version.clone(), FunctionType::new_initial());
+        let mut entry_function =
+            Function::new(solc_version.clone(), code_type, FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
         let mut visited_functions = BTreeSet::new();
         entry_function.traverse(
@@ -78,9 +82,9 @@ impl EtherealIR {
     ///
     pub fn get_blocks(
         solc_version: semver::Version,
-        code_type: era_compiler_llvm_context::EraVMCodeType,
+        code_type: era_compiler_llvm_context::CodeType,
         instructions: &[Instruction],
-    ) -> anyhow::Result<HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>> {
+    ) -> anyhow::Result<HashMap<era_compiler_llvm_context::BlockKey, Block>> {
         let mut blocks = HashMap::with_capacity(Self::BLOCKS_HASHMAP_DEFAULT_CAPACITY);
         let mut offset = 0;
 
@@ -91,10 +95,7 @@ impl EtherealIR {
                 &instructions[offset..],
             )?;
             blocks.insert(
-                era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                    code_type,
-                    block.key.tag.clone(),
-                ),
+                era_compiler_llvm_context::BlockKey::new(code_type, block.key.tag.clone()),
                 block,
             );
             offset += size;
@@ -124,6 +125,39 @@ where
     fn into_llvm(
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
+    ) -> anyhow::Result<()> {
+        context.evmla_mut().stack = vec![];
+
+        self.entry_function.into_llvm(context)?;
+
+        for (_key, function) in self.recursive_functions.into_iter() {
+            function.into_llvm(context)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EtherealIR
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.entry_function.declare(context)?;
+
+        for (_key, function) in self.recursive_functions.iter_mut() {
+            function.declare(context)?;
+        }
+
+        Ok(())
+    }
+
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         context.evmla_mut().stack = vec![];
 

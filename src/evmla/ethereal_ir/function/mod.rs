@@ -22,6 +22,9 @@ use num::One;
 use num::ToPrimitive;
 use num::Zero;
 
+use era_compiler_llvm_context::IContext;
+use era_compiler_llvm_context::IEVMLAFunction;
+
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::ethereal_ir::function::block::element::stack::element::Element;
@@ -46,8 +49,10 @@ pub struct Function {
     pub solc_version: semver::Version,
     /// The function name.
     pub name: String,
+    /// The optional code type. Only used for the EVM target.
+    pub code_type: Option<era_compiler_llvm_context::CodeType>,
     /// The separately labelled blocks.
-    pub blocks: BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Vec<Block>>,
+    pub blocks: BTreeMap<era_compiler_llvm_context::BlockKey, Vec<Block>>,
     /// The function type.
     pub r#type: Type,
     /// The function stack size.
@@ -58,7 +63,11 @@ impl Function {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(solc_version: semver::Version, r#type: Type) -> Self {
+    pub fn new(
+        solc_version: semver::Version,
+        code_type: Option<era_compiler_llvm_context::CodeType>,
+        r#type: Type,
+    ) -> Self {
         let name = match r#type {
             Type::Initial => EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME.to_string(),
             Type::Recursive {
@@ -71,6 +80,7 @@ impl Function {
         Self {
             solc_version,
             name,
+            code_type,
             blocks: BTreeMap::new(),
             r#type,
             stack_size: 0,
@@ -82,19 +92,24 @@ impl Function {
     ///
     pub fn traverse(
         &mut self,
-        blocks: &HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
-        functions: &mut BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Self>,
+        blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
+        functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
         extra_metadata: &ExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
     ) -> anyhow::Result<()> {
         let mut visited_blocks = BTreeSet::new();
 
+        let code_types = match self.code_type {
+            Some(ref code_type) => vec![*code_type],
+            None => vec![
+                era_compiler_llvm_context::CodeType::Deploy,
+                era_compiler_llvm_context::CodeType::Runtime,
+            ],
+        };
+
         match self.r#type {
             Type::Initial => {
-                for code_type in [
-                    era_compiler_llvm_context::EraVMCodeType::Deploy,
-                    era_compiler_llvm_context::EraVMCodeType::Runtime,
-                ] {
+                for code_type in code_types {
                     self.consume_block(
                         blocks,
                         functions,
@@ -102,7 +117,7 @@ impl Function {
                         visited_functions,
                         &mut visited_blocks,
                         QueueElement::new(
-                            era_compiler_llvm_context::EraVMFunctionBlockKey::new(
+                            era_compiler_llvm_context::BlockKey::new(
                                 code_type,
                                 num::BigUint::zero(),
                             ),
@@ -148,8 +163,8 @@ impl Function {
     ///
     fn consume_block(
         &mut self,
-        blocks: &HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
-        functions: &mut BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Self>,
+        blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
+        functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
         extra_metadata: &ExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
         visited_blocks: &mut BTreeSet<VisitedElement>,
@@ -227,11 +242,11 @@ impl Function {
     ///
     #[allow(clippy::too_many_arguments)]
     fn handle_instruction(
-        blocks: &HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
-        functions: &mut BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Self>,
+        blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
+        functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
         extra_metadata: &ExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
-        code_type: era_compiler_llvm_context::EraVMCodeType,
+        code_type: era_compiler_llvm_context::CodeType,
         instance: usize,
         block_stack: &mut Stack,
         block_element: &mut BlockElement,
@@ -260,16 +275,13 @@ impl Function {
                     .ok_or_else(|| anyhow::anyhow!("Destination tag is missing"))?
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
-                        era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            era_compiler_llvm_context::EraVMCodeType::Runtime,
+                        era_compiler_llvm_context::BlockKey::new(
+                            era_compiler_llvm_context::CodeType::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
                     Element::Tag(destination) => {
-                        era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            code_type,
-                            destination.to_owned(),
-                        )
+                        era_compiler_llvm_context::BlockKey::new(code_type, destination.to_owned())
                     }
                     Element::ReturnAddress(output_size) => {
                         block_element.instruction =
@@ -324,16 +336,13 @@ impl Function {
                     .ok_or_else(|| anyhow::anyhow!("Destination tag is missing"))?
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
-                        era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            era_compiler_llvm_context::EraVMCodeType::Runtime,
+                        era_compiler_llvm_context::BlockKey::new(
+                            era_compiler_llvm_context::CodeType::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
                     Element::Tag(destination) => {
-                        era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                            code_type,
-                            destination.to_owned(),
-                        )
+                        era_compiler_llvm_context::BlockKey::new(code_type, destination.to_owned())
                     }
                     element => {
                         return Err(anyhow::anyhow!(
@@ -359,8 +368,7 @@ impl Function {
                 ..
             } => {
                 let tag: num::BigUint = tag.parse().expect("Always valid");
-                let block_key =
-                    era_compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, tag);
+                let block_key = era_compiler_llvm_context::BlockKey::new(code_type, tag);
 
                 queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
                 queue_element.block_key = block_key.clone();
@@ -1023,29 +1031,24 @@ impl Function {
     #[allow(clippy::too_many_arguments)]
     fn handle_recursive_function_call(
         recursive_function: &RecursiveFunction,
-        blocks: &HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
-        functions: &mut BTreeMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Self>,
+        blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
+        functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
         extra_metadata: &ExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
-        block_key: era_compiler_llvm_context::EraVMFunctionBlockKey,
+        block_key: era_compiler_llvm_context::BlockKey,
         block_stack: &mut Stack,
         block_element: &mut BlockElement,
         version: &semver::Version,
-    ) -> anyhow::Result<(
-        era_compiler_llvm_context::EraVMFunctionBlockKey,
-        Vec<Element>,
-    )> {
+    ) -> anyhow::Result<(era_compiler_llvm_context::BlockKey, Vec<Element>)> {
         let return_address_offset = block_stack.elements.len() - 2 - recursive_function.input_size;
         let input_arguments_offset = return_address_offset + 1;
         let callee_tag_offset = input_arguments_offset + recursive_function.input_size;
 
         let return_address = match block_stack.elements[return_address_offset] {
-            Element::Tag(ref return_address) => {
-                era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                    block_key.code_type,
-                    return_address.to_owned(),
-                )
-            }
+            Element::Tag(ref return_address) => era_compiler_llvm_context::BlockKey::new(
+                block_key.code_type,
+                return_address.to_owned(),
+            ),
             ref element => anyhow::bail!("Expected the function return address, found {}", element),
         };
         let mut stack = Stack::with_capacity(1 + recursive_function.input_size);
@@ -1061,6 +1064,7 @@ impl Function {
         if !visited_functions.contains(&visited_element) {
             let mut function = Self::new(
                 version.to_owned(),
+                Some(block_key.code_type),
                 Type::new_recursive(
                     recursive_function.name.to_owned(),
                     block_key.clone(),
@@ -1126,14 +1130,14 @@ impl Function {
     /// Checks both deploy and runtime code.
     ///
     fn is_tag_value_valid(
-        blocks: &HashMap<era_compiler_llvm_context::EraVMFunctionBlockKey, Block>,
+        blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         tag: &num::BigUint,
     ) -> bool {
-        blocks.contains_key(&era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-            era_compiler_llvm_context::EraVMCodeType::Deploy,
+        blocks.contains_key(&era_compiler_llvm_context::BlockKey::new(
+            era_compiler_llvm_context::CodeType::Deploy,
             tag & num::BigUint::from(u32::MAX),
-        )) || blocks.contains_key(&era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-            era_compiler_llvm_context::EraVMCodeType::Runtime,
+        )) || blocks.contains_key(&era_compiler_llvm_context::BlockKey::new(
+            era_compiler_llvm_context::CodeType::Runtime,
             tag & num::BigUint::from(u32::MAX),
         ))
     }
@@ -1201,9 +1205,11 @@ where
             output_size,
             Some(inkwell::module::Linkage::Private),
         )?;
-        function.borrow_mut().set_evmla_data(
-            era_compiler_llvm_context::EraVMFunctionEVMLAData::new(self.stack_size),
-        );
+        function
+            .borrow_mut()
+            .set_evmla_data(era_compiler_llvm_context::FunctionEVMLAData::new(
+                self.stack_size,
+            ));
 
         Ok(())
     }
@@ -1220,8 +1226,8 @@ where
                 let mut stack_hashes = vec![block.initial_stack.hash()];
                 stack_hashes.extend_from_slice(block.extra_hashes.as_slice());
                 let evmla_data =
-                    era_compiler_llvm_context::EraVMFunctionBlockEVMLAData::new(stack_hashes);
-                let mut block = era_compiler_llvm_context::EraVMFunctionBlock::new(inner);
+                    era_compiler_llvm_context::FunctionBlockEVMLAData::new(stack_hashes);
+                let mut block = era_compiler_llvm_context::FunctionBlock::new(inner);
                 block.set_evmla_data(evmla_data);
                 context
                     .current_function()
@@ -1253,7 +1259,7 @@ where
                 _ => context.field_const(0).as_basic_value_enum(),
             };
             context.build_store(pointer, value);
-            stack_variables.push(era_compiler_llvm_context::EraVMArgument::new(
+            stack_variables.push(era_compiler_llvm_context::Value::new(
                 pointer.value.as_basic_value_enum(),
             ));
         }
@@ -1266,16 +1272,16 @@ where
                     .borrow()
                     .get_nth_param(0)
                     .into_int_value();
-                let deploy_code_block = context.current_function().borrow().evmla().find_block(
-                    &era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                        era_compiler_llvm_context::EraVMCodeType::Deploy,
+                let deploy_code_block = context.current_function().borrow().find_block(
+                    &era_compiler_llvm_context::BlockKey::new(
+                        era_compiler_llvm_context::CodeType::Deploy,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
                 )?;
-                let runtime_code_block = context.current_function().borrow().evmla().find_block(
-                    &era_compiler_llvm_context::EraVMFunctionBlockKey::new(
-                        era_compiler_llvm_context::EraVMCodeType::Runtime,
+                let runtime_code_block = context.current_function().borrow().find_block(
+                    &era_compiler_llvm_context::BlockKey::new(
+                        era_compiler_llvm_context::CodeType::Runtime,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
@@ -1321,14 +1327,175 @@ where
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
-            era_compiler_llvm_context::EraVMFunctionReturn::None => {
+            era_compiler_llvm_context::FunctionReturn::None => {
                 context.build_return(None);
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Primitive { pointer } => {
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }
-            era_compiler_llvm_context::EraVMFunctionReturn::Compound { pointer, .. } => {
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
+                let return_value = context.build_load(pointer, "return_value");
+                context.build_return(Some(&return_value));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let (function_type, output_size) = match self.r#type {
+            Type::Initial => {
+                let output_size = 0;
+                let r#type =
+                    context.function_type::<inkwell::types::BasicTypeEnum<'_>>(vec![], output_size);
+                (r#type, output_size)
+            }
+            Type::Recursive {
+                input_size,
+                output_size,
+                ..
+            } => {
+                let r#type = context.function_type(
+                    vec![
+                        context
+                            .integer_type(era_compiler_common::BIT_LENGTH_FIELD)
+                            .as_basic_type_enum();
+                        input_size
+                    ],
+                    output_size,
+                );
+                (r#type, output_size)
+            }
+        };
+        let function = context.add_function(
+            self.name.as_str(),
+            function_type,
+            output_size,
+            Some(inkwell::module::Linkage::Private),
+        )?;
+        function
+            .borrow_mut()
+            .set_evmla_data(era_compiler_llvm_context::FunctionEVMLAData::new(
+                self.stack_size,
+            ));
+
+        Ok(())
+    }
+
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        context.set_current_function(self.name.as_str())?;
+
+        for (key, blocks) in self.blocks.iter() {
+            for (index, block) in blocks.iter().enumerate() {
+                let inner = context.append_basic_block(format!("block_{key}/{index}").as_str());
+                let mut stack_hashes = vec![block.initial_stack.hash()];
+                stack_hashes.extend_from_slice(block.extra_hashes.as_slice());
+                let evmla_data =
+                    era_compiler_llvm_context::FunctionBlockEVMLAData::new(stack_hashes);
+                let mut block = era_compiler_llvm_context::FunctionBlock::new(inner);
+                block.set_evmla_data(evmla_data);
+                context
+                    .current_function()
+                    .borrow_mut()
+                    .evmla_mut()
+                    .insert_block(key.to_owned(), block);
+            }
+        }
+
+        context.set_basic_block(context.current_function().borrow().entry_block());
+        let mut stack_variables = Vec::with_capacity(self.stack_size);
+        for stack_index in 0..self.stack_size {
+            let pointer = context.build_alloca(
+                context.field_type(),
+                format!("stack_var_{stack_index:03}").as_str(),
+            );
+            let value = match self.r#type {
+                Type::Recursive { input_size, .. }
+                    if stack_index >= 1 && stack_index <= input_size =>
+                {
+                    context
+                        .current_function()
+                        .borrow()
+                        .declaration()
+                        .value
+                        .get_nth_param((stack_index - 1) as u32)
+                        .expect("Always valid")
+                }
+                _ => context.field_const(0).as_basic_value_enum(),
+            };
+            context.build_store(pointer, value);
+            stack_variables.push(era_compiler_llvm_context::Value::new(
+                pointer.value.as_basic_value_enum(),
+            ));
+        }
+        context.evmla_mut().stack = stack_variables;
+
+        match self.r#type {
+            Type::Initial => {
+                let initial_block = context.current_function().borrow().find_block(
+                    &era_compiler_llvm_context::BlockKey::new(
+                        context.code_type().expect("Must be set at this point"),
+                        num::BigUint::zero(),
+                    ),
+                    &Stack::default().hash(),
+                )?;
+                context.build_unconditional_branch(initial_block.inner());
+            }
+            Type::Recursive { ref block_key, .. } => {
+                let initial_block = context
+                    .current_function()
+                    .borrow()
+                    .evmla()
+                    .blocks
+                    .get(block_key)
+                    .expect("Always exists")
+                    .first()
+                    .expect("Always exists")
+                    .inner();
+                context.build_unconditional_branch(initial_block);
+            }
+        }
+
+        for (key, blocks) in self.blocks.into_iter() {
+            for (llvm_block, ir_block) in context
+                .current_function()
+                .borrow()
+                .evmla()
+                .blocks
+                .get(&key)
+                .cloned()
+                .ok_or_else(|| anyhow::anyhow!("Undeclared function block {}", key))?
+                .into_iter()
+                .map(|block| block.inner())
+                .zip(blocks)
+            {
+                context.set_basic_block(llvm_block);
+                ir_block.into_llvm(context)?;
+            }
+        }
+
+        context.set_basic_block(context.current_function().borrow().return_block());
+        match context.current_function().borrow().r#return() {
+            era_compiler_llvm_context::FunctionReturn::None => {
+                context.build_return(None);
+            }
+            era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
+                let return_value = context.build_load(pointer, "return_value");
+                context.build_return(Some(&return_value));
+            }
+            era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                 let return_value = context.build_load(pointer, "return_value");
                 context.build_return(Some(&return_value));
             }

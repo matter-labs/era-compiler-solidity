@@ -7,6 +7,8 @@ use std::collections::HashSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
@@ -88,6 +90,59 @@ where
         let condition = self
             .condition
             .into_llvm(context)?
+            .expect("Always exists")
+            .to_llvm()
+            .into_int_value();
+        let condition = context.builder().build_int_z_extend_or_bit_cast(
+            condition,
+            context.field_type(),
+            "for_condition_extended",
+        );
+        let condition = context.builder().build_int_compare(
+            inkwell::IntPredicate::NE,
+            condition,
+            context.field_const(0),
+            "for_condition_compared",
+        );
+        context.build_conditional_branch(condition, body_block, join_block);
+
+        context.push_loop(body_block, increment_block, join_block);
+
+        context.set_basic_block(body_block);
+        self.body.into_llvm(context)?;
+        context.build_unconditional_branch(increment_block);
+
+        context.set_basic_block(increment_block);
+        self.finalizer.into_llvm(context)?;
+        context.build_unconditional_branch(condition_block);
+
+        context.pop_loop();
+        context.set_basic_block(join_block);
+
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.initializer.into_llvm(context)?;
+
+        let condition_block = context.append_basic_block("for_condition");
+        let body_block = context.append_basic_block("for_body");
+        let increment_block = context.append_basic_block("for_increment");
+        let join_block = context.append_basic_block("for_join");
+
+        context.build_unconditional_branch(condition_block);
+        context.set_basic_block(condition_block);
+        let condition = self
+            .condition
+            .into_llvm_evm(context)?
             .expect("Always exists")
             .to_llvm()
             .into_int_value();

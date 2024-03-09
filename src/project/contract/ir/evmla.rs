@@ -56,3 +56,22 @@ where
         self.assembly.into_llvm(context)
     }
 }
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EVMLA
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.assembly.declare(context)
+    }
+
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        self.assembly.into_llvm(context)
+    }
+}

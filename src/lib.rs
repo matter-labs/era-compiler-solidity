@@ -2,7 +2,8 @@
 //! Solidity to EraVM compiler library.
 //!
 
-pub(crate) mod build;
+pub(crate) mod build_eravm;
+pub(crate) mod build_evm;
 pub(crate) mod r#const;
 pub(crate) mod evmla;
 pub(crate) mod missing_libraries;
@@ -12,11 +13,14 @@ pub(crate) mod solc;
 pub(crate) mod warning;
 pub(crate) mod yul;
 
-pub use self::build::contract::Contract as ContractBuild;
-pub use self::build::Build;
-pub use self::missing_libraries::MissingLibraries;
-pub use self::process::input::Input as ProcessInput;
-pub use self::process::output::Output as ProcessOutput;
+pub use self::build_eravm::contract::Contract as EraVMContractBuild;
+pub use self::build_eravm::Build as EraVMBuild;
+pub use self::build_evm::contract::Contract as EVMContractBuild;
+pub use self::build_evm::Build as EVMBuild;
+pub use self::process::input_eravm::Input as EraVMProcessInput;
+pub use self::process::input_evm::Input as EVMProcessInput;
+pub use self::process::output_eravm::Output as EraVMProcessOutput;
+pub use self::process::output_evm::Output as EVMProcessOutput;
 pub use self::process::run as run_process;
 pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
@@ -48,16 +52,16 @@ use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 ///
-/// Runs the Yul mode.
+/// Runs the Yul mode for the EraVM target.
 ///
-pub fn yul(
+pub fn yul_to_eravm(
     input_files: &[PathBuf],
     solc: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-) -> anyhow::Result<Build> {
+) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
         0 => anyhow::bail!("The input file is missing"),
@@ -85,7 +89,7 @@ pub fn yul(
 
     let project = Project::try_from_yul_path(path, solc_validator.as_ref())?;
 
-    let build = project.compile(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
@@ -97,15 +101,51 @@ pub fn yul(
 }
 
 ///
-/// Runs the LLVM IR mode.
+/// Runs the Yul mode for the EVM target.
 ///
-pub fn llvm_ir(
+pub fn yul_to_evm(
+    input_files: &[PathBuf],
+    solc: Option<String>,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    include_metadata_hash: bool,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+) -> anyhow::Result<EVMBuild> {
+    let path = match input_files.len() {
+        1 => input_files.first().expect("Always exists"),
+        0 => anyhow::bail!("The input file is missing"),
+        length => anyhow::bail!(
+            "Only one input file is allowed in the Yul mode, but found {}",
+            length,
+        ),
+    };
+
+    let mut solc = SolcCompiler::new(
+        solc.unwrap_or_else(|| SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()),
+    )?;
+    if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+        anyhow::bail!(
+            "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
+            SolcCompiler::LAST_SUPPORTED_VERSION,
+        );
+    }
+
+    let project = Project::try_from_yul_path(path, Some(&solc))?;
+
+    let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
+
+    Ok(build)
+}
+
+///
+/// Runs the LLVM IR mode for the EraVM target.
+///
+pub fn llvm_ir_to_eravm(
     input_files: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-) -> anyhow::Result<Build> {
+) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
         0 => anyhow::bail!("The input file is missing"),
@@ -117,7 +157,7 @@ pub fn llvm_ir(
 
     let project = Project::try_from_llvm_ir_path(path)?;
 
-    let build = project.compile(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
@@ -129,13 +169,38 @@ pub fn llvm_ir(
 }
 
 ///
+/// Runs the LLVM IR mode for the EVM target.
+///
+pub fn llvm_ir_to_evm(
+    input_files: &[PathBuf],
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    include_metadata_hash: bool,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+) -> anyhow::Result<EVMBuild> {
+    let path = match input_files.len() {
+        1 => input_files.first().expect("Always exists"),
+        0 => anyhow::bail!("The input file is missing"),
+        length => anyhow::bail!(
+            "Only one input file is allowed in the LLVM IR mode, but found {}",
+            length,
+        ),
+    };
+
+    let project = Project::try_from_llvm_ir_path(path)?;
+
+    let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
+
+    Ok(build)
+}
+
+///
 /// Runs the EraVM assembly mode.
 ///
-pub fn zkasm(
+pub fn eravm_assembly(
     input_files: &[PathBuf],
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-) -> anyhow::Result<Build> {
+) -> anyhow::Result<EraVMBuild> {
     let path = match input_files.len() {
         1 => input_files.first().expect("Always exists"),
         0 => anyhow::bail!("The input file is missing"),
@@ -145,10 +210,10 @@ pub fn zkasm(
         ),
     };
 
-    let project = Project::try_from_zkasm_path(path)?;
+    let project = Project::try_from_eravm_assembly_path(path)?;
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
-    let build = project.compile(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         false,
         include_metadata_hash,
@@ -160,10 +225,10 @@ pub fn zkasm(
 }
 
 ///
-/// Runs the standard output mode.
+/// Runs the standard output mode for EraVM.
 ///
 #[allow(clippy::too_many_arguments)]
-pub fn standard_output(
+pub fn standard_output_eravm(
     input_files: &[PathBuf],
     libraries: Vec<String>,
     solc: &mut SolcCompiler,
@@ -179,7 +244,7 @@ pub fn standard_output(
     remappings: Option<BTreeSet<String>>,
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-) -> anyhow::Result<Build> {
+) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
@@ -241,7 +306,7 @@ pub fn standard_output(
         debug_config.as_ref(),
     )?;
 
-    let build = project.compile(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         is_system_mode,
         include_metadata_hash,
@@ -253,10 +318,95 @@ pub fn standard_output(
 }
 
 ///
-/// Runs the standard JSON mode.
+/// Runs the standard output mode for EVM.
 ///
 #[allow(clippy::too_many_arguments)]
-pub fn standard_json(
+pub fn standard_output_evm(
+    input_files: &[PathBuf],
+    libraries: Vec<String>,
+    solc: &mut SolcCompiler,
+    evm_version: Option<era_compiler_common::EVMVersion>,
+    solc_optimizer_enabled: bool,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    force_evmla: bool,
+    include_metadata_hash: bool,
+    base_path: Option<String>,
+    include_paths: Vec<String>,
+    allow_paths: Option<String>,
+    remappings: Option<BTreeSet<String>>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+) -> anyhow::Result<EVMBuild> {
+    let solc_version = solc.version()?;
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+
+    let solc_input = SolcStandardJsonInput::try_from_paths(
+        SolcStandardJsonInputLanguage::Solidity,
+        evm_version,
+        input_files,
+        libraries,
+        remappings,
+        SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
+        SolcStandardJsonInputSettingsOptimizer::new(
+            solc_optimizer_enabled,
+            None,
+            &solc_version.default,
+            optimizer_settings.is_fallback_to_size_enabled(),
+            optimizer_settings.is_system_request_memoization_disabled(),
+        ),
+        None,
+        solc_pipeline == SolcPipeline::Yul,
+        None,
+    )?;
+
+    let source_code_files = solc_input
+        .sources
+        .iter()
+        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
+        .collect();
+
+    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let mut solc_output = solc.standard_json(
+        solc_input,
+        solc_pipeline,
+        base_path,
+        include_paths,
+        allow_paths,
+    )?;
+
+    if let Some(errors) = solc_output.errors.as_deref() {
+        let mut has_errors = false;
+
+        for error in errors.iter() {
+            if error.severity.as_str() == "error" {
+                has_errors = true;
+            }
+
+            eprintln!("{error}");
+        }
+
+        if has_errors {
+            anyhow::bail!("Error(s) found. Compilation aborted");
+        }
+    }
+
+    let project = solc_output.try_to_project(
+        source_code_files,
+        libraries,
+        solc_pipeline,
+        &solc_version,
+        debug_config.as_ref(),
+    )?;
+
+    let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
+
+    Ok(build)
+}
+
+///
+/// Runs the standard JSON mode for EVM.
+///
+#[allow(clippy::too_many_arguments)]
+pub fn standard_json_eravm(
     solc: &mut SolcCompiler,
     detect_missing_libraries: bool,
     force_evmla: bool,
@@ -321,7 +471,7 @@ pub fn standard_json(
             &zksolc_version,
         )?;
     } else {
-        let build = project.compile(
+        let build = project.compile_to_eravm(
             optimizer_settings,
             is_system_mode,
             include_metadata_hash,
@@ -335,10 +485,74 @@ pub fn standard_json(
 }
 
 ///
-/// Runs the combined JSON mode.
+/// Runs the standard JSON mode for EVM.
+///
+pub fn standard_json_evm(
+    solc: &mut SolcCompiler,
+    force_evmla: bool,
+    base_path: Option<String>,
+    include_paths: Vec<String>,
+    allow_paths: Option<String>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+) -> anyhow::Result<()> {
+    let solc_version = solc.version()?;
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+
+    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let source_code_files = solc_input
+        .sources
+        .iter()
+        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
+        .collect();
+
+    let optimizer_settings =
+        era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
+
+    let include_metadata_hash = match solc_input.settings.metadata {
+        Some(ref metadata) => {
+            metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
+        }
+        None => true,
+    };
+
+    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let mut solc_output = solc.standard_json(
+        solc_input,
+        solc_pipeline,
+        base_path,
+        include_paths,
+        allow_paths,
+    )?;
+
+    if let Some(errors) = solc_output.errors.as_deref() {
+        for error in errors.iter() {
+            if error.severity.as_str() == "error" {
+                serde_json::to_writer(std::io::stdout(), &solc_output)?;
+                std::process::exit(0);
+            }
+        }
+    }
+
+    let project = solc_output.try_to_project(
+        source_code_files,
+        libraries,
+        solc_pipeline,
+        &solc_version,
+        debug_config.as_ref(),
+    )?;
+
+    let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
+    build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
+    serde_json::to_writer(std::io::stdout(), &solc_output)?;
+    std::process::exit(0);
+}
+
+///
+/// Runs the combined JSON mode for EraVM.
 ///
 #[allow(clippy::too_many_arguments)]
-pub fn combined_json(
+pub fn combined_json_eravm(
     format: String,
     input_files: &[PathBuf],
     libraries: Vec<String>,
@@ -360,7 +574,7 @@ pub fn combined_json(
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let build = standard_output(
+    let build = standard_output_eravm(
         input_files,
         libraries,
         solc,
@@ -375,6 +589,65 @@ pub fn combined_json(
         allow_paths,
         remappings,
         suppressed_warnings,
+        debug_config,
+    )?;
+
+    let mut combined_json = solc.combined_json(input_files, format.as_str())?;
+    build.write_to_combined_json(&mut combined_json, &zksolc_version)?;
+
+    match output_directory {
+        Some(output_directory) => {
+            std::fs::create_dir_all(output_directory.as_path())?;
+
+            combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
+        }
+        None => {
+            println!(
+                "{}",
+                serde_json::to_string(&combined_json).expect("Always valid")
+            );
+        }
+    }
+    std::process::exit(0);
+}
+
+///
+/// Runs the combined JSON mode for EVM.
+///
+#[allow(clippy::too_many_arguments)]
+pub fn combined_json_evm(
+    format: String,
+    input_files: &[PathBuf],
+    libraries: Vec<String>,
+    solc: &mut SolcCompiler,
+    evm_version: Option<era_compiler_common::EVMVersion>,
+    solc_optimizer_enabled: bool,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    force_evmla: bool,
+    include_metadata_hash: bool,
+    base_path: Option<String>,
+    include_paths: Vec<String>,
+    allow_paths: Option<String>,
+    remappings: Option<BTreeSet<String>>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+    output_directory: Option<PathBuf>,
+    overwrite: bool,
+) -> anyhow::Result<()> {
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+
+    let build = standard_output_evm(
+        input_files,
+        libraries,
+        solc,
+        evm_version,
+        solc_optimizer_enabled,
+        optimizer_settings,
+        force_evmla,
+        include_metadata_hash,
+        base_path,
+        include_paths,
+        allow_paths,
+        remappings,
         debug_config,
     )?;
 

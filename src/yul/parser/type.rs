@@ -71,12 +71,9 @@ impl Type {
     ///
     /// Converts the type into its LLVM.
     ///
-    pub fn into_llvm<'ctx, D>(
-        self,
-        context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> inkwell::types::IntType<'ctx>
+    pub fn into_llvm<'ctx, C>(self, context: &C) -> inkwell::types::IntType<'ctx>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        C: era_compiler_llvm_context::IContext<'ctx>,
     {
         match self {
             Self::Bool => context.integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN),

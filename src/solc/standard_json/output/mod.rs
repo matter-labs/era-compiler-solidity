@@ -97,7 +97,11 @@ impl Output {
                         }
 
                         if let Some(debug_config) = debug_config {
-                            debug_config.dump_yul(full_path.as_str(), ir_optimized.as_str())?;
+                            debug_config.dump_yul(
+                                full_path.as_str(),
+                                None,
+                                ir_optimized.as_str(),
+                            )?;
                         }
 
                         let mut lexer = Lexer::new(ir_optimized.to_owned());
