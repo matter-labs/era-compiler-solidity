@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#f1ae37a655c55ddc9c0bf08f3fbd00f99d38809e"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1594-add-the-jump-table-threshold-parameter-to-fe#518db5bcfda42e44cdf98b887ad4f07a4e88847b"
 dependencies = [
  "anyhow",
  "era-compiler-common",
