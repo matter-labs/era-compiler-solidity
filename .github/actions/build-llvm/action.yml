@@ -24,8 +24,7 @@ runs:
     - name: Clone LLVM framework
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        cargo install compiler-llvm-builder ${{ steps.build-target.outputs.target }} \
-          --git https://github.com/matter-labs/era-compiler-llvm-builder --branch v1.0.18
+        cargo install compiler-llvm-builder ${{ steps.build-target.outputs.target }}
         zkevm-llvm clone
 
     - name: Define ccache key
@@ -66,7 +65,7 @@ runs:
       with:
         timeout_minutes: 60
         max_attempts: 16 # protection mechanism for sporadic dependencies download failure
-        command: zkevm-llvm build --use-ccache
+        command: zkevm-llvm build --targets 'EVM' --use-ccache
 
     - name: Build LLVM MacOS and Windows
       if: ${{ runner.os != 'Linux' }}
@@ -77,4 +76,4 @@ runs:
         CCACHE_COMPILERCHECK: "content"
         LIBSTDCPP_SOURCE_PATH: "C:/a/_temp/msys64/mingw64/lib/libstdc++.a"
       run: |
-        zkevm-llvm build --use-ccache
+        zkevm-llvm build --targets 'EVM' --use-ccache

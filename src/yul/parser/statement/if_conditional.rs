@@ -7,6 +7,8 @@ use std::collections::HashSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
@@ -67,6 +69,43 @@ where
         let condition = self
             .condition
             .into_llvm(context)?
+            .expect("Always exists")
+            .to_llvm()
+            .into_int_value();
+        let condition = context.builder().build_int_z_extend_or_bit_cast(
+            condition,
+            context.field_type(),
+            "if_condition_extended",
+        );
+        let condition = context.builder().build_int_compare(
+            inkwell::IntPredicate::NE,
+            condition,
+            context.field_const(0),
+            "if_condition_compared",
+        );
+        let main_block = context.append_basic_block("if_main");
+        let join_block = context.append_basic_block("if_join");
+        context.build_conditional_branch(condition, main_block, join_block);
+        context.set_basic_block(main_block);
+        self.block.into_llvm(context)?;
+        context.build_unconditional_branch(join_block);
+        context.set_basic_block(join_block);
+
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let condition = self
+            .condition
+            .into_llvm_evm(context)?
             .expect("Always exists")
             .to_llvm()
             .into_int_value();

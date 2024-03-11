@@ -7,6 +7,8 @@ use std::collections::HashSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use era_compiler_llvm_context::IContext;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::literal::Literal;
@@ -247,6 +249,28 @@ where
             }
         }
 
+        Ok(())
+    }
+}
+
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object
+where
+    D: era_compiler_llvm_context::EVMDependency + Clone,
+{
+    fn declare(
+        &mut self,
+        _context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    fn into_llvm(
+        self,
+        context: &mut era_compiler_llvm_context::EVMContext<D>,
+    ) -> anyhow::Result<()> {
+        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(self.code);
+        entry.declare(context)?;
+        entry.into_llvm(context)?;
         Ok(())
     }
 }

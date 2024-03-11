@@ -78,12 +78,12 @@ impl Literal {
     ///
     /// Converts the literal into its LLVM.
     ///
-    pub fn into_llvm<'ctx, D>(
+    pub fn into_llvm<'ctx, C>(
         self,
-        context: &era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<era_compiler_llvm_context::EraVMArgument<'ctx>>
+        context: &C,
+    ) -> anyhow::Result<era_compiler_llvm_context::Value<'ctx>>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        C: era_compiler_llvm_context::IContext<'ctx>,
     {
         match self.inner {
             LexicalLiteral::Boolean(inner) => {
@@ -105,7 +105,7 @@ impl Literal {
                     BooleanLiteral::True => num::BigUint::one(),
                 };
 
-                Ok(era_compiler_llvm_context::EraVMArgument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -136,7 +136,7 @@ impl Literal {
                 }
                 .expect("Always valid");
 
-                Ok(era_compiler_llvm_context::EraVMArgument::new_with_constant(
+                Ok(era_compiler_llvm_context::Value::new_with_constant(
                     value, constant,
                 ))
             }
@@ -210,7 +210,7 @@ impl Literal {
                 };
 
                 if hex_string.len() > era_compiler_common::BYTE_LENGTH_FIELD * 2 {
-                    return Ok(era_compiler_llvm_context::EraVMArgument::new_with_original(
+                    return Ok(era_compiler_llvm_context::Value::new_with_original(
                         r#type.const_zero().as_basic_value_enum(),
                         string,
                     ));
@@ -230,7 +230,7 @@ impl Literal {
                     )
                     .expect("The value is valid")
                     .as_basic_value_enum();
-                Ok(era_compiler_llvm_context::EraVMArgument::new_with_original(
+                Ok(era_compiler_llvm_context::Value::new_with_original(
                     value, string,
                 ))
             }

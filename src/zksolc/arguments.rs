@@ -99,6 +99,12 @@ pub struct Arguments {
     #[structopt(long = "standard-json")]
     pub standard_json: bool,
 
+    /// Specify the target machine.
+    /// Available arguments: `eravm`, `evm`.
+    /// The default is `eravm`.
+    #[structopt(long = "target")]
+    pub target: Option<String>,
+
     /// Switch to missing deployable libraries detection mode.
     /// Only available for standard JSON input/output mode.
     /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
@@ -201,7 +207,9 @@ impl Arguments {
             anyhow::bail!("No other options are allowed while getting the compiler version.");
         }
 
-        if self.recursive_process && std::env::args().count() > 2 {
+        if self.recursive_process
+            && std::env::args().count() > 2 + (self.target.is_some() as usize) * 2
+        {
             anyhow::bail!("No other options are allowed in recursive mode.");
         }
 
@@ -267,6 +275,9 @@ impl Arguments {
         }
 
         if self.zkasm {
+            if Some(era_compiler_llvm_context::Target::EVM.to_string()) == self.target {
+                anyhow::bail!("EraVM assembly cannot be compiled to EVM bytecode.");
+            }
             if self.optimization.is_some() {
                 anyhow::bail!("LLVM optimizations are not supported in EraVM assembly mode.");
             }

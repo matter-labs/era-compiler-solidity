@@ -114,9 +114,9 @@ checksum = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223"
 
 [[package]]
 name = "cc"
-version = "1.0.89"
+version = "1.0.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0ba8f7aaa012f30d5b2861462f6708eccd49c3c39863fe083a308035f63d723"
+checksum = "8cd6604a82acf3039f1144f54b8eb34e91ffba622051189e71b781822d5ee1f5"
 
 [[package]]
 name = "cfg-if"
@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=v1.5.0#aac891aa7cfcd2c61ed5569485603ed742ce68ea"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=v1.5.0#966dfc0a59bedce87ac45960ac6923c37507b0fd"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -559,7 +559,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#98a023834492fe59b4ae97c405f75626437fced0"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -573,7 +573,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.6.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#14a5561e1fda7fe68b427c87a7f0eff7ef17e592"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#98a023834492fe59b4ae97c405f75626437fced0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -649,7 +649,7 @@ checksum = "01cda141df6706de531b6c46c3a33ecca755538219bd484262fa09410c13539c"
 [[package]]
 name = "llvm-sys"
 version = "150.0.5"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-15.0#4d5196cde1825d14028788d0ffa6202ea5f98db6"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-15.0#049dba7d1a8154f01c6267e8612504d56e651088"
 dependencies = [
  "cc",
  "lazy_static",
@@ -1634,7 +1634,7 @@ dependencies = [
 [[package]]
 name = "zkevm_opcode_defs"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#92a0915a34f48f1063749954c88a7aeb8475ab9a"
+source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#7bf8016f5bb13a73289f321ad6ea8f614540ece9"
 dependencies = [
  "bitflags 2.4.2",
  "blake2",

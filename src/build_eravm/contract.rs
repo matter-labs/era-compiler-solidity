@@ -150,7 +150,7 @@ impl Contract {
         let assembly_text = self.build.assembly_text;
         let bytecode = hex::encode(self.build.bytecode.as_slice());
         if let Some(evm) = standard_json_contract.evm.as_mut() {
-            evm.modify(assembly_text, bytecode);
+            evm.modify_eravm(assembly_text, bytecode);
         }
 
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);

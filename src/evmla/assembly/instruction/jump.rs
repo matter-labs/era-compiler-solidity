@@ -2,26 +2,38 @@
 //! Translates the jump operations.
 //!
 
+use era_compiler_llvm_context::IEVMLAData;
+use era_compiler_llvm_context::IEVMLAFunction;
+
 ///
 /// Translates the unconditional jump.
 ///
-pub fn unconditional<D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<D>,
+pub fn unconditional<'ctx, C>(
+    context: &mut C,
     destination: num::BigUint,
     stack_hash: md5::Digest,
 ) -> anyhow::Result<()>
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    C: era_compiler_llvm_context::IContext<'ctx>,
 {
     let code_type = context
         .code_type()
         .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
-    let block_key = era_compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, destination);
+    let block_key = match code_type {
+        era_compiler_llvm_context::CodeType::Deploy
+            if destination > num::BigUint::from(u32::MAX) =>
+        {
+            era_compiler_llvm_context::BlockKey::new(
+                era_compiler_llvm_context::CodeType::Runtime,
+                destination.to_owned() - num::BigUint::from(1u64 << 32),
+            )
+        }
+        code_type => era_compiler_llvm_context::BlockKey::new(code_type, destination),
+    };
 
     let block = context
         .current_function()
         .borrow()
-        .evmla()
         .find_block(&block_key, &stack_hash)?;
     context.build_unconditional_branch(block.inner());
 
@@ -31,25 +43,37 @@ where
 ///
 /// Translates the conditional jump.
 ///
-pub fn conditional<D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<D>,
+pub fn conditional<'ctx, C>(
+    context: &mut C,
     destination: num::BigUint,
     stack_hash: md5::Digest,
     stack_height: usize,
 ) -> anyhow::Result<()>
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    C: era_compiler_llvm_context::IContext<'ctx>,
 {
     let code_type = context
         .code_type()
         .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
-    let block_key = era_compiler_llvm_context::EraVMFunctionBlockKey::new(code_type, destination);
+    let block_key = match code_type {
+        era_compiler_llvm_context::CodeType::Deploy
+            if destination > num::BigUint::from(u32::MAX) =>
+        {
+            era_compiler_llvm_context::BlockKey::new(
+                era_compiler_llvm_context::CodeType::Runtime,
+                destination.to_owned() - num::BigUint::from(1u64 << 32),
+            )
+        }
+        code_type => era_compiler_llvm_context::BlockKey::new(code_type, destination),
+    };
 
-    let condition_pointer = context.evmla().stack[stack_height]
+    let condition_pointer = context
+        .evmla()
+        .get_element(stack_height)
         .to_llvm()
         .into_pointer_value();
     let condition = context.build_load(
-        era_compiler_llvm_context::EraVMPointer::new_stack_field(context, condition_pointer),
+        era_compiler_llvm_context::Pointer::new_stack_field(context, condition_pointer),
         format!("conditional_{block_key}_condition").as_str(),
     );
     let condition = context.builder().build_int_compare(
@@ -62,7 +86,6 @@ where
     let then_block = context
         .current_function()
         .borrow()
-        .evmla()
         .find_block(&block_key, &stack_hash)?;
     let join_block =
         context.append_basic_block(format!("conditional_{block_key}_join_block").as_str());
