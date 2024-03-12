@@ -29,6 +29,9 @@ pub struct Optimizer {
     /// Whether to disable the system request memoization.
     #[serde(skip_serializing)]
     pub disable_system_request_memoization: Option<bool>,
+    /// Set the jump table density threshold.
+    #[serde(skip_serializing)]
+    pub jump_table_density_threshold: Option<u32>,
 }
 
 impl Optimizer {
@@ -41,6 +44,7 @@ impl Optimizer {
         version: &semver::Version,
         fallback_to_optimizing_for_size: bool,
         disable_system_request_memoization: bool,
+        jump_table_density_threshold: Option<u32>,
     ) -> Self {
         Self {
             enabled,
@@ -48,6 +52,7 @@ impl Optimizer {
             details: Some(Details::disabled(version)),
             fallback_to_optimizing_for_size: Some(fallback_to_optimizing_for_size),
             disable_system_request_memoization: Some(disable_system_request_memoization),
+            jump_table_density_threshold,
         }
     }
 
