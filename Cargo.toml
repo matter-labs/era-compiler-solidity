@@ -9,6 +9,10 @@ edition = "2021"
 description = "EraVM Solidity compiler"
 
 [[bin]]
+name = "yul-easycrypt"
+path = "src/yul-easycrypt/main.rs"
+
+[[bin]]
 name = "zksolc"
 path = "src/zksolc/main.rs"
 

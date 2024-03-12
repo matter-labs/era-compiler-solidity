@@ -11,7 +11,8 @@ pub(crate) mod process;
 pub(crate) mod project;
 pub(crate) mod solc;
 pub(crate) mod warning;
-pub(crate) mod yul;
+// iz: this can be reverted back to pub(crate) once we separate YUL parser from the compiler
+pub mod yul;
 
 pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
