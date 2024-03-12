@@ -4,6 +4,7 @@
 
 ### Added
 
+- The jump table density threshold optimization parameter
 - Simulations to forward return data pointers
 - Simulations to manipulate multiple active pointers
 

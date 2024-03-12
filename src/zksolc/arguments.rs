@@ -67,6 +67,10 @@ pub struct Arguments {
     #[structopt(long = "disable-system-request-memoization")]
     pub disable_system_request_memoization: bool,
 
+    /// Set the jump table density threshold.
+    #[structopt(long = "jump-table-density-threshold")]
+    pub jump_table_density_threshold: Option<u32>,
+
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
     /// Beware that it will prevent libraries from being inlined.
@@ -288,6 +292,11 @@ impl Arguments {
             if self.disable_system_request_memoization {
                 anyhow::bail!("Disabling the system request memoization is not supported in EraVM assembly mode.");
             }
+            if self.jump_table_density_threshold.is_some() {
+                anyhow::bail!(
+                    "Setting the jump table density threshold is not supported in EraVM assembly mode."
+                );
+            }
         }
 
         if self.combined_json.is_some() {
@@ -337,6 +346,11 @@ impl Arguments {
             if self.disable_system_request_memoization {
                 anyhow::bail!(
                     "Disabling the system request memoization must specified in standard JSON input settings."
+                );
+            }
+            if self.jump_table_density_threshold.is_some() {
+                anyhow::bail!(
+                    "Setting the jump table density threshold must specified in standard JSON input settings."
                 );
             }
             if self.metadata_hash.is_some() {
