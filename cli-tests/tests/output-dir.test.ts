@@ -120,9 +120,4 @@ describe("Set of --output-dir tests", () => {
     });
   }
 
-  afterAll(() => {
-    removeDirectory(paths.pathToOutputDir);
-    removeDirectory(paths.pathToBadOutputDir);
-  });
-
 });
