@@ -32,24 +32,6 @@ export const createTmpDirectory = (name = 'tmp-XXXXXX'): tmp.DirResult => {
   return tmp.dirSync({ template: name, tmpdir: paths.pathToOutputDir, unsafeCleanup: true });
 };
 
-
-export const removeDirectory = (path: string): boolean => {
-  if (fs.existsSync(path)) {
-    const stats = fs.statSync(path);
-    if (stats.isDirectory()) {
-      try {
-        fs.rmSync(path, { recursive: true });
-        return true;
-      } catch (error) {
-      }
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-};
-
 export const changeDirectoryPermissions = (directoryPath: string, permission: string): void => {
   let args: string[];
   let command: string;

@@ -1,4 +1,4 @@
-import {executeCommand, isDestinationExist, removeDirectory, changeDirectoryPermissions, createTmpDirectory} from "../src/helper";
+import {executeCommand, isDestinationExist, changeDirectoryPermissions, createTmpDirectory} from "../src/helper";
 import { paths } from '../src/entities';
 import * as os from 'os';
 
