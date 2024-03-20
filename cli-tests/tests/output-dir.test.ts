@@ -135,5 +135,4 @@ describe("Set of --output-dir tests", () => {
       // });
     });
   }
-
 });
