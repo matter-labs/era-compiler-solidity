@@ -112,6 +112,8 @@ describe("Set of --output-dir tests", () => {
   if (os.platform() !== 'linux') {
     describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
       const tmpDirZkSolc = createTmpDirectory();
+
+      // TODO: uncomment after CPR-1588 is fixed
       // const tmpDirSolc = createTmpDirectory();
       changeDirectoryPermissions(tmpDirZkSolc.name, 'r');
       const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirZkSolc.name}`];
@@ -126,6 +128,7 @@ describe("Set of --output-dir tests", () => {
         tmpDirZkSolc.removeCallback();
       });
 
+      // TODO: uncomment after CPR-1588 is fixed
       // Exit code should be the same
       // xit("solc exit code == zksolc exit code", () => {
       //   const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirSolc.name}`];
