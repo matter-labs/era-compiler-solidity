@@ -19,6 +19,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "jest-junit": "^16.0.0"
+    "jest-junit": "^16.0.0",
+    "tmp": "^0.2.3"
   }
 }

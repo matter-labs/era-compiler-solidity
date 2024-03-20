@@ -1,4 +1,4 @@
-import {executeCommand, isDestinationExist, isFileEmpty} from "../src/helper";
+import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory} from "../src/helper";
 import { paths } from '../src/entities';
 
 
@@ -27,6 +27,7 @@ describe("Common tests", () => {
 
     //#1713
     describe(`Default run of ${zksolcCommand} from the help`, () => {
+        const tmpDirZkSolc = createTmpDirectory();
         const args = [
             `"${paths.pathToBasicSolContract}"`,
             `-O3`,
@@ -59,11 +60,13 @@ describe("Common tests", () => {
 
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
             expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+            tmpDirZkSolc.removeCallback();
         });
     });
 
     //#1818
     describe(`Run ${zksolcCommand} with multiple output options from the help`, () => {
+        const tmpDirZkSolc = createTmpDirectory();
         const args = [
             `"${paths.pathToBasicSolContract}"`,
             `-O3`,
@@ -93,6 +96,7 @@ describe("Common tests", () => {
         });
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
             expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+            tmpDirZkSolc.removeCallback();
         });
     });
 });

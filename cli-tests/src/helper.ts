@@ -1,7 +1,11 @@
 import * as fs from 'fs';
 import { spawnSync } from "child_process";
 import * as os from 'os';
+import * as tmp from 'tmp';
+import { paths } from './entities';
 
+
+tmp.setGracefulCleanup();
 
 export function executeCommand(command: string, args: string[]) {
   const result = spawnSync(command, args, { encoding: 'utf-8', shell: true, stdio: 'pipe' });
@@ -21,21 +25,20 @@ export const isFileEmpty = (file: string): boolean  => {
     }
 };
 
-export const createDirectory = (file: string): boolean => {
-  try {
-    fs.mkdirSync(file);
-    return true;
-  } catch (error) {
-    return false;
-  }
+export const createTmpDirectory = (name = 'tmp-XXXXXX'): tmp.DirResult => {
+  if (!fs.existsSync(paths.pathToOutputDir)) {
+    fs.mkdirSync(paths.pathToOutputDir, { recursive: true });
+  } 
+  return tmp.dirSync({ template: name, tmpdir: paths.pathToOutputDir, unsafeCleanup: true });
 };
 
-export const removeDirectory = (file: string): boolean => {
-  if (fs.existsSync(file)) {
-    const stats = fs.statSync(file);
+
+export const removeDirectory = (path: string): boolean => {
+  if (fs.existsSync(path)) {
+    const stats = fs.statSync(path);
     if (stats.isDirectory()) {
       try {
-        fs.rmSync(file, { recursive: true });
+        fs.rmSync(path, { recursive: true });
         return true;
       } catch (error) {
       }
