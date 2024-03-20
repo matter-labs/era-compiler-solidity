@@ -136,6 +136,7 @@ describe("Set of --output-dir tests", () => {
       //   expect(solcResult.exitCode).toBe(result.exitCode);
       //   tmpDirSolc.removeCallback();
       // });
+      
     });
   }
 });
