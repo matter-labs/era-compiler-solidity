@@ -3,6 +3,7 @@ import { spawnSync } from "child_process";
 import * as os from 'os';
 import * as tmp from 'tmp';
 import { paths } from './entities';
+import * as path from 'path';
 
 
 tmp.setGracefulCleanup();
@@ -63,4 +64,16 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
   } catch (error) {
     console.error(`Error changing permissions for directory '${directoryPath}':`, error);
   }
+};
+
+export const pathToSolBinOutputFile = (destination: string): string  => {
+  return path.join(destination, paths.contractSolFilename + paths.binExtension);
+};
+
+export const pathToSolAsmOutputFile = (destination: string): string  => {
+  return path.join(destination, paths.contractSolFilename + paths.asmExtension);
+};
+
+export const pathToLlvmContractsFile = (destination: string): string  => {
+  return path.join(destination, paths.contractLlvmFilename + paths.llvmExtension);
 };

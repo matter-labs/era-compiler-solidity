@@ -1,5 +1,6 @@
 import * as path from 'path';
 
+
 const outputDir = 'artifacts';
 const binExtension = ':C.zbin';
 const asmExtension = ':C.zasm';
@@ -12,30 +13,23 @@ const contractLlvmFilename = 'contract.ll';
 const contractJSONFilename = 'contract.json';
 const pathToOutputDir = path.join( __dirname, '..', outputDir);
 const pathToContracts = path.join( __dirname, '..', 'src', 'contracts');
-const pathToCustomOutputDir = path.join(pathToOutputDir, `tmp`);
-const pathToReadOnlyOutputDir = path.join(pathToOutputDir, `read-only`);
-const pathToBadOutputDir = path.join( __dirname, '..', `File!and#$%`);
 const pathToBasicYulContract = path.join(pathToContracts, 'yul', contractYulFilename);
 const pathToBasicZkasmContract = path.join(pathToContracts, 'zkasm', contractZkasmFilename);
 const pathToBasicSolContract = path.join(pathToContracts, 'solidity', contractSolFilename);
 const pathToBasicLlvmContract = path.join(pathToContracts, "llvm", contractLlvmFilename);
 const pathToBasicJSONContract = path.join(pathToContracts, "json", contractJSONFilename);
-const pathToSolBinOutputFile = path.join(pathToOutputDir, contractSolFilename + binExtension);
-const pathToSolAsmOutputFile = path.join(pathToOutputDir, contractSolFilename + asmExtension);
-const pathToLlvmContractsFile = path.join(pathToOutputDir, contractLlvmFilename + llvmExtension);
 
 
 export const paths = {
   outputDir: outputDir,
-  pathToCustomOutputDir: pathToCustomOutputDir,
-  pathToReadOnlyOutputDir: pathToReadOnlyOutputDir,
-  pathToBadOutputDir: pathToBadOutputDir,
   binExtension: binExtension,
   asmExtension: asmExtension,
+  llvmExtension: llvmExtension,
   libraryDefault: libraryDefault,
   contractSolFilename: contractSolFilename,
   contractZkasmFilename: contractZkasmFilename,
   contractYulFilename: contractYulFilename,
+  contractLlvmFilename: contractLlvmFilename,
   pathToOutputDir: pathToOutputDir,
   pathToContracts: pathToContracts,
   pathToBasicZkasmContract: pathToBasicZkasmContract,
@@ -43,7 +37,4 @@ export const paths = {
   pathToBasicYulContract: pathToBasicYulContract,
   pathToBasicLlvmContract: pathToBasicLlvmContract,
   pathToBasicJSONContract: pathToBasicJSONContract,
-  pathToSolBinOutputFile: pathToSolBinOutputFile,
-  pathToSolAsmOutputFile: pathToSolAsmOutputFile,
-  pathToLlvmOutputFile: pathToLlvmContractsFile,
 };

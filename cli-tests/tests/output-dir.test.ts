@@ -123,7 +123,6 @@ describe("Set of --output-dir tests", () => {
 
       it("--output-dir output is presented", () => {
         expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
-        changeDirectoryPermissions(paths.pathToReadOnlyOutputDir, 'a');
         tmpDirZkSolc.removeCallback();
       });
 

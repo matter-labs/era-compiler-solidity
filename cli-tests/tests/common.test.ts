@@ -1,4 +1,4 @@
-import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory} from "../src/helper";
+import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile} from "../src/helper";
 import { paths } from '../src/entities';
 
 
@@ -33,7 +33,7 @@ describe("Common tests", () => {
             `-O3`,
             `--bin`,
             `--output-dir`,
-            `"${paths.pathToOutputDir}"`
+            `"${tmpDirZkSolc.name}"`
         ]; // potential issue on zksolc with full path on Windows cmd
         const result = executeCommand(zksolcCommand, args);
         
@@ -47,15 +47,15 @@ describe("Common tests", () => {
         });
 
         it("Output dir is created", () => {
-            expect(isDestinationExist(paths.pathToOutputDir)).toBe(true);
+            expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
 
         xit("Output file is created", () => { // a bug on windows
-            expect(isDestinationExist(paths.pathToSolBinOutputFile)).toBe(true);
+            expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
 
         it("the output file is not empty", () => {
-            expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
+            expect(isFileEmpty(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(false);
         });
 
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
@@ -73,7 +73,7 @@ describe("Common tests", () => {
             `--bin`,
             `--asm`,
             `--output-dir`,
-            `"${paths.pathToOutputDir}"`
+            `"${tmpDirZkSolc.name}"`
         ]; // potential issue on zksolc with full path on Windows cmd
         const result = executeCommand(zksolcCommand, args);
 
@@ -84,15 +84,15 @@ describe("Common tests", () => {
             expect(result.exitCode).toBe(0);
         });
         it("Output dir is created", () => {
-            expect(isDestinationExist(paths.pathToOutputDir)).toBe(true);
+            expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
         xit("Output files are created", () => { // a bug on windows
-            expect(isDestinationExist(paths.pathToSolBinOutputFile)).toBe(true);
-            expect(isDestinationExist(paths.pathToSolAsmOutputFile)).toBe(true);
+            expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
+            expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
         it("the output files are not empty", () => {
-            expect(isFileEmpty(paths.pathToSolBinOutputFile)).toBe(false);
-            expect(isFileEmpty(paths.pathToSolAsmOutputFile)).toBe(false);
+            expect(isFileEmpty(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(false);
+            expect(isFileEmpty(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(false);
         });
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
             expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
