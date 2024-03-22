@@ -7,7 +7,7 @@ describe("Set of --standard-json tests", () => {
 
 
   //id1741:I //BUG CPR-1409
-  xdescribe(`Run ${zksolcCommand} with --standard-json contract.json}`, () => {
+  describe(`Run ${zksolcCommand} with --standard-json contract.json}`, () => {
     const args = [`--standard-json`, `${paths.pathToBasicJSONContract}`];
     const result = executeCommand(zksolcCommand, args);
 
