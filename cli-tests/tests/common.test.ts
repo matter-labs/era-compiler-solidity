@@ -53,7 +53,7 @@ describe("Common tests", () => {
 
         it("Output file is created", () => { // a bug on windows
             if ( os.platform() === 'win32' ) {
-                console.log(executeCommand('dir', [pathToSolBinOutputFile(tmpDirZkSolc.name)]))
+                console.log(executeCommand('dir', [pathToSolBinOutputFile(tmpDirZkSolc.name), '/B']))
             }
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
@@ -92,7 +92,9 @@ describe("Common tests", () => {
         });
         it("Output files are created", () => { // a bug on windows
             if ( os.platform() === 'win32' ) {
-                console.log(executeCommand('dir', [pathToSolAsmOutputFile(tmpDirZkSolc.name)]))
+                console.log("tmpDirZkSolc.name: " + tmpDirZkSolc.name)
+                console.log("pathToSolAsmOutputFile(tmpDirZkSolc.name): " + pathToSolAsmOutputFile(tmpDirZkSolc.name))
+                console.log("pathToSolAsmOutputFile: " + executeCommand('dir', [pathToSolAsmOutputFile(tmpDirZkSolc.name), '/B']))
             }
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
             expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
