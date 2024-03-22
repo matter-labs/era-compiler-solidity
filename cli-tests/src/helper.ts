@@ -77,3 +77,14 @@ export const pathToSolAsmOutputFile = (destination: string): string  => {
 export const pathToLlvmContractsFile = (destination: string): string  => {
   return path.join(destination, paths.contractLlvmFilename + paths.llvmExtension);
 };
+
+export const isOutputTheSame = (file: string, cliOutput: string): boolean => {
+    const fileOutput = fs.readFileSync(file, 'utf-8');
+    console.log("fileOutput: \n" + fileOutput);
+    console.log("cliOutput: \n" + cliOutput);
+    if (cliOutput.includes(fileOutput) || fileOutput.includes(cliOutput)) {
+        return true
+    } else {
+        return false
+    }
+}
