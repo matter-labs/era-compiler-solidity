@@ -1,5 +1,6 @@
 import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile, isOutputTheSame} from "../src/helper";
 import { paths } from '../src/entities';
+import * as os from 'os';
 
 
 describe("Common tests", () => {
@@ -51,6 +52,9 @@ describe("Common tests", () => {
         });
 
         it("Output file is created", () => { // a bug on windows
+            if ( os.platform() === 'win32' ) {
+                console.log(executeCommand('dir', [pathToSolBinOutputFile(tmpDirZkSolc.name)]))
+            }
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
 
@@ -87,6 +91,9 @@ describe("Common tests", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
         it("Output files are created", () => { // a bug on windows
+            if ( os.platform() === 'win32' ) {
+                console.log(executeCommand('dir', [pathToSolAsmOutputFile(tmpDirZkSolc.name)]))
+            }
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
             expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
