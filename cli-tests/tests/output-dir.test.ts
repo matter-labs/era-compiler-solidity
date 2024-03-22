@@ -109,7 +109,6 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812 - different behaviour on CI on Linux
-  if (os.platform() !== 'linux') {
     describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
       const tmpDirZkSolc = createTmpDirectory();
 
@@ -136,5 +135,4 @@ describe("Set of --output-dir tests", () => {
       });
       
     });
-  }
 });
