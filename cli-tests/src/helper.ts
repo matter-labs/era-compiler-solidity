@@ -17,13 +17,21 @@ export function executeCommand(command: string, args: string[]) {
 }
 
 export const isDestinationExist = (destination: string): boolean  => {
-    return fs.existsSync(destination);
+  let exitCode: number;
+  if (os.platform() === 'win32') {
+    exitCode = executeCommand('dir', [destination]).exitCode;
+    console.log("Actual output: " + executeCommand('dir', [destination]).output)
+  } else {
+    exitCode = executeCommand('ls', [destination]).exitCode;
+    console.log("Actual output: " + executeCommand('ls', [destination]).output)
+  }
+  return fs.existsSync(destination) && exitCode == 0;
 };
 
 export const isFileEmpty = (file: string): boolean  => {
-    if (isDestinationExist(file)) {
-        return (fs.readFileSync(file).length === 0);
-    }
+  if (isDestinationExist(file)) {
+      return (fs.readFileSync(file).length === 0);
+  }
 };
 
 export const createTmpDirectory = (name = 'tmp-XXXXXX'): tmp.DirResult => {
