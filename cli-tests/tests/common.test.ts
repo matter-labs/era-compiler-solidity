@@ -35,7 +35,7 @@ describe("Common tests", () => {
             `--bin`,
             `--output-dir`,
             `"${tmpDirZkSolc.name}"`
-        ]; // potential issue on zksolc with full path on Windows cmd
+        ]; 
         const result = executeCommand(zksolcCommand, args);
         
 
@@ -51,7 +51,7 @@ describe("Common tests", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
 
-        it("Output file is created", () => { // a bug on windows
+        it("Output file is created", () => {
             if ( os.platform() === 'win32' ) {
                 console.log(executeCommand('dir', [tmpDirZkSolc.name, '/B']))
             }
@@ -78,7 +78,7 @@ describe("Common tests", () => {
             `--asm`,
             `--output-dir`,
             `"${tmpDirZkSolc.name}"`
-        ]; // potential issue on zksolc with full path on Windows cmd
+        ];
         const result = executeCommand(zksolcCommand, args);
 
         it("Compiler run successful", () => {
@@ -90,7 +90,7 @@ describe("Common tests", () => {
         it("Output dir is created", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
-        it("Output files are created", () => { // a bug on windows
+        it("Output files are created", () => {
             if ( os.platform() === 'win32' ) {
                 console.log("tmpDirZkSolc.name: " + tmpDirZkSolc.name)
                 console.log("pathToSolAsmOutputFile(tmpDirZkSolc.name): " + pathToSolAsmOutputFile(tmpDirZkSolc.name))
