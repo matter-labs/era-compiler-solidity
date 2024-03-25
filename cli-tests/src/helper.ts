@@ -17,13 +17,20 @@ export function executeCommand(command: string, args: string[]) {
 }
 
 export const isDestinationExist = (destination: string): boolean  => {
-    return fs.existsSync(destination);
+  let exitCode: number;
+  if (os.platform() === 'win32') {
+    exitCode = executeCommand('dir', [destination]).exitCode;
+  } else {
+    exitCode = executeCommand('ls', [destination]).exitCode;
+  }
+  return fs.existsSync(destination) && exitCode == 0;
 };
 
 export const isFileEmpty = (file: string): boolean  => {
-    if (isDestinationExist(file)) {
-        return (fs.readFileSync(file).length === 0);
-    }
+  if (isDestinationExist(file)) {
+      return (fs.readFileSync(file).length === 0);
+  }
+  console.log(`ERROR: file/path ${file} is not found.\n`)
 };
 
 export const createTmpDirectory = (name = 'tmp-XXXXXX'): tmp.DirResult => {
@@ -71,7 +78,7 @@ export const pathToSolBinOutputFile = (destination: string): string  => {
 };
 
 export const pathToSolAsmOutputFile = (destination: string): string  => {
-  return path.join(destination, paths.contractSolFilename + paths.asmExtension);
+  return path.join(destination, paths.contractSolFilename+ paths.asmExtension);
 };
 
 export const pathToLlvmContractsFile = (destination: string): string  => {
