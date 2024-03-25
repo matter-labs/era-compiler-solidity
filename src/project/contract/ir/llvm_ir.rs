@@ -9,7 +9,6 @@ use serde::Serialize;
 /// The contract LLVM IR source code.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[allow(clippy::upper_case_acronyms)]
 pub struct LLVMIR {
     /// The LLVM IR file path.
     pub path: String,

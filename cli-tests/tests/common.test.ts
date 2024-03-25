@@ -1,4 +1,4 @@
-import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile} from "../src/helper";
+import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile, isOutputTheSame} from "../src/helper";
 import { paths } from '../src/entities';
 import * as os from 'os';
 
@@ -118,6 +118,42 @@ describe("Common tests", () => {
         });
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
             expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
+            tmpDirZkSolc.removeCallback();
+        });
+    });
+
+    //#issue CPR-1498 Different --bin output for a file and cli
+    describe(`--bin output is the same for in a file and in a cli`, () => {
+        const tmpDirZkSolc = createTmpDirectory();
+        const args = [
+            `"${paths.pathToBasicSolContract}"`,
+            `-O3`,
+            `--bin`,
+            `--output-dir`,
+            `"${tmpDirZkSolc.name}"`
+        ]; // potential issue on zksolc with full path on Windows cmd
+        const result = executeCommand(zksolcCommand, args);
+        
+        it("Compiler run successful", () => {
+            expect(result.output).toMatch(/(Compiler run successful.)/i);
+        });
+
+        it("Exit code = 0", () => {
+            expect(result.exitCode).toBe(0);
+        });
+
+        it("Output file is created", () => { // a bug on windows
+            expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
+        });
+
+        it("Output file == cli output", () => { // a bug on windows
+            const args = [
+                `"${paths.pathToBasicSolContract}"`,
+                `-O3`,
+                `--bin`
+            ]; // potential issue on zksolc with full path on Windows cmd
+            const resultCli = executeCommand(zksolcCommand, args);
+            expect(isOutputTheSame(pathToSolBinOutputFile(tmpDirZkSolc.name), resultCli.output)).toBe(true);
             tmpDirZkSolc.removeCallback();
         });
     });

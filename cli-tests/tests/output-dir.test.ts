@@ -109,12 +109,10 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812 - different behaviour on CI on Linux
-  if (os.platform() !== 'linux') {
     describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
       const tmpDirZkSolc = createTmpDirectory();
 
-      // TODO: uncomment after CPR-1588 is fixed
-      // const tmpDirSolc = createTmpDirectory();
+      const tmpDirSolc = createTmpDirectory();
       changeDirectoryPermissions(tmpDirZkSolc.name, 'r');
       const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirZkSolc.name}`];
       const result = executeCommand(zksolcCommand, args);
@@ -125,18 +123,19 @@ describe("Set of --output-dir tests", () => {
 
       it("--output-dir output is presented", () => {
         expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
+        changeDirectoryPermissions(tmpDirZkSolc.name, 'a');
         tmpDirZkSolc.removeCallback();
       });
 
-      // TODO: uncomment after CPR-1588 is fixed
       // Exit code should be the same
-      // xit("solc exit code == zksolc exit code", () => {
-      //   const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirSolc.name}`];
-      //   const solcResult = executeCommand(solcCommand, args);
-      //   expect(solcResult.exitCode).toBe(result.exitCode);
-      //   tmpDirSolc.removeCallback();
-      // });
+      it("solc exit code == zksolc exit code", () => {
+        changeDirectoryPermissions(tmpDirSolc.name, 'r');
+        const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirSolc.name}`];
+        const solcResult = executeCommand(solcCommand, args);
+        expect(solcResult.exitCode).toBe(result.exitCode);
+        changeDirectoryPermissions(tmpDirSolc.name, 'a');
+        tmpDirSolc.removeCallback();
+      });
       
     });
-  }
 });

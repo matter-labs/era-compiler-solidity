@@ -18,7 +18,10 @@ use structopt::StructOpt;
 /// Example: zksolc ERC20.sol -O3 --bin --output-dir './build/'
 ///
 #[derive(Debug, StructOpt)]
-#[structopt(name = "The EraVM Solidity compiler")]
+#[structopt(
+    name = "The EraVM Solidity compiler",
+    global_settings = &[structopt::clap::AppSettings::ArgRequiredElseHelp],
+)]
 pub struct Arguments {
     /// Print the version and exit.
     #[structopt(long = "version")]
@@ -98,10 +101,10 @@ pub struct Arguments {
     #[structopt(long = "combined-json")]
     pub combined_json: Option<String>,
 
-    /// Switch to standard JSON input/output mode. Read from stdin, write the result to stdout.
+    /// Switch to standard JSON input/output mode. Read from stdin or specified file, write the result to stdout.
     /// This is the default used by the Hardhat plugin.
     #[structopt(long = "standard-json")]
-    pub standard_json: bool,
+    pub standard_json: Option<Option<String>>,
 
     /// Specify the target machine.
     /// Available arguments: `eravm`, `evm`.
@@ -205,7 +208,6 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
-    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> anyhow::Result<()> {
         if self.version && std::env::args().count() > 2 {
             anyhow::bail!("No other options are allowed while getting the compiler version.");
@@ -222,7 +224,7 @@ impl Arguments {
             self.llvm_ir,
             self.zkasm,
             self.combined_json.is_some(),
-            self.standard_json,
+            self.standard_json.is_some(),
         ]
         .iter()
         .filter(|&&x| x)
@@ -299,15 +301,13 @@ impl Arguments {
             }
         }
 
-        if self.combined_json.is_some() {
-            if self.output_assembly || self.output_binary {
-                anyhow::bail!(
-                    "Cannot output assembly or binary outside of JSON in combined JSON mode."
-                );
-            }
+        if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
+            anyhow::bail!(
+                "Cannot output assembly or binary outside of JSON in combined JSON mode."
+            );
         }
 
-        if self.standard_json {
+        if self.standard_json.is_some() {
             if self.output_assembly || self.output_binary {
                 anyhow::bail!(
                     "Cannot output assembly or binary outside of JSON in standard JSON mode."

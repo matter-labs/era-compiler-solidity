@@ -40,8 +40,11 @@ impl Compiler {
     /// The first version of `solc`, where `--via-ir` codegen mode is supported.
     pub const FIRST_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
 
+    /// The first version of `solc`, where EVM Cancun is supported.
+    pub const FIRST_CANCUN_VERSION: semver::Version = semver::Version::new(0, 8, 24);
+
     /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 24);
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 25);
 
     ///
     /// A shortcut constructor.
@@ -174,8 +177,16 @@ impl Compiler {
             anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
         })?;
         if !output.status.success() {
-            println!("{}", String::from_utf8_lossy(output.stdout.as_slice()));
-            println!("{}", String::from_utf8_lossy(output.stderr.as_slice()));
+            writeln!(
+                std::io::stdout(),
+                "{}",
+                String::from_utf8_lossy(output.stdout.as_slice())
+            )?;
+            writeln!(
+                std::io::stdout(),
+                "{}",
+                String::from_utf8_lossy(output.stderr.as_slice())
+            )?;
             anyhow::bail!(
                 "{} error: {}",
                 self.executable,

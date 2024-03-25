@@ -14,8 +14,6 @@ use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMeta
 /// The contract EVM legacy assembly source code.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[allow(non_camel_case_types)]
-#[allow(clippy::upper_case_acronyms)]
 pub struct EVMLA {
     /// The EVM legacy assembly source code.
     pub assembly: Assembly,
