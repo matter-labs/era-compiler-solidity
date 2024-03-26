@@ -26,4 +26,25 @@ describe("Set of --standard-json tests", () => {
 
   });
 
+  //id1828
+  describe(`Run ${zksolcCommand} with --standard-json incompatible input}`, () => {
+    const args = [`--standard-json`, `${paths.pathToBasicYulContract}`];
+    const result = executeCommand(zksolcCommand, args);
+
+    it("Valid command exit code = 1", () => {
+      expect(result.exitCode).toBe(1);
+    });
+
+    it("--metadata-hash info is presented", () => {
+      expect(result.output).toMatch(/Input files must be passed via standard JSON input/i);
+    });
+
+    //solc exit code == 0 
+    xit("solc exit code == zksolc exit code", () => {
+      const solcResult = executeCommand(solcCommand, args);
+      expect(solcResult.exitCode).toBe(result.exitCode);
+    });
+
+  });
+
 });
