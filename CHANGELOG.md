@@ -7,6 +7,7 @@
 - The jump table density threshold optimization parameter
 - Simulations to forward return data pointers
 - Simulations to manipulate multiple active pointers
+- The solc v0.8.25 support
 
 ## [1.4.0] - 2024-02-19
 
