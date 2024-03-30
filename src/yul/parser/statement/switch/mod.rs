@@ -158,7 +158,7 @@ where
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());
             context.set_basic_block(expression_block);
             case.block.into_llvm(context)?;
-            context.build_unconditional_branch(join_block);
+            context.build_unconditional_branch(join_block)?;
 
             branches.push((constant.into_int_value(), expression_block));
         }
@@ -168,7 +168,7 @@ where
                 let default_block = context.append_basic_block("switch_default_block");
                 context.set_basic_block(default_block);
                 default.into_llvm(context)?;
-                context.build_unconditional_branch(join_block);
+                context.build_unconditional_branch(join_block)?;
                 default_block
             }
             None => join_block,
@@ -179,7 +179,7 @@ where
             scrutinee.expect("Always exists").to_llvm().into_int_value(),
             default_block,
             branches.as_slice(),
-        );
+        )?;
 
         context.set_basic_block(join_block);
 
@@ -215,7 +215,7 @@ where
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());
             context.set_basic_block(expression_block);
             case.block.into_llvm(context)?;
-            context.build_unconditional_branch(join_block);
+            context.build_unconditional_branch(join_block)?;
 
             branches.push((constant.into_int_value(), expression_block));
         }
@@ -225,7 +225,7 @@ where
                 let default_block = context.append_basic_block("switch_default_block");
                 context.set_basic_block(default_block);
                 default.into_llvm(context)?;
-                context.build_unconditional_branch(join_block);
+                context.build_unconditional_branch(join_block)?;
                 default_block
             }
             None => join_block,
@@ -236,7 +236,7 @@ where
             scrutinee.expect("Always exists").to_llvm().into_int_value(),
             default_block,
             branches.as_slice(),
-        );
+        )?;
 
         context.set_basic_block(join_block);
 

@@ -112,7 +112,7 @@ where
         if self.bindings.len() == 1 {
             let identifier = self.bindings.remove(0);
             let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
-            let pointer = context.build_alloca(r#type, identifier.inner.as_str());
+            let pointer = context.build_alloca(r#type, identifier.inner.as_str())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -136,7 +136,7 @@ where
             } else {
                 r#type.const_zero().as_basic_value_enum()
             };
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
             return Ok(());
         }
 
@@ -149,8 +149,8 @@ where
             let pointer = context.build_alloca(
                 yul_type.as_basic_type_enum(),
                 format!("binding_{index}_pointer").as_str(),
-            );
-            context.build_store(pointer, yul_type.const_zero());
+            )?;
+            context.build_store(pointer, yul_type.const_zero())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -188,8 +188,8 @@ where
                 self.bindings
             );
         }
-        let pointer = context.build_alloca(llvm_type, "bindings_pointer");
-        context.build_store(pointer, expression.to_llvm());
+        let pointer = context.build_alloca(llvm_type, "bindings_pointer")?;
+        context.build_store(pointer, expression.to_llvm())?;
 
         for (index, binding) in self.bindings.into_iter().enumerate() {
             let pointer = context.build_gep(
@@ -202,9 +202,9 @@ where
                 ],
                 binding.r#type.unwrap_or_default().into_llvm(context),
                 format!("binding_{index}_gep_pointer").as_str(),
-            );
+            )?;
 
-            let value = context.build_load(pointer, format!("binding_{index}_value").as_str());
+            let value = context.build_load(pointer, format!("binding_{index}_value").as_str())?;
             let pointer = context
                 .current_function()
                 .borrow_mut()
@@ -216,7 +216,7 @@ where
                         binding.inner
                     )
                 })?;
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
         }
 
         Ok(())
@@ -234,7 +234,7 @@ where
         if self.bindings.len() == 1 {
             let identifier = self.bindings.remove(0);
             let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
-            let pointer = context.build_alloca(r#type, identifier.inner.as_str());
+            let pointer = context.build_alloca(r#type, identifier.inner.as_str())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -248,7 +248,7 @@ where
             } else {
                 r#type.const_zero().as_basic_value_enum()
             };
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
             return Ok(());
         }
 
@@ -261,8 +261,8 @@ where
             let pointer = context.build_alloca(
                 yul_type.as_basic_type_enum(),
                 format!("binding_{index}_pointer").as_str(),
-            );
-            context.build_store(pointer, yul_type.const_zero());
+            )?;
+            context.build_store(pointer, yul_type.const_zero())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -300,8 +300,8 @@ where
                 self.bindings
             );
         }
-        let pointer = context.build_alloca(llvm_type, "bindings_pointer");
-        context.build_store(pointer, expression.to_llvm());
+        let pointer = context.build_alloca(llvm_type, "bindings_pointer")?;
+        context.build_store(pointer, expression.to_llvm())?;
 
         for (index, binding) in self.bindings.into_iter().enumerate() {
             let pointer = context.build_gep(
@@ -314,9 +314,9 @@ where
                 ],
                 binding.r#type.unwrap_or_default().into_llvm(context),
                 format!("binding_{index}_gep_pointer").as_str(),
-            );
+            )?;
 
-            let value = context.build_load(pointer, format!("binding_{index}_value").as_str());
+            let value = context.build_load(pointer, format!("binding_{index}_value").as_str())?;
             let pointer = context
                 .current_function()
                 .borrow_mut()
@@ -328,7 +328,7 @@ where
                         binding.inner
                     )
                 })?;
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
         }
 
         Ok(())

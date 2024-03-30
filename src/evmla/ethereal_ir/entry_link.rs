@@ -53,7 +53,7 @@ where
             target,
             &[is_deploy_code.as_basic_value_enum()],
             format!("call_link_{}", EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME).as_str(),
-        );
+        )?;
 
         Ok(())
     }
@@ -76,7 +76,7 @@ where
             target,
             &[],
             format!("call_link_{}", EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME).as_str(),
-        );
+        )?;
 
         Ok(())
     }

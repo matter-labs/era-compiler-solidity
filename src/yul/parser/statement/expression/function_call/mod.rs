@@ -159,8 +159,8 @@ impl FunctionCall {
                     let pointer = context.build_alloca(
                         pointer.r#type,
                         format!("{name}_near_call_return_pointer_argument").as_str(),
-                    );
-                    context.build_store(pointer, pointer.r#type.const_zero());
+                    )?;
+                    context.build_store(pointer, pointer.r#type.const_zero())?;
                     values.insert(1, pointer.value.as_basic_value_enum());
                 }
 
@@ -188,7 +188,7 @@ impl FunctionCall {
                     function.borrow().declaration(),
                     values,
                     format!("{name}_near_call").as_str(),
-                );
+                )?;
 
                 if let era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } =
                     r#return
@@ -199,7 +199,7 @@ impl FunctionCall {
                         return_value.expect("Always exists").into_pointer_value(),
                     );
                     let return_value = context
-                        .build_load(pointer, format!("{name}_near_call_return_value").as_str());
+                        .build_load(pointer, format!("{name}_near_call_return_value").as_str())?;
                     Ok(Some(return_value))
                 } else {
                     Ok(return_value)
@@ -232,7 +232,7 @@ impl FunctionCall {
                     function.borrow().declaration(),
                     values.as_slice(),
                     format!("{name}_call").as_str(),
-                );
+                )?;
 
                 Ok(return_value)
             }
@@ -522,14 +522,14 @@ impl FunctionCall {
                     context.byte_type(),
                     arguments[0].into_int_value(),
                     "mcopy_destination",
-                );
+                )?;
                 let source = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[1].into_int_value(),
                     "mcopy_source",
-                );
+                )?;
 
                 context.build_memcpy(
                     context.intrinsics().memory_move,
@@ -537,7 +537,7 @@ impl FunctionCall {
                     source,
                     arguments[2].into_int_value(),
                     "mcopy_size",
-                );
+                )?;
                 Ok(None)
             }
 
@@ -579,11 +579,11 @@ impl FunctionCall {
                 })?;
 
                 if key.as_str() == "library_deploy_address" {
-                    return Ok(context.build_call(
+                    return context.build_call(
                         context.intrinsics().code_source,
                         &[],
                         "library_deploy_address",
-                    ));
+                    );
                 }
 
                 let offset = context
@@ -982,7 +982,7 @@ impl FunctionCall {
                             as u64,
                     ),
                     "datacopy_contract_hash_offset",
-                );
+                )?;
                 era_compiler_llvm_context::eravm_evm_memory::store(
                     context,
                     offset,
@@ -1008,8 +1008,8 @@ impl FunctionCall {
                 Ok(Some(arguments[0]))
             }
 
-            Name::Address => Ok(context.build_call(context.intrinsics().address, &[], "address")),
-            Name::Caller => Ok(context.build_call(context.intrinsics().caller, &[], "caller")),
+            Name::Address => context.build_call(context.intrinsics().address, &[], "address"),
+            Name::Caller => context.build_call(context.intrinsics().caller, &[], "caller"),
 
             Name::CallValue => {
                 era_compiler_llvm_context::eravm_evm_ether_gas::value(context).map(Some)
@@ -1023,7 +1023,7 @@ impl FunctionCall {
             }
             Name::SelfBalance => {
                 let address = context
-                    .build_call(context.intrinsics().address, &[], "self_balance_address")
+                    .build_call(context.intrinsics().address, &[], "self_balance_address")?
                     .expect("Always exists")
                     .into_int_value();
 
@@ -1526,7 +1526,7 @@ impl FunctionCall {
                     context.field_type(),
                     era_compiler_llvm_context::EraVMAddressSpace::Stack,
                     value,
-                );
+                )?;
                 Ok(None)
             }
         }
@@ -1615,7 +1615,7 @@ impl FunctionCall {
                     function.borrow().declaration(),
                     values.as_slice(),
                     format!("{name}_call").as_str(),
-                );
+                )?;
 
                 Ok(return_value)
             }
@@ -1934,7 +1934,7 @@ impl FunctionCall {
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
 
@@ -1948,7 +1948,7 @@ impl FunctionCall {
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
 
@@ -1960,7 +1960,7 @@ impl FunctionCall {
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             Name::ExtCodeSize => {
@@ -2019,7 +2019,7 @@ impl FunctionCall {
                     vec![],
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             Name::Log1 => {
@@ -2032,7 +2032,7 @@ impl FunctionCall {
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             Name::Log2 => {
@@ -2045,7 +2045,7 @@ impl FunctionCall {
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             Name::Log3 => {
@@ -2058,7 +2058,7 @@ impl FunctionCall {
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             Name::Log4 => {
@@ -2071,7 +2071,7 @@ impl FunctionCall {
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
 
@@ -2095,7 +2095,7 @@ impl FunctionCall {
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
             Name::StaticCall => {
                 let arguments = self.pop_arguments_evm::<D, 6>(context)?;
@@ -2115,7 +2115,7 @@ impl FunctionCall {
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
             Name::DelegateCall => {
                 let arguments = self.pop_arguments_evm::<D, 6>(context)?;
@@ -2135,7 +2135,7 @@ impl FunctionCall {
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
 
             Name::Create => {
@@ -2180,8 +2180,8 @@ impl FunctionCall {
                 Ok(Some(arguments[0]))
             }
 
-            Name::Address => Ok(context.build_call(context.intrinsics().address, &[], "address")),
-            Name::Caller => Ok(context.build_call(context.intrinsics().caller, &[], "caller")),
+            Name::Address => context.build_call(context.intrinsics().address, &[], "address"),
+            Name::Caller => context.build_call(context.intrinsics().caller, &[], "caller"),
 
             Name::CallValue => {
                 era_compiler_llvm_context::evm_ether_gas::callvalue(context).map(Some)

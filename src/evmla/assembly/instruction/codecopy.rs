@@ -21,7 +21,7 @@ where
             (era_compiler_common::BYTE_LENGTH_X32 + era_compiler_common::BYTE_LENGTH_FIELD) as u64,
         ),
         "datacopy_contract_hash_offset",
-    );
+    )?;
 
     era_compiler_llvm_context::eravm_evm_memory::store(context, offset, value)?;
 
@@ -76,7 +76,7 @@ where
             destination,
             context.field_const(offset as u64),
             format!("datacopy_destination_index_{index}").as_str(),
-        );
+        )?;
         let datacopy_value = context.field_const_str_hex(value_string.as_str());
         era_compiler_llvm_context::eravm_evm_memory::store(
             context,

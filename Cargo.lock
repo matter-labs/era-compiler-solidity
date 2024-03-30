@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#7a7d7f8d1772c558c9dc6543148176700a6d9d51"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1307-update-to-llvm-17#9fe47db02674d0a6b1230940fd9fbb6bb0515a01"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -556,8 +556,8 @@ dependencies = [
 
 [[package]]
 name = "inkwell"
-version = "0.1.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#98a023834492fe59b4ae97c405f75626437fced0"
+version = "0.4.0"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c0821d7234b867b79baf29b87a3fb0c751eccad2"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -566,16 +566,17 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
 name = "inkwell_internals"
-version = "0.6.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-15#98a023834492fe59b4ae97c405f75626437fced0"
+version = "0.9.0"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c0821d7234b867b79baf29b87a3fb0c751eccad2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.52",
 ]
 
 [[package]]
@@ -646,13 +647,14 @@ checksum = "01cda141df6706de531b6c46c3a33ecca755538219bd484262fa09410c13539c"
 
 [[package]]
 name = "llvm-sys"
-version = "150.0.5"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-15.0#049dba7d1a8154f01c6267e8612504d56e651088"
+version = "170.0.1"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#d165991787fe71259076aeabe25019f2e94c2a4b"
 dependencies = [
+ "anyhow",
  "cc",
  "lazy_static",
  "libc",
- "regex",
+ "regex-lite",
  "semver",
 ]
 
@@ -1022,6 +1024,12 @@ dependencies = [
  "memchr",
  "regex-syntax",
 ]
+
+[[package]]
+name = "regex-lite"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30b661b2f27137bdbc16f00eda72866a92bb28af1753ffbd56744fb6e2e9cd8e"
 
 [[package]]
 name = "regex-syntax"

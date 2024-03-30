@@ -285,7 +285,7 @@ where
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
-                context.build_store(pointer, r#type.into_llvm(context).const_zero());
+                context.build_store(pointer, r#type.into_llvm(context).const_zero())?;
                 context
                     .current_function()
                     .borrow_mut()
@@ -304,8 +304,8 @@ where
                         ],
                         context.field_type(),
                         format!("return_{index}_gep_pointer").as_str(),
-                    );
-                    context.build_store(pointer, r#type.const_zero());
+                    )?;
+                    context.build_store(pointer, r#type.const_zero())?;
                     context
                         .current_function()
                         .borrow_mut()
@@ -323,7 +323,7 @@ where
             })
             .collect();
         for (mut index, argument) in self.arguments.iter().enumerate() {
-            let pointer = context.build_alloca(argument_types[index], argument.inner.as_str());
+            let pointer = context.build_alloca(argument_types[index], argument.inner.as_str())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -342,7 +342,7 @@ where
             context.build_store(
                 pointer,
                 context.current_function().borrow().get_nth_param(index),
-            );
+            )?;
         }
 
         self.body.into_llvm(context)?;
@@ -354,28 +354,28 @@ where
             Some(inkwell::values::InstructionOpcode::Br) => {}
             Some(inkwell::values::InstructionOpcode::Switch) => {}
             _ => context
-                .build_unconditional_branch(context.current_function().borrow().return_block()),
+                .build_unconditional_branch(context.current_function().borrow().return_block())?,
         }
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
             era_compiler_llvm_context::FunctionReturn::None => {
-                context.build_return(None);
+                context.build_return(None)?;
             }
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. }
                 if context.current_function().borrow().name().starts_with(
                     era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX,
                 ) =>
             {
-                context.build_return(Some(&pointer.value));
+                context.build_return(Some(&pointer.value))?;
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
         }
 
@@ -425,7 +425,7 @@ where
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                 let identifier = self.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
-                context.build_store(pointer, r#type.into_llvm(context).const_zero());
+                context.build_store(pointer, r#type.into_llvm(context).const_zero())?;
                 context
                     .current_function()
                     .borrow_mut()
@@ -444,8 +444,8 @@ where
                         ],
                         context.field_type(),
                         format!("return_{index}_gep_pointer").as_str(),
-                    );
-                    context.build_store(pointer, r#type.const_zero());
+                    )?;
+                    context.build_store(pointer, r#type.const_zero())?;
                     context
                         .current_function()
                         .borrow_mut()
@@ -463,7 +463,7 @@ where
             })
             .collect();
         for (index, argument) in self.arguments.iter().enumerate() {
-            let pointer = context.build_alloca(argument_types[index], argument.inner.as_str());
+            let pointer = context.build_alloca(argument_types[index], argument.inner.as_str())?;
             context
                 .current_function()
                 .borrow_mut()
@@ -471,7 +471,7 @@ where
             context.build_store(
                 pointer,
                 context.current_function().borrow().get_nth_param(index),
-            );
+            )?;
         }
 
         self.body.into_llvm(context)?;
@@ -483,21 +483,21 @@ where
             Some(inkwell::values::InstructionOpcode::Br) => {}
             Some(inkwell::values::InstructionOpcode::Switch) => {}
             _ => context
-                .build_unconditional_branch(context.current_function().borrow().return_block()),
+                .build_unconditional_branch(context.current_function().borrow().return_block())?,
         }
 
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
             era_compiler_llvm_context::FunctionReturn::None => {
-                context.build_return(None);
+                context.build_return(None)?;
             }
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
         }
 
