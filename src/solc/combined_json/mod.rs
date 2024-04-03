@@ -95,7 +95,6 @@ impl CombinedJson {
             anyhow::bail!(
                 "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
             );
-            return Ok(());
         }
 
         File::create(&file_path)
