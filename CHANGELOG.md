@@ -13,6 +13,7 @@
 
 - Libraries passed with `--libraries` and now added to input files
 - Printing `--help` if not arguments are provided
+- Missing `--overwrite` flag now triggers an error
 
 ## [1.4.0] - 2024-02-19
 
