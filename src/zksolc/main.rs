@@ -5,6 +5,7 @@
 pub mod arguments;
 
 use std::io::Write;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use self::arguments::Arguments;
@@ -142,13 +143,14 @@ fn main_inner() -> anyhow::Result<()> {
                     include_metadata_hash,
                     debug_config,
                 )
-            } else if arguments.standard_json {
+            } else if let Some(standard_json) = arguments.standard_json {
                 let mut solc =
                     era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
                         || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
                     ))?;
                 era_compiler_solidity::standard_json_eravm(
                     &mut solc,
+                    standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
                     arguments.is_system_mode,
@@ -264,13 +266,14 @@ fn main_inner() -> anyhow::Result<()> {
                     include_metadata_hash,
                     debug_config,
                 )
-            } else if arguments.standard_json {
+            } else if let Some(standard_json) = arguments.standard_json {
                 let mut solc =
                     era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
                         || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
                     ))?;
                 era_compiler_solidity::standard_json_evm(
                     &mut solc,
+                    standard_json.map(PathBuf::from),
                     arguments.force_evmla,
                     arguments.base_path,
                     arguments.include_paths,
