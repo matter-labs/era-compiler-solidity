@@ -8,6 +8,7 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::path::Path;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -48,6 +49,20 @@ impl Input {
     ///
     pub fn try_from_stdin(solc_pipeline: SolcPipeline) -> anyhow::Result<Self> {
         let mut input: Self = serde_json::from_reader(std::io::BufReader::new(std::io::stdin()))?;
+        input
+            .settings
+            .output_selection
+            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
+            .extend_with_required(solc_pipeline);
+        Ok(input)
+    }
+
+    ///
+    /// A shortcut constructor from file.
+    ///
+    pub fn try_from_file(solc_pipeline: SolcPipeline, path: &Path) -> anyhow::Result<Self> {
+        let file = std::fs::File::open(path)?;
+        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(file))?;
         input
             .settings
             .output_selection

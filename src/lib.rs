@@ -414,6 +414,7 @@ pub fn standard_output_evm(
 ///
 pub fn standard_json_eravm(
     solc: &mut SolcCompiler,
+    json_path: Option<PathBuf>,
     detect_missing_libraries: bool,
     force_evmla: bool,
     is_system_mode: bool,
@@ -426,7 +427,11 @@ pub fn standard_json_eravm(
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let solc_input = match json_path {
+        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
+        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
+    }
+    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -456,7 +461,7 @@ pub fn standard_json_eravm(
         for error in errors.iter() {
             if error.severity.as_str() == "error" {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(0);
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
         }
     }
@@ -487,7 +492,7 @@ pub fn standard_json_eravm(
         build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
     }
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
@@ -495,6 +500,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc: &mut SolcCompiler,
+    json_path: Option<PathBuf>,
     force_evmla: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -505,7 +511,11 @@ pub fn standard_json_evm(
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let solc_input = match json_path {
+        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
+        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
+    }
+    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -535,7 +545,7 @@ pub fn standard_json_evm(
         for error in errors.iter() {
             if error.severity.as_str() == "error" {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(0);
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
         }
     }
@@ -551,7 +561,7 @@ pub fn standard_json_evm(
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
     build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
@@ -614,7 +624,7 @@ pub fn combined_json_eravm(
             )?;
         }
     }
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
@@ -673,5 +683,5 @@ pub fn combined_json_evm(
             )?;
         }
     }
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
