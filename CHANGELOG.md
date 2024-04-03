@@ -12,6 +12,7 @@
 ### Fixed
 
 - Libraries passed with `--libraries` and now added to input files
+- Printing `--help` if not arguments are provided
 
 ## [1.4.0] - 2024-02-19
 
