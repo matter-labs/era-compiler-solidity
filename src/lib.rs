@@ -55,6 +55,7 @@ pub use self::warning::Warning;
 mod tests;
 
 use std::collections::BTreeSet;
+use std::io::Write;
 use std::path::PathBuf;
 
 ///
@@ -296,7 +297,7 @@ pub fn standard_output_eravm(
                 has_errors = true;
             }
 
-            eprintln!("{error}");
+            writeln!(std::io::stderr(), "{error}")?;
         }
 
         if has_errors {
@@ -387,7 +388,7 @@ pub fn standard_output_evm(
                 has_errors = true;
             }
 
-            eprintln!("{error}");
+            writeln!(std::io::stderr(), "{error}")?;
         }
 
         if has_errors {
@@ -606,10 +607,11 @@ pub fn combined_json_eravm(
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            println!(
+            writeln!(
+                std::io::stdout(),
                 "{}",
                 serde_json::to_string(&combined_json).expect("Always valid")
-            );
+            )?;
         }
     }
     std::process::exit(0);
@@ -664,10 +666,11 @@ pub fn combined_json_evm(
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            println!(
+            writeln!(
+                std::io::stdout(),
                 "{}",
                 serde_json::to_string(&combined_json).expect("Always valid")
-            );
+            )?;
         }
     }
     std::process::exit(0);

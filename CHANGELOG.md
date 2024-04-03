@@ -15,6 +15,7 @@
 - Printing `--help` if not arguments are provided
 - Missing `--overwrite` flag now triggers an error
 - Bytecode is now printed to `--output-dir` as a hex string
+- The broken pipe error when piping the output to another process
 
 ## [1.4.0] - 2024-02-19
 
