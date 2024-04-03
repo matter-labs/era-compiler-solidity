@@ -92,7 +92,7 @@ impl CombinedJson {
         file_path.push(format!("combined.{}", era_compiler_common::EXTENSION_JSON));
 
         if file_path.exists() && !overwrite {
-            eprintln!(
+            anyhow::bail!(
                 "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
             );
             return Ok(());
