@@ -205,7 +205,6 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
-    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> anyhow::Result<()> {
         if self.version && std::env::args().count() > 2 {
             anyhow::bail!("No other options are allowed while getting the compiler version.");
@@ -299,12 +298,10 @@ impl Arguments {
             }
         }
 
-        if self.combined_json.is_some() {
-            if self.output_assembly || self.output_binary {
-                anyhow::bail!(
-                    "Cannot output assembly or binary outside of JSON in combined JSON mode."
-                );
-            }
+        if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
+            anyhow::bail!(
+                "Cannot output assembly or binary outside of JSON in combined JSON mode."
+            );
         }
 
         if self.standard_json {
