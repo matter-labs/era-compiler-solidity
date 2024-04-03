@@ -105,7 +105,9 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("File {:?} creating error: {}", file_path, error)
                     })?
-                    .write_all(self.build.bytecode.as_slice())
+                    .write_all(
+                        format!("0x{}", hex::encode(self.build.bytecode.as_slice())).as_bytes(),
+                    )
                     .map_err(|error| {
                         anyhow::anyhow!("File {:?} writing error: {}", file_path, error)
                     })?;
