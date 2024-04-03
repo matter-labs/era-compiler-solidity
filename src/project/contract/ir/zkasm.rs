@@ -9,7 +9,6 @@ use serde::Serialize;
 /// The contract EraVM assembly source code.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[allow(clippy::upper_case_acronyms)]
 pub struct ZKASM {
     /// The EraVM assembly file path.
     pub path: String,

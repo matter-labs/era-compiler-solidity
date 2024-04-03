@@ -240,7 +240,6 @@ impl Function {
     /// The blocks with an invalid stack state are considered being partially unreachable, and
     /// the invalid part is truncated after terminating with an `INVALID` instruction.
     ///
-    #[allow(clippy::too_many_arguments)]
     fn handle_instruction(
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
@@ -1028,7 +1027,6 @@ impl Function {
     ///
     /// Handles the recursive function call.
     ///
-    #[allow(clippy::too_many_arguments)]
     fn handle_recursive_function_call(
         recursive_function: &RecursiveFunction,
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
