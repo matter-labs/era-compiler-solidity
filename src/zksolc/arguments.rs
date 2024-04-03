@@ -18,7 +18,10 @@ use structopt::StructOpt;
 /// Example: zksolc ERC20.sol -O3 --bin --output-dir './build/'
 ///
 #[derive(Debug, StructOpt)]
-#[structopt(name = "The EraVM Solidity compiler")]
+#[structopt(
+    name = "The EraVM Solidity compiler",
+    global_settings = &[structopt::clap::AppSettings::ArgRequiredElseHelp],
+)]
 pub struct Arguments {
     /// Print the version and exit.
     #[structopt(long = "version")]
