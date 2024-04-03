@@ -4,6 +4,7 @@
 
 pub mod arguments;
 
+use std::io::Write;
 use std::str::FromStr;
 
 use self::arguments::Arguments;
@@ -18,11 +19,11 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 ///
 /// The application entry point.
 ///
-fn main() {
+fn main() -> anyhow::Result<()> {
     std::process::exit(match main_inner() {
         Ok(()) => era_compiler_common::EXIT_CODE_SUCCESS,
         Err(error) => {
-            eprintln!("{error}");
+            writeln!(std::io::stderr(), "{error}")?;
             era_compiler_common::EXIT_CODE_FAILURE
         }
     })
@@ -36,12 +37,13 @@ fn main_inner() -> anyhow::Result<()> {
     arguments.validate()?;
 
     if arguments.version {
-        println!(
+        writeln!(
+            std::io::stdout(),
             "{} v{} (LLVM build {})",
             env!("CARGO_PKG_DESCRIPTION"),
             env!("CARGO_PKG_VERSION"),
             inkwell::support::get_commit_id().to_string(),
-        );
+        )?;
         return Ok(());
     }
 
@@ -216,29 +218,34 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.overwrite,
                 )?;
 
-                eprintln!(
+                writeln!(
+                    std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
-                );
+                )?;
             } else if arguments.output_assembly || arguments.output_binary {
                 for (path, contract) in build.contracts.into_iter() {
                     if arguments.output_assembly {
-                        println!(
+                        writeln!(
+                            std::io::stdout(),
                             "Contract `{}` assembly:\n\n{}",
-                            path, contract.build.assembly_text
-                        );
+                            path,
+                            contract.build.assembly_text
+                        )?;
                     }
                     if arguments.output_binary {
-                        println!(
+                        writeln!(
+                            std::io::stdout(),
                             "Contract `{}` bytecode: 0x{}",
                             path,
                             hex::encode(contract.build.bytecode)
-                        );
+                        )?;
                     }
                 }
             } else {
-                eprintln!(
+                writeln!(
+                    std::io::stderr(),
                     "Compiler run successful. No output requested. Use --asm and --bin flags."
-                );
+                )?;
             }
         }
         era_compiler_llvm_context::Target::EVM => {
@@ -327,28 +334,32 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.overwrite,
                 )?;
 
-                eprintln!(
+                writeln!(
+                    std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
-                );
+                )?;
             } else if arguments.output_assembly || arguments.output_binary {
                 for (path, contract) in build.contracts.into_iter() {
                     if arguments.output_binary {
-                        println!(
+                        writeln!(
+                            std::io::stdout(),
                             "Contract `{}` deploy bytecode: 0x{}",
                             path,
                             hex::encode(contract.deploy_build.bytecode)
-                        );
-                        println!(
+                        )?;
+                        writeln!(
+                            std::io::stdout(),
                             "Contract `{}` runtime bytecode: 0x{}",
                             path,
                             hex::encode(contract.runtime_build.bytecode)
-                        );
+                        )?;
                     }
                 }
             } else {
-                eprintln!(
+                writeln!(
+                    std::io::stderr(),
                     "Compiler run successful. No output requested. Use --asm and --bin flags."
-                );
+                )?;
             }
         }
     }
