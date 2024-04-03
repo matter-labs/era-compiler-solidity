@@ -59,7 +59,6 @@ impl Input {
     ///
     /// A shortcut constructor from paths.
     ///
-    #[allow(clippy::too_many_arguments)]
     pub fn try_from_paths(
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
@@ -72,6 +71,12 @@ impl Input {
         via_ir: bool,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
+        let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
+        let libraries = Settings::parse_libraries(library_map)?;
+        for library_file in libraries.keys() {
+            paths.insert(PathBuf::from(library_file));
+        }
+
         let sources = paths
             .into_par_iter()
             .map(|path| {
@@ -81,8 +86,6 @@ impl Input {
                 (path.to_string_lossy().to_string(), source)
             })
             .collect();
-
-        let libraries = Settings::parse_libraries(library_map)?;
 
         Ok(Self {
             language,
@@ -105,7 +108,6 @@ impl Input {
     ///
     /// Only for the integration test purposes.
     ///
-    #[allow(clippy::too_many_arguments)]
     pub fn try_from_sources(
         evm_version: Option<era_compiler_common::EVMVersion>,
         sources: BTreeMap<String, String>,

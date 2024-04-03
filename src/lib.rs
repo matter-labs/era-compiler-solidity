@@ -2,6 +2,12 @@
 //! Solidity to EraVM compiler library.
 //!
 
+#![allow(non_camel_case_types)]
+#![allow(clippy::upper_case_acronyms)]
+#![allow(clippy::enum_variant_names)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::should_implement_trait)]
+
 pub(crate) mod build_eravm;
 pub(crate) mod build_evm;
 pub(crate) mod r#const;
@@ -227,7 +233,6 @@ pub fn eravm_assembly(
 ///
 /// Runs the standard output mode for EraVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_output_eravm(
     input_files: &[PathBuf],
     libraries: Vec<String>,
@@ -321,7 +326,6 @@ pub fn standard_output_eravm(
 ///
 /// Runs the standard output mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_output_evm(
     input_files: &[PathBuf],
     libraries: Vec<String>,
@@ -407,7 +411,6 @@ pub fn standard_output_evm(
 ///
 /// Runs the standard JSON mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_json_eravm(
     solc: &mut SolcCompiler,
     detect_missing_libraries: bool,
@@ -553,7 +556,6 @@ pub fn standard_json_evm(
 ///
 /// Runs the combined JSON mode for EraVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn combined_json_eravm(
     format: String,
     input_files: &[PathBuf],
@@ -616,7 +618,6 @@ pub fn combined_json_eravm(
 ///
 /// Runs the combined JSON mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn combined_json_evm(
     format: String,
     input_files: &[PathBuf],

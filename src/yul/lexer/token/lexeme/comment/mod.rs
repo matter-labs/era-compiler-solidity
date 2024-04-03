@@ -14,13 +14,7 @@ use self::single_line::Comment as SingleLineComment;
 /// The comment lexeme.
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[allow(dead_code)]
-pub enum Comment {
-    /// The single-line comment.
-    SingleLine(SingleLineComment),
-    /// The multi-line comment.
-    MultiLine(MultiLineComment),
-}
+pub enum Comment {}
 
 impl Comment {
     ///
