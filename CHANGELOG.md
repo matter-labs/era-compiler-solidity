@@ -9,6 +9,10 @@
 - Simulations to manipulate multiple active pointers
 - The solc v0.8.25 support
 
+### Fixed
+
+- Libraries passed with `--libraries` and now added to input files
+
 ## [1.4.0] - 2024-02-19
 
 ### Added
