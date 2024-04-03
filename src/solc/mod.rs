@@ -40,6 +40,9 @@ impl Compiler {
     /// The first version of `solc`, where `--via-ir` codegen mode is supported.
     pub const FIRST_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
 
+    /// The first version of `solc`, where EVM Cancun is supported.
+    pub const FIRST_CANCUN_VERSION: semver::Version = semver::Version::new(0, 8, 24);
+
     /// The last supported version of `solc`.
     pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 25);
 
