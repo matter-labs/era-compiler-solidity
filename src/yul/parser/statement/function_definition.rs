@@ -262,7 +262,11 @@ where
         era_compiler_llvm_context::EraVMFunction::set_attributes(
             context.llvm(),
             function.borrow().declaration(),
-            self.attributes.clone().into_iter().collect(),
+            self.attributes
+                .clone()
+                .into_iter()
+                .map(|attribute| (attribute, None))
+                .collect(),
             true,
         );
         function
