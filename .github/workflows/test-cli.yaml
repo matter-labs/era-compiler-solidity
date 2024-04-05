@@ -15,6 +15,11 @@ on:
         required: true
         default: "0.8.25-1.0.0"
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     paths:
       - 'cli-tests/**'
       - '.github/workflows/test-cli.yaml'

@@ -67,6 +67,6 @@ runs:
       if: runner.os == 'Linux'
       uses: EnricoMi/publish-unit-test-result-action@v2.12.0
       with:
-        check_name: CLI Tests Results ${{ runner.os }} ${{ runner.arch }}
+        check_name: CLI Tests ${{ runner.os }} ${{ runner.arch }} (prebuilt - ${{ use-prebuilt-zksolc }})
         files: cli-tests/junit.xml
         action_fail_on_inconclusive: true
