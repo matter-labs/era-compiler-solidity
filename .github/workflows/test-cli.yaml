@@ -13,7 +13,7 @@ on:
         type: string
         description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
         required: true
-        default: "0.8.24-1.0.0"
+        default: "0.8.25-1.0.0"
   pull_request:
     types:
       - opened
@@ -90,5 +90,5 @@ jobs:
       - name: Run CLI tests
         uses: ./.github/actions/cli-tests
         with:
-          use-prebuilt-zksolc: ${{ github.event.pull_request.draft || 'true' }}
+          use-prebuilt-zksolc: ${{ github.event.pull_request.draft }}
           zksolc-version: ${{ github.event.inputs.zksolc-version || env.ZKSOLC_PREBUILT_VERSION }}
