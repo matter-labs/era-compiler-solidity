@@ -2,8 +2,6 @@
 //! Solidity to EraVM compiler constants.
 //!
 
-#![allow(dead_code)]
-
 /// The default executable name.
 pub static DEFAULT_EXECUTABLE_NAME: &str = "zksolc";
 

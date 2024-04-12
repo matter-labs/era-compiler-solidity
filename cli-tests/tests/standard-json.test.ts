@@ -7,7 +7,7 @@ describe("Set of --standard-json tests", () => {
 
 
   //id1741:I //BUG CPR-1409
-  xdescribe(`Run ${zksolcCommand} with --standard-json contract.json}`, () => {
+  describe(`Run ${zksolcCommand} with --standard-json contract.json}`, () => {
     const args = [`--standard-json`, `${paths.pathToBasicJSONContract}`];
     const result = executeCommand(zksolcCommand, args);
 
@@ -20,6 +20,27 @@ describe("Set of --standard-json tests", () => {
     });
 
     it("solc exit code == zksolc exit code", () => {
+      const solcResult = executeCommand(solcCommand, args);
+      expect(solcResult.exitCode).toBe(result.exitCode);
+    });
+
+  });
+
+  //id1828
+  describe(`Run ${zksolcCommand} with --standard-json incompatible input}`, () => {
+    const args = [`--standard-json`, `${paths.pathToBasicYulContract}`];
+    const result = executeCommand(zksolcCommand, args);
+
+    it("Valid command exit code = 1", () => {
+      expect(result.exitCode).toBe(1);
+    });
+
+    it("--metadata-hash info is presented", () => {
+      expect(result.output).toMatch(/Input files must be passed via standard JSON input/i);
+    });
+
+    //solc exit code == 0 
+    xit("solc exit code == zksolc exit code", () => {
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
     });

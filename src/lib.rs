@@ -2,6 +2,12 @@
 //! Solidity to EraVM compiler library.
 //!
 
+#![allow(non_camel_case_types)]
+#![allow(clippy::upper_case_acronyms)]
+#![allow(clippy::enum_variant_names)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::should_implement_trait)]
+
 pub(crate) mod build_eravm;
 pub(crate) mod build_evm;
 pub(crate) mod r#const;
@@ -49,6 +55,7 @@ pub use self::warning::Warning;
 mod tests;
 
 use std::collections::BTreeSet;
+use std::io::Write;
 use std::path::PathBuf;
 
 ///
@@ -227,7 +234,6 @@ pub fn eravm_assembly(
 ///
 /// Runs the standard output mode for EraVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_output_eravm(
     input_files: &[PathBuf],
     libraries: Vec<String>,
@@ -291,7 +297,7 @@ pub fn standard_output_eravm(
                 has_errors = true;
             }
 
-            eprintln!("{error}");
+            writeln!(std::io::stderr(), "{error}")?;
         }
 
         if has_errors {
@@ -321,7 +327,6 @@ pub fn standard_output_eravm(
 ///
 /// Runs the standard output mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_output_evm(
     input_files: &[PathBuf],
     libraries: Vec<String>,
@@ -383,7 +388,7 @@ pub fn standard_output_evm(
                 has_errors = true;
             }
 
-            eprintln!("{error}");
+            writeln!(std::io::stderr(), "{error}")?;
         }
 
         if has_errors {
@@ -407,9 +412,9 @@ pub fn standard_output_evm(
 ///
 /// Runs the standard JSON mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn standard_json_eravm(
     solc: &mut SolcCompiler,
+    json_path: Option<PathBuf>,
     detect_missing_libraries: bool,
     force_evmla: bool,
     is_system_mode: bool,
@@ -422,7 +427,11 @@ pub fn standard_json_eravm(
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let solc_input = match json_path {
+        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
+        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
+    }
+    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -452,7 +461,7 @@ pub fn standard_json_eravm(
         for error in errors.iter() {
             if error.severity.as_str() == "error" {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(0);
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
         }
     }
@@ -483,7 +492,7 @@ pub fn standard_json_eravm(
         build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
     }
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
@@ -491,6 +500,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc: &mut SolcCompiler,
+    json_path: Option<PathBuf>,
     force_evmla: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -501,7 +511,11 @@ pub fn standard_json_evm(
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_stdin(solc_pipeline)?;
+    let solc_input = match json_path {
+        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
+        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
+    }
+    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
     let source_code_files = solc_input
         .sources
         .iter()
@@ -531,7 +545,7 @@ pub fn standard_json_evm(
         for error in errors.iter() {
             if error.severity.as_str() == "error" {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(0);
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
         }
     }
@@ -547,13 +561,12 @@ pub fn standard_json_evm(
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
     build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
 /// Runs the combined JSON mode for EraVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn combined_json_eravm(
     format: String,
     input_files: &[PathBuf],
@@ -604,19 +617,19 @@ pub fn combined_json_eravm(
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            println!(
+            writeln!(
+                std::io::stdout(),
                 "{}",
                 serde_json::to_string(&combined_json).expect("Always valid")
-            );
+            )?;
         }
     }
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
 
 ///
 /// Runs the combined JSON mode for EVM.
 ///
-#[allow(clippy::too_many_arguments)]
 pub fn combined_json_evm(
     format: String,
     input_files: &[PathBuf],
@@ -663,11 +676,12 @@ pub fn combined_json_evm(
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            println!(
+            writeln!(
+                std::io::stdout(),
                 "{}",
                 serde_json::to_string(&combined_json).expect("Always valid")
-            );
+            )?;
         }
     }
-    std::process::exit(0);
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }

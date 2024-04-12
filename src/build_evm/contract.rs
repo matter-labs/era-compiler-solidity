@@ -81,7 +81,7 @@ impl Contract {
                 file_path.push(file_name);
 
                 if file_path.exists() && !overwrite {
-                    eprintln!(
+                    anyhow::bail!(
                         "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
                     );
                 } else {
@@ -89,7 +89,7 @@ impl Contract {
                         .map_err(|error| {
                             anyhow::anyhow!("File {:?} creating error: {}", file_path, error)
                         })?
-                        .write_all(bytecode.as_slice())
+                        .write_all(format!("0x{}", hex::encode(bytecode.as_slice())).as_bytes())
                         .map_err(|error| {
                             anyhow::anyhow!("File {:?} writing error: {}", file_path, error)
                         })?;

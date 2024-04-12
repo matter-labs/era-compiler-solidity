@@ -4,8 +4,18 @@
 
 ### Added
 
+- The jump table density threshold optimization parameter
 - Simulations to forward return data pointers
 - Simulations to manipulate multiple active pointers
+- The solc v0.8.25 support
+
+### Fixed
+
+- Libraries passed with `--libraries` and now added to input files
+- Printing `--help` if not arguments are provided
+- Missing `--overwrite` flag now triggers an error
+- Bytecode is now printed to `--output-dir` as a hex string
+- The broken pipe error when piping the output to another process
 
 ## [1.4.0] - 2024-02-19
 

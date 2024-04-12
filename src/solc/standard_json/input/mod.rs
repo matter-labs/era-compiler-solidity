@@ -8,6 +8,7 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::path::Path;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -57,9 +58,22 @@ impl Input {
     }
 
     ///
+    /// A shortcut constructor from file.
+    ///
+    pub fn try_from_file(solc_pipeline: SolcPipeline, path: &Path) -> anyhow::Result<Self> {
+        let file = std::fs::File::open(path)?;
+        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(file))?;
+        input
+            .settings
+            .output_selection
+            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
+            .extend_with_required(solc_pipeline);
+        Ok(input)
+    }
+
+    ///
     /// A shortcut constructor from paths.
     ///
-    #[allow(clippy::too_many_arguments)]
     pub fn try_from_paths(
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
@@ -72,6 +86,12 @@ impl Input {
         via_ir: bool,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
+        let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
+        let libraries = Settings::parse_libraries(library_map)?;
+        for library_file in libraries.keys() {
+            paths.insert(PathBuf::from(library_file));
+        }
+
         let sources = paths
             .into_par_iter()
             .map(|path| {
@@ -81,8 +101,6 @@ impl Input {
                 (path.to_string_lossy().to_string(), source)
             })
             .collect();
-
-        let libraries = Settings::parse_libraries(library_map)?;
 
         Ok(Self {
             language,
@@ -105,7 +123,6 @@ impl Input {
     ///
     /// Only for the integration test purposes.
     ///
-    #[allow(clippy::too_many_arguments)]
     pub fn try_from_sources(
         evm_version: Option<era_compiler_common::EVMVersion>,
         sources: BTreeMap<String, String>,
