@@ -123,14 +123,17 @@ describe("Set of --output-dir tests", () => {
 
       it("--output-dir output is presented", () => {
         expect(result.output).toMatch(/(Permission denied|Access is denied)/i);
+        changeDirectoryPermissions(tmpDirZkSolc.name, 'a');
         tmpDirZkSolc.removeCallback();
       });
 
       // Exit code should be the same
       it("solc exit code == zksolc exit code", () => {
+        changeDirectoryPermissions(tmpDirSolc.name, 'r');
         const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirSolc.name}`];
         const solcResult = executeCommand(solcCommand, args);
         expect(solcResult.exitCode).toBe(result.exitCode);
+        changeDirectoryPermissions(tmpDirSolc.name, 'a');
         tmpDirSolc.removeCallback();
       });
       

@@ -1,5 +1,6 @@
 import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile, isOutputTheSame} from "../src/helper";
 import { paths } from '../src/entities';
+import * as os from 'os';
 
 
 describe("Common tests", () => {
@@ -50,7 +51,7 @@ describe("Common tests", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
 
-        xit("Output file is created", () => { // a bug on windows
+        it("Output file is created", () => { // a bug on windows
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
 
@@ -86,11 +87,29 @@ describe("Common tests", () => {
         it("Output dir is created", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
-        xit("Output files are created", () => { // a bug on windows
+        it("Output files are created", () => { // a bug on windows
+            // Remove if () {} after the bugfix
+            if ( os.platform() === 'win32' ) {
+                console.log("Expected file: " + pathToSolAsmOutputFile(tmpDirZkSolc.name))
+                console.log("Actual file: " + executeCommand('dir', [tmpDirZkSolc.name, '/B']).output)
+            }
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
             expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
-        it("the output files are not empty", () => {
+        it("The output files are not empty", () => {
+            // Remove if () {} after the bugfix
+            if ( os.platform() === 'win32' ) {
+                const args_cmd = [
+                    `"${paths.pathToBasicSolContract}"`,
+                    `-O3`,
+                    `--bin`,
+                    `--asm`
+                ];
+                console.log(`The output file: ${ pathToSolBinOutputFile(tmpDirZkSolc.name) } contains: \n`
+                    + executeCommand('type', [pathToSolBinOutputFile(tmpDirZkSolc.name)]).output);
+                console.log(`The output file should contain: \n`
+                    + executeCommand(zksolcCommand, args_cmd).output);
+            }
             expect(isFileEmpty(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(false);
             expect(isFileEmpty(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(false);
         });
