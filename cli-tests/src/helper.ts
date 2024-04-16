@@ -58,10 +58,10 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
     command = 'chmod -R'
     switch (permission) {
       case 'r':
-        args = ['555', directoryPath]; // Read-only
+        args = ['-wx', directoryPath]; // Read-only
         break;
       case 'a':
-        args = ['777', directoryPath]; // All
+        args = ['+wx', directoryPath]; // All
         break;
     }
   }
