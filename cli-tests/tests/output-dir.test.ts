@@ -109,7 +109,7 @@ describe("Set of --output-dir tests", () => {
   });
 
   //id1812 - different behaviour on CI on Linux
-    describe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
+    xdescribe(`Run ${zksolcCommand} with --output-dir - output-dir - wrong permissions`, () => {
       const tmpDirZkSolc = createTmpDirectory();
 
       const tmpDirSolc = createTmpDirectory();
