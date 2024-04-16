@@ -148,7 +148,7 @@ describe("Common tests", () => {
                 `"${paths.pathToBasicSolContract}"`,
                 `-O3`,
                 `--bin`
-            ]; // potential issue on zksolc with full path on Windows cmd
+            ];
             const resultCli = executeCommand(zksolcCommand, args);
             expect(isOutputTheSame(pathToSolBinOutputFile(tmpDirZkSolc.name), resultCli.output)).toBe(true);
             tmpDirZkSolc.removeCallback();
