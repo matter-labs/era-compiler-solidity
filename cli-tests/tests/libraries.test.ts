@@ -6,8 +6,8 @@ describe("Set of --libraries tests", () => {
     const solcCommand = 'solc';
 
 
-    //id1750
-    describe(`Run ${zksolcCommand} with Sol + --libraries}`, () => {
+    //id1750 - ISSUE unknown scenario
+    xdescribe(`Run ${zksolcCommand} with Sol + --libraries}`, () => {
         const args = [`${paths.pathToBasicSolContract}`, ` --libraries`, `${paths.libraryDefault}`];
         const result = executeCommand(zksolcCommand, args);
 

@@ -13,7 +13,7 @@ describe("Common tests", () => {
         const result = executeCommand(zksolcCommand, args);
 
         it("Info with help is presented", () => {
-            expect(result.output).toMatch(/(No input sources specified|Error(s) found.)/i);
+            expect(result.output).toMatch(/(Compiles the provided Solidity input files)/i);
         });
 
         it("Exit code = 1", () => {
