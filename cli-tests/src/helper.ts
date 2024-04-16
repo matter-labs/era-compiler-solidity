@@ -55,13 +55,13 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
         break;
     }
   } else {
-    command = 'chmod'
+    command = 'chmod -R'
     switch (permission) {
       case 'r':
-        args = ['-wx', directoryPath]; // Read-only
+        args = ['555', directoryPath]; // Read-only
         break;
       case 'a':
-        args = ['+wx', directoryPath]; // All
+        args = ['777', directoryPath]; // All
         break;
     }
   }
