@@ -56,7 +56,7 @@ impl Element {
     fn pop_arguments_llvm<'ctx, D>(
         &mut self,
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> Vec<inkwell::values::BasicValueEnum<'ctx>>
+    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
     where
         D: era_compiler_llvm_context::EraVMDependency + Clone,
     {
@@ -71,10 +71,10 @@ impl Element {
             let value = context.build_load(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 format!("argument_{index}").as_str(),
-            );
+            )?;
             arguments.push(value);
         }
-        arguments
+        Ok(arguments)
     }
 
     ///
@@ -85,7 +85,7 @@ impl Element {
     fn pop_arguments_llvm_evm<'ctx, D>(
         &mut self,
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> Vec<inkwell::values::BasicValueEnum<'ctx>>
+    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
     where
         D: era_compiler_llvm_context::EVMDependency + Clone,
     {
@@ -100,10 +100,10 @@ impl Element {
             let value = context.build_load(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 format!("argument_{index}").as_str(),
-            );
+            )?;
             arguments.push(value);
         }
-        arguments
+        Ok(arguments)
     }
 }
 
@@ -206,11 +206,11 @@ where
                     crate::evmla::assembly::instruction::stack::push(context, value).map(Some)
                 }
             }
-            InstructionName::PUSHDEPLOYADDRESS => Ok(context.build_call(
+            InstructionName::PUSHDEPLOYADDRESS => context.build_call(
                 context.intrinsics().code_source,
                 &[],
                 "contract_deploy_address",
-            )),
+            ),
 
             InstructionName::DUP1 => crate::evmla::assembly::instruction::stack::dup(
                 context,
@@ -466,7 +466,7 @@ where
             InstructionName::JUMPDEST => Ok(None),
 
             InstructionName::ADD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::addition(
                     context,
                     arguments[0].into_int_value(),
@@ -475,7 +475,7 @@ where
                 .map(Some)
             }
             InstructionName::SUB => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::subtraction(
                     context,
                     arguments[0].into_int_value(),
@@ -484,7 +484,7 @@ where
                 .map(Some)
             }
             InstructionName::MUL => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::multiplication(
                     context,
                     arguments[0].into_int_value(),
@@ -493,7 +493,7 @@ where
                 .map(Some)
             }
             InstructionName::DIV => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::division(
                     context,
                     arguments[0].into_int_value(),
@@ -502,7 +502,7 @@ where
                 .map(Some)
             }
             InstructionName::MOD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::remainder(
                     context,
                     arguments[0].into_int_value(),
@@ -511,7 +511,7 @@ where
                 .map(Some)
             }
             InstructionName::SDIV => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::division_signed(
                     context,
                     arguments[0].into_int_value(),
@@ -520,7 +520,7 @@ where
                 .map(Some)
             }
             InstructionName::SMOD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_arithmetic::remainder_signed(
                     context,
                     arguments[0].into_int_value(),
@@ -530,7 +530,7 @@ where
             }
 
             InstructionName::LT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -540,7 +540,7 @@ where
                 .map(Some)
             }
             InstructionName::GT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -550,7 +550,7 @@ where
                 .map(Some)
             }
             InstructionName::EQ => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -560,7 +560,7 @@ where
                 .map(Some)
             }
             InstructionName::ISZERO => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -570,7 +570,7 @@ where
                 .map(Some)
             }
             InstructionName::SLT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -580,7 +580,7 @@ where
                 .map(Some)
             }
             InstructionName::SGT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -591,7 +591,7 @@ where
             }
 
             InstructionName::OR => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::or(
                     context,
                     arguments[0].into_int_value(),
@@ -600,7 +600,7 @@ where
                 .map(Some)
             }
             InstructionName::XOR => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::xor(
                     context,
                     arguments[0].into_int_value(),
@@ -609,7 +609,7 @@ where
                 .map(Some)
             }
             InstructionName::NOT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::xor(
                     context,
                     arguments[0].into_int_value(),
@@ -618,7 +618,7 @@ where
                 .map(Some)
             }
             InstructionName::AND => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::and(
                     context,
                     arguments[0].into_int_value(),
@@ -627,7 +627,7 @@ where
                 .map(Some)
             }
             InstructionName::SHL => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::shift_left(
                     context,
                     arguments[0].into_int_value(),
@@ -636,7 +636,7 @@ where
                 .map(Some)
             }
             InstructionName::SHR => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::shift_right(
                     context,
                     arguments[0].into_int_value(),
@@ -645,7 +645,7 @@ where
                 .map(Some)
             }
             InstructionName::SAR => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::shift_right_arithmetic(
                     context,
                     arguments[0].into_int_value(),
@@ -654,7 +654,7 @@ where
                 .map(Some)
             }
             InstructionName::BYTE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_bitwise::byte(
                     context,
                     arguments[0].into_int_value(),
@@ -664,7 +664,7 @@ where
             }
 
             InstructionName::ADDMOD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_math::add_mod(
                     context,
                     arguments[0].into_int_value(),
@@ -674,7 +674,7 @@ where
                 .map(Some)
             }
             InstructionName::MULMOD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_math::mul_mod(
                     context,
                     arguments[0].into_int_value(),
@@ -684,7 +684,7 @@ where
                 .map(Some)
             }
             InstructionName::EXP => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_math::exponent(
                     context,
                     arguments[0].into_int_value(),
@@ -693,7 +693,7 @@ where
                 .map(Some)
             }
             InstructionName::SIGNEXTEND => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_math::sign_extend(
                     context,
                     arguments[0].into_int_value(),
@@ -703,7 +703,7 @@ where
             }
 
             InstructionName::SHA3 | InstructionName::KECCAK256 => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_crypto::sha3(
                     context,
                     arguments[0].into_int_value(),
@@ -713,7 +713,7 @@ where
             }
 
             InstructionName::MLOAD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_memory::load(
                     context,
                     arguments[0].into_int_value(),
@@ -721,7 +721,7 @@ where
                 .map(Some)
             }
             InstructionName::MSTORE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_memory::store(
                     context,
                     arguments[0].into_int_value(),
@@ -730,7 +730,7 @@ where
                 .map(|_| None)
             }
             InstructionName::MSTORE8 => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_memory::store_byte(
                     context,
                     arguments[0].into_int_value(),
@@ -739,21 +739,21 @@ where
                 .map(|_| None)
             }
             InstructionName::MCOPY => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 let destination = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[0].into_int_value(),
                     "mcopy_destination",
-                );
+                )?;
                 let source = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EraVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[1].into_int_value(),
                     "mcopy_source",
-                );
+                )?;
 
                 context.build_memcpy(
                     context.intrinsics().memory_move,
@@ -761,12 +761,12 @@ where
                     source,
                     arguments[2].into_int_value(),
                     "mcopy_size",
-                );
+                )?;
                 Ok(None)
             }
 
             InstructionName::SLOAD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_storage::load(
                     context,
                     arguments[0].into_int_value(),
@@ -774,7 +774,7 @@ where
                 .map(Some)
             }
             InstructionName::SSTORE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_storage::store(
                     context,
                     arguments[0].into_int_value(),
@@ -783,7 +783,7 @@ where
                 .map(|_| None)
             }
             InstructionName::TLOAD => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_storage::transient_load(
                     context,
                     arguments[0].into_int_value(),
@@ -791,7 +791,7 @@ where
                 .map(Some)
             }
             InstructionName::TSTORE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_storage::transient_store(
                     context,
                     arguments[0].into_int_value(),
@@ -813,7 +813,7 @@ where
                 era_compiler_llvm_context::eravm_evm_immutable::load(context, index).map(Some)
             }
             InstructionName::ASSIGNIMMUTABLE => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
 
                 let key = self
                     .instruction
@@ -837,7 +837,7 @@ where
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
                     }
                     era_compiler_llvm_context::CodeType::Runtime => {
-                        let arguments = self.pop_arguments_llvm(context);
+                        let arguments = self.pop_arguments_llvm(context)?;
                         era_compiler_llvm_context::eravm_evm_calldata::load(
                             context,
                             arguments[0].into_int_value(),
@@ -860,7 +860,7 @@ where
                 }
             }
             InstructionName::CALLDATACOPY => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
 
                 match context
                     .code_type()
@@ -909,7 +909,7 @@ where
                 }
             }
             InstructionName::CODECOPY => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
 
                 let parent = context.module().get_name().to_str().expect("Always valid");
                 let source = &self.stack_input.elements[1];
@@ -964,7 +964,7 @@ where
                 era_compiler_llvm_context::eravm_evm_return_data::size(context).map(Some)
             }
             InstructionName::RETURNDATACOPY => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_return_data::copy(
                     context,
                     arguments[0].into_int_value(),
@@ -974,7 +974,7 @@ where
                 .map(|_| None)
             }
             InstructionName::EXTCODESIZE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_ext_code::size(
                     context,
                     arguments[0].into_int_value(),
@@ -982,7 +982,7 @@ where
                 .map(Some)
             }
             InstructionName::EXTCODEHASH => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_ext_code::hash(
                     context,
                     arguments[0].into_int_value(),
@@ -991,7 +991,7 @@ where
             }
 
             InstructionName::RETURN => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_return::r#return(
                     context,
                     arguments[0].into_int_value(),
@@ -1000,7 +1000,7 @@ where
                 .map(|_| None)
             }
             InstructionName::REVERT => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_return::revert(
                     context,
                     arguments[0].into_int_value(),
@@ -1016,7 +1016,7 @@ where
             }
 
             InstructionName::LOG0 => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_event::log(
                     context,
                     arguments.remove(0).into_int_value(),
@@ -1029,7 +1029,7 @@ where
                 .map(|_| None)
             }
             InstructionName::LOG1 => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_event::log(
                     context,
                     arguments.remove(0).into_int_value(),
@@ -1042,7 +1042,7 @@ where
                 .map(|_| None)
             }
             InstructionName::LOG2 => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_event::log(
                     context,
                     arguments.remove(0).into_int_value(),
@@ -1055,7 +1055,7 @@ where
                 .map(|_| None)
             }
             InstructionName::LOG3 => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_event::log(
                     context,
                     arguments.remove(0).into_int_value(),
@@ -1068,7 +1068,7 @@ where
                 .map(|_| None)
             }
             InstructionName::LOG4 => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 era_compiler_llvm_context::eravm_evm_event::log(
                     context,
                     arguments.remove(0).into_int_value(),
@@ -1082,7 +1082,7 @@ where
             }
 
             InstructionName::CALL => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -1107,7 +1107,7 @@ where
                 .map(Some)
             }
             InstructionName::STATICCALL => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -1131,7 +1131,7 @@ where
                 .map(Some)
             }
             InstructionName::DELEGATECALL => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -1156,7 +1156,7 @@ where
             }
 
             InstructionName::CREATE | InstructionName::ZK_CREATE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
 
                 let value = arguments[0].into_int_value();
                 let input_offset = arguments[1].into_int_value();
@@ -1172,7 +1172,7 @@ where
                 .map(Some)
             }
             InstructionName::CREATE2 | InstructionName::ZK_CREATE2 => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
 
                 let value = arguments[0].into_int_value();
                 let input_offset = arguments[1].into_int_value();
@@ -1191,10 +1191,10 @@ where
             }
 
             InstructionName::ADDRESS => {
-                Ok(context.build_call(context.intrinsics().address, &[], "address"))
+                context.build_call(context.intrinsics().address, &[], "address")
             }
             InstructionName::CALLER => {
-                Ok(context.build_call(context.intrinsics().caller, &[], "caller"))
+                context.build_call(context.intrinsics().caller, &[], "caller")
             }
 
             InstructionName::CALLVALUE => {
@@ -1204,14 +1204,14 @@ where
                 era_compiler_llvm_context::eravm_evm_ether_gas::gas(context).map(Some)
             }
             InstructionName::BALANCE => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
 
                 let address = arguments[0].into_int_value();
                 era_compiler_llvm_context::eravm_evm_ether_gas::balance(context, address).map(Some)
             }
             InstructionName::SELFBALANCE => {
                 let address = context
-                    .build_call(context.intrinsics().address, &[], "self_balance_address")
+                    .build_call(context.intrinsics().address, &[], "self_balance_address")?
                     .expect("Always exists")
                     .into_int_value();
 
@@ -1239,14 +1239,14 @@ where
                     .map(Some)
             }
             InstructionName::BLOCKHASH => {
-                let arguments = self.pop_arguments_llvm(context);
+                let arguments = self.pop_arguments_llvm(context)?;
                 let index = arguments[0].into_int_value();
 
                 era_compiler_llvm_context::eravm_evm_contract_context::block_hash(context, index)
                     .map(Some)
             }
             InstructionName::BLOBHASH => {
-                let _arguments = self.pop_arguments_llvm(context);
+                let _arguments = self.pop_arguments_llvm(context)?;
                 anyhow::bail!("The `BLOBHASH` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::DIFFICULTY | InstructionName::PREVRANDAO => {
@@ -1266,18 +1266,18 @@ where
             }
 
             InstructionName::CALLCODE => {
-                let mut _arguments = self.pop_arguments_llvm(context);
+                let mut _arguments = self.pop_arguments_llvm(context)?;
                 anyhow::bail!("The `CALLCODE` instruction is not supported");
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
             }
             InstructionName::EXTCODECOPY => {
-                let _arguments = self.pop_arguments_llvm(context);
+                let _arguments = self.pop_arguments_llvm(context)?;
                 anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
-                let _arguments = self.pop_arguments_llvm(context);
+                let _arguments = self.pop_arguments_llvm(context)?;
                 anyhow::bail!("The `SELFDESTRUCT` instruction is not supported");
             }
 
@@ -1289,7 +1289,7 @@ where
                 return_address,
                 ..
             } => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 arguments.pop();
                 arguments.reverse();
                 arguments.pop();
@@ -1303,7 +1303,7 @@ where
                     function,
                     arguments.as_slice(),
                     format!("call_{}", name).as_str(),
-                );
+                )?;
                 match result {
                     Some(value) if value.is_int_value() => {
                         let pointer = context.evmla().stack
@@ -1313,7 +1313,7 @@ where
                         context.build_store(
                             era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                             value,
-                        );
+                        )?;
                     }
                     Some(value) if value.is_struct_value() => {
                         let return_value = value.into_struct_value();
@@ -1334,7 +1334,7 @@ where
                                     .to_llvm()
                                     .into_pointer_value(),
                             );
-                            context.build_store(pointer, value);
+                            context.build_store(pointer, value)?;
                         }
                     }
                     Some(_) => {
@@ -1347,11 +1347,11 @@ where
                     .current_function()
                     .borrow()
                     .find_block(&return_address, &stack_hash)?;
-                context.build_unconditional_branch(return_block.inner());
+                context.build_unconditional_branch(return_block.inner())?;
                 return Ok(());
             }
             InstructionName::RecursiveReturn { .. } => {
-                let mut arguments = self.pop_arguments_llvm(context);
+                let mut arguments = self.pop_arguments_llvm(context)?;
                 arguments.reverse();
                 arguments.pop();
 
@@ -1359,7 +1359,7 @@ where
                     era_compiler_llvm_context::FunctionReturn::None => {}
                     era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                         assert_eq!(arguments.len(), 1);
-                        context.build_store(pointer, arguments.remove(0));
+                        context.build_store(pointer, arguments.remove(0))?;
                     }
                     era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                         for (index, argument) in arguments.into_iter().enumerate() {
@@ -1374,14 +1374,14 @@ where
                                 ],
                                 context.field_type(),
                                 format!("return_value_pointer_element_{}", index).as_str(),
-                            );
-                            context.build_store(element_pointer, argument);
+                            )?;
+                            context.build_store(element_pointer, argument)?;
                         }
                     }
                 }
 
                 let return_block = context.current_function().borrow().return_block();
-                context.build_unconditional_branch(return_block);
+                context.build_unconditional_branch(return_block)?;
                 Ok(None)
             }
         }?;
@@ -1393,7 +1393,7 @@ where
             context.build_store(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 result,
-            );
+            )?;
             context.evmla_mut().stack[self.stack.elements.len() - 1].original = original;
         }
 
@@ -1724,7 +1724,7 @@ where
             InstructionName::JUMPDEST => Ok(None),
 
             InstructionName::ADD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::addition(
                     context,
                     arguments[0].into_int_value(),
@@ -1733,7 +1733,7 @@ where
                 .map(Some)
             }
             InstructionName::SUB => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::subtraction(
                     context,
                     arguments[0].into_int_value(),
@@ -1742,7 +1742,7 @@ where
                 .map(Some)
             }
             InstructionName::MUL => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::multiplication(
                     context,
                     arguments[0].into_int_value(),
@@ -1751,7 +1751,7 @@ where
                 .map(Some)
             }
             InstructionName::DIV => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::division(
                     context,
                     arguments[0].into_int_value(),
@@ -1760,7 +1760,7 @@ where
                 .map(Some)
             }
             InstructionName::MOD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::remainder(
                     context,
                     arguments[0].into_int_value(),
@@ -1769,7 +1769,7 @@ where
                 .map(Some)
             }
             InstructionName::SDIV => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::division_signed(
                     context,
                     arguments[0].into_int_value(),
@@ -1778,7 +1778,7 @@ where
                 .map(Some)
             }
             InstructionName::SMOD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_arithmetic::remainder_signed(
                     context,
                     arguments[0].into_int_value(),
@@ -1788,7 +1788,7 @@ where
             }
 
             InstructionName::LT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1798,7 +1798,7 @@ where
                 .map(Some)
             }
             InstructionName::GT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1808,7 +1808,7 @@ where
                 .map(Some)
             }
             InstructionName::EQ => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1818,7 +1818,7 @@ where
                 .map(Some)
             }
             InstructionName::ISZERO => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1828,7 +1828,7 @@ where
                 .map(Some)
             }
             InstructionName::SLT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1838,7 +1838,7 @@ where
                 .map(Some)
             }
             InstructionName::SGT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_comparison::compare(
                     context,
                     arguments[0].into_int_value(),
@@ -1849,7 +1849,7 @@ where
             }
 
             InstructionName::OR => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::or(
                     context,
                     arguments[0].into_int_value(),
@@ -1858,7 +1858,7 @@ where
                 .map(Some)
             }
             InstructionName::XOR => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::xor(
                     context,
                     arguments[0].into_int_value(),
@@ -1867,7 +1867,7 @@ where
                 .map(Some)
             }
             InstructionName::NOT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::xor(
                     context,
                     arguments[0].into_int_value(),
@@ -1876,7 +1876,7 @@ where
                 .map(Some)
             }
             InstructionName::AND => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::and(
                     context,
                     arguments[0].into_int_value(),
@@ -1885,7 +1885,7 @@ where
                 .map(Some)
             }
             InstructionName::SHL => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::shift_left(
                     context,
                     arguments[0].into_int_value(),
@@ -1894,7 +1894,7 @@ where
                 .map(Some)
             }
             InstructionName::SHR => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::shift_right(
                     context,
                     arguments[0].into_int_value(),
@@ -1903,7 +1903,7 @@ where
                 .map(Some)
             }
             InstructionName::SAR => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::shift_right_arithmetic(
                     context,
                     arguments[0].into_int_value(),
@@ -1912,7 +1912,7 @@ where
                 .map(Some)
             }
             InstructionName::BYTE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_bitwise::byte(
                     context,
                     arguments[0].into_int_value(),
@@ -1922,7 +1922,7 @@ where
             }
 
             InstructionName::ADDMOD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_math::add_mod(
                     context,
                     arguments[0].into_int_value(),
@@ -1932,7 +1932,7 @@ where
                 .map(Some)
             }
             InstructionName::MULMOD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_math::mul_mod(
                     context,
                     arguments[0].into_int_value(),
@@ -1942,7 +1942,7 @@ where
                 .map(Some)
             }
             InstructionName::EXP => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_math::exponent(
                     context,
                     arguments[0].into_int_value(),
@@ -1951,7 +1951,7 @@ where
                 .map(Some)
             }
             InstructionName::SIGNEXTEND => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_math::sign_extend(
                     context,
                     arguments[0].into_int_value(),
@@ -1961,7 +1961,7 @@ where
             }
 
             InstructionName::SHA3 | InstructionName::KECCAK256 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_math::keccak256(
                     context,
                     arguments[0].into_int_value(),
@@ -1971,12 +1971,12 @@ where
             }
 
             InstructionName::MLOAD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_memory::load(context, arguments[0].into_int_value())
                     .map(Some)
             }
             InstructionName::MSTORE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_memory::store(
                     context,
                     arguments[0].into_int_value(),
@@ -1985,7 +1985,7 @@ where
                 .map(|_| None)
             }
             InstructionName::MSTORE8 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_memory::store_byte(
                     context,
                     arguments[0].into_int_value(),
@@ -1994,21 +1994,21 @@ where
                 .map(|_| None)
             }
             InstructionName::MCOPY => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 let destination = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[0].into_int_value(),
                     "mcopy_destination",
-                );
+                )?;
                 let source = era_compiler_llvm_context::Pointer::new_with_offset(
                     context,
                     era_compiler_llvm_context::EVMAddressSpace::Heap,
                     context.byte_type(),
                     arguments[1].into_int_value(),
                     "mcopy_source",
-                );
+                )?;
 
                 context.build_memcpy(
                     context.intrinsics().memory_copy_from_heap,
@@ -2016,17 +2016,17 @@ where
                     source,
                     arguments[2].into_int_value(),
                     "mcopy_size",
-                );
+                )?;
                 Ok(None)
             }
 
             InstructionName::SLOAD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_storage::load(context, arguments[0].into_int_value())
                     .map(Some)
             }
             InstructionName::SSTORE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_storage::store(
                     context,
                     arguments[0].into_int_value(),
@@ -2035,11 +2035,11 @@ where
                 .map(|_| None)
             }
             InstructionName::TLOAD => {
-                let _arguments = self.pop_arguments_llvm_evm(context);
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `TLOAD` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::TSTORE => {
-                let _arguments = self.pop_arguments_llvm_evm(context);
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `TSTORE` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::PUSHIMMUTABLE => {
@@ -2052,7 +2052,7 @@ where
             }
 
             InstructionName::CALLDATALOAD => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_calldata::load(
                     context,
                     arguments[0].into_int_value(),
@@ -2063,26 +2063,26 @@ where
                 era_compiler_llvm_context::evm_calldata::size(context).map(Some)
             }
             InstructionName::CALLDATACOPY => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_calldata::copy(
                     context,
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::CODESIZE => {
                 era_compiler_llvm_context::evm_code::size(context).map(Some)
             }
             InstructionName::CODECOPY => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::copy(
                     context,
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::PUSHSIZE => Ok(Some(context.field_const(0).as_basic_value_enum())),
@@ -2090,17 +2090,17 @@ where
                 era_compiler_llvm_context::evm_return_data::size(context).map(Some)
             }
             InstructionName::RETURNDATACOPY => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_return_data::copy(
                     context,
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
                     arguments[2].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::EXTCODESIZE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::ext_size(
                     context,
                     arguments[0].into_int_value(),
@@ -2108,7 +2108,7 @@ where
                 .map(Some)
             }
             InstructionName::EXTCODEHASH => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::ext_copy(
                     context,
                     arguments[0].into_int_value(),
@@ -2120,7 +2120,7 @@ where
             }
 
             InstructionName::RETURN => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_return::r#return(
                     context,
                     arguments[0].into_int_value(),
@@ -2129,7 +2129,7 @@ where
                 .map(|_| None)
             }
             InstructionName::REVERT => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_return::revert(
                     context,
                     arguments[0].into_int_value(),
@@ -2145,17 +2145,17 @@ where
             }
 
             InstructionName::LOG0 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
                     vec![],
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::LOG1 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
                     arguments[2..]
@@ -2164,11 +2164,11 @@ where
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::LOG2 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
                     arguments[2..]
@@ -2177,11 +2177,11 @@ where
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::LOG3 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
                     arguments[2..]
@@ -2190,11 +2190,11 @@ where
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
             InstructionName::LOG4 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
                     arguments[2..]
@@ -2203,12 +2203,12 @@ where
                         .collect(),
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
-                );
+                )?;
                 Ok(None)
             }
 
             InstructionName::CALL => {
-                let mut arguments = self.pop_arguments_llvm_evm(context);
+                let mut arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -2227,10 +2227,10 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
             InstructionName::STATICCALL => {
-                let mut arguments = self.pop_arguments_llvm_evm(context);
+                let mut arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -2247,10 +2247,10 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
             InstructionName::DELEGATECALL => {
-                let mut arguments = self.pop_arguments_llvm_evm(context);
+                let mut arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let gas = arguments.remove(0).into_int_value();
                 let address = arguments.remove(0).into_int_value();
@@ -2267,11 +2267,11 @@ where
                     input_size,
                     output_offset,
                     output_size,
-                )))
+                )?))
             }
 
             InstructionName::CREATE | InstructionName::ZK_CREATE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let value = arguments[0].into_int_value();
                 let input_offset = arguments[1].into_int_value();
@@ -2286,7 +2286,7 @@ where
                 .map(Some)
             }
             InstructionName::CREATE2 | InstructionName::ZK_CREATE2 => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let value = arguments[0].into_int_value();
                 let input_offset = arguments[1].into_int_value();
@@ -2304,10 +2304,10 @@ where
             }
 
             InstructionName::ADDRESS => {
-                Ok(context.build_call(context.intrinsics().address, &[], "address"))
+                context.build_call(context.intrinsics().address, &[], "address")
             }
             InstructionName::CALLER => {
-                Ok(context.build_call(context.intrinsics().caller, &[], "caller"))
+                context.build_call(context.intrinsics().caller, &[], "caller")
             }
 
             InstructionName::CALLVALUE => {
@@ -2317,7 +2317,7 @@ where
                 era_compiler_llvm_context::evm_ether_gas::gas(context).map(Some)
             }
             InstructionName::BALANCE => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let address = arguments[0].into_int_value();
                 era_compiler_llvm_context::evm_ether_gas::balance(context, address).map(Some)
@@ -2345,14 +2345,14 @@ where
                 era_compiler_llvm_context::evm_contract_context::block_number(context).map(Some)
             }
             InstructionName::BLOCKHASH => {
-                let arguments = self.pop_arguments_llvm_evm(context);
+                let arguments = self.pop_arguments_llvm_evm(context)?;
                 let index = arguments[0].into_int_value();
 
                 era_compiler_llvm_context::evm_contract_context::block_hash(context, index)
                     .map(Some)
             }
             InstructionName::BLOBHASH => {
-                let _arguments = self.pop_arguments_llvm_evm(context);
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `BLOBHASH` instruction is not supported until zkVM v1.5.0");
             }
             InstructionName::DIFFICULTY | InstructionName::PREVRANDAO => {
@@ -2372,18 +2372,18 @@ where
             }
 
             InstructionName::CALLCODE => {
-                let mut _arguments = self.pop_arguments_llvm_evm(context);
+                let mut _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `CALLCODE` instruction is not supported");
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
             }
             InstructionName::EXTCODECOPY => {
-                let _arguments = self.pop_arguments_llvm_evm(context);
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
-                let _arguments = self.pop_arguments_llvm_evm(context);
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
                 anyhow::bail!("The `SELFDESTRUCT` instruction is not supported");
             }
 
@@ -2395,7 +2395,7 @@ where
                 return_address,
                 ..
             } => {
-                let mut arguments = self.pop_arguments_llvm_evm(context);
+                let mut arguments = self.pop_arguments_llvm_evm(context)?;
                 arguments.pop();
                 arguments.reverse();
                 arguments.pop();
@@ -2409,7 +2409,7 @@ where
                     function,
                     arguments.as_slice(),
                     format!("call_{}", name).as_str(),
-                );
+                )?;
                 match result {
                     Some(value) if value.is_int_value() => {
                         let pointer = context.evmla().stack
@@ -2419,19 +2419,16 @@ where
                         context.build_store(
                             era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                             value,
-                        );
+                        )?;
                     }
                     Some(value) if value.is_struct_value() => {
                         let return_value = value.into_struct_value();
                         for index in 0..output_size {
-                            let value = context
-                                .builder()
-                                .build_extract_value(
-                                    return_value,
-                                    index as u32,
-                                    format!("return_value_element_{}", index).as_str(),
-                                )
-                                .expect("Always exists");
+                            let value = context.builder().build_extract_value(
+                                return_value,
+                                index as u32,
+                                format!("return_value_element_{}", index).as_str(),
+                            )?;
                             let pointer = era_compiler_llvm_context::Pointer::new(
                                 context.field_type(),
                                 era_compiler_llvm_context::EVMAddressSpace::Stack,
@@ -2440,7 +2437,7 @@ where
                                     .to_llvm()
                                     .into_pointer_value(),
                             );
-                            context.build_store(pointer, value);
+                            context.build_store(pointer, value)?;
                         }
                     }
                     Some(_) => {
@@ -2453,11 +2450,11 @@ where
                     .current_function()
                     .borrow()
                     .find_block(&return_address, &stack_hash)?;
-                context.build_unconditional_branch(return_block.inner());
+                context.build_unconditional_branch(return_block.inner())?;
                 return Ok(());
             }
             InstructionName::RecursiveReturn { .. } => {
-                let mut arguments = self.pop_arguments_llvm_evm(context);
+                let mut arguments = self.pop_arguments_llvm_evm(context)?;
                 arguments.reverse();
                 arguments.pop();
 
@@ -2465,7 +2462,7 @@ where
                     era_compiler_llvm_context::FunctionReturn::None => {}
                     era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
                         assert_eq!(arguments.len(), 1);
-                        context.build_store(pointer, arguments.remove(0));
+                        context.build_store(pointer, arguments.remove(0))?;
                     }
                     era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
                         for (index, argument) in arguments.into_iter().enumerate() {
@@ -2480,14 +2477,14 @@ where
                                 ],
                                 context.field_type(),
                                 format!("return_value_pointer_element_{}", index).as_str(),
-                            );
-                            context.build_store(element_pointer, argument);
+                            )?;
+                            context.build_store(element_pointer, argument)?;
                         }
                     }
                 }
 
                 let return_block = context.current_function().borrow().return_block();
-                context.build_unconditional_branch(return_block);
+                context.build_unconditional_branch(return_block)?;
                 Ok(None)
             }
         }?;
@@ -2499,7 +2496,7 @@ where
             context.build_store(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 result,
-            );
+            )?;
             context.evmla_mut().stack[self.stack.elements.len() - 1].original = original;
         }
 

@@ -85,7 +85,7 @@ where
         let increment_block = context.append_basic_block("for_increment");
         let join_block = context.append_basic_block("for_join");
 
-        context.build_unconditional_branch(condition_block);
+        context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
         let condition = self
             .condition
@@ -97,24 +97,24 @@ where
             condition,
             context.field_type(),
             "for_condition_extended",
-        );
+        )?;
         let condition = context.builder().build_int_compare(
             inkwell::IntPredicate::NE,
             condition,
             context.field_const(0),
             "for_condition_compared",
-        );
-        context.build_conditional_branch(condition, body_block, join_block);
+        )?;
+        context.build_conditional_branch(condition, body_block, join_block)?;
 
         context.push_loop(body_block, increment_block, join_block);
 
         context.set_basic_block(body_block);
         self.body.into_llvm(context)?;
-        context.build_unconditional_branch(increment_block);
+        context.build_unconditional_branch(increment_block)?;
 
         context.set_basic_block(increment_block);
         self.finalizer.into_llvm(context)?;
-        context.build_unconditional_branch(condition_block);
+        context.build_unconditional_branch(condition_block)?;
 
         context.pop_loop();
         context.set_basic_block(join_block);
@@ -138,7 +138,7 @@ where
         let increment_block = context.append_basic_block("for_increment");
         let join_block = context.append_basic_block("for_join");
 
-        context.build_unconditional_branch(condition_block);
+        context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
         let condition = self
             .condition
@@ -150,24 +150,24 @@ where
             condition,
             context.field_type(),
             "for_condition_extended",
-        );
+        )?;
         let condition = context.builder().build_int_compare(
             inkwell::IntPredicate::NE,
             condition,
             context.field_const(0),
             "for_condition_compared",
-        );
-        context.build_conditional_branch(condition, body_block, join_block);
+        )?;
+        context.build_conditional_branch(condition, body_block, join_block)?;
 
         context.push_loop(body_block, increment_block, join_block);
 
         context.set_basic_block(body_block);
         self.body.into_llvm(context)?;
-        context.build_unconditional_branch(increment_block);
+        context.build_unconditional_branch(increment_block)?;
 
         context.set_basic_block(increment_block);
         self.finalizer.into_llvm(context)?;
-        context.build_unconditional_branch(condition_block);
+        context.build_unconditional_branch(condition_block)?;
 
         context.pop_loop();
         context.set_basic_block(join_block);

@@ -35,7 +35,7 @@ where
         .current_function()
         .borrow()
         .find_block(&block_key, &stack_hash)?;
-    context.build_unconditional_branch(block.inner());
+    context.build_unconditional_branch(block.inner())?;
 
     Ok(())
 }
@@ -75,13 +75,13 @@ where
     let condition = context.build_load(
         era_compiler_llvm_context::Pointer::new_stack_field(context, condition_pointer),
         format!("conditional_{block_key}_condition").as_str(),
-    );
+    )?;
     let condition = context.builder().build_int_compare(
         inkwell::IntPredicate::NE,
         condition.into_int_value(),
         context.field_const(0),
         format!("conditional_{block_key}_condition_compared").as_str(),
-    );
+    )?;
 
     let then_block = context
         .current_function()
@@ -90,7 +90,7 @@ where
     let join_block =
         context.append_basic_block(format!("conditional_{block_key}_join_block").as_str());
 
-    context.build_conditional_branch(condition, then_block.inner(), join_block);
+    context.build_conditional_branch(condition, then_block.inner(), join_block)?;
 
     context.set_basic_block(join_block);
 

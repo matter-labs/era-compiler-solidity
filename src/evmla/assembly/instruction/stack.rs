@@ -63,7 +63,7 @@ where
             element.to_llvm().into_pointer_value(),
         ),
         format!("dup{offset}").as_str(),
-    );
+    )?;
 
     *original = element.original.to_owned();
 
@@ -82,14 +82,15 @@ where
         context,
         top_element.to_llvm().into_pointer_value(),
     );
-    let top_value = context.build_load(top_pointer, format!("swap{offset}_top_value").as_str());
+    let top_value = context.build_load(top_pointer, format!("swap{offset}_top_value").as_str())?;
 
     let swap_element = context.evmla().get_element(height - offset - 1).to_owned();
     let swap_pointer = era_compiler_llvm_context::Pointer::new_stack_field(
         context,
         swap_element.to_llvm().into_pointer_value(),
     );
-    let swap_value = context.build_load(swap_pointer, format!("swap{offset}_swap_value").as_str());
+    let swap_value =
+        context.build_load(swap_pointer, format!("swap{offset}_swap_value").as_str())?;
 
     if let Some(original) = swap_element.original {
         context
@@ -102,8 +103,8 @@ where
             .set_original(height - offset - 1, original.to_owned());
     }
 
-    context.build_store(top_pointer, swap_value);
-    context.build_store(swap_pointer, top_value);
+    context.build_store(top_pointer, swap_value)?;
+    context.build_store(swap_pointer, top_value)?;
 
     Ok(())
 }
