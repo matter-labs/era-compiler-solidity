@@ -723,7 +723,7 @@ where
                 );
             }
 
-            era_compiler_llvm_context::eravm_utils::throw(context);
+            era_compiler_llvm_context::eravm_utils::throw(context)?;
             Ok(None)
         }
         identifier

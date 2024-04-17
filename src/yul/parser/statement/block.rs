@@ -186,17 +186,17 @@ where
                 Statement::Switch(statement) => statement.into_llvm(context)?,
                 Statement::ForLoop(statement) => statement.into_llvm(context)?,
                 Statement::Continue(_location) => {
-                    context.build_unconditional_branch(context.r#loop().continue_block);
+                    context.build_unconditional_branch(context.r#loop().continue_block)?;
                     break;
                 }
                 Statement::Break(_location) => {
-                    context.build_unconditional_branch(context.r#loop().join_block);
+                    context.build_unconditional_branch(context.r#loop().join_block)?;
                     break;
                 }
                 Statement::Leave(_location) => {
                     context.build_unconditional_branch(
                         context.current_function().borrow().return_block(),
-                    );
+                    )?;
                     break;
                 }
                 statement => anyhow::bail!(
@@ -259,17 +259,17 @@ where
                 Statement::Switch(statement) => statement.into_llvm(context)?,
                 Statement::ForLoop(statement) => statement.into_llvm(context)?,
                 Statement::Continue(_location) => {
-                    context.build_unconditional_branch(context.r#loop().continue_block);
+                    context.build_unconditional_branch(context.r#loop().continue_block)?;
                     break;
                 }
                 Statement::Break(_location) => {
-                    context.build_unconditional_branch(context.r#loop().join_block);
+                    context.build_unconditional_branch(context.r#loop().join_block)?;
                     break;
                 }
                 Statement::Leave(_location) => {
                     context.build_unconditional_branch(
                         context.current_function().borrow().return_block(),
-                    );
+                    )?;
                     break;
                 }
                 statement => anyhow::bail!(

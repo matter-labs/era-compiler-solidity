@@ -1241,7 +1241,7 @@ where
             let pointer = context.build_alloca(
                 context.field_type(),
                 format!("stack_var_{stack_index:03}").as_str(),
-            );
+            )?;
             let value = match self.r#type {
                 Type::Recursive { input_size, .. }
                     if stack_index >= 1 && stack_index <= input_size =>
@@ -1256,7 +1256,7 @@ where
                 }
                 _ => context.field_const(0).as_basic_value_enum(),
             };
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
             stack_variables.push(era_compiler_llvm_context::Value::new(
                 pointer.value.as_basic_value_enum(),
             ));
@@ -1288,7 +1288,7 @@ where
                     is_deploy_code_flag,
                     deploy_code_block.inner(),
                     runtime_code_block.inner(),
-                );
+                )?;
             }
             Type::Recursive { ref block_key, .. } => {
                 let initial_block = context
@@ -1301,7 +1301,7 @@ where
                     .first()
                     .expect("Always exists")
                     .inner();
-                context.build_unconditional_branch(initial_block);
+                context.build_unconditional_branch(initial_block)?;
             }
         }
 
@@ -1326,15 +1326,15 @@ where
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
             era_compiler_llvm_context::FunctionReturn::None => {
-                context.build_return(None);
+                context.build_return(None)?;
             }
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
         }
 
@@ -1418,7 +1418,7 @@ where
             let pointer = context.build_alloca(
                 context.field_type(),
                 format!("stack_var_{stack_index:03}").as_str(),
-            );
+            )?;
             let value = match self.r#type {
                 Type::Recursive { input_size, .. }
                     if stack_index >= 1 && stack_index <= input_size =>
@@ -1433,7 +1433,7 @@ where
                 }
                 _ => context.field_const(0).as_basic_value_enum(),
             };
-            context.build_store(pointer, value);
+            context.build_store(pointer, value)?;
             stack_variables.push(era_compiler_llvm_context::Value::new(
                 pointer.value.as_basic_value_enum(),
             ));
@@ -1449,7 +1449,7 @@ where
                     ),
                     &Stack::default().hash(),
                 )?;
-                context.build_unconditional_branch(initial_block.inner());
+                context.build_unconditional_branch(initial_block.inner())?;
             }
             Type::Recursive { ref block_key, .. } => {
                 let initial_block = context
@@ -1462,7 +1462,7 @@ where
                     .first()
                     .expect("Always exists")
                     .inner();
-                context.build_unconditional_branch(initial_block);
+                context.build_unconditional_branch(initial_block)?;
             }
         }
 
@@ -1487,15 +1487,15 @@ where
         context.set_basic_block(context.current_function().borrow().return_block());
         match context.current_function().borrow().r#return() {
             era_compiler_llvm_context::FunctionReturn::None => {
-                context.build_return(None);
+                context.build_return(None)?;
             }
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                let return_value = context.build_load(pointer, "return_value");
-                context.build_return(Some(&return_value));
+                let return_value = context.build_load(pointer, "return_value")?;
+                context.build_return(Some(&return_value))?;
             }
         }
 
