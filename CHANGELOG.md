@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.4.1] - 2024-04-20
 
 ### Added
 
@@ -9,6 +9,7 @@
 - Simulations to forward return data pointers
 - Simulations to manipulate multiple active pointers
 - The solc v0.8.25 support
+- The support for `useLiteralContent` flag in metadata
 
 ### Changed
 
