@@ -10,6 +10,10 @@ description = "EraVM Solidity compiler"
 links = "compiler-rt-zksolc"
 
 [[bin]]
+name = "yul-easycrypt"
+path = "src/yul-easycrypt/main.rs"
+
+[[bin]]
 name = "zksolc"
 path = "src/zksolc/main.rs"
 

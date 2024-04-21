@@ -18,6 +18,9 @@ pub(crate) mod project;
 pub(crate) mod solc;
 pub(crate) mod warning;
 pub(crate) mod yul;
+pub(crate) mod easycrypt;
+pub(crate) mod util;
+
 
 pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
@@ -52,6 +55,8 @@ pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 pub use self::warning::Warning;
 
+pub use self::yul::visitor::YulVisitor;
+pub use self::util::printer::write_printer::WritePrinter;
 mod tests;
 
 use std::collections::BTreeSet;

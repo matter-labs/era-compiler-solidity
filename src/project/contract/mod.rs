@@ -21,6 +21,8 @@ use crate::solc::version::Version as SolcVersion;
 use self::ir::IR;
 use self::metadata::Metadata;
 
+use crate::yul::parser::statement::object::Object;
+
 ///
 /// The contract data.
 ///
@@ -372,5 +374,15 @@ impl Contract {
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
         self.ir.get_missing_libraries()
+    }
+
+    ///
+    /// Get the underlying Yul object, if available
+    ///
+    pub fn get_yul_object(&self) -> Option<&Object> {
+        match &self.ir {
+            IR::Yul(y) => Some(&y.object),
+            _ => None,
+        }
     }
 }
