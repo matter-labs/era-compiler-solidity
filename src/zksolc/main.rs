@@ -348,13 +348,13 @@ fn main_inner() -> anyhow::Result<()> {
                             std::io::stdout(),
                             "Contract `{}` deploy bytecode: 0x{}",
                             path,
-                            hex::encode(contract.deploy_build.bytecode)
+                            hex::encode(contract.deploy_build)
                         )?;
                         writeln!(
                             std::io::stdout(),
                             "Contract `{}` runtime bytecode: 0x{}",
                             path,
-                            hex::encode(contract.runtime_build.bytecode)
+                            hex::encode(contract.runtime_build)
                         )?;
                     }
                 }

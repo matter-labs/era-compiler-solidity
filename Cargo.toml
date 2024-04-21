@@ -38,11 +38,11 @@ md5 = "0.7"
 zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", branch = "v1.4.1" }
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-1664-support-linking-deploy-and-runtime-code" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"
-branch = "llvm-17"
+branch = "az-cpr-1664-support-linking-deploy-and-runtime-code"
 default-features = false
 features = ["llvm17-0", "no-libffi-linking", "target-eravm", "target-evm"]
 
