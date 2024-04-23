@@ -157,6 +157,11 @@ pub struct Arguments {
     #[structopt(long = "metadata-hash")]
     pub metadata_hash: Option<String>,
 
+    /// Sets the literal content flag for contract metadata.
+    /// If enabled, the metadata will contain the literal content of the source files.
+    #[structopt(long = "metadata-literal")]
+    pub metadata_literal: bool,
+
     /// Output EraVM assembly of the contracts.
     #[structopt(long = "asm")]
     pub output_assembly: bool,
@@ -332,29 +337,38 @@ impl Arguments {
             }
             if self.disable_solc_optimizer {
                 anyhow::bail!(
-                    "Disabling the solc optimizer must specified in standard JSON input settings."
+                    "Disabling the solc optimizer must be specified in standard JSON input settings."
                 );
             }
             if self.optimization.is_some() {
-                anyhow::bail!("LLVM optimizations must specified in standard JSON input settings.");
+                anyhow::bail!(
+                    "LLVM optimizations must be specified in standard JSON input settings."
+                );
             }
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!(
-                    "Falling back to -Oz must specified in standard JSON input settings."
+                    "Falling back to -Oz must be specified in standard JSON input settings."
                 );
             }
             if self.disable_system_request_memoization {
                 anyhow::bail!(
-                    "Disabling the system request memoization must specified in standard JSON input settings."
+                    "Disabling the system request memoization must be specified in standard JSON input settings."
                 );
             }
             if self.jump_table_density_threshold.is_some() {
                 anyhow::bail!(
-                    "Setting the jump table density threshold must specified in standard JSON input settings."
+                    "Setting the jump table density threshold must be specified in standard JSON input settings."
                 );
             }
             if self.metadata_hash.is_some() {
-                anyhow::bail!("Metadata hash mode must specified in standard JSON input settings.");
+                anyhow::bail!(
+                    "Metadata hash mode must be specified in standard JSON input settings."
+                );
+            }
+            if self.metadata_literal {
+                anyhow::bail!(
+                    "Metadata literal content must be specified in standard JSON input settings."
+                );
             }
         }
 

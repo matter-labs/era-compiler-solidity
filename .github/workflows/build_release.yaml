@@ -60,15 +60,15 @@ jobs:
             required: ${{ github.event.inputs.release_macos_arm64 || 'true' }}
           - name: "Linux x86"
             runner: matterlabs-ci-runner
-            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
             target: "x86_64-unknown-linux-musl"
             release-suffix: linux-amd64-musl
             required: ${{ github.event.inputs.release_linux_amd64 || 'true' }}
           - name: "Linux ARM64"
             runner: matterlabs-ci-runner-arm
-            image: matterlabs/llvm_runner:ubuntu22-llvm15-latest
+            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
             target: "aarch64-unknown-linux-musl"
-            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
+            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-17/lib/clang/17/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
             release-suffix: linux-arm64-musl
             required: ${{ github.event.inputs.release_linux_arm64 || 'true' }}
           - name: "Windows"
