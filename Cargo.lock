@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.4.1"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#082a68e9d89d0c05b2426da5acc82ed78c11bc1d"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#3e392c67e5322dc72a89f3751dbb1960095ec4f5"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -557,7 +557,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#d15077482dc344bfb38037b304b58d1c79b132da"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#08aaf69ba383245c121049985f129edbd3c56ed5"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -572,7 +572,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#d15077482dc344bfb38037b304b58d1c79b132da"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#08aaf69ba383245c121049985f129edbd3c56ed5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -648,7 +648,7 @@ checksum = "01cda141df6706de531b6c46c3a33ecca755538219bd484262fa09410c13539c"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#d26f2ce4190126ffb25e96008f129ccd99937b2b"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#a17b43c5e887d964447a77418e006fb61d8602c3"
 dependencies = [
  "anyhow",
  "cc",
