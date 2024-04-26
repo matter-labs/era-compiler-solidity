@@ -266,7 +266,8 @@ impl Contract {
                         self.path,
                     )
                     })?;
-                let runtime_memory_buffer = runtime_context.build(self.path.as_str(), None)?;
+                let (runtime_buffer, runtime_buffer_linked) =
+                    runtime_context.build(self.path.as_str(), None)?;
 
                 let deploy_code_type = era_compiler_llvm_context::CodeType::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
@@ -295,14 +296,14 @@ impl Contract {
                         self.path,
                     )
                     })?;
-                let deploy_memory_buffer =
-                    deploy_context.build(self.path.as_str(), Some(&runtime_memory_buffer))?;
+                let (_deploy_buffer, deploy_buffer_linked) =
+                    deploy_context.build(self.path.as_str(), Some(&runtime_buffer))?;
 
                 Ok(EVMContractBuild::new(
                     self.path,
                     identifier,
-                    deploy_memory_buffer.as_slice().to_owned(),
-                    runtime_memory_buffer.as_slice().to_owned(),
+                    deploy_buffer_linked.as_slice().to_owned(),
+                    runtime_buffer_linked.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
                 ))
@@ -342,7 +343,8 @@ impl Contract {
                         self.path,
                     )
                     })?;
-                let runtime_memory_buffer = runtime_context.build(self.path.as_str(), None)?;
+                let (runtime_buffer, runtime_buffer_linked) =
+                    runtime_context.build(self.path.as_str(), None)?;
 
                 let deploy_code_type = era_compiler_llvm_context::CodeType::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
@@ -371,14 +373,14 @@ impl Contract {
                         self.path,
                     )
                     })?;
-                let deploy_memory_buffer =
-                    deploy_context.build(self.path.as_str(), Some(&runtime_memory_buffer))?;
+                let (_deploy_buffer, deploy_buffer_linked) =
+                    deploy_context.build(self.path.as_str(), Some(&runtime_buffer))?;
 
                 Ok(EVMContractBuild::new(
                     self.path,
                     identifier,
-                    deploy_memory_buffer.as_slice().to_owned(),
-                    runtime_memory_buffer.as_slice().to_owned(),
+                    deploy_buffer_linked.as_slice().to_owned(),
+                    runtime_buffer_linked.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
                 ))
@@ -402,11 +404,12 @@ impl Contract {
                     include_metadata_hash,
                     debug_config,
                 );
-                let build = context.build(self.path.as_str(), None)?;
+                let (_deploy_buffer, deploy_buffer_linked) =
+                    context.build(self.path.as_str(), None)?;
                 Ok(EVMContractBuild::new(
                     self.path,
                     identifier,
-                    build.as_slice().to_owned(),
+                    deploy_buffer_linked.as_slice().to_owned(),
                     vec![],
                     metadata_hash,
                     metadata_json,
