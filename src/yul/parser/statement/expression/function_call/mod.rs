@@ -2170,8 +2170,23 @@ impl FunctionCall {
                 )
                 .map(Some)
             }
-            Name::DataOffset => Ok(Some(context.field_const(0).as_basic_value_enum())),
-            Name::DataSize => Ok(Some(context.field_const(0).as_basic_value_enum())),
+            Name::DataOffset => {
+                let mut arguments = self.pop_arguments_evm::<D, 1>(context)?;
+                let object_name = arguments[0].original.take().ok_or_else(|| {
+                    anyhow::anyhow!("{} `dataoffset` literal is missing", location)
+                })?;
+                era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
+                    .map(Some)
+            }
+            Name::DataSize => {
+                let mut arguments = self.pop_arguments_evm::<D, 1>(context)?;
+                let object_name = arguments[0]
+                    .original
+                    .take()
+                    .ok_or_else(|| anyhow::anyhow!("{} `datasize` literal is missing", location))?;
+                era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
+                    .map(Some)
+            }
             Name::DataCopy => Ok(None),
 
             Name::LinkerSymbol => Ok(Some(context.field_const(0).as_basic_value_enum())),
