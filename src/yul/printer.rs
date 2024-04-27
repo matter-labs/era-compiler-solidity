@@ -335,7 +335,7 @@ impl<T: IPrinter> YulVisitor for T {
         self.println(" {");
         self.increase_indent();
         for s in block.statements.iter() {
-            self.visit_statement(&s);
+            self.visit_statement(s);
             self.println("");
         }
         self.println(" }");

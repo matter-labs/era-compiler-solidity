@@ -3,8 +3,6 @@
 //!
 pub mod write_printer;
 
-pub use write_printer::*;
-
 /// Interface to YUL pretty printer
 pub trait IPrinter {
     /// Indent if in the beginning of line, and print string,

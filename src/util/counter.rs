@@ -1,6 +1,6 @@
 type IntType = u32;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Counter {
     value: IntType,
 }
@@ -15,6 +15,9 @@ impl Counter {
     }
     pub fn increment(&mut self) {
         self.value += 1
+    }
+    pub fn reset(&mut self) {
+        self.value = 0
     }
 }
 
