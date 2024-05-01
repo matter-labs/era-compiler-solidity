@@ -65,8 +65,6 @@ jobs:
 
       - name: Build LLVM
         uses: ./.github/actions/build-llvm
-        with:
-          target: ${{ matrix.target }}
 
       - name: Build zksolc
         uses: ./.github/actions/build

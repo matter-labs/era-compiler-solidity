@@ -43,17 +43,25 @@ runs:
           exit 1
         fi
 
-    - name: Upload results (MacOS and Windows)
-      if: runner.os != 'Linux'
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2.12.0
+    - name: Upload results Linux
+      if: runner.os == 'Linux'
+      uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
         files: ${{ inputs.results-xml }}
         action_fail_on_inconclusive: true
 
-    - name: Upload results (Linux)
-      if: runner.os == 'Linux'
-      uses: EnricoMi/publish-unit-test-result-action@v2.12.0
+    - name: Upload test results MacOS
+      if: runner.os == 'macOS'
+      uses: EnricoMi/publish-unit-test-result-action/macos@v2
+      with:
+        check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
+        files: ${{ inputs.results-xml }}
+        action_fail_on_inconclusive: true
+
+    - name: Upload test results Windows
+      if: runner.os == 'Windows'
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
       with:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
         files: ${{ inputs.results-xml }}
