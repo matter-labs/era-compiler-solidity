@@ -16,7 +16,7 @@ runs:
     - name: Clone LLVM framework
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        cargo install compiler-llvm-builder
+        cargo install compiler-llvm-builder --git https://github.com/matter-labs/era-compiler-llvm-builder --branch aba-remove-wget-tar-requirements
         zkevm-llvm clone --target-env ${{ inputs.target-env }}
 
     - name: Define ccache key

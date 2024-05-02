@@ -8,7 +8,7 @@ inputs:
   zksolc-version:
     description: 'Prebuilt version of zksolc compiler to download and use in tests.'
     required: true
-    default: '1.4.0'
+    default: '1.4.1'
 runs:
   using: "composite"
   steps:
