@@ -1,10 +1,10 @@
 name: 'Build LLVM'
 description: 'Builds backend LLVM framework'
 inputs:
-  target:
-    description: 'Specific build target triplet.'
+  target-env:
+    description: 'Target environment (gnu or musl).'
     required: false
-    default: ''
+    default: 'musl'
 runs:
   using: "composite"
   steps:
@@ -13,19 +13,11 @@ runs:
       run: brew install cmake ninja
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
 
-    - name: Define build target
-      id: build-target
-      if: inputs.target != ''
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
-      run: |
-        rustup target add ${{ inputs.target }}
-        echo "target=--target ${{ inputs.target }}" >> $GITHUB_OUTPUT
-
     - name: Clone LLVM framework
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        cargo install compiler-llvm-builder ${{ steps.build-target.outputs.target }}
-        zkevm-llvm clone
+        cargo install compiler-llvm-builder
+        zkevm-llvm clone --target-env ${{ inputs.target-env }}
 
     - name: Define ccache key
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
@@ -54,21 +46,7 @@ runs:
         verbose: 2
         save: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v') }}
 
-    - name: Build LLVM Linux
-      if: ${{ runner.os == 'Linux' }}
-      uses: nick-fields/retry@v2
-      env:
-        CCACHE_BASEDIR: ${{ github.workspace }}
-        CCACHE_NOHASHDIR: "true"
-        CCACHE_COMPILERCHECK: "content"
-        LIBSTDCPP_SOURCE_PATH: "C:/a/_temp/msys64/mingw64/lib/libstdc++.a"
-      with:
-        timeout_minutes: 60
-        max_attempts: 16 # protection mechanism for sporadic dependencies download failure
-        command: zkevm-llvm build --targets 'EVM' --use-ccache
-
-    - name: Build LLVM MacOS and Windows
-      if: ${{ runner.os != 'Linux' }}
+    - name: Build LLVM
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       env:
         CCACHE_BASEDIR: ${{ github.workspace }}
@@ -76,4 +54,4 @@ runs:
         CCACHE_COMPILERCHECK: "content"
         LIBSTDCPP_SOURCE_PATH: "C:/a/_temp/msys64/mingw64/lib/libstdc++.a"
       run: |
-        zkevm-llvm build --targets 'EVM' --use-ccache
+        zkevm-llvm build --use-ccache --target-env ${{ inputs.target-env }}

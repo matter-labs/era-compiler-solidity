@@ -72,8 +72,6 @@ jobs:
       - name: Build LLVM
         if: github.event.pull_request.draft == false
         uses: ./.github/actions/build-llvm
-        with:
-          target: ${{ matrix.target }}
 
       - name: Build zksolc
         if: github.event.pull_request.draft == false
