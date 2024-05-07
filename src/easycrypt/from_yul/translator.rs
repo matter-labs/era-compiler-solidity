@@ -649,7 +649,7 @@ impl Translator {
         self.location_tracker.enter_block();
         for stmt in block.statements.iter() {
             let (ctx, translated) = self.transpile_statement(stmt, &context)?;
-            context.merge(&ctx);
+            context = ctx;
             match translated {
                 TranslatedStatement::Statements(stmts) => result.extend(stmts),
                 TranslatedStatement::Function(fd) => {
