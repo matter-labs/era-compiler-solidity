@@ -466,30 +466,14 @@ impl Translator {
         } = vd;
         let definitions = self.bindings_to_definitions(&bindings);
 
-        if let Some(rhs) = expression {
-            let references = self.bindings_to_references(&bindings);
-            let (
-                new_rhs,
-                ExpressionTranslationContext {
-                    assignments,
-                    locals,
-                },
-            ) = self.transpile_expression_root(&rhs, ctx)?;
-            let translated_assignment = Statement::EAssignment(references, Box::new(new_rhs));
-            let translated_statements = assignments
-                .iter()
-                .chain(iter::once(&translated_assignment))
-                .cloned()
-                .collect();
-            Ok((
-                ctx.add_locals(definitions.iter().chain(locals.iter())),
-                TranslatedStatement::Statements(translated_statements),
-            ))
+        let ctx = ctx.add_locals(definitions.iter());
+        if let Some(initializer) = expression {
+            self.transpile_assignment_aux(
+                bindings,
+                initializer,
+                &ctx)
         } else {
-            Ok((
-                ctx.add_locals(definitions.iter()),
-                TranslatedStatement::Statements(vec![]),
-            ))
+            Ok((ctx, TranslatedStatement::Statements(vec![])))
         }
     }
 
@@ -724,16 +708,13 @@ impl Translator {
         new_definition(self.here(), &name, None)
     }
 
-    fn transpile_assignment(
+    fn transpile_assignment_aux(
         &mut self,
-        assignment: &YulAssignment,
+        bindings: &Vec<YulIdentifier>,
+        initializer: &YulExpression,
         ctx: &Context,
     ) -> Result<(Context, TranslatedStatement), Error> {
-        let YulAssignment {
-            location: _,
-            bindings,
-            initializer,
-        } = assignment;
+
         let references = self.bindings_to_references(&bindings);
         let (
             new_rhs,
@@ -752,6 +733,18 @@ impl Translator {
             ctx.add_locals(locals.iter()),
             TranslatedStatement::Statements(ec_statements),
         ))
+    }
+    fn transpile_assignment(
+        &mut self,
+        assignment: &YulAssignment,
+        ctx: &Context,
+    ) -> Result<(Context, TranslatedStatement), Error> {
+        let YulAssignment {
+            location: _,
+            bindings,
+            initializer,
+        } = assignment;
+        self.transpile_assignment_aux(bindings, initializer, ctx)
     }
 }
 
