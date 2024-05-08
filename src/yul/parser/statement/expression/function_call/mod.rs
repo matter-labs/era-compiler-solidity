@@ -1062,10 +1062,7 @@ impl FunctionCall {
             }
             Name::BlobHash => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!(
-                    "{} The `BLOBHASH` instruction is not supported until zkVM v1.5.0",
-                    location
-                );
+                anyhow::bail!("{} The `BLOBHASH` instruction is not supported", location);
             }
             Name::Difficulty | Name::Prevrandao => {
                 era_compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
@@ -1078,7 +1075,7 @@ impl FunctionCall {
             }
             Name::BlobBaseFee => {
                 anyhow::bail!(
-                    "{} The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0",
+                    "{} The `BLOBBASEFEE` instruction is not supported",
                     location
                 );
             }

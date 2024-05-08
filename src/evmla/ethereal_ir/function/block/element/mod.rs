@@ -1247,7 +1247,7 @@ where
             }
             InstructionName::BLOBHASH => {
                 let _arguments = self.pop_arguments_llvm(context)?;
-                anyhow::bail!("The `BLOBHASH` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `BLOBHASH` instruction is not supported");
             }
             InstructionName::DIFFICULTY | InstructionName::PREVRANDAO => {
                 era_compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
@@ -1259,7 +1259,7 @@ where
                 era_compiler_llvm_context::eravm_evm_contract_context::basefee(context).map(Some)
             }
             InstructionName::BLOBBASEFEE => {
-                anyhow::bail!("The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `BLOBBASEFEE` instruction is not supported");
             }
             InstructionName::MSIZE => {
                 era_compiler_llvm_context::eravm_evm_contract_context::msize(context).map(Some)
@@ -2036,11 +2036,11 @@ where
             }
             InstructionName::TLOAD => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
-                anyhow::bail!("The `TLOAD` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `TLOAD` instruction is not supported");
             }
             InstructionName::TSTORE => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
-                anyhow::bail!("The `TSTORE` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `TSTORE` instruction is not supported");
             }
             InstructionName::PUSHIMMUTABLE => {
                 // TODO
@@ -2353,7 +2353,7 @@ where
             }
             InstructionName::BLOBHASH => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
-                anyhow::bail!("The `BLOBHASH` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `BLOBHASH` instruction is not supported");
             }
             InstructionName::DIFFICULTY | InstructionName::PREVRANDAO => {
                 era_compiler_llvm_context::evm_contract_context::difficulty(context).map(Some)
@@ -2365,7 +2365,7 @@ where
                 era_compiler_llvm_context::evm_contract_context::basefee(context).map(Some)
             }
             InstructionName::BLOBBASEFEE => {
-                anyhow::bail!("The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0");
+                anyhow::bail!("The `BLOBBASEFEE` instruction is not supported");
             }
             InstructionName::MSIZE => {
                 era_compiler_llvm_context::evm_contract_context::msize(context).map(Some)
