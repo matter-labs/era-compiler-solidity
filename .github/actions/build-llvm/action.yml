@@ -5,6 +5,10 @@ inputs:
     description: 'Target environment (gnu or musl).'
     required: false
     default: 'musl'
+  llvm-builder-version:
+    description: 'Version of the LLVM builder to use.'
+    required: false
+    default: '1.0.24'
 runs:
   using: "composite"
   steps:
@@ -16,7 +20,7 @@ runs:
     - name: Clone LLVM framework
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        cargo install compiler-llvm-builder
+        cargo install compiler-llvm-builder@${{ inputs.llvm-builder-version }}
         zkevm-llvm clone --target-env ${{ inputs.target-env }}
 
     - name: Define ccache key
