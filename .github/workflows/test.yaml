@@ -8,7 +8,7 @@ on:
         type: string
         description: "zksolc version, (repo: https://github.com/matter-labs/zksolc-bin/raw/main)"
         required: true
-        default: "1.4.0"
+        default: "1.4.1"
       solc-version:
         type: string
         description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
@@ -48,7 +48,6 @@ jobs:
             runner: matterlabs-ci-runner-arm
             image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
             target: "aarch64-unknown-linux-musl"
-            rustflags: "-C link-arg=-Wl,-Bstatic -C link-arg=-lc -C link-arg=-L/usr/lib/llvm-17/lib/clang/17/lib/linux/ -C link-arg=-lclang_rt.builtins-aarch64"
           - name: "Windows"
             runner: windows-2022-github-hosted-16core
     runs-on: ${{ matrix.runner }}
@@ -65,14 +64,11 @@ jobs:
 
       - name: Build LLVM
         uses: ./.github/actions/build-llvm
-        with:
-          target: ${{ matrix.target }}
 
       - name: Build zksolc
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target }}
-          rustflags: ${{ matrix.rustflags }}
 
       - name: Install solc compiler
         uses: ./.github/actions/install-solc
@@ -83,7 +79,6 @@ jobs:
         uses: ./.github/actions/unit-tests
         with:
           target: ${{ matrix.target || '' }}
-          rustflags: ${{ matrix.rustflags }}
 
       - name: Run CLI tests
         uses: ./.github/actions/cli-tests
