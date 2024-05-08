@@ -65,7 +65,7 @@ where
         format!("dup{offset}").as_str(),
     )?;
 
-    *original = element.original.to_owned();
+    element.original.clone_into(original);
 
     Ok(value)
 }

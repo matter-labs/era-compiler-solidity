@@ -559,18 +559,21 @@ impl FunctionCall {
                 .map(|_| None)
             }
             Name::TLoad => {
-                let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!(
-                    "{} The `TLOAD` instruction is not supported until zkVM v1.5.0",
-                    location
-                );
+                let arguments = self.pop_arguments_llvm::<D, 1>(context)?;
+                era_compiler_llvm_context::eravm_evm_storage::transient_load(
+                    context,
+                    arguments[0].into_int_value(),
+                )
+                .map(Some)
             }
             Name::TStore => {
-                let _arguments = self.pop_arguments_llvm::<D, 2>(context)?;
-                anyhow::bail!(
-                    "{} The `TSTORE` instruction is not supported until zkVM v1.5.0",
-                    location
-                );
+                let arguments = self.pop_arguments_llvm::<D, 2>(context)?;
+                era_compiler_llvm_context::eravm_evm_storage::transient_store(
+                    context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
+                )
+                .map(|_| None)
             }
             Name::LoadImmutable => {
                 let mut arguments = self.pop_arguments::<D, 1>(context)?;
@@ -1059,10 +1062,7 @@ impl FunctionCall {
             }
             Name::BlobHash => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!(
-                    "{} The `BLOBHASH` instruction is not supported until zkVM v1.5.0",
-                    location
-                );
+                anyhow::bail!("{} The `BLOBHASH` instruction is not supported", location);
             }
             Name::Difficulty | Name::Prevrandao => {
                 era_compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
@@ -1075,7 +1075,7 @@ impl FunctionCall {
             }
             Name::BlobBaseFee => {
                 anyhow::bail!(
-                    "{} The `BLOBBASEFEE` instruction is not supported until zkVM v1.5.0",
+                    "{} The `BLOBBASEFEE` instruction is not supported",
                     location
                 );
             }
