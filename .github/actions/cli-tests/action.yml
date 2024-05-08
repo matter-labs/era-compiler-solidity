@@ -62,6 +62,7 @@ runs:
         check_name: CLI Tests ${{ runner.os }} ${{ runner.arch }} (prebuilt - ${{ inputs.use-prebuilt-zksolc }})
         files: cli-tests/junit.xml
         action_fail_on_inconclusive: true
+        comment_mode: off
 
     - name: Upload results MacOS
       if: runner.os == 'macOS'
@@ -70,6 +71,7 @@ runs:
         check_name: CLI Tests Results ${{ runner.os }} ${{ runner.arch }} (prebuilt - ${{ inputs.use-prebuilt-zksolc }})
         files: cli-tests/junit.xml
         action_fail_on_inconclusive: true
+        comment_mode: off
 
     - name: Upload results Windows
       if: runner.os == 'Windows'
@@ -78,3 +80,4 @@ runs:
         check_name: CLI Tests Results ${{ runner.os }} ${{ runner.arch }} (prebuilt - ${{ inputs.use-prebuilt-zksolc }})
         files: cli-tests/junit.xml
         action_fail_on_inconclusive: true
+        comment_mode: off
