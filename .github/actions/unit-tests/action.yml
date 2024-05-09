@@ -45,6 +45,7 @@ runs:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
         files: ${{ inputs.results-xml }}
         action_fail_on_inconclusive: true
+        comment_mode: off
 
     - name: Upload test results MacOS
       if: runner.os == 'macOS'
@@ -53,6 +54,7 @@ runs:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
         files: ${{ inputs.results-xml }}
         action_fail_on_inconclusive: true
+        comment_mode: off
 
     - name: Upload test results Windows
       if: runner.os == 'Windows'
@@ -61,3 +63,4 @@ runs:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
         files: ${{ inputs.results-xml }}
         action_fail_on_inconclusive: true
+        comment_mode: off
