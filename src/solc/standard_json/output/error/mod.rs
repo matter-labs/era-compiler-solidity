@@ -41,7 +41,7 @@ impl Error {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.      │
-│ zkSync Era comes with native account abstraction support, therefore it is highly recommended NOT │
+│ ZKsync Era comes with native account abstraction support, therefore it is highly recommended NOT │
 │ to rely on the fact that the account has an ECDSA private key attached to it since accounts might│
 │ implement other signature schemes.                                                               │
 │ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │
@@ -97,7 +97,7 @@ impl Error {
 │ usually needed in the following cases:                                                           │
 │   1. To detect whether an address belongs to a smart contract.                                   │
 │   2. To detect whether the deploy code execution has finished.                                   │
-│ zkSync Era comes with native account abstraction support (so accounts are smart contracts,       │
+│ ZKsync Era comes with native account abstraction support (so accounts are smart contracts,       │
 │ including private-key controlled EOAs), and you should avoid differentiating between contracts   │
 │ and non-contract addresses.                                                                      │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘"#
@@ -121,7 +121,7 @@ impl Error {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Warning: You are checking for 'tx.origin' in your code, which might lead to unexpected behavior. │
-│ zkSync Era comes with native account abstraction support, and therefore the initiator of a       │
+│ ZKsync Era comes with native account abstraction support, and therefore the initiator of a       │
 │ transaction might be different from the contract calling your code. It is highly recommended NOT │
 │ to rely on tx.origin, but use msg.sender instead.                                                │
 │ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │
