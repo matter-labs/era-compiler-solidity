@@ -19,7 +19,7 @@ rustflags = [
 [target.aarch64-unknown-linux-musl]
 linker = "rust-lld"
 
-[target.aarch64-unknown-linux-musl.compiler-rt]
+[target.aarch64-unknown-linux-musl.compiler-rt-zksolc]
 rustc-link-search = ["./target-llvm/target-host/lib/clang/17/lib/aarch64-unknown-linux-musl"]
 rustc-link-lib = ["clang_rt.builtins"]
 
