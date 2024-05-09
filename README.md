@@ -1,82 +1,181 @@
-# zkSync Era: Solidity Compiler
+# ZKsync Era: Solidity Compiler
 
 [![Logo](eraLogo.svg)](https://zksync.io/)
 
-zkSync Era is a layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security
+ZKsync Era is a layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security
 or decentralization. As it’s EVM-compatible (with Solidity/Vyper), 99% of Ethereum projects can redeploy without
-needing to refactor or re-audit any code. zkSync Era also uses an LLVM-based compiler that will eventually enable
+needing to refactor or re-audit any code. ZKsync Era also uses an LLVM-based compiler that will eventually enable
 developers to write smart contracts in popular languages such as C++ and Rust.
 
-This repository contains the EraVM Solidity compiler.
+This repository contains the ZKsync Solidity compiler.
 
 ## System Requirements
 
 Supported platforms:
-- **Linux: x86_64**  
-   MUSL-based static builds do not depend on system libraries and can be run on any recent Linux distribution.
-- **MacOS 11+: x86_64, arm64 (M1, M2)**
-- **Windows: x86_64**  
-   Only Windows 10 has been tested so far, but other versions should be OK as well.
+- **Linux: x86_64**
+   * MUSL-based static builds do not depend on system libraries and can be run on any recent Linux distribution.
+- **MacOS 11+: x86_64, arm64 (Apple silicon)**
+- **Windows: x86_64**
+   * Only Windows 10 has been tested so far, but other versions should be OK as well.
 
 We recommend at least 4 GB of RAM available for the build process.
 
 ## Delivery Methods
 
-1. **Install via npm**  
-   Use [zkSync CLI](https://era.zksync.io/docs/tools/zksync-cli/) to obtain a compiler package and prepare a project environment. After the installation you can modify a hardhat configuration file in the project and specify `zksolc` version there. Use `npx hardhat compile` or `yarn hardhat compile` to compile. [@matterlabs/hardhat-zksync-solc](https://era.zksync.io/docs/tools/hardhat/getting-started.html) package will be used from npm repo.
-2. **Download prebuilt binaries**  
-   Download [solc](https://github.com/ethereum/solc-bin) and [zksolc](https://github.com/matter-labs/zksolc-bin) binaries directly from GitHub. Use the CLI or Hardhat to compile contracts.
-3. **Build binaries from sources**  
-   Build binaries using the guide below. Use the CLI or Hardhat to compile contracts.
+1. **Install via npm**:
+   - Use [ZKsync CLI](https://era.zksync.io/docs/tools/zksync-cli/) to obtain a compiler package and prepare a project environment. After the installation you can modify a hardhat configuration file in the project and specify `zksolc` version there. Use `npx hardhat compile` or `yarn hardhat compile` to compile. [@matterlabs/hardhat-zksync-solc](https://era.zksync.io/docs/tools/hardhat/getting-started.html) package will be used from npm repo.
+2. **Download prebuilt binaries**:
+   - Download [solc](https://github.com/matter-labs/era-solidity/releases) and [zksolc](https://github.com/matter-labs/zksolc-bin) binaries directly from GitHub. Use the CLI or Hardhat to compile contracts.
+3. **Build binaries from sources**:
+   - Build binaries using the guide below. Use the CLI or Hardhat to compile contracts.
 
 ## Building
 
-1. Install some tools system-wide:  
-   1.a. `apt install cmake ninja-build clang-13 lld-13 parallel` on a Debian-based Linux, with optional `musl-tools` if you need a `musl` build.  
-   1.b. `pacman -S cmake ninja clang lld parallel` on an Arch-based Linux.  
-   1.c. On MacOS, install the [HomeBrew](https://brew.sh) package manager (being careful to install it as the appropriate user), then `brew install cmake ninja coreutils parallel`. Install your choice of a recent LLVM/[Clang](https://clang.llvm.org) compiler, e.g. via [Xcode](https://developer.apple.com/xcode/), [Apple’s Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html), or your preferred package manager.  
-   1.d. Their equivalents with other package managers.  
+<details>
+<summary>1. Install the system prerequisites.</summary>
 
-2. [Install Rust](https://www.rust-lang.org/tools/install)
+   * Linux (Debian):
 
-   Currently we are not pinned to any specific version of Rust, so just install the latest stable build for your platform.  
-   Also install the `musl` target if you are compiling on Linux in order to distribute the binary:  
-   `rustup target add x86_64-unknown-linux-musl`  
+      Install the following packages:
+      ```shell
+      apt install cmake ninja-build curl git libssl-dev pkg-config clang lld
+      ```
 
-3. [Download a version](https://github.com/ethereum/solc-bin) of [the solc compiler](https://docs.soliditylang.org/en/v0.8.21/) compiler.  
-   If it is not named exactly `solc` and in your `$PATH`, see the `--solc` option below.  
+      > Additionally install `musl-tools` if you are building for the `x86_64-unknown-linux-musl` or `aarch64-unknown-linux-musl` targets.
+   * Linux (Arch):
 
-4. Check out or clone the appropriate branch of this repository.  
+      Install the following packages:
+      ```shell
+      pacman -Syu which cmake ninja curl git pkg-config clang lld
+      ```
+   * MacOS:
 
-5. Go to the project root and run `git checkout <ref>` with the tag, branch, or commit you want to build.  
+      * Install the [HomeBrew](https://brew.sh) package manager.
+      * Install the following packages:
 
-6. Install the EraVM LLVM framework builder:  
-   6.a. `cargo install compiler-llvm-builder` on MacOS, or Linux for personal use.  
-   6.b. `cargo install compiler-llvm-builder --target x86_64-unknown-linux-musl` on Linux for distribution.  
+         ```shell
+         brew install cmake ninja coreutils
+         ```
 
-   The builder is not the [EraVM LLVM framework](https://github.com/matter-labs/era-compiler-llvm) itself; it is just a tool that clones our repository and runs the sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`. Execute `zkevm-llvm --help` for more information.  
-   If you need a specific branch of EraVM LLVM, change it in the `LLVM.lock` file at the root of this repository.  
+      * Install your choice of a recent LLVM/[Clang](https://clang.llvm.org) compiler, e.g. via [Xcode](https://developer.apple.com/xcode/), [Apple’s Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html), or your preferred package manager.
+</details>
 
-7. Run the builder to clone and build the EraVM LLVM framework at this repository root:  
-   7.1. `zkevm-llvm clone`  
-   7.2. `zkevm-llvm build`  
+<details>
+<summary>2. Install Rust.</summary>
 
-8. Build the Solidity compiler executable:  
-   8.a. `cargo build --release` on MacOS or Linux for personal use.  
-   8.b. `cargo build --release --target x86_64-unknown-linux-musl` on Linux for distribution.  
+   * Follow the latest [official instructions]((https://www.rust-lang.org/tools/install)):
+      ```shell
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      . ${HOME}/.cargo/env
+      ```
 
-9. If you need to move the built binary elsewhere, grab it from the build directory:  
-   9.a. On MacOS or Linux for the default target: `./target/release/zksolc`  
-   9.b. On Linux, if you are building for the target `x86_64-unknown-linux-musl`: `./target/x86_64-unknown-linux-musl/release/zksolc`  
+      > Currently we are not pinned to any specific version of Rust, so just install the latest stable build for your   platform.
+
+   * If you would like to build statically-linked binaries on Linux, install the `musl` target for your platform:
+
+      For `x86_64`:
+      ```shell
+      rustup target add x86_64-unknown-linux-musl
+      ```
+
+      For `arm64(aarch64)`:
+      ```shell
+      rustup target add aarch64-unknown-linux-musl
+      ```
+</details>
+
+<details>
+<summary>3. Download `solc` compiler.</summary>
+
+   [Download a version](https://github.com/ethereum/solc-bin) of [the solc compiler](https://docs.soliditylang.org/en/v0.8.21/) compiler.
+
+   > If it is not named exactly `solc` and in your `$PATH`, see the `--solc` option below.
+
+</details>
+
+<details>
+<summary>4. Clone and checkout repository.</summary>
+
+   Use the following commands to clone and checkout the ZKsync Solidity compiler repository:
+   ```shell
+   git clone https://github.com/matter-labs/era-compiler-solidity.git
+   cd era-compiler-solidity
+   git checkout <ref>
+   ```
+
+   > Replace `<ref>` with the tag, branch, or commit you want to build or skip this step to use default branch of the repository.
+
+</details>
+
+<details>
+<summary>5. Install the ZKsync LLVM framework builder.</summary>
+
+   * Install the builder using `cargo`:
+      ```shell
+      cargo install compiler-llvm-builder
+      ```
+
+      > The builder is not the ZKsync LLVM framework itself, but a tool that clones its repository and runs a sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is recommended to be added to your `$PATH`.
+
+</details>
+
+<details>
+<summary>6. Build ZKsync LLVM framework.</summary>
+
+   * Clone and build the ZKsync LLVM framework using the `zksync-llvm` tool:
+      ```shell
+      zksync-llvm clone
+      zksync-llvm build
+      ```
+
+      The build artifacts will end up in the `./target-llvm/target-final/` directory.
+      You may point your `LLVM_SYS_170_PREFIX` to that directory to use this build as a compiler dependency.
+      If built with the `--enable-tests` option, test tools will be in the `./target-llvm/build-final/` directory, along   with copies of the build artifacts. For all supported build options, run `zksync-llvm build --help`.
+
+      > If you need a specific branch of ZKsync LLVM framework, change it in the `LLVM.lock` file at the root of the repository.
+
+   * If you are building on Linux for distribution  targeting `x86_64-unknown-linux-musl` or `aarch64-unknown-linux-musl`, use the following commands:
+      ```shell
+      zksync-llvm clone --target-env musl
+      zksync-llvm build --target-env musl
+      ```
+
+   > You could use `--use-ccache` option to speed up the build process if you have [ccache](https://ccache.dev) installed. For more information and available build options, run `zksync-llvm build --help`.
+
+</details>
+
+<details>
+<summary>7. Build the Solidity compiler executable.</summary>
+
+   * On MacOS, Windows or Linux for personal use:
+      ```shell
+      cargo build --release
+      ```
+
+   * On Linux for distribution:
+
+      For `x86_64`:
+      ```shell
+      cargo build --release --target x86_64-unknown-linux-musl
+      ```
+
+      For `arm64(aarch64)`:
+      ```shell
+      cargo build --release --target aarch64-unknown-linux-musl
+      ```
+
+      > The resulting binary will be in the `./target/release/zksolc` directory. For `*-musl` targets, the binary will be in the `./target/x86_64-unknown-linux-musl/release/zksolc` or `./target/aarch64-unknown-linux-musl/release/zksolc` directory.
+
+</details>
 
 ## Usage
 
-Check `./target/*/zksolc --help` for the compiler usage.  
+Check `./target/*/zksolc --help` for the compiler usage.
 
 The `solc` compiler must be available in `$PATH`, or its path must be passed explicitly with the `--solc` option.
 
 For big projects it is more convenient to use the compiler via the Hardhat plugin. For single-file contracts, or small
-projects, the CLI suffices.  
+projects, the CLI suffices.
 
 ## Unit testing
 
@@ -98,10 +197,6 @@ For running command line interface tests, `zksolc` itself and `solc` must also b
 
 ## Troubleshooting
 
-- If you get a “failed to authenticate when downloading repository… if the git CLI succeeds then net.git-fetch-with-cli may help here” error,
-then prepending the `cargo` command with `CARGO_NET_GIT_FETCH_WITH_CLI=true`
-may help.
-- On MacOS, `git config --global credential.helper osxkeychain` followed by cloning a repository manually with a personal access token may help.
 - Unset any LLVM-related environment variables you may have set, especially `LLVM_SYS_<version>_PREFIX` (see e.g. [https://crates.io/crates/llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration)). To make sure: `set | grep LLVM`
 
 ## License
@@ -115,9 +210,8 @@ at your option.
 
 ## Resources
 
-[zkSync Era compiler toolchain documentation](https://era.zksync.io/docs/api/compiler-toolchain)
-
-[Solidity documentation](https://docs.soliditylang.org/en/latest/)
+- [ZKsync Era compiler toolchain documentation](https://era.zksync.io/docs/api/compiler-toolchain)
+- [Solidity documentation](https://docs.soliditylang.org/en/latest/)
 
 ## Official Links
 
@@ -129,7 +223,7 @@ at your option.
 
 ## Disclaimer
 
-zkSync Era has been through extensive testing and audits, and although it is live, it is still in alpha state and
+ZKsync Era has been through extensive testing and audits, and although it is live, it is still in alpha state and
 will undergo further audits and bug bounty programs. We would love to hear our community's thoughts and suggestions
 about it!
 It's important to note that forking it now could potentially lead to missing important
