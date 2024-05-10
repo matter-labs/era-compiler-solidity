@@ -487,12 +487,11 @@ impl Translator {
             match &body[0] {
                 Statement::Expression(e) => Some(&e),
                 Statement::EAssignment(lhs, rhs)
-                    if lhs
-                        == &result_vars
+                    if lhs.iter().map(|i|&i.identifier).zip(
+                        result_vars
                             .iter()
-                            .map(|d| d.reference())
-                            .collect::<Vec<_>>() =>
-                {
+                            .map(|d| &d.identifier)).all(|(x,y)|x==y)
+                        =>{
                     Some(&rhs)
                 }
                 _ => None,
@@ -513,12 +512,12 @@ impl Translator {
             body,
             attributes: _,
         } = fd;
-        //self.location_tracker.enter_function(identifier.clone());
+        self.location_tracker.enter_function(identifier.clone());
         let formal_parameters = arguments
             .iter()
             .map(|ident| self.transpile_formal_parameter(ident))
             .collect();
-        let (ctx, ec_block) = self.transpile_block(&body, ctx)?;
+        let (ctx, ec_block) = self.transpile_block(&body, &ctx.clear_locals())?;
         let result_vars = self.bindings_to_definitions(&result);
         let return_type: Type = {
             let vec: Vec<Type> = result_vars
@@ -538,7 +537,7 @@ impl Translator {
                 return_type,
                 kind: SignatureKind::Function,
             };
-            //self.location_tracker.pop();
+            self.location_tracker.pop();
             Ok((
                 ctx.clone(),
                 FunctionTranslationResult::Function(Function {
@@ -574,7 +573,7 @@ impl Translator {
                 .chain(ctx.locals.iter())
                 .cloned()
                 .collect();
-            //self.location_tracker.pop();
+            self.location_tracker.pop();
             Ok((
                 ctx.clone(),
                 FunctionTranslationResult::Proc(Proc {
@@ -615,17 +614,18 @@ impl Translator {
             }
             YulStatement::FunctionDefinition(fd) => {
                 let (ctx, translation_result) = self.transpile_function_definition(fd, ctx)?;
-                let mut new_ctx = Context::new();
                 match translation_result {
                     FunctionTranslationResult::Function(fd) => {
-                        new_ctx.module.add_def(ModuleDefinition::FunDef(fd))
+                        let mut new_ctx = ctx.clone();
+                        new_ctx.module.add_def(ModuleDefinition::FunDef(fd.clone()));
+                        Ok((new_ctx, TranslatedStatement::Function(fd)))
                     }
                     FunctionTranslationResult::Proc(pd) => {
-                        new_ctx.module.add_def(ModuleDefinition::ProcDef(pd))
+                        let mut new_ctx = ctx.clone();
+                        new_ctx.module.add_def(ModuleDefinition::ProcDef(pd.clone()));
+                        Ok((new_ctx, TranslatedStatement::Proc(pd)))
                     }
-                };
-                new_ctx.merge(&ctx);
-                Ok((new_ctx, TranslatedStatement::Statements(vec![])))
+                }
             }
             YulStatement::VariableDeclaration(vd) => self.transpile_variable_declaration(&vd, &ctx),
             YulStatement::Assignment(assignment) => self.transpile_assignment(&assignment, &ctx),
@@ -649,16 +649,14 @@ impl Translator {
         self.location_tracker.enter_block();
         for stmt in block.statements.iter() {
             let (ctx, translated) = self.transpile_statement(stmt, &context)?;
-            context = ctx;
             match translated {
-                TranslatedStatement::Statements(stmts) => result.extend(stmts),
-                TranslatedStatement::Function(fd) => {
-                    context.module.add_def(ModuleDefinition::FunDef(fd));
-                }
-                TranslatedStatement::Proc(proc) => {
-                    context.module.add_def(ModuleDefinition::ProcDef(proc));
-                }
-            }
+                TranslatedStatement::Statements(stmts) => {
+                    result.extend(stmts);
+                },
+                TranslatedStatement::Function(_) |
+                TranslatedStatement::Proc(_) => (),
+            };
+            context = ctx
         }
         self.location_tracker.pop();
         Ok((context, result))
@@ -785,6 +783,12 @@ impl Context {
     }
     fn add_local(&self, definition: Definition) -> Self {
         self.add_locals(iter::once(&definition))
+    }
+
+    fn clear_locals(&self) -> Context {
+        Self { module: self.module.clone(),
+               locals: vec![],
+        }
     }
 }
 impl Default for Context {
