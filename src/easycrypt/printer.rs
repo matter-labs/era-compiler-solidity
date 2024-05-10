@@ -96,14 +96,16 @@ impl<T: IPrinter> Visitor for T {
     fn visit_function_call(&mut self, call: &FunctionCall) {
         let FunctionCall { target, arguments } = call;
         self.visit_function_name(&target);
-        self.print("(");
-        for (i, arg) in arguments.iter().enumerate() {
-            if i > 0 {
-                self.print(", ")
+        if arguments.len() != 0 {
+            self.print("(");
+            for (i, arg) in arguments.iter().enumerate() {
+                if i > 0 {
+                    self.print(", ")
+                }
+                self.visit_expression(&*arg);
             }
-            self.visit_expression(&*arg);
+            self.print(")");
         }
-        self.print(")");
     }
     fn visit_block(&mut self, block: &Block) {
         self.increase_indent();
