@@ -2,28 +2,25 @@
 //! Printers for all YUL AST node types
 //!
 
-use crate::util::printer::{print_list_comma_separated, IPrinter};
-use crate::yul::visitor::YulVisitor;
+use crate::util::printer::print_list_comma_separated;
+use crate::util::printer::IPrinter;
+use crate::yul::parser::statement::assignment::Assignment;
+use crate::yul::parser::statement::block::Block;
+use crate::yul::parser::statement::code::Code;
+use crate::yul::parser::statement::expression::function_call::name::Name;
+use crate::yul::parser::statement::expression::function_call::FunctionCall;
+use crate::yul::parser::statement::expression::literal::Literal;
+use crate::yul::parser::statement::expression::Expression;
+use crate::yul::parser::statement::for_loop::ForLoop;
+use crate::yul::parser::statement::function_definition::FunctionDefinition;
+use crate::yul::parser::statement::if_conditional::IfConditional;
+use crate::yul::parser::statement::object::Object;
+use crate::yul::parser::statement::switch::Switch;
+use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
+use crate::yul::parser::statement::Statement;
+use crate::yul::visitor::Visitor;
 
-use crate::yul::parser::statement::{
-    assignment::Assignment,
-    block::Block,
-    code::Code,
-    expression::{
-        function_call::{name::Name, FunctionCall},
-        literal::Literal,
-        Expression,
-    },
-    for_loop::ForLoop,
-    function_definition::FunctionDefinition,
-    if_conditional::IfConditional,
-    object::Object,
-    switch::Switch,
-    variable_declaration::VariableDeclaration,
-    Statement,
-};
-
-impl<T: IPrinter> YulVisitor for T {
+impl<T: IPrinter> Visitor for T {
     fn visit_object(&mut self, obj: &Object) {
         self.print("object \"");
         self.print(obj.identifier.as_str());
@@ -32,7 +29,7 @@ impl<T: IPrinter> YulVisitor for T {
         self.visit_code(&obj.code);
         self.println("");
         if let Some(inner) = &obj.inner_object {
-            self.visit_object(&inner)
+            self.visit_object(inner)
         }
         self.println("}");
         self.decrease_indent();
@@ -57,7 +54,7 @@ impl<T: IPrinter> YulVisitor for T {
         if let Some(block) = &s.default {
             self.print("default");
             self.print("   ");
-            self.visit_block(&block);
+            self.visit_block(block);
             self.println("");
         }
     }
@@ -77,7 +74,7 @@ impl<T: IPrinter> YulVisitor for T {
         print_list_comma_separated(def.bindings.iter().map(|b| b.inner.as_str()), self);
         if let Some(expr) = &def.expression {
             self.print(" := ");
-            self.visit_expression(&expr);
+            self.visit_expression(expr);
         }
     }
 
@@ -259,7 +256,7 @@ impl<T: IPrinter> YulVisitor for T {
         }
     }
 
-    fn visit_functioncall(&mut self, call: &FunctionCall) {
+    fn visit_function_call(&mut self, call: &FunctionCall) {
         self.visit_name(&call.name);
         self.print("(");
         for (idx, a) in call.arguments.iter().enumerate() {
@@ -286,7 +283,7 @@ impl<T: IPrinter> YulVisitor for T {
 
     fn visit_expression(&mut self, expr: &Expression) {
         match expr {
-            Expression::FunctionCall(fc) => self.visit_functioncall(&fc),
+            Expression::FunctionCall(fc) => self.visit_function_call(fc),
             Expression::Identifier(i) => self.print(i.inner.as_str()),
             Expression::Literal(l) => self.visit_literal(l),
         }
@@ -328,7 +325,7 @@ impl<T: IPrinter> YulVisitor for T {
 
         if block.statements.len() == 1 {
             self.print("{ ");
-            self.visit_statement(&block.statements.first().unwrap());
+            self.visit_statement(block.statements.first().unwrap());
             self.print(" }");
             return;
         }

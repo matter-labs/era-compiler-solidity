@@ -1,0 +1,90 @@
+pub mod block;
+pub mod code;
+pub mod context;
+pub mod expression;
+pub mod function;
+pub mod identifier;
+pub mod object;
+pub mod statement;
+pub mod r#type;
+
+use crate::util::counter::Counter;
+use crate::yul::parser::identifier::Identifier as YulIdentifier;
+
+use crate::yul::path::Builder as PathBuilder;
+use crate::yul::path::Path;
+
+use self::context::Context;
+use super::syntax::definition::Definition;
+
+use super::syntax::module::definition::TopDefinition;
+
+use super::syntax::r#type::Type;
+use super::syntax::reference::Reference;
+
+/// Global state of YUL to EasyCrypt translator
+#[derive(Debug)]
+pub struct Translator {
+    location_tracker: PathBuilder,
+    tmp_counter: Counter,
+}
+
+impl Default for Translator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Translator {
+    /// Create an instance of [`Translator`] with an empty state.
+    pub fn new() -> Self {
+        Self {
+            location_tracker: PathBuilder::new(),
+            tmp_counter: Counter::new(),
+        }
+    }
+
+    fn get_module_definition(&self, ctx: &Context, name: &str) -> Option<TopDefinition> {
+        let reference = Reference {
+            identifier: name.to_owned(),
+            location: Some(self.here()),
+        };
+        ctx.module.definitions.get(&reference).cloned()
+    }
+
+    fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
+        Self::new_definition(self.here(), name, typ)
+    }
+
+    fn new_tmp_definition_here(&mut self) -> Definition {
+        let name = format!("TMP{}", self.tmp_counter.get_value());
+        self.tmp_counter.increment();
+        Self::new_definition(self.here(), &name, None)
+    }
+
+    fn here(&self) -> Path {
+        self.location_tracker.here().clone()
+    }
+
+    fn bindings_to_definitions(&self, idents: &[YulIdentifier]) -> Vec<Definition> {
+        idents
+            .iter()
+            .map(|ident| Definition {
+                identifier: ident.inner.clone(),
+                location: Some(self.here()),
+                r#type: ident
+                    .r#type
+                    .as_ref()
+                    .and_then(|t| Self::transpile_type(t).ok()),
+            })
+            .collect()
+    }
+
+    fn new_definition(location: Path, name: &str, r#type: Option<Type>) -> Definition {
+        Definition {
+            identifier: String::from(name),
+            location: Some(location),
+            r#type,
+        }
+    }
+}

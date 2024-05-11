@@ -2,14 +2,28 @@
 //! EasyCrypt AST pretty printer
 //!
 
-use super::{
-    syntax::{
-        BinaryOpType, Block, Definition, Expression, Function, FunctionCall, FunctionName,
-        IntegerLiteral, Literal, Module, ModuleDefinition, Proc, ProcCall, ProcName, Reference,
-        Signature, SignatureKind, Statement, Type, UnaryOpType,
-    },
-    visitor::Visitor,
-};
+use super::syntax::definition::Definition;
+use super::syntax::expression::binary::BinaryOpType;
+use super::syntax::expression::call::FunctionCall;
+use super::syntax::expression::unary::UnaryOpType;
+use super::syntax::expression::Expression;
+use super::syntax::function::name::FunctionName;
+use super::syntax::function::Function;
+use super::syntax::literal::integer::IntegerLiteral;
+use super::syntax::literal::Literal;
+use super::syntax::module::definition::TopDefinition;
+use super::syntax::module::Module;
+use super::syntax::proc::name::ProcName;
+use super::syntax::proc::Proc;
+use super::syntax::r#type::Type;
+use super::syntax::reference::Reference;
+use super::syntax::signature::Signature;
+use super::syntax::signature::SignatureKind;
+use super::syntax::statement::block::Block;
+use super::syntax::statement::call::ProcCall;
+use super::syntax::statement::Statement;
+
+use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
 
 impl<T: IPrinter> Visitor for T {
@@ -29,7 +43,7 @@ impl<T: IPrinter> Visitor for T {
             return_type,
             kind,
         } = signature;
-        if kind != &SignatureKind::Function || formal_parameters.len() != 0 {
+        if kind != &SignatureKind::Function || !formal_parameters.is_empty() {
             self.print("(");
 
             for (i, (param, ty)) in formal_parameters.iter().enumerate() {
@@ -73,7 +87,7 @@ impl<T: IPrinter> Visitor for T {
                 if i > 0 {
                     self.print(", ");
                 }
-                self.visit_definition(&local);
+                self.visit_definition(local);
             }
             self.println(";");
         }
@@ -95,14 +109,14 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_function_call(&mut self, call: &FunctionCall) {
         let FunctionCall { target, arguments } = call;
-        self.visit_function_name(&target);
-        if arguments.len() != 0 {
+        self.visit_function_name(target);
+        if !arguments.is_empty() {
             self.print("(");
             for (i, arg) in arguments.iter().enumerate() {
                 if i > 0 {
                     self.print(", ")
                 }
-                self.visit_expression(&*arg);
+                self.visit_expression(arg);
             }
             self.print(")");
         }
@@ -120,7 +134,7 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_module(&mut self, module: &Module) {
-        const NAME_ANONYMOUS_MODULE: &'static str = "ANONYMOUS";
+        const NAME_ANONYMOUS_MODULE: &str = "ANONYMOUS";
         let module_name = module
             .name
             .clone()
@@ -128,9 +142,9 @@ impl<T: IPrinter> Visitor for T {
 
         self.println(format!("(* Begin {} *)", module_name).as_str());
 
-        for (_, def) in &module.definitions {
-            if def.is_fun() {
-                self.visit_module_definition(&def);
+        for def in module.definitions.values() {
+            if def.is_fun_def() {
+                self.visit_module_definition(def);
                 self.println("")
             }
         }
@@ -139,9 +153,9 @@ impl<T: IPrinter> Visitor for T {
         self.print(&module_name);
         self.println(" = {");
         self.increase_indent();
-        for (_, def) in &module.definitions {
-            if def.is_proc() {
-                self.visit_module_definition(&def);
+        for def in module.definitions.values() {
+            if def.is_proc_def() {
+                self.visit_module_definition(def);
                 self.println("")
             }
         }
@@ -153,10 +167,10 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral) {
         match int_literal {
-            IntegerLiteral::Decimal { inner } => self.print(&inner),
+            IntegerLiteral::Decimal { inner } => self.print(inner),
             IntegerLiteral::Hexadecimal { inner } => {
                 self.print("0x");
-                self.print(&inner)
+                self.print(inner)
             }
         }
     }
@@ -168,7 +182,7 @@ impl<T: IPrinter> Visitor for T {
                 self.print(s.as_str());
                 self.print("\"")
             }
-            Literal::Int(int_literal) => self.visit_integer_literal(&int_literal),
+            Literal::Int(int_literal) => self.visit_integer_literal(int_literal),
             Literal::Bool(value) => self.print(format!("{value}").as_str()),
         }
     }
@@ -194,7 +208,7 @@ impl<T: IPrinter> Visitor for T {
         });
     }
 
-    fn visit_unary_op_type(&mut self, op: &UnaryOpType) {
+    fn visit_unary_op_type(&mut self, _op: &UnaryOpType) {
         todo!()
     }
 
@@ -202,14 +216,14 @@ impl<T: IPrinter> Visitor for T {
         match expression {
             Expression::Unary(_, _) => todo!(),
             Expression::Binary(op, lhs, rhs) => {
-                self.visit_binary_op_type(&op);
+                self.visit_binary_op_type(op);
                 self.print("(");
-                self.visit_expression(&*lhs);
+                self.visit_expression(lhs);
                 self.print(",");
-                self.visit_expression(&*rhs);
+                self.visit_expression(rhs);
                 self.print(")");
             }
-            Expression::ECall(ecall) => self.visit_function_call(&ecall),
+            Expression::ECall(ecall) => self.visit_function_call(ecall),
             Expression::Literal(literal) => self.visit_literal(literal),
             Expression::Reference(reference) => self.visit_reference(reference),
             Expression::Tuple(expressions) => {
@@ -231,30 +245,30 @@ impl<T: IPrinter> Visitor for T {
             Statement::Expression(expression) => self.visit_expression(expression),
             Statement::Block(block) => {
                 block.statements.iter().for_each(|s| {
-                    self.visit_statement(&s);
+                    self.visit_statement(s);
                     self.println("")
                 });
             }
             Statement::If(_, _, _) => todo!(),
             Statement::EAssignment(refs, rhs) => {
                 for (i, r) in (*refs).iter().enumerate() {
-                    self.visit_reference(&r);
+                    self.visit_reference(r);
                     if i > 0 {
                         self.print(",")
                     }
                 }
                 self.print(" <- ");
-                self.visit_expression(&*rhs);
+                self.visit_expression(rhs);
             }
             Statement::PAssignment(refs, rhs) => {
                 for (i, r) in (*refs).iter().enumerate() {
-                    self.visit_reference(&r);
+                    self.visit_reference(r);
                     if i > 0 {
                         self.print(",")
                     }
                 }
                 self.print(" <@ ");
-                self.visit_proc_call(&*rhs);
+                self.visit_proc_call(rhs);
             }
 
             Statement::Return(e) => {
@@ -266,10 +280,10 @@ impl<T: IPrinter> Visitor for T {
         }
     }
 
-    fn visit_module_definition(&mut self, definition: &ModuleDefinition) {
+    fn visit_module_definition(&mut self, definition: &TopDefinition) {
         match definition {
-            ModuleDefinition::ProcDef(proc_def) => self.visit_proc(&proc_def),
-            ModuleDefinition::FunDef(fun_def) => self.visit_function(&fun_def),
+            TopDefinition::Proc(proc_def) => self.visit_proc(proc_def),
+            TopDefinition::Function(fun_def) => self.visit_function(fun_def),
         }
     }
 }

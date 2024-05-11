@@ -1,0 +1,64 @@
+use std::iter;
+
+use anyhow::Error;
+
+use crate::Translator;
+
+use crate::easycrypt::syntax::reference::Reference;
+use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::context::Context;
+use crate::easycrypt::translator::expression::context::Context as ExprContext;
+use crate::easycrypt::translator::statement::Transformed;
+use crate::yul::parser::identifier::Identifier as YulIdentifier;
+use crate::yul::parser::statement::assignment::Assignment as YulAssignment;
+use crate::yul::parser::statement::expression::Expression as YulExpression;
+
+impl Translator {
+    fn bindings_to_references(&self, idents: &[YulIdentifier]) -> Vec<Reference> {
+        self.bindings_to_definitions(idents)
+            .iter()
+            .map(|def| def.reference())
+            .collect()
+    }
+
+    fn transpile_assignment_aux(
+        &mut self,
+        bindings: &[YulIdentifier],
+        initializer: &YulExpression,
+        ctx: &Context,
+    ) -> Result<(Context, Transformed), Error> {
+        // Implementation note. We could have left `transpile_assignment` as a single function and make `transpile_variable_declaration` produce a new instance of `YulAssignment` `The field `location` is ignored, therefore it would be unclean to
+        let references = self.bindings_to_references(bindings);
+        let (
+            new_rhs,
+            ExprContext {
+                assignments,
+                locals,
+            },
+        ) = self.transpile_expression_root(initializer, ctx)?;
+        let ec_assignment = Statement::EAssignment(references, Box::new(new_rhs));
+        let ec_statements = assignments
+            .iter()
+            .chain(iter::once(&ec_assignment))
+            .cloned()
+            .collect();
+        Ok((
+            ctx.add_locals(locals.iter()),
+            Transformed::Statements(ec_statements),
+        ))
+    }
+
+    /// Transpile a YUL assignment.
+    pub fn transpile_assignment(
+        &mut self,
+        assignment: &YulAssignment,
+        ctx: &Context,
+    ) -> Result<(Context, Transformed), Error> {
+        let YulAssignment {
+            location: _,
+            bindings,
+            initializer,
+        } = assignment;
+        self.transpile_assignment_aux(bindings, initializer, ctx)
+    }
+}
