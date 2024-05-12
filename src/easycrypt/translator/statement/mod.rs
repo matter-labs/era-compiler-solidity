@@ -1,4 +1,5 @@
 pub mod assignment;
+pub mod if_conditional;
 pub mod variable_declaration;
 
 use std::iter;
@@ -66,7 +67,7 @@ impl Translator {
             }
             YulStatement::VariableDeclaration(vd) => self.transpile_variable_declaration(vd, ctx),
             YulStatement::Assignment(assignment) => self.transpile_assignment(assignment, ctx),
-            YulStatement::IfConditional(_) => todo!(),
+            YulStatement::IfConditional(conditional) => self.transpile_if(conditional, ctx),
             YulStatement::Switch(_) => todo!(),
             YulStatement::ForLoop(_) => todo!(),
             YulStatement::Continue(_) => todo!(),
