@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- The `xor(zext(cmp), -1)` optimization bug
 - Libraries passed with `--libraries` and now added to input files
 - Printing `--help` if not arguments are provided
 - Missing `--overwrite` flag now triggers an error
