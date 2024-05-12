@@ -69,12 +69,9 @@ impl<T: IPrinter> Visitor for T {
                 self.visit_expression(expr);
             }
             Expression::Binary(op, lhs, rhs) => {
-                self.visit_binary_op_type(op);
-                self.print("(");
                 self.visit_expression(lhs);
-                self.print(",");
+                self.visit_binary_op_type(op);
                 self.visit_expression(rhs);
-                self.print(")");
             }
             Expression::ECall(ecall) => self.visit_function_call(ecall),
             Expression::Literal(literal) => self.visit_literal(literal),
