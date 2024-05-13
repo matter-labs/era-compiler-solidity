@@ -24,6 +24,7 @@ use super::syntax::statement::call::ProcCall;
 use super::syntax::statement::if_conditional::IfConditional;
 use super::syntax::statement::Statement;
 
+use super::syntax::statement::while_loop::WhileLoop;
 use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
 
@@ -271,7 +272,7 @@ impl<T: IPrinter> Visitor for T {
                 self.visit_expression(e);
             }
             Statement::Pass => todo!(),
-            Statement::While(_, _) => todo!(),
+            Statement::WhileLoop(while_loop) => self.visit_while_loop(while_loop),
         }
     }
 
@@ -304,6 +305,22 @@ impl<T: IPrinter> Visitor for T {
             self.println("");
             self.print("else ");
             self.visit_statement(no);
+        }
+    }
+
+    fn visit_while_loop(&mut self, while_loop: &super::syntax::statement::while_loop::WhileLoop) {
+        let WhileLoop { condition, body } = while_loop;
+        self.print("while (");
+
+        self.visit_expression(condition);
+        self.println(")");
+
+        if !body.is_block() {
+            self.print(" { ")
+        }
+        self.visit_statement(body);
+        if !body.is_block() {
+            self.println(" } ")
         }
     }
 }

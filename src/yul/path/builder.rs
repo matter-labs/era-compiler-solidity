@@ -76,4 +76,20 @@ impl Builder {
     pub fn enter_if_then(&mut self) {
         self.push(LexicalBlock::IfBlock(u32::from(self.if_counter)));
     }
+
+    /// Enter the initializer of a "for" statement on the way from the root of YUL syntax tree.
+    pub fn enter_for1(&mut self) {
+        self.for_counter.increment();
+        self.push(LexicalBlock::For1(u32::from(self.for_counter)));
+    }
+    /// Enter the condition of a "for" statement on the way from the root of YUL syntax tree.
+    pub fn enter_for2(&mut self) {
+        self.for_counter.increment();
+        self.push(LexicalBlock::For2(u32::from(self.for_counter)));
+    }
+    /// Enter the finalizer of a "for" statement on the way from the root of YUL syntax tree.
+    pub fn enter_for3(&mut self) {
+        self.for_counter.increment();
+        self.push(LexicalBlock::For3(u32::from(self.for_counter)));
+    }
 }

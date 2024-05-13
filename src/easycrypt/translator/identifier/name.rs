@@ -2,7 +2,6 @@
 //! Transpilation of the names of YUL identifiers.
 //!
 
-
 use crate::easycrypt::syntax::expression::binary::BinaryOpType;
 use crate::easycrypt::syntax::expression::unary::UnaryOpType;
 use crate::easycrypt::syntax::function::name::FunctionName;

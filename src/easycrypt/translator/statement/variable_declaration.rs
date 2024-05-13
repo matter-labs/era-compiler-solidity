@@ -5,8 +5,8 @@
 use anyhow::Error;
 
 use super::Transformed;
-use crate::easycrypt::translator::Translator;
 use crate::easycrypt::translator::context::Context;
+use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::assignment::Assignment as YulAssignment;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 

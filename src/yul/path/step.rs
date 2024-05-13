@@ -6,7 +6,6 @@ type CodeID = u32;
 type BlockID = u32;
 type IfID = u32;
 type ForID = u32;
-type WhileID = u32;
 type Name = String;
 
 /// Types of lexical blocks that are accounted for in a [`crate::yul::path::Path`] from the root
@@ -22,8 +21,6 @@ pub enum LexicalBlock {
     For1(ForID),
     For2(ForID),
     For3(ForID),
-    WhileCondition(WhileID),
-    WhileBody(WhileID),
 }
 
 impl LexicalBlock {
@@ -41,8 +38,6 @@ impl LexicalBlock {
             LexicalBlock::For1(id) => format!("for_{id}_1"),
             LexicalBlock::For2(id) => format!("for_{id}_2"),
             LexicalBlock::For3(id) => format!("for_{id}_3"),
-            LexicalBlock::WhileCondition(id) => format!("while_{id}_cond"),
-            LexicalBlock::WhileBody(id) => format!("while_{id}_body"),
         }
     }
 }

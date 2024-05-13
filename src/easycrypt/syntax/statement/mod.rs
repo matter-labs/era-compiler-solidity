@@ -7,10 +7,12 @@
 pub mod block;
 pub mod call;
 pub mod if_conditional;
+pub mod while_loop;
 
 use self::block::Block;
 use self::call::ProcCall;
 use self::if_conditional::IfConditional;
+use self::while_loop::WhileLoop;
 
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::expression::Expression;
@@ -36,7 +38,7 @@ pub enum Statement {
     /// Return a value from a procedure.
     Return(Expression),
     /// Execute a block of statements while an expression value is true.
-    While(Expression, Box<Self>),
+    WhileLoop(WhileLoop),
     // SAssignment for // x <$ distr
     Pass,
 }
@@ -98,11 +100,11 @@ impl Statement {
         matches!(self, Self::Return(..))
     }
 
-    /// Returns `true` if the statement is [`While`].
+    /// Returns `true` if the statement is [`WhileLoop`].
     ///
-    /// [`While`]: Statement::While
+    /// [`WhileLoop`]: Statement::WhileLoop
     #[must_use]
-    pub fn is_while(&self) -> bool {
-        matches!(self, Self::While(..))
+    pub fn is_while_loop(&self) -> bool {
+        matches!(self, Self::WhileLoop(..))
     }
 }

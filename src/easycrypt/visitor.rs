@@ -21,6 +21,7 @@ use super::syntax::signature::Signature;
 use super::syntax::statement::block::Block;
 use super::syntax::statement::call::ProcCall;
 use super::syntax::statement::if_conditional::IfConditional;
+use super::syntax::statement::while_loop::WhileLoop;
 use super::syntax::statement::Statement;
 
 /// Describes the visitor pattern for EasyCrypt syntax tree.
@@ -84,4 +85,7 @@ pub trait Visitor {
 
     /// Visit an unary operation in an EasyCrypt syntax tree.
     fn visit_unary_op_type(&mut self, op: &UnaryOpType);
+
+    /// Visit a `while` loop.
+    fn visit_while_loop(&mut self, while_loop: &WhileLoop);
 }

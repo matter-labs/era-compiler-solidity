@@ -3,6 +3,7 @@
 //!
 
 pub mod assignment;
+pub mod for_loop;
 pub mod if_conditional;
 pub mod variable_declaration;
 
@@ -24,6 +25,16 @@ pub enum Transformed {
     Statements(Vec<Statement>),
     Function(Function),
     Proc(Proc),
+}
+
+impl Transformed {
+    pub fn as_statements(&self) -> Option<&Vec<Statement>> {
+        if let Self::Statements(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
 }
 
 impl Translator {
@@ -73,7 +84,7 @@ impl Translator {
             YulStatement::Assignment(assignment) => self.transpile_assignment(assignment, ctx),
             YulStatement::IfConditional(conditional) => self.transpile_if(conditional, ctx),
             YulStatement::Switch(_) => todo!(),
-            YulStatement::ForLoop(_) => todo!(),
+            YulStatement::ForLoop(for_loop) => self.transpile_for_loop(for_loop, ctx),
             YulStatement::Continue(_) => todo!(),
             YulStatement::Break(_) => todo!(),
             YulStatement::Leave(_) => todo!(),
