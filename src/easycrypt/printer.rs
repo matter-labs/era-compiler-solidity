@@ -243,12 +243,7 @@ impl<T: IPrinter> Visitor for T {
         match statement {
             Statement::VarDefinition(_, _) => todo!(),
             Statement::Expression(expression) => self.visit_expression(expression),
-            Statement::Block(block) => {
-                block.statements.iter().for_each(|s| {
-                    self.visit_statement(s);
-                    self.println("")
-                });
-            }
+            Statement::Block(block) => self.visit_block(block),
             Statement::If(if_conditional) => self.visit_if_conditional(if_conditional),
             Statement::EAssignment(refs, rhs) => {
                 for (i, r) in (*refs).iter().enumerate() {
