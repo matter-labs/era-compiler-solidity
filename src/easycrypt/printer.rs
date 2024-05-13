@@ -67,11 +67,14 @@ impl<T: IPrinter> Visitor for T {
         match expression {
             Expression::Unary(op, expr) => {
                 self.visit_unary_op_type(op);
+                self.print(" ");
                 self.visit_expression(expr);
             }
             Expression::Binary(op, lhs, rhs) => {
                 self.visit_expression(lhs);
+                self.print(" ");
                 self.visit_binary_op_type(op);
+                self.print(" ");
                 self.visit_expression(rhs);
             }
             Expression::ECall(ecall) => self.visit_function_call(ecall),
