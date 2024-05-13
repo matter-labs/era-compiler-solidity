@@ -107,4 +107,12 @@ impl Statement {
     pub fn is_while_loop(&self) -> bool {
         matches!(self, Self::WhileLoop(..))
     }
+
+    pub fn as_if(&self) -> Option<&IfConditional> {
+        if let Self::If(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
 }
