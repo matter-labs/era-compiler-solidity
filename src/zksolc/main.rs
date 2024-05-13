@@ -86,6 +86,17 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
+    let solc_pipeline = match (arguments.force_evmla, arguments.via_ir) {
+        (true, true) => {
+            anyhow::bail!("The `--force-evmla` and `--via-ir` flags are mutually exclusive.");
+        }
+        (true, false) => era_compiler_solidity::SolcPipeline::EVMLA,
+        (false, true) => era_compiler_solidity::SolcPipeline::Yul,
+        (false, false) => {
+            anyhow::bail!("The `--force-evmla` or `--via-ir` flag is required.");
+        }
+    };
+
     let evm_version = match arguments.evm_version {
         Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
             evm_version.as_str(),
@@ -150,10 +161,9 @@ fn main_inner() -> anyhow::Result<()> {
                     ))?;
                 era_compiler_solidity::standard_json_eravm(
                     &mut solc,
+                    solc_pipeline,
                     standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     arguments.is_system_mode,
                     arguments.base_path,
                     arguments.include_paths,
@@ -171,11 +181,10 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
+                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     arguments.is_system_mode,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -198,11 +207,10 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
+                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     arguments.is_system_mode,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -278,9 +286,8 @@ fn main_inner() -> anyhow::Result<()> {
                     ))?;
                 era_compiler_solidity::standard_json_evm(
                     &mut solc,
+                    solc_pipeline,
                     standard_json.map(PathBuf::from),
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
@@ -297,11 +304,10 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
+                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
@@ -322,11 +328,10 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
+                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
-                    arguments.force_evmla,
-                    arguments.via_ir,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,

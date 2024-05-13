@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Switched to the old codegen with the ZKsync fork of `solc`
+- Made the `solc` codegen specifier mandatory
 
 ## [1.4.1] - 2024-04-24
 
