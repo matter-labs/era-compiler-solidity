@@ -34,7 +34,7 @@ pub enum Expression {
 impl Expression {
     /// Pack two or more expressions in a tuple expression. A single expression
     /// is returned as-is, unpacked.
-    pub fn pack_tuple(exprs: &Vec<Self>) -> Self {
+    pub fn pack_tuple(exprs: &[Self]) -> Self {
         match exprs.len() {
             0 => panic!("Attempt to pack zero expressions in a tuple."),
             1 => exprs[0].clone(),
