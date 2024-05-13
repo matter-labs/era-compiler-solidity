@@ -1,5 +1,5 @@
 //!
-//! EasyCrypt AST
+//! EasyCrypt syntax tree.
 //!
 
 pub mod definition;
@@ -13,4 +13,5 @@ pub mod signature;
 pub mod statement;
 pub mod r#type;
 
+/// A name of a custom identifier.
 pub type Name = String;

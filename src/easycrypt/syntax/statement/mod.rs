@@ -1,20 +1,41 @@
-use self::{block::Block, call::ProcCall, if_conditional::IfConditional};
-
-use super::{definition::Definition, expression::Expression, reference::Reference};
+//!
+//! EasyCrypt AST nodes containing statements. Statements are a syntactic
+//! category whose computations result in actions, potentially with
+//! side-effects.
+//!
 
 pub mod block;
 pub mod call;
 pub mod if_conditional;
 
+use self::block::Block;
+use self::call::ProcCall;
+use self::if_conditional::IfConditional;
+
+use crate::easycrypt::syntax::definition::Definition;
+use crate::easycrypt::syntax::expression::Expression;
+use crate::easycrypt::syntax::reference::Reference;
+
+/// EasyCrypt AST nodes containing statements. Statements are a syntactic
+/// category whose computations result in actions, potentially with
+/// side-effects.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Statement {
+    /// Definition of a new variable.
     VarDefinition(Definition, Expression),
+    /// Compute a single expression and discard its result.
     Expression(Expression),
+    /// Block of sequentially executed statements between { curly braces }.
     Block(Block),
+    /// `if` statement, conditionally executed depending on the expression value.
     If(IfConditional),
+    /// Assignment of an expression evaluation result to a variable.
     EAssignment(Vec<Reference>, Box<Expression>), // x <- expr
-    PAssignment(Vec<Reference>, ProcCall),        // x <@ proc
+    /// Assignment of a procedure return value to a variable.
+    PAssignment(Vec<Reference>, ProcCall), // x <@ proc
+    /// Return a value from a procedure.
     Return(Expression),
+    /// Execute a block of statements while an expression value is true.
     While(Expression, Box<Self>),
     // SAssignment for // x <$ distr
     Pass,

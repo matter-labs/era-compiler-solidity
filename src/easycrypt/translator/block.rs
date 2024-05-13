@@ -1,11 +1,14 @@
+//!
+//! Transpilation of YUL blocks of statements.
+//!
+
 use anyhow::Error;
 
 use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::Translator;
 use crate::easycrypt::translator::context::Context;
-use crate::yul::parser::statement::block::Block as YulBlock;
-use crate::Translator;
-
 use crate::easycrypt::translator::statement;
+use crate::yul::parser::statement::block::Block as YulBlock;
 
 pub struct Transformed {
     pub statements: Vec<Statement>,

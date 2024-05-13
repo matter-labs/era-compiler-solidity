@@ -1,3 +1,7 @@
+//!
+//! Transpilation of Yul functions.
+//!
+
 use anyhow::Error;
 use std::iter;
 
@@ -13,8 +17,7 @@ use crate::easycrypt::syntax::statement::block::Block;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
-
-use crate::Translator;
+use crate::easycrypt::translator::Translator;
 
 use super::context::Context;
 

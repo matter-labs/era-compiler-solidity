@@ -1,3 +1,7 @@
+//!
+//! Transpilation of YUL expressions.
+//!
+
 pub mod context;
 pub mod function_call;
 pub mod literal;

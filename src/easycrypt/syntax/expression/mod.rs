@@ -1,18 +1,33 @@
-use self::{binary::BinaryOpType, call::FunctionCall, unary::UnaryOpType};
-
-use super::{literal::Literal, reference::Reference};
+//!
+//! EasyCrypt AST nodes containing different kinds of expressions.
+//!
 
 pub mod binary;
 pub mod call;
 pub mod unary;
 
+use crate::easycrypt::syntax::expression::binary::BinaryOpType;
+use crate::easycrypt::syntax::expression::call::FunctionCall;
+use crate::easycrypt::syntax::expression::unary::UnaryOpType;
+use crate::easycrypt::syntax::literal::Literal;
+use crate::easycrypt::syntax::reference::Reference;
+
+/// EasyCrypt AST nodes containing different kinds of expressions. Expressions
+/// are a syntactic category whose terms are computed to a value in a pure way,
+/// without side effects.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expression {
+    /// Unary expressions, like `-x`.
     Unary(UnaryOpType, Box<Self>),
+    /// Binary expressions, like `a-x`.
     Binary(BinaryOpType, Box<Self>, Box<Self>),
+    /// Function calls, like `f(x)`.
     ECall(FunctionCall),
+    /// Literals, like `42` or `"hello"`.
     Literal(Literal),
+    /// References to previously defined variables, like `x`
     Reference(Reference),
+    /// Tuples, like `(42, x)`.
     Tuple(Vec<Self>),
 }
 

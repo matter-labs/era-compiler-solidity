@@ -1,3 +1,7 @@
+//!
+//! Transpilation of arbitrary YUL statements.
+//!
+
 pub mod assignment;
 pub mod if_conditional;
 pub mod variable_declaration;

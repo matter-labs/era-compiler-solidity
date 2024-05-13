@@ -1,8 +1,12 @@
+//!
+//! Transpile YUL assignments.
+//!
+
 use std::iter;
 
 use anyhow::Error;
 
-use crate::Translator;
+use crate::easycrypt::translator::Translator;
 
 use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::statement::Statement;

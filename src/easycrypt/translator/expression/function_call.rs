@@ -1,3 +1,7 @@
+//!
+//! Transpilation of YUL function calls.
+//!
+
 use anyhow::Error;
 
 use crate::Translator;

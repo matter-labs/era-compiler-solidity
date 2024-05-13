@@ -1,3 +1,7 @@
+//!
+//! Transpilation of YUL literals.
+//!
+
 use crate::easycrypt::syntax::literal::integer::IntegerLiteral;
 use crate::easycrypt::syntax::literal::Literal;
 use crate::yul::parser::statement::expression::literal::Literal as YulLiteral;

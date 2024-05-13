@@ -1,10 +1,16 @@
+//!
+//! Name of a function in EasyCrypt, which can be a user-defined custom name or
+//! one of the pre-defined names such as `lt`.
+//!
+
 use std::fmt::Display;
 
 use crate::easycrypt::syntax::Name;
 
+/// Name of a function, which can be a user-defined custom name or one of the pre-defined names such as `lt`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FunctionName {
-    /// The user-defined procedure or function.
+    /// The user-defined function.
     UserDefined(Name),
     /// `1` if `x < y`, `0` otherwise.
     Lt,
@@ -22,7 +28,6 @@ pub enum FunctionName {
     IsZero,
     /// `n`th byte of `x`, where the most significant byte is the `0`th byte
     Byte,
-
     /// signed arithmetic shift right `y` by `x` bits.
     Sar,
     /// `(x + y) % m` with arbitrary precision arithmetic, `0` if `m == 0`.

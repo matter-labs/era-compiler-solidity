@@ -1,3 +1,7 @@
+//!
+//! Transpilation of YUL types.
+//!
+
 use anyhow::Error;
 
 use crate::easycrypt::syntax::r#type::Type;

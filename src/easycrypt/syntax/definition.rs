@@ -1,8 +1,12 @@
-use super::r#type::Type;
-use super::reference::Reference;
-use super::Name;
+//!
+//! EasyCrypt AST node containing a definition of a new variable.
+//!
 
-/// Definition of a new variable
+use crate::easycrypt::syntax::r#type::Type;
+use crate::easycrypt::syntax::reference::Reference;
+use crate::easycrypt::syntax::Name;
+
+/// EasyCrypt AST node containing a definition of a new variable.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Definition {
     /// Name of the variable.
@@ -24,11 +28,3 @@ impl Definition {
         }
     }
 }
-
-// impl Hash for Definition {
-//     fn hash<H: Hasher>(&self, state: &mut H) {
-//         self.identifier.hash(state);
-//         self.location.hash(state);
-//         self.r#type.hash(state);
-//     }
-// }

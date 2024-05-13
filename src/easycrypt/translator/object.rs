@@ -1,3 +1,7 @@
+//!
+//! Transpilation of YUL objects.
+//!
+
 use anyhow::Error;
 
 use crate::easycrypt::syntax::module::Module;

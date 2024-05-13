@@ -1,6 +1,10 @@
-use super::Name;
+//!
+//! EasyCrypt AST node containing a reference to a previously defined variable.
+//!
 
-/// Reference to a previously defined variable.
+use crate::easycrypt::syntax::Name;
+
+/// EasyCrypt AST node containing a reference to a previously defined variable.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Reference {
     /// Name of the variable
@@ -9,10 +13,3 @@ pub struct Reference {
     /// Location of the original variable in the source YUL file.
     pub location: Option<crate::yul::path::Path>,
 }
-
-// impl Hash for Reference {
-//     fn hash<H: Hasher>(&self, state: &mut H) {
-//         self.identifier.hash(state);
-//         self.location.hash(state);
-//     }
-// }

@@ -1,3 +1,8 @@
+//!
+//! Transpilation of YUL identifiers.
+//!
+
+
 pub mod name;
 pub mod special;
 

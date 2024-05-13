@@ -1,3 +1,7 @@
+//!
+//! Expression translation context.
+//!
+
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::syntax::statement::Statement;

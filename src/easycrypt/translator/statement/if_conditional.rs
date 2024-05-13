@@ -1,3 +1,7 @@
+//!
+//! Transpile an "if" conditional statement in YUL.
+//!
+
 use std::iter;
 
 use anyhow::Error;

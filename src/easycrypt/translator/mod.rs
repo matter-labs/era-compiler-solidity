@@ -1,3 +1,7 @@
+//!
+//! Transpiler from YUL to EasyCrypt
+//!
+
 pub mod block;
 pub mod code;
 pub mod context;

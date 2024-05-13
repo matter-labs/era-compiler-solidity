@@ -1,3 +1,7 @@
+//!
+//! Transpilation of the `code` block of an arbitrary YUL object.
+//!
+
 use std::collections::HashMap;
 
 use anyhow::Error;

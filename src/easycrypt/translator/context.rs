@@ -1,3 +1,7 @@
+//!
+//! Transpilation context.
+//!
+
 use std::iter;
 
 use crate::easycrypt::syntax::{definition::Definition, module::Module};
