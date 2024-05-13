@@ -79,10 +79,10 @@ impl<T: IPrinter> Visitor for T {
             Expression::Tuple(expressions) => {
                 self.print("(");
                 for (i, expr) in expressions.iter().enumerate() {
-                    self.visit_expression(expr);
                     if i > 0 {
                         self.print(", ");
                     }
+                    self.visit_expression(expr);
                 }
                 self.print(")")
             }

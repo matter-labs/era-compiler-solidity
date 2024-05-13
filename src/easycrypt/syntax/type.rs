@@ -24,10 +24,10 @@ impl Display for Type {
             Type::Tuple(inner) => {
                 f.write_str("(")?;
                 for (i, component) in inner.iter().enumerate() {
-                    component.fmt(f)?;
                     if i > 0 {
                         f.write_str(" * ")?;
                     }
+                    component.fmt(f)?;
                 }
                 f.write_str(")")
             }
