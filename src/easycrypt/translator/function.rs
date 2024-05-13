@@ -15,9 +15,9 @@ use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::signature::{Signature, SignatureKind};
 use crate::easycrypt::syntax::statement::block::Block;
 use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::Translator;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
-use crate::easycrypt::translator::Translator;
 
 use super::context::Context;
 
@@ -36,7 +36,7 @@ impl Translator {
     /// If a YUL function is transpiled into an EasyCrypt function (not
     /// EasyCrypt procedure), return a reference to its body expression.
     fn get_function_body<'a>(
-        body: &'a Vec<Statement>,
+        body: &'a [Statement],
         result_vars: &[Definition],
     ) -> Option<&'a Expression> {
         if body.len() != 1 {
@@ -118,7 +118,7 @@ impl Translator {
                     &result_vars
                         .iter()
                         .map(|d| Expression::Reference(d.reference()))
-                        .collect(),
+                        .collect::<Vec<_>>(),
                 ));
                 ec_block
                     .statements

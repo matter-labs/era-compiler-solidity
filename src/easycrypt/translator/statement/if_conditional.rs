@@ -42,7 +42,7 @@ impl Translator {
         self.location_tracker.leave();
         self.location_tracker.enter_if_then();
 
-        let (ctx, TransformedBlock { statements }) = self.transpile_block(&block, &ctx)?;
+        let (ctx, TransformedBlock { statements }) = self.transpile_block(block, &ctx)?;
 
         let transpiled_conditional = IfConditional {
             condition: transpiled_condition,

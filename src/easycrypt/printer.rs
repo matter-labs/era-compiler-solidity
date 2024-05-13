@@ -301,14 +301,14 @@ impl<T: IPrinter> Visitor for T {
         if !yes.is_block() {
             self.print(" { ")
         }
-        self.visit_statement(&*yes);
+        self.visit_statement(yes);
         if !yes.is_block() {
             self.println(" } ")
         }
         if let Some(no) = no {
             self.println("");
             self.print("else ");
-            self.visit_statement(&*no);
+            self.visit_statement(no);
         }
     }
 }

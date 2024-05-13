@@ -5,9 +5,9 @@
 use anyhow::Error;
 
 use crate::easycrypt::syntax::statement::Statement;
-use crate::easycrypt::translator::Translator;
 use crate::easycrypt::translator::context::Context;
 use crate::easycrypt::translator::statement;
+use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::block::Block as YulBlock;
 
 pub struct Transformed {

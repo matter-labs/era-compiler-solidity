@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use path_slash::PathExt;
 use structopt::StructOpt;
 
-///
+/// Describes the accepted command line arguments.
 #[derive(Debug, StructOpt)]
 #[structopt(name = "The EraVM Yul to CoreYul transpiler")]
 pub struct Arguments {
