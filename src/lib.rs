@@ -242,6 +242,7 @@ pub fn standard_output_eravm(
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
+    via_ir: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
@@ -253,7 +254,7 @@ pub fn standard_output_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla, via_ir);
 
     let solc_input = SolcStandardJsonInput::try_from_paths(
         SolcStandardJsonInputLanguage::Solidity,
@@ -339,6 +340,7 @@ pub fn standard_output_evm(
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
+    via_ir: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -348,7 +350,7 @@ pub fn standard_output_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla, via_ir);
 
     let solc_input = SolcStandardJsonInput::try_from_paths(
         SolcStandardJsonInputLanguage::Solidity,
@@ -425,6 +427,7 @@ pub fn standard_json_eravm(
     json_path: Option<PathBuf>,
     detect_missing_libraries: bool,
     force_evmla: bool,
+    via_ir: bool,
     is_system_mode: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -432,7 +435,7 @@ pub fn standard_json_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla, via_ir);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
     let solc_input = match json_path {
@@ -510,13 +513,14 @@ pub fn standard_json_evm(
     solc: &mut SolcCompiler,
     json_path: Option<PathBuf>,
     force_evmla: bool,
+    via_ir: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla, via_ir);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
     let solc_input = match json_path {
@@ -584,6 +588,7 @@ pub fn combined_json_eravm(
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
+    via_ir: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
@@ -606,6 +611,7 @@ pub fn combined_json_eravm(
         solc_optimizer_enabled,
         optimizer_settings,
         force_evmla,
+        via_ir,
         is_system_mode,
         include_metadata_hash,
         use_literal_content,
@@ -649,6 +655,7 @@ pub fn combined_json_evm(
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     force_evmla: bool,
+    via_ir: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -669,6 +676,7 @@ pub fn combined_json_evm(
         solc_optimizer_enabled,
         optimizer_settings,
         force_evmla,
+        via_ir,
         include_metadata_hash,
         use_literal_content,
         base_path,

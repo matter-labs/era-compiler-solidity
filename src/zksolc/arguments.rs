@@ -138,11 +138,17 @@ pub struct Arguments {
     #[structopt(long = "zkasm")]
     pub zkasm: bool,
 
-    /// Forcibly switch to EVM legacy assembly pipeline.
+    /// Switch to EVM legacy assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
+    /// Only available for the upstream `solc`, where `zksolc` enforces the Yul codegen by default.
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
+
+    /// Switch to Yul codegen.
+    /// Only available for the ZKsync for of `solc`, where `zksolc` uses default codegen settings.
+    #[structopt(long = "via-ir")]
+    pub via_ir: bool,
 
     /// Enable system contract compilation mode.
     /// In this mode EraVM extensions are enabled. For example, calls to addresses `0xFFFF` and below
@@ -265,7 +271,12 @@ impl Arguments {
             }
 
             if self.force_evmla {
-                anyhow::bail!("EVM legacy assembly mode is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
+            }
+            if self.via_ir {
+                anyhow::bail!(
+                    "Yul codegen is not supported in Yul, LLVM IR and EraVM assembly modes."
+                );
             }
 
             if self.disable_solc_optimizer {
