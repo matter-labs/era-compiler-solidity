@@ -20,11 +20,10 @@ use crate::easycrypt::translator::block::Transformed as TransformedBlock;
 use crate::easycrypt::translator::context::Context;
 use crate::yul::path::tracker::PathTracker;
 
-
 impl Translator {
     /// Transpile the `code` block of an arbitrary YUL object.
     pub fn transpile_code(&mut self, code: &YulCode) -> Result<Module, Error> {
-        self.location_tracker.enter_code();
+        self.tracker.enter_code();
 
         let (Context { module, locals }, TransformedBlock { statements }) =
             self.transpile_block(&code.block, &Context::new())?;
@@ -53,7 +52,7 @@ impl Translator {
             });
         }
 
-        self.location_tracker.leave();
+        self.tracker.leave();
 
         Ok(new_module)
     }

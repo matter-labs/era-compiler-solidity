@@ -16,7 +16,7 @@ pub trait PathTracker {
     fn enter_block(&mut self);
 
     /// Enter a function on the way from the root of YUL syntax tree.
-    fn enter_function(&mut self, ident: &str);
+    fn enter_function(&mut self, identifier: &str);
 
     /// Enter a code section on the way from the root of YUL syntax tree.
     fn enter_code(&mut self);

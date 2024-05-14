@@ -8,15 +8,17 @@ pub mod context;
 pub mod expression;
 pub mod function;
 pub mod identifier;
+pub mod lookup;
 pub mod object;
 pub mod statement;
+pub mod tracker;
 pub mod r#type;
 
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 
+use self::tracker::Tracker;
 use crate::yul::path::tracker::PathTracker;
-use crate::yul::path::Builder as PathBuilder;
 use crate::yul::path::Path;
 
 use self::context::Context;
@@ -30,7 +32,7 @@ use super::syntax::reference::Reference;
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
-    location_tracker: PathBuilder,
+    tracker: Tracker,
     tmp_counter: Counter,
 }
 
@@ -44,15 +46,17 @@ impl Translator {
     /// Create an instance of [`Translator`] with an empty state.
     pub fn new() -> Self {
         Self {
-            location_tracker: PathBuilder::new(),
+            tracker: Tracker::new(),
             tmp_counter: Counter::new(),
         }
     }
 
     fn get_module_definition(&self, ctx: &Context, name: &str) -> Option<TopDefinition> {
+        let path = self.tracker.get(&name.to_string()).map(|e| e.path);
+
         let reference = Reference {
             identifier: name.to_owned(),
-            location: Some(self.here()),
+            location: path,
         };
         ctx.module.definitions.get(&reference).cloned()
     }
@@ -68,7 +72,7 @@ impl Translator {
     }
 
     fn here(&self) -> Path {
-        self.location_tracker.here().clone()
+        self.tracker.here().clone()
     }
 
     fn bindings_to_definitions(&self, idents: &[YulIdentifier]) -> Vec<Definition> {

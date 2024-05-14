@@ -72,7 +72,7 @@ impl Translator {
             body,
             attributes: _,
         } = fd;
-        self.location_tracker.enter_function(identifier);
+        self.tracker.enter_function(identifier);
         let formal_parameters = arguments
             .iter()
             .map(|ident| self.transpile_formal_parameter(ident))
@@ -97,7 +97,7 @@ impl Translator {
                 return_type,
                 kind: SignatureKind::Function,
             };
-            self.location_tracker.leave();
+            self.tracker.leave();
             Ok((
                 ctx.clone(),
                 Translated::Function(Function {
@@ -134,7 +134,7 @@ impl Translator {
                 .chain(ctx.locals.iter())
                 .cloned()
                 .collect();
-            self.location_tracker.leave();
+            self.tracker.leave();
             Ok((
                 ctx.clone(),
                 Translated::Proc(Proc {

@@ -28,11 +28,13 @@ impl Translator {
     ) -> Result<(Expression, ExprContext), Error> {
         match self.transpile_name(ctx, name) {
             identifier::Translated::Function(target) => {
+                eprintln!("{:?} is a function", name);
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 Ok((Expression::ECall(FunctionCall { target, arguments }), ectx))
             }
 
             identifier::Translated::Proc(target) => {
+                eprintln!("{:?} is a proc", name);
                 let (arguments, ctx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 let definition = self.new_tmp_definition_here();
                 let mut new_ctx = ctx;
@@ -41,6 +43,7 @@ impl Translator {
                 Ok((Expression::Reference(definition.reference()), new_ctx))
             }
             identifier::Translated::ProcOrFunction(name) => {
+                eprintln!("{:?} is ?", name);
                 let (arguments, ctx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 let definition = self.new_tmp_definition_here();
                 let mut new_ctx = ctx;

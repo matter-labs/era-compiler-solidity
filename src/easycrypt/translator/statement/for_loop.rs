@@ -40,8 +40,8 @@ impl Translator {
             body,
         } = for_loop;
 
-        self.location_tracker.leave();
-        self.location_tracker.enter_for1();
+        self.tracker.leave();
+        self.tracker.enter_for1();
         let (
             ctx,
             TransformedBlock {
@@ -49,8 +49,8 @@ impl Translator {
             },
         ) = self.transpile_block(initializer, ctx)?;
 
-        self.location_tracker.leave();
-        self.location_tracker.enter_for2();
+        self.tracker.leave();
+        self.tracker.enter_for2();
         let (
             transpiled_condition,
             ExprContext {
@@ -59,8 +59,8 @@ impl Translator {
             },
         ) = self.transpile_expression_root(condition, &ctx)?;
 
-        self.location_tracker.leave();
-        self.location_tracker.enter_for3();
+        self.tracker.leave();
+        self.tracker.enter_for3();
         let (
             ctx,
             TransformedBlock {

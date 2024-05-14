@@ -14,7 +14,7 @@ impl Translator {
     pub fn transpile_object(&mut self, obj: &Object, is_root: bool) -> Result<Module, Error> {
         let module_name = &obj.identifier;
 
-        self.location_tracker.enter_object(module_name);
+        self.tracker.enter_object(module_name);
         let mut result = Module::new(if is_root {
             Some(module_name.to_owned())
         } else {
@@ -28,7 +28,7 @@ impl Translator {
             result.merge(&translated_inner_object)
         }
 
-        self.location_tracker.leave();
+        self.tracker.leave();
 
         Ok(result)
     }

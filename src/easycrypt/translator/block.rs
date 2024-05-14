@@ -27,7 +27,7 @@ impl Translator {
             statements: Vec::new(),
         };
 
-        self.location_tracker.enter_block();
+        self.tracker.enter_block();
         for stmt in block.statements.iter() {
             let (ctx, translated) = self.transpile_statement(stmt, &context)?;
             match translated {
@@ -38,7 +38,7 @@ impl Translator {
             };
             context = ctx
         }
-        self.location_tracker.leave();
+        self.tracker.leave();
         Ok((context, result))
     }
 }

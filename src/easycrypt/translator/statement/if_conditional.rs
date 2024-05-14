@@ -30,7 +30,7 @@ impl Translator {
             condition,
             block,
         } = conditional;
-        self.location_tracker.enter_if_cond();
+        self.tracker.enter_if_cond();
         let (
             transpiled_condition,
             ExprContext {
@@ -40,8 +40,8 @@ impl Translator {
         ) = self.transpile_expression_root(condition, ctx)?;
         let ctx = ctx.add_locals(&locals);
 
-        self.location_tracker.leave();
-        self.location_tracker.enter_if_then();
+        self.tracker.leave();
+        self.tracker.enter_if_then();
 
         let (ctx, TransformedBlock { statements }) = self.transpile_block(block, &ctx)?;
 
@@ -50,7 +50,7 @@ impl Translator {
             yes: Box::from(Statement::Block(Block { statements })),
             no: None,
         };
-        self.location_tracker.leave();
+        self.tracker.leave();
 
         let result = Transformed::Statements(
             assignments

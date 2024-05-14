@@ -70,11 +70,13 @@ impl Translator {
                 let (ctx, translation_result) = self.transpile_function_definition(fd, ctx)?;
                 match translation_result {
                     function::Translated::Function(fd) => {
+                        self.tracker.add_fun(&fd.name);
                         let mut new_ctx = ctx.clone();
                         new_ctx.module.add_def(TopDefinition::Function(fd.clone()));
                         Ok((new_ctx, Transformed::Function(fd)))
                     }
                     function::Translated::Proc(pd) => {
+                        self.tracker.add_proc(&fd.identifier);
                         let mut new_ctx = ctx.clone();
                         new_ctx.module.add_def(TopDefinition::Proc(pd.clone()));
                         Ok((new_ctx, Transformed::Proc(pd)))

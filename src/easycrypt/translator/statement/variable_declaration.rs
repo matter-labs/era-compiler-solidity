@@ -30,9 +30,12 @@ impl Translator {
         } = vd;
         let definitions = self.bindings_to_definitions(bindings);
 
+        for def in &definitions {
+            self.tracker.add_var(&def.identifier)
+        }
+
         let ctx = ctx.add_locals(definitions.iter());
         if let Some(initializer) = expression {
-            //self.transpile_assignment_aux(bindings, initializer, &ctx)
             let equivalent_assignment = YulAssignment {
                 location: *location,
                 initializer: initializer.clone(),
