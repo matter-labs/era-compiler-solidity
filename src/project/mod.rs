@@ -75,7 +75,7 @@ impl Project {
     pub fn compile_to_eravm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        is_system_mode: bool,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -89,7 +89,7 @@ impl Project {
                     EraVMProcessInput::new(
                         contract,
                         project.clone(),
-                        is_system_mode,
+                        enable_eravm_extensions,
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
                         optimizer_settings.clone(),
@@ -341,7 +341,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
         project: Self,
         identifier: &str,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        is_system_mode: bool,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
@@ -361,7 +361,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             .compile_to_eravm(
                 project,
                 optimizer_settings,
-                is_system_mode,
+                enable_eravm_extensions,
                 include_metadata_hash,
                 debug_config,
             )

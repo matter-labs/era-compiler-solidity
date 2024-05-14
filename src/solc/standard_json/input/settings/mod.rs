@@ -34,13 +34,18 @@ pub struct Settings {
     /// The output selection filters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
-    /// Whether to compile via IR. Only for testing with solc >=0.8.13.
-    #[serde(
-        rename = "viaIR",
-        skip_serializing_if = "Option::is_none",
-        skip_deserializing
-    )]
+    /// Whether to compile via EVM assembly.
+    #[serde(rename = "viaEVMAssembly", skip_serializing)]
+    pub via_evm_assembly: Option<bool>,
+    /// Whether to compile via IR.
+    #[serde(rename = "viaIR", skip_serializing_if = "Option::is_none")]
     pub via_ir: Option<bool>,
+    /// Whether to enable EraVM extensions.
+    #[serde(rename = "enableEraVMExtensions", skip_serializing)]
+    pub enable_eravm_extensions: Option<bool>,
+    /// Whether to enable the missing libraries detection mode.
+    #[serde(rename = "detectMissingLibraries", skip_serializing)]
+    pub detect_missing_libraries: Option<bool>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
     /// The metadata settings.
@@ -57,7 +62,10 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: Option<BTreeSet<String>>,
         output_selection: Selection,
+        via_evm_assembly: bool,
         via_ir: bool,
+        enable_eravm_extensions: bool,
+        detect_missing_libraries: bool,
         optimizer: Optimizer,
         metadata: Option<Metadata>,
     ) -> Self {
@@ -66,7 +74,18 @@ impl Settings {
             libraries: Some(libraries),
             remappings,
             output_selection: Some(output_selection),
+            via_evm_assembly: if via_evm_assembly { Some(true) } else { None },
             via_ir: if via_ir { Some(true) } else { None },
+            enable_eravm_extensions: if enable_eravm_extensions {
+                Some(true)
+            } else {
+                None
+            },
+            detect_missing_libraries: if detect_missing_libraries {
+                Some(true)
+            } else {
+                None
+            },
             optimizer,
             metadata,
         }

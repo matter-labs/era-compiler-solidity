@@ -46,25 +46,25 @@ impl Input {
     ///
     /// A shortcut constructor from stdin.
     ///
-    pub fn try_from_reader<R>(reader: R, solc_pipeline: SolcPipeline) -> anyhow::Result<Self>
+    pub fn try_from_reader<R>(reader: R) -> anyhow::Result<Self>
     where
         R: std::io::Read,
     {
         let mut input: Self = serde_json::from_reader(reader)?;
+        let solc_pipeline =
+            SolcPipeline::try_from((input.settings.via_evm_assembly, input.settings.via_ir))?;
         input
             .settings
             .output_selection
             .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
             .extend_with_required(solc_pipeline);
-        if SolcPipeline::EVMLA == solc_pipeline && input.settings.via_ir.is_some() {
-            anyhow::bail!("Conflicting codegen settings in CLI and JSON input: consider removing the `--force-evmla` flag from the CLI or the `viaIR` field from the JSON input.");
-        }
         Ok(input)
     }
 
     ///
     /// A shortcut constructor from paths.
     ///
+    #[allow(clippy::too_many_arguments)]
     pub fn try_from_paths(
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
@@ -74,7 +74,10 @@ impl Input {
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
+        via_evm_assembly: bool,
         via_ir: bool,
+        enable_eravm_extensions: bool,
+        detect_missing_libraries: bool,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
@@ -101,7 +104,10 @@ impl Input {
                 libraries,
                 remappings,
                 output_selection,
+                via_evm_assembly,
                 via_ir,
+                enable_eravm_extensions,
+                detect_missing_libraries,
                 optimizer,
                 metadata,
             ),
@@ -114,6 +120,7 @@ impl Input {
     ///
     /// Only for the integration test purposes.
     ///
+    #[allow(clippy::too_many_arguments)]
     pub fn try_from_sources(
         evm_version: Option<era_compiler_common::EVMVersion>,
         sources: BTreeMap<String, String>,
@@ -122,7 +129,10 @@ impl Input {
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
+        via_evm_assembly: bool,
         via_ir: bool,
+        enable_eravm_extensions: bool,
+        detect_missing_libraries: bool,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let sources = sources
@@ -138,7 +148,10 @@ impl Input {
                 libraries,
                 remappings,
                 output_selection,
+                via_evm_assembly,
                 via_ir,
+                enable_eravm_extensions,
+                detect_missing_libraries,
                 optimizer,
                 metadata,
             ),

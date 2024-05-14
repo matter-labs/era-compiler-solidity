@@ -86,17 +86,6 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
-    let solc_pipeline = match (arguments.force_evmla, arguments.via_ir) {
-        (true, true) => {
-            anyhow::bail!("The `--force-evmla` and `--via-ir` flags are mutually exclusive.");
-        }
-        (true, false) => era_compiler_solidity::SolcPipeline::EVMLA,
-        (false, true) => era_compiler_solidity::SolcPipeline::Yul,
-        (false, false) => {
-            anyhow::bail!("The `--force-evmla` or `--via-ir` flag is required.");
-        }
-    };
-
     let evm_version = match arguments.evm_version {
         Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
             evm_version.as_str(),
@@ -136,7 +125,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.solc,
                     optimizer_settings,
-                    arguments.is_system_mode,
+                    arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -144,7 +133,6 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
-                    arguments.is_system_mode,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -161,10 +149,7 @@ fn main_inner() -> anyhow::Result<()> {
                     ))?;
                 era_compiler_solidity::standard_json_eravm(
                     &mut solc,
-                    solc_pipeline,
                     standard_json.map(PathBuf::from),
-                    arguments.detect_missing_libraries,
-                    arguments.is_system_mode,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
@@ -181,21 +166,23 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
-                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    arguments.is_system_mode,
+                    arguments.via_evm_assembly,
+                    arguments.via_ir,
+                    arguments.enable_eravm_extensions,
+                    arguments.detect_missing_libraries,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
-                    suppressed_warnings,
-                    debug_config,
                     arguments.output_directory,
                     arguments.overwrite,
+                    optimizer_settings,
+                    suppressed_warnings,
+                    debug_config,
                 )?;
                 return Ok(());
             } else {
@@ -207,17 +194,19 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
-                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    arguments.is_system_mode,
+                    arguments.via_evm_assembly,
+                    arguments.via_ir,
+                    arguments.enable_eravm_extensions,
+                    arguments.detect_missing_libraries,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
+                    optimizer_settings,
                     suppressed_warnings,
                     debug_config,
                 )
@@ -286,7 +275,6 @@ fn main_inner() -> anyhow::Result<()> {
                     ))?;
                 era_compiler_solidity::standard_json_evm(
                     &mut solc,
-                    solc_pipeline,
                     standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
@@ -304,19 +292,20 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
-                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
+                    arguments.via_evm_assembly,
+                    arguments.via_ir,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
-                    debug_config,
                     arguments.output_directory,
                     arguments.overwrite,
+                    optimizer_settings,
+                    debug_config,
                 )?;
                 return Ok(());
             } else {
@@ -328,16 +317,17 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &mut solc,
-                    solc_pipeline,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
+                    arguments.via_evm_assembly,
+                    arguments.via_ir,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
+                    optimizer_settings,
                     debug_config,
                 )
             }?;

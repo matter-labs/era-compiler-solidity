@@ -78,7 +78,10 @@ pub fn build_solidity(
             None,
         ),
         None,
+        pipeline == SolcPipeline::EVMLA,
         pipeline == SolcPipeline::Yul,
+        false,
+        false,
         None,
     )?;
 
@@ -133,7 +136,10 @@ pub fn build_solidity_and_detect_missing_libraries(
             None,
         ),
         None,
+        pipeline == SolcPipeline::EVMLA,
         pipeline == SolcPipeline::Yul,
+        false,
+        false,
         None,
     )?;
 
@@ -210,7 +216,10 @@ pub fn check_solidity_warning(
             None,
         ),
         None,
+        pipeline == SolcPipeline::EVMLA,
         pipeline == SolcPipeline::Yul,
+        false,
+        false,
         suppressed_warnings,
     )?;
 

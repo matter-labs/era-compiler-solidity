@@ -138,24 +138,23 @@ pub struct Arguments {
     #[structopt(long = "zkasm")]
     pub zkasm: bool,
 
-    /// Switch to EVM legacy assembly codegen.
+    /// Use the EVM assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
     /// Only available for the upstream `solc`, where `zksolc` enforces the Yul codegen by default.
-    #[structopt(long = "force-evmla")]
-    pub force_evmla: bool,
+    #[structopt(long = "via-evm-assembly")]
+    pub via_evm_assembly: bool,
 
-    /// Switch to Yul codegen.
+    /// Use the Yul codegen.
     /// Only available for the ZKsync for of `solc`, where `zksolc` uses default codegen settings.
     #[structopt(long = "via-ir")]
     pub via_ir: bool,
 
-    /// Enable system contract compilation mode.
-    /// In this mode EraVM extensions are enabled. For example, calls to addresses `0xFFFF` and below
-    /// are substituted by special EraVM instructions.
-    /// In the Yul mode, the `verbatim_*` instruction family is available.
-    #[structopt(long = "system-mode")]
-    pub is_system_mode: bool,
+    /// Enable EraVM extensions.
+    /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
+    /// In the Yul mode, the `verbatim_*` instruction family becomes available.
+    #[structopt(long = "enable-eravm-extensions")]
+    pub enable_eravm_extensions: bool,
 
     /// Set metadata hash mode.
     /// The only supported value is `none` that disables appending the metadata hash.
@@ -270,7 +269,7 @@ impl Arguments {
                 );
             }
 
-            if self.force_evmla {
+            if self.via_evm_assembly {
                 anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
             if self.via_ir {
@@ -289,9 +288,14 @@ impl Arguments {
                 anyhow::bail!("`solc` is not used in LLVM IR and EraVM assembly modes.");
             }
 
-            if self.is_system_mode {
+            if self.enable_eravm_extensions {
                 anyhow::bail!(
-                    "System contract mode is not supported in LLVM IR and EraVM assembly modes."
+                    "EraVM extensions are not supported in LLVM IR and EraVM assembly modes."
+                );
+            }
+            if self.detect_missing_libraries {
+                anyhow::bail!(
+                    "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes."
                 );
             }
         }
@@ -379,6 +383,23 @@ impl Arguments {
             if self.metadata_literal {
                 anyhow::bail!(
                     "Metadata literal content must be specified in standard JSON input settings."
+                );
+            }
+
+            if self.via_evm_assembly {
+                anyhow::bail!("EVM legacy assembly codegen must be specified in standard JSON input settings.");
+            }
+            if self.via_ir {
+                anyhow::bail!("Yul codegen must be specified in standard JSON input settings.");
+            }
+            if self.enable_eravm_extensions {
+                anyhow::bail!(
+                    "EraVM extensions must be specified in standard JSON input settings."
+                );
+            }
+            if self.detect_missing_libraries {
+                anyhow::bail!(
+                    "Missing deployable libraries detection mode must be specified in standard JSON input settings."
                 );
             }
         }

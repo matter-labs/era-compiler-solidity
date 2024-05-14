@@ -19,8 +19,8 @@ pub struct Input {
     pub contract: Contract,
     /// The project representation.
     pub project: Project,
-    /// The system mode flag.
-    pub is_system_mode: bool,
+    /// Whether to enable EraVM extensions.
+    pub enable_eravm_extensions: bool,
     /// Whether to append the metadata hash.
     pub include_metadata_hash: bool,
     /// Enables the test bytecode encoding.
@@ -38,7 +38,7 @@ impl Input {
     pub fn new(
         contract: Contract,
         project: Project,
-        is_system_mode: bool,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         enable_test_encoding: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -47,7 +47,7 @@ impl Input {
         Self {
             contract,
             project,
-            is_system_mode,
+            enable_eravm_extensions,
             include_metadata_hash,
             enable_test_encoding,
             optimizer_settings,

@@ -140,7 +140,7 @@ impl FunctionCall {
             Name::UserDefined(name)
                 if name.starts_with(
                     era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX,
-                ) && context.is_system_mode() =>
+                ) && context.are_eravm_extensions_enabled() =>
             {
                 let mut values = Vec::with_capacity(self.arguments.len());
                 for argument in self.arguments.into_iter().rev() {

@@ -45,7 +45,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             let result = input.contract.compile_to_eravm(
                 input.project,
                 input.optimizer_settings,
-                input.is_system_mode,
+                input.enable_eravm_extensions,
                 input.include_metadata_hash,
                 input.debug_config,
             );
