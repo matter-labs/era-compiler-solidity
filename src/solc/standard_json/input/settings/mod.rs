@@ -37,9 +37,16 @@ pub struct Settings {
     /// Whether to compile via EVM assembly.
     #[serde(rename = "viaEVMAssembly", skip_serializing)]
     pub via_evm_assembly: Option<bool>,
-    /// Whether to compile via IR.
-    #[serde(rename = "viaIR", skip_serializing_if = "Option::is_none")]
+    /// Whether to add the Yul step to compilation via EVM assembly.
+    #[serde(
+        rename = "viaIR",
+        skip_deserializing,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub via_ir: Option<bool>,
+    /// Whether to compile via Yul.
+    #[serde(rename = "viaYul", skip_serializing)]
+    pub via_yul: Option<bool>,
     /// Whether to enable EraVM extensions.
     #[serde(rename = "enableEraVMExtensions", skip_serializing)]
     pub enable_eravm_extensions: Option<bool>,
@@ -64,6 +71,7 @@ impl Settings {
         output_selection: Selection,
         via_evm_assembly: bool,
         via_ir: bool,
+        via_yul: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         optimizer: Optimizer,
@@ -76,6 +84,7 @@ impl Settings {
             output_selection: Some(output_selection),
             via_evm_assembly: if via_evm_assembly { Some(true) } else { None },
             via_ir: if via_ir { Some(true) } else { None },
+            via_yul: if via_yul { Some(true) } else { None },
             enable_eravm_extensions: if enable_eravm_extensions {
                 Some(true)
             } else {

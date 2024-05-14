@@ -19,6 +19,7 @@ use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
+use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::language::Language;
@@ -44,24 +45,6 @@ pub struct Input {
 
 impl Input {
     ///
-    /// A shortcut constructor from stdin.
-    ///
-    pub fn try_from_reader<R>(reader: R) -> anyhow::Result<Self>
-    where
-        R: std::io::Read,
-    {
-        let mut input: Self = serde_json::from_reader(reader)?;
-        let solc_pipeline =
-            SolcPipeline::try_from((input.settings.via_evm_assembly, input.settings.via_ir))?;
-        input
-            .settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        Ok(input)
-    }
-
-    ///
     /// A shortcut constructor from paths.
     ///
     #[allow(clippy::too_many_arguments)]
@@ -75,7 +58,7 @@ impl Input {
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_evm_assembly: bool,
-        via_ir: bool,
+        via_yul: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         suppressed_warnings: Option<Vec<Warning>>,
@@ -105,7 +88,8 @@ impl Input {
                 remappings,
                 output_selection,
                 via_evm_assembly,
-                via_ir,
+                false,
+                via_yul,
                 enable_eravm_extensions,
                 detect_missing_libraries,
                 optimizer,
@@ -130,7 +114,7 @@ impl Input {
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
         via_evm_assembly: bool,
-        via_ir: bool,
+        via_yul: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         suppressed_warnings: Option<Vec<Warning>>,
@@ -149,7 +133,8 @@ impl Input {
                 remappings,
                 output_selection,
                 via_evm_assembly,
-                via_ir,
+                false,
+                via_yul,
                 enable_eravm_extensions,
                 detect_missing_libraries,
                 optimizer,
@@ -162,7 +147,11 @@ impl Input {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self, version: &semver::Version) {
-        self.settings.normalize(version);
+    pub fn normalize(&mut self, solc_version: &SolcVersion, solc_pipeline: SolcPipeline) {
+        self.settings
+            .output_selection
+            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
+            .extend_with_required(solc_pipeline);
+        self.settings.normalize(&solc_version.default);
     }
 }

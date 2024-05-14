@@ -5,6 +5,13 @@
 ### Changed
 
 - Made the `solc` codegen specifier mandatory
+- Renamed the codegen flags to `--via-evm-assembly` and `--via-ir`
+- Renamed the `--system-mode` flag to `--enable-eravm-extensions`
+- Forbidden to set flags via CLI in standard JSON mode
+
+### Fixed
+
+- The bytes-to-cells LLVM misoptimization
 
 ## [1.4.1] - 2024-04-24
 

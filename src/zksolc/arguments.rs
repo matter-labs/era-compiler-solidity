@@ -147,8 +147,8 @@ pub struct Arguments {
 
     /// Use the Yul codegen.
     /// Only available for the ZKsync for of `solc`, where `zksolc` uses default codegen settings.
-    #[structopt(long = "via-ir")]
-    pub via_ir: bool,
+    #[structopt(long = "via-yul")]
+    pub via_yul: bool,
 
     /// Enable EraVM extensions.
     /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
@@ -272,7 +272,7 @@ impl Arguments {
             if self.via_evm_assembly {
                 anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
-            if self.via_ir {
+            if self.via_yul {
                 anyhow::bail!(
                     "Yul codegen is not supported in Yul, LLVM IR and EraVM assembly modes."
                 );
@@ -389,7 +389,7 @@ impl Arguments {
             if self.via_evm_assembly {
                 anyhow::bail!("EVM legacy assembly codegen must be specified in standard JSON input settings.");
             }
-            if self.via_ir {
+            if self.via_yul {
                 anyhow::bail!("Yul codegen must be specified in standard JSON input settings.");
             }
             if self.enable_eravm_extensions {
