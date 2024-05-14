@@ -10,7 +10,6 @@ use crate::Translator;
 
 use crate::easycrypt::syntax::module::definition::TopDefinition;
 use crate::easycrypt::syntax::module::Module;
-use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::signature::Signature;
@@ -30,7 +29,7 @@ impl Translator {
         let default_code_proc_name = "BODY".to_string();
 
         let default_code_proc = Proc {
-            name: ProcName::UserDefined(default_code_proc_name.clone()),
+            name: default_code_proc_name.clone(),
             signature: Signature::UNIT_TO_UNIT,
             body: Block { statements },
             locals,

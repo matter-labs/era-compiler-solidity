@@ -95,7 +95,8 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_function(&mut self, function: &Function) {
         self.print("op ");
-        self.visit_function_name(&function.name);
+        self.print(&function.name);
+        //self.visit_function_name(&function.name);
         self.visit_signature(&function.signature);
         self.print(" = ");
         self.visit_expression(&function.body);
@@ -193,7 +194,8 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_proc(&mut self, proc: &Proc) {
         self.print("proc ");
-        self.visit_proc_name(&proc.name);
+        self.print(&proc.name);
+        //self.visit_proc_name(&proc.name);
         self.visit_signature(&proc.signature);
         self.println(" = {");
         self.increase_indent();

@@ -6,7 +6,7 @@ pub mod name;
 
 use crate::yul::path::Path;
 
-use self::name::FunctionName;
+use super::Name;
 
 use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::signature::Signature;
@@ -15,7 +15,7 @@ use crate::easycrypt::syntax::signature::Signature;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Function {
     /// Name of the function.
-    pub name: FunctionName,
+    pub name: Name,
     /// Optionally, a location of the original function in the YUL source code.
     pub location: Option<Path>,
     /// Function signature.

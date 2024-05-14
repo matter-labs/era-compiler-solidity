@@ -65,7 +65,7 @@ fn main_inner() -> anyhow::Result<()> {
 
             let mut t = Translator::new();
             let m = t.transpile_object(obj, true).unwrap();
-            println!("{:#?}", m);
+            //println!("{:#?}", m);
 
             WritePrinter::default().visit_module(&m);
         }

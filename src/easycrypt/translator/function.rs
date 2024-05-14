@@ -7,12 +7,11 @@ use std::iter;
 
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::expression::Expression;
-use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::function::Function;
-use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::r#type::Type;
-use crate::easycrypt::syntax::signature::{Signature, SignatureKind};
+use crate::easycrypt::syntax::signature::Signature;
+use crate::easycrypt::syntax::signature::SignatureKind;
 use crate::easycrypt::syntax::statement::block::Block;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::Translator;
@@ -101,7 +100,7 @@ impl Translator {
             Ok((
                 ctx.clone(),
                 Translated::Function(Function {
-                    name: FunctionName::UserDefined(identifier.clone()),
+                    name: identifier.clone(),
                     signature,
                     body: body_expr.clone(),
                     location: Some(self.here()),
@@ -138,7 +137,7 @@ impl Translator {
             Ok((
                 ctx.clone(),
                 Translated::Proc(Proc {
-                    name: ProcName::UserDefined(identifier.clone()),
+                    name: identifier.clone(),
                     signature,
                     locals,
                     body: Block { statements },
