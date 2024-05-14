@@ -17,6 +17,7 @@ use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
+use crate::yul::path::tracker::PathTracker;
 
 use super::context::Context;
 
@@ -71,7 +72,7 @@ impl Translator {
             body,
             attributes: _,
         } = fd;
-        self.location_tracker.enter_function(identifier.clone());
+        self.location_tracker.enter_function(identifier);
         let formal_parameters = arguments
             .iter()
             .map(|ident| self.transpile_formal_parameter(ident))

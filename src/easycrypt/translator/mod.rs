@@ -15,6 +15,7 @@ pub mod r#type;
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 
+use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Builder as PathBuilder;
 use crate::yul::path::Path;
 

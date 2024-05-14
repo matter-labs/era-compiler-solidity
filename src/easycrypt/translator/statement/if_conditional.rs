@@ -16,6 +16,7 @@ use crate::easycrypt::translator::context::Context;
 use crate::easycrypt::translator::expression::context::Context as ExprContext;
 use crate::easycrypt::translator::statement::Transformed;
 use crate::yul::parser::statement::if_conditional::IfConditional as YulIfConditional;
+use crate::yul::path::tracker::PathTracker;
 
 impl Translator {
     /// Transpile an "if" conditional statement.

@@ -9,6 +9,7 @@ use crate::easycrypt::translator::context::Context;
 use crate::easycrypt::translator::statement;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::block::Block as YulBlock;
+use crate::yul::path::tracker::PathTracker;
 
 pub struct Transformed {
     pub statements: Vec<Statement>,

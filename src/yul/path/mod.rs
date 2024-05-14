@@ -22,6 +22,7 @@
 pub mod builder;
 
 mod step;
+pub mod tracker;
 
 pub use builder::Builder;
 

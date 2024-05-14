@@ -6,6 +6,7 @@ use anyhow::Error;
 
 use crate::easycrypt::syntax::module::Module;
 use crate::yul::parser::statement::object::Object;
+use crate::yul::path::tracker::PathTracker;
 use crate::Translator;
 
 impl Translator {

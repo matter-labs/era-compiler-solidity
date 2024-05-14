@@ -15,6 +15,7 @@ use crate::easycrypt::translator::expression::context::Context as ExprContext;
 use crate::easycrypt::translator::statement::Transformed as TransformedStatement;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::for_loop::ForLoop as YulForLoop;
+use crate::yul::path::tracker::PathTracker;
 
 impl Translator {
     /// Transpile a `for` loop.

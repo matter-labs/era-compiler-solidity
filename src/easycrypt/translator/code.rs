@@ -18,6 +18,8 @@ use crate::yul::parser::statement::code::Code as YulCode;
 
 use crate::easycrypt::translator::block::Transformed as TransformedBlock;
 use crate::easycrypt::translator::context::Context;
+use crate::yul::path::tracker::PathTracker;
+
 
 impl Translator {
     /// Transpile the `code` block of an arbitrary YUL object.
