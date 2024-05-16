@@ -11,6 +11,7 @@
 pub(crate) mod build_eravm;
 pub(crate) mod build_evm;
 pub(crate) mod r#const;
+pub(crate) mod data_structures;
 pub(crate) mod easycrypt;
 pub(crate) mod evmla;
 pub(crate) mod missing_libraries;

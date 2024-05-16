@@ -8,7 +8,6 @@ pub mod context;
 pub mod expression;
 pub mod function;
 pub mod identifier;
-pub mod lookup;
 pub mod object;
 pub mod statement;
 pub mod tracker;

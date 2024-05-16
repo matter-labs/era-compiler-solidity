@@ -4,27 +4,18 @@
 //! of YUL syntax tree.
 //!
 
-pub mod entry;
-pub mod kind;
-pub mod stack_lookup;
-
-pub use self::entry::Entry;
-
-use crate::easycrypt::syntax::Name;
-use crate::yul::path::Path;
+pub mod stack_impl;
 
 /// Lookup map for user-defined functions, variables and procedures. It matches
 /// the name of a function/variable/procedure to its path from the root of YUL
 /// syntax tree.
-pub trait ILookup {
+pub trait ISymbolTable<K, V>
+where
+    K: Clone + std::fmt::Debug + Eq + PartialEq,
+    V: Clone + std::fmt::Debug + Eq + PartialEq,
+{
     /// Add a variable to the topmost lexical scope.
-    fn add_var(&mut self, name: &Name, path: &Path);
-
-    /// Add a procedure to the topmost lexical scope.
-    fn add_proc(&mut self, name: &Name, path: &Path);
-
-    /// Add a function to the topmost lexical scope.
-    fn add_fun(&mut self, name: &Name, path: &Path);
+    fn add(&mut self, name: &K, value: &V);
 
     /// Enter a new lexical scope.
     fn enter(&mut self);
@@ -32,6 +23,6 @@ pub trait ILookup {
     /// Leave the topmost lexical scope.
     fn leave(&mut self);
 
-    /// Get an [`Entry`] by the entity name.
-    fn get(&self, name: &Name) -> Option<Entry>;
+    /// Get an entry by its name.
+    fn get(&self, name: &K) -> Option<V>;
 }
