@@ -135,7 +135,7 @@ impl Input {
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let sources = sources
-            .into_par_iter()
+            .into_iter()
             .map(|(path, content)| (path, Source::from(content)))
             .collect();
 
