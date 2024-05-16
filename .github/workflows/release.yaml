@@ -42,7 +42,7 @@ on:
       - "*.*.*"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -85,11 +85,14 @@ jobs:
 
       - name: Prepare Windows env
         if: matrix.required == 'true' && runner.os == 'Windows'
-        uses: ./.github/actions/prepare-msys
+        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@main
 
       - name: Build LLVM
         if: matrix.required == 'true'
-        uses: ./.github/actions/build-llvm
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@main
+        with:
+          target-env: 'musl'
+          enable-assertions: 'false'
 
       - name: Build zksolc
         if: matrix.required == 'true'

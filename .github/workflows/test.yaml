@@ -6,19 +6,16 @@ on:
     inputs:
       zksolc-version:
         type: string
-        description: "zksolc version, (repo: https://github.com/matter-labs/zksolc-bin/raw/main)"
+        description: "Prebuilt zksolc version to use, (repo: https://github.com/matter-labs/zksolc-bin/releases)"
         required: true
         default: "1.4.1"
       solc-version:
         type: string
-        description: "solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
+        description: "Prebuilt solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
         required: true
         default: "0.8.25-1.0.0"
   pull_request:
     paths-ignore:
-      - 'cli-tests/**'
-      - '.github/workflows/test-cli.yaml'
-      - '.github/actions/cli-tests/**'
       - '.gitignore'
       - '**/*.md'
   push:
@@ -31,7 +28,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+
+  # Check for cargo licensing issues
+  cargo-license:
+    uses: matter-labs/era-compiler-ci/.github/workflows/cargo-license.yaml@main
+    secrets: inherit
+
+  # Check for secrets leak in the repository
+  secrets-scanner:
+    uses: matter-labs/era-compiler-ci/.github/workflows/secrets-scanner.yaml@main
+    secrets: inherit
+
+  # Build and run unit and CLI tests
+  build-and-test:
     strategy:
       fail-fast: false # finalize testing of all targets even if one failed
       matrix:
@@ -58,17 +67,31 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Check CLI test files
+        id: changed-files-yaml
+        uses: tj-actions/changed-files@v44
+        with:
+          files_yaml: |
+            cli_tests:
+              - 'cli-tests/**'
+              - '.github/actions/cli-tests/**'
+
       - name: Prepare Windows env
         if: runner.os == 'Windows'
-        uses: ./.github/actions/prepare-msys
+        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@main
 
       - name: Build LLVM
-        uses: ./.github/actions/build-llvm
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@main
+        with:
+          target-env: 'musl'
+          enable-assertions: 'false'
 
       - name: Build zksolc
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
         uses: ./.github/actions/build
         with:
-          target: ${{ matrix.target }}
+          target: ${{ matrix.target || '' }}
 
       - name: Install solc compiler
         uses: ./.github/actions/install-solc
@@ -76,6 +99,7 @@ jobs:
           solc-version: ${{ github.event.inputs.solc-version }}
 
       - name: Run tests
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
         uses: ./.github/actions/unit-tests
         with:
           target: ${{ matrix.target || '' }}
@@ -83,5 +107,5 @@ jobs:
       - name: Run CLI tests
         uses: ./.github/actions/cli-tests
         with:
-          use-prebuilt-zksolc: false # always build zksolc from sources for general PR testing
-          zksolc-version: ${{ github.event.inputs.zksolc-version || '' }}
+          use-prebuilt-zksolc: ${{ steps.changed-files-yaml.outputs.cli_tests_only_changed }}
+          zksolc-version: ${{ github.event.inputs.zksolc-version }}
