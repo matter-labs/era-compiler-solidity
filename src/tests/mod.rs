@@ -17,6 +17,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::OnceLock;
 
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
@@ -26,6 +27,20 @@ use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::Compiler as SolcCompiler;
 use crate::warning::Warning;
+
+static THREAD_POOL: OnceLock<()> = OnceLock::new();
+
+/// 
+/// Initializes the global thread pool.
+/// 
+fn initialize_thread_pool() -> &'static () {
+    THREAD_POOL.get_or_init(|| {
+        dbg!("XXX");
+        rayon::ThreadPoolBuilder::new()
+            .stack_size(crate::r#const::RAYON_WORKER_STACK_SIZE)
+            .build_global().expect("Global thread pool initialization failed")
+    })
+}
 
 ///
 /// 1. Checks if the required executables are present in `${PATH}`.
@@ -44,9 +59,7 @@ fn prepare() {
         );
     }
 
-    let _ = rayon::ThreadPoolBuilder::new()
-        .stack_size(crate::r#const::RAYON_WORKER_STACK_SIZE)
-        .build_global();
+    let _ = initialize_thread_pool();
 }
 
 ///
