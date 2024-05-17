@@ -8,7 +8,7 @@ use serde::Serialize;
 ///
 /// The token location in the source code file.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq)]
+#[derive(Debug, Hash, Serialize, Deserialize, Clone, Copy, Eq)]
 pub struct Location {
     /// The line number, starting from 1.
     pub line: usize,
