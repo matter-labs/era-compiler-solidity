@@ -82,7 +82,7 @@ impl Translator {
         let return_type: Type = {
             let vec: Vec<Type> = result_vars
                 .iter()
-                .map(|d| d.r#type.clone().unwrap_or(Type::Unknown))
+                .map(|d| d.r#type.clone().unwrap_or(Type::UInt(256)))
                 .collect();
             match vec.len() {
                 0 => Type::Unit,
