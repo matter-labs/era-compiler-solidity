@@ -28,9 +28,10 @@ use crate::solc::Compiler as SolcCompiler;
 use crate::warning::Warning;
 
 ///
-/// Checks if the required executables are present in `${PATH}`.
+/// 1. Checks if the required executables are present in `${PATH}`.
+/// 2. Initializes the global thread pool if it has not been initialized.
 ///
-fn check_dependencies() {
+fn prepare() {
     for executable in [
         crate::r#const::DEFAULT_EXECUTABLE_NAME,
         SolcCompiler::DEFAULT_EXECUTABLE_NAME,
@@ -42,6 +43,10 @@ fn check_dependencies() {
             "The `{executable}` executable not found in ${{PATH}}"
         );
     }
+
+    let _ = rayon::ThreadPoolBuilder::new()
+        .stack_size(crate::r#const::RAYON_WORKER_STACK_SIZE)
+        .build_global();
 }
 
 ///
@@ -54,7 +59,7 @@ pub fn build_solidity(
     pipeline: SolcPipeline,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    prepare();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -109,7 +114,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     pipeline: SolcPipeline,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    prepare();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -155,7 +160,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 /// Checks if the Yul project can be built without errors.
 ///
 pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
-    check_dependencies();
+    prepare();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -185,7 +190,7 @@ pub fn check_solidity_warning(
     skip_for_zkvm_edition: bool,
     suppressed_warnings: Option<Vec<Warning>>,
 ) -> anyhow::Result<bool> {
-    check_dependencies();
+    prepare();
 
     let mut solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
     let solc_version = solc.version()?;

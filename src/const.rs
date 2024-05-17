@@ -5,6 +5,9 @@
 /// The default executable name.
 pub static DEFAULT_EXECUTABLE_NAME: &str = "zksolc";
 
+/// The rayon worker stack size.
+pub const RAYON_WORKER_STACK_SIZE: usize = 16 * 1024 * 1024;
+
 /// The `keccak256` scratch space offset.
 pub const OFFSET_SCRATCH_SPACE: usize = 0;
 

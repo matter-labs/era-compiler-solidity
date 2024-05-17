@@ -10,9 +10,6 @@ use std::str::FromStr;
 
 use self::arguments::Arguments;
 
-/// The rayon worker stack size.
-const RAYON_WORKER_STACK_SIZE: usize = 16 * 1024 * 1024;
-
 #[cfg(target_env = "musl")]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -54,7 +51,7 @@ fn main_inner() -> anyhow::Result<()> {
     };
 
     rayon::ThreadPoolBuilder::new()
-        .stack_size(RAYON_WORKER_STACK_SIZE)
+        .stack_size(era_compiler_solidity::RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
     inkwell::support::enable_llvm_pretty_stack_trace();
