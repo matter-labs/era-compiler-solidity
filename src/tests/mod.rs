@@ -84,7 +84,8 @@ pub fn build_solidity(
 
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
-    let project = output.try_to_project(sources, libraries, pipeline, &solc_version, None)?;
+    let project =
+        output.try_to_project_solidity(sources, libraries, pipeline, &solc_version, None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         false,
@@ -139,7 +140,8 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
 
-    let project = output.try_to_project(sources, libraries, pipeline, &solc_version, None)?;
+    let project =
+        output.try_to_project_solidity(sources, libraries, pipeline, &solc_version, None)?;
 
     let missing_libraries = project.get_missing_libraries();
     missing_libraries.write_to_standard_json(

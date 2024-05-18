@@ -18,6 +18,7 @@ use crate::project::contract::ir::IR as ProjectContractIR;
 use crate::project::contract::Contract as ProjectContract;
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 use crate::yul::lexer::Lexer;
@@ -54,9 +55,25 @@ pub struct Output {
 
 impl Output {
     ///
-    /// Converts the `solc` JSON output into a convenient project.
+    /// Initializes a standard JSON output.
     ///
-    pub fn try_to_project(
+    /// Is used for Yul projects when `solc` is not used for validation.
+    ///
+    pub fn new() -> Self {
+        Self {
+            contracts: None,
+            sources: None,
+            errors: None,
+            version: None,
+            long_version: None,
+            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+        }
+    }
+
+    ///
+    /// Converts a Solidity project's `solc` JSON output into a convenient internal representation.
+    ///
+    pub fn try_to_project_solidity(
         &mut self,
         source_code_files: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
@@ -142,6 +159,73 @@ impl Output {
         }
 
         Ok(Project::new(
+            SolcStandardJsonInputLanguage::Solidity,
+            solc_version.to_owned(),
+            project_contracts,
+            libraries,
+        ))
+    }
+
+    ///
+    /// Converts a Yul project's standard JSON output into a convenient internal representation.
+    ///
+    /// This method must be used in case the standard JSON was created by `solc`.
+    ///
+    pub fn try_to_project_yul(
+        &mut self,
+        source_code_files: BTreeMap<String, String>,
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        solc_version: &SolcVersion,
+        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<Project> {
+        let files = match self.contracts.as_ref() {
+            Some(files) => files,
+            None => {
+                anyhow::bail!(
+                    "{}",
+                    self.errors
+                        .as_ref()
+                        .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
+                        .unwrap_or_else(|| "Unknown project assembling error".to_owned())
+                );
+            }
+        };
+        let mut project_contracts = BTreeMap::new();
+
+        for (path, contracts) in files.iter() {
+            for (name, contract) in contracts.iter() {
+                let full_path = format!("{path}:{name}");
+                let path = path.to_owned();
+
+                let source_code = source_code_files
+                    .get(path.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Source code for path `{}` not found", path))?;
+                let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                if let Some(debug_config) = debug_config {
+                    debug_config.dump_yul(path.as_str(), None, source_code.as_str())?;
+                }
+
+                let mut lexer = Lexer::new(source_code.to_owned());
+                let object = Object::parse(&mut lexer, None).map_err(|error| {
+                    anyhow::anyhow!("Contract `{}` parsing error: {:?}", full_path, error)
+                })?;
+
+                let source = ProjectContractIR::new_yul(source_code.to_owned(), object);
+
+                let project_contract = ProjectContract::new(
+                    full_path.clone(),
+                    source_hash,
+                    solc_version.to_owned(),
+                    source,
+                    contract.metadata.to_owned(),
+                );
+                project_contracts.insert(full_path, project_contract);
+            }
+        }
+
+        Ok(Project::new(
+            SolcStandardJsonInputLanguage::Yul,
             solc_version.to_owned(),
             project_contracts,
             libraries,

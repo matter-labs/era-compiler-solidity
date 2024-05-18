@@ -11,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
+use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
 
 ///
@@ -153,8 +154,14 @@ impl Contract {
 
         let assembly_text = self.build.assembly_text;
         let bytecode = hex::encode(self.build.bytecode.as_slice());
-        if let Some(evm) = standard_json_contract.evm.as_mut() {
-            evm.modify_eravm(assembly_text, bytecode);
+        match standard_json_contract.evm.as_mut() {
+            Some(evm) => evm.modify_eravm(assembly_text, bytecode),
+            None => {
+                standard_json_contract.evm = Some(StandardJsonOutputContractEVM::new_eravm(
+                    assembly_text,
+                    bytecode,
+                ))
+            }
         }
 
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);

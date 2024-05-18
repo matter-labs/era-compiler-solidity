@@ -4,6 +4,7 @@
 
 use std::io::Read;
 use std::path::Path;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -11,16 +12,43 @@ use serde::Serialize;
 ///
 /// The `solc --standard-json` input source.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     /// The source code file content.
-    pub content: String,
+    pub content: Option<String>,
+    /// The source file URLs.
+    pub urls: Option<Vec<String>>,
 }
 
 impl From<String> for Source {
     fn from(content: String) -> Self {
-        Self { content }
+        Self {
+            content: Some(content),
+            urls: None,
+        }
+    }
+}
+
+impl TryInto<String> for Source {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> anyhow::Result<String> {
+        if let Some(urls) = self.urls.as_ref() {
+            if urls.len() != 1 {
+                anyhow::bail!("Only one source code URL is allowed");
+            }
+            let url = urls.last().expect("Always exists");
+            let url_path = PathBuf::from(url);
+            let source_with_content = Self::try_from(url_path.as_path())?;
+            return Ok(source_with_content.content.expect("Always exists"));
+        }
+
+        if let Some(content) = self.content {
+            return Ok(content);
+        }
+
+        anyhow::bail!("Neither `content` nor `urls` are set");
     }
 }
 
@@ -39,6 +67,9 @@ impl TryFrom<&Path> for Source {
                 .map_err(|error| anyhow::anyhow!("File {:?} reading error: {}", path, error))?
         };
 
-        Ok(Self { content })
+        Ok(Self {
+            content: Some(content),
+            urls: None,
+        })
     }
 }

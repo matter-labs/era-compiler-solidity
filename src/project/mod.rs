@@ -25,6 +25,7 @@ use crate::process::input_evm::Input as EVMProcessInput;
 use crate::process::output_eravm::Output as EraVMProcessOutput;
 use crate::process::output_evm::Output as EVMProcessOutput;
 use crate::project::contract::ir::IR;
+use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
 use crate::yul::lexer::Lexer;
@@ -37,6 +38,8 @@ use self::contract::Contract;
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
+    /// The project language.
+    pub language: SolcStandardJsonInputLanguage,
     /// The source code version.
     pub version: SolcVersion,
     /// The project contracts,
@@ -52,6 +55,7 @@ impl Project {
     /// A shortcut constructor.
     ///
     pub fn new(
+        language: SolcStandardJsonInputLanguage,
         version: SolcVersion,
         contracts: BTreeMap<String, Contract>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
@@ -62,6 +66,7 @@ impl Project {
         }
 
         Self {
+            language,
             version,
             contracts,
             identifier_paths,
@@ -267,6 +272,7 @@ impl Project {
         );
 
         Ok(Self::new(
+            SolcStandardJsonInputLanguage::Yul,
             source_version,
             project_contracts,
             BTreeMap::new(),
@@ -297,6 +303,7 @@ impl Project {
         );
 
         Ok(Self::new(
+            SolcStandardJsonInputLanguage::LLVMIR,
             source_version,
             project_contracts,
             BTreeMap::new(),
@@ -329,6 +336,7 @@ impl Project {
         );
 
         Ok(Self::new(
+            SolcStandardJsonInputLanguage::EraVMAssembly,
             source_version,
             project_contracts,
             BTreeMap::new(),
