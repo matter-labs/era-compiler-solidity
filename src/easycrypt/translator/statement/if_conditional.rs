@@ -37,7 +37,9 @@ impl Translator {
                 assignments,
                 locals,
             },
-        ) = self.transpile_expression_root(condition, ctx)?;
+        ) = self
+            .transpile_expression_root(condition, ctx)?
+            .expect_expression_and_get()?;
         let ctx = ctx.add_locals(&locals);
 
         self.tracker.leave();

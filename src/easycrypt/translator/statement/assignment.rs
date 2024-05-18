@@ -31,15 +31,17 @@ impl Translator {
         initializer: &YulExpression,
         ctx: &Context,
     ) -> Result<(Context, Transformed), Error> {
-        // Implementation note. We could have left `transpile_assignment` as a single function and make `transpile_variable_declaration` produce a new instance of `YulAssignment` `The field `location` is ignored, therefore it would be unclean to
         let references = self.bindings_to_references(bindings);
+
         let (
             new_rhs,
             ExprContext {
                 assignments,
                 locals,
             },
-        ) = self.transpile_expression_root(initializer, ctx)?;
+        ) = self
+            .transpile_expression_root(initializer, ctx)?
+            .expect_expression_and_get()?;
         let ec_assignment = Statement::EAssignment(references, Box::new(new_rhs));
         let ec_statements = assignments
             .iter()
@@ -51,7 +53,6 @@ impl Translator {
             Transformed::Statements(ec_statements),
         ))
     }
-
     /// Transpile a YUL assignment.
     pub fn transpile_assignment(
         &mut self,

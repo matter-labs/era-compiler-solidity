@@ -57,7 +57,9 @@ impl Translator {
                 assignments,
                 locals,
             },
-        ) = self.transpile_expression_root(condition, &ctx)?;
+        ) = self
+            .transpile_expression_root(condition, &ctx)?
+            .expect_expression_and_get()?;
 
         self.tracker.leave();
         self.tracker.enter_for3();
@@ -75,7 +77,7 @@ impl Translator {
         ) = self.transpile_block(body, &ctx)?;
 
         let transpiled_while = WhileLoop {
-            condition: transpiled_condition,
+            condition: transpiled_condition.clone(),
             body: Box::from(Statement::Block(Block {
                 statements: transpiled_body
                     .iter()

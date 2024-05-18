@@ -4,6 +4,8 @@
 
 use anyhow::Error;
 
+use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::expression::Transformed;
 use crate::Translator;
 
 use crate::easycrypt::syntax::expression::call::FunctionCall;
@@ -25,28 +27,32 @@ impl Translator {
         yul_arguments: &[YulExpression],
         ctx: &Context,
         ectx: &ExprContext,
-    ) -> Result<(Expression, ExprContext), Error> {
+        is_root: bool,
+    ) -> Result<Transformed, Error> {
         match self.transpile_name(ctx, name) {
             identifier::Translated::Function(target) => {
-                eprintln!("{:?} is a function", name);
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-                Ok((Expression::ECall(FunctionCall { target, arguments }), ectx))
+                Ok(Transformed::Expression(
+                    Expression::ECall(FunctionCall { target, arguments }),
+                    ectx,
+                ))
             }
 
             identifier::Translated::Proc(target) => {
-                eprintln!("{:?} is a proc", name);
-                let (arguments, ctx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 let definition = self.new_tmp_definition_here();
-                let mut new_ctx = ctx;
+                let mut new_ctx = ectx;
 
                 new_ctx.add_assignment(&definition, ProcCall { target, arguments });
-                Ok((Expression::Reference(definition.reference()), new_ctx))
+                Ok(Transformed::Expression(
+                    Expression::Reference(definition.reference()),
+                    new_ctx,
+                ))
             }
             identifier::Translated::ProcOrFunction(name) => {
-                eprintln!("{:?} is ?", name);
-                let (arguments, ctx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 let definition = self.new_tmp_definition_here();
-                let mut new_ctx = ctx;
+                let mut new_ctx = ectx;
 
                 new_ctx.add_assignment(
                     &definition,
@@ -55,11 +61,14 @@ impl Translator {
                         arguments,
                     },
                 );
-                Ok((Expression::Reference(definition.reference()), new_ctx))
+                Ok(Transformed::Expression(
+                    Expression::Reference(definition.reference()),
+                    new_ctx,
+                ))
             }
             identifier::Translated::BinOp(optype) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-                Ok((
+                Ok(Transformed::Expression(
                     Expression::Binary(
                         optype,
                         Box::new(arguments[0].clone()),
@@ -70,12 +79,38 @@ impl Translator {
             }
             identifier::Translated::UnOp(optype) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-                Ok((
+                Ok(Transformed::Expression(
                     Expression::Unary(optype, Box::new(arguments[0].clone())),
                     ectx,
                 ))
             }
-            identifier::Translated::Special(_) => todo!(),
+            identifier::Translated::Special(special) if is_root => match special {
+                identifier::special::YulSpecial::Return => {
+                    let (arguments, ectx) =
+                        self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                    assert!(ectx.locals.is_empty());
+                    assert!(ectx.assignments.is_empty());
+                    Ok(Transformed::Statements(
+                        vec![Statement::Return(Expression::pack_tuple(&arguments))],
+                        ectx,
+                        ctx.clone(),
+                    ))
+                }
+                identifier::special::YulSpecial::Stop
+                | identifier::special::YulSpecial::Invalid
+                | identifier::special::YulSpecial::Revert => {
+                    //assert!(yul_arguments.is_empty());
+
+                    Ok(Transformed::Statements(
+                        vec![Statement::Return(Expression::Tuple(vec![]))],
+                        ectx.clone(),
+                        ctx.clone(),
+                    ))
+                }
+            },
+            identifier::Translated::Special(_) => {
+                anyhow::bail!("Unsupported type of YUL function call.")
+            }
         }
     }
 }

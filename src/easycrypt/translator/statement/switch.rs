@@ -44,8 +44,9 @@ impl Translator {
                 assignments,
                 locals,
             },
-        ) = self.transpile_expression_root(expression, ctx)?;
-
+        ) = self
+            .transpile_expression_root(expression, ctx)?
+            .expect_expression_and_get()?;
         let mut ctx = ctx.add_locals(locals.iter());
 
         let tmp_def = self.new_tmp_definition_here();

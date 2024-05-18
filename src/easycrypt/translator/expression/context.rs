@@ -7,7 +7,7 @@ use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::syntax::statement::Statement;
 
 /// Expression translation context.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Context {
     /// When the root expression is finished translating, assignments will be
     /// prepended to the currently translated statement.

@@ -8,7 +8,7 @@ use crate::easycrypt::syntax::{definition::Definition, module::Module};
 
 /// Collects the result of the translation and the locals to be emitted in the
 /// currently translated procedure.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Context {
     /// Completed definitions so far.
     pub module: Module,

@@ -53,9 +53,8 @@ impl Translator {
                     self.transpile_block(block, ctx)?;
                 Ok((new_ctx, Transformed::Statements(statements)))
             }
-            YulStatement::Expression(expr) => {
-                let (result, ectx) = self.transpile_expression_root(expr, ctx)?;
-                Ok((
+            YulStatement::Expression(expr) => match self.transpile_expression_root(expr, ctx)? {
+                super::expression::Transformed::Expression(result, ectx) => Ok((
                     ctx.add_locals(&ectx.locals),
                     Transformed::Statements(
                         ectx.assignments
@@ -64,8 +63,20 @@ impl Translator {
                             .cloned()
                             .collect(),
                     ),
-                ))
-            }
+                )),
+                super::expression::Transformed::Statements(statements, ectx, ctx) => {
+                    let result = ectx
+                        .assignments
+                        .iter()
+                        .chain(statements.iter())
+                        .cloned()
+                        .collect();
+                    Ok((
+                        ctx.add_locals(&ectx.locals),
+                        Transformed::Statements(result),
+                    ))
+                }
+            },
             YulStatement::FunctionDefinition(fd) => {
                 let (ctx, translation_result) = self.transpile_function_definition(fd, ctx)?;
                 match translation_result {
