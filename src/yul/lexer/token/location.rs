@@ -8,7 +8,7 @@ use serde::Serialize;
 ///
 /// The token location in the source code file.
 ///
-#[derive(Debug, Hash, Serialize, Deserialize, Clone, Copy, Eq)]
+#[derive(Debug, Hash, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub struct Location {
     /// The line number, starting from 1.
     pub line: usize,
@@ -49,12 +49,6 @@ impl Location {
     ///
     pub fn shift_right(&mut self, columns: usize) {
         self.column += columns;
-    }
-}
-
-impl PartialEq for Location {
-    fn eq(&self, other: &Self) -> bool {
-        self.line == other.line && self.column == other.column
     }
 }
 
