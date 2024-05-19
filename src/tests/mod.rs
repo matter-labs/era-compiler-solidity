@@ -82,7 +82,7 @@ pub fn build_solidity(
         None,
     )?;
 
-    let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
+    let mut output = solc.standard_json(input, Some(pipeline), None, vec![], None)?;
 
     let project =
         output.try_to_project_solidity(sources, libraries, pipeline, &solc_version, None)?;
@@ -95,7 +95,7 @@ pub fn build_solidity(
     )?;
     build.write_to_standard_json(
         &mut output,
-        &solc_version,
+        Some(&solc_version),
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
@@ -138,7 +138,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         None,
     )?;
 
-    let mut output = solc.standard_json(input, pipeline, None, vec![], None)?;
+    let mut output = solc.standard_json(input, Some(pipeline), None, vec![], None)?;
 
     let project =
         output.try_to_project_solidity(sources, libraries, pipeline, &solc_version, None)?;
@@ -146,7 +146,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let missing_libraries = project.get_missing_libraries();
     missing_libraries.write_to_standard_json(
         &mut output,
-        &solc.version()?,
+        Some(&solc.version()?),
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
@@ -216,7 +216,7 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let output = solc.standard_json(input, pipeline, None, vec![], None)?;
+    let output = solc.standard_json(input, Some(pipeline), None, vec![], None)?;
     let contains_warning = output
         .errors
         .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?

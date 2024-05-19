@@ -12,6 +12,8 @@ use std::collections::BTreeSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::solc::pipeline::Pipeline as SolcPipeline;
+
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::Selection;
@@ -75,7 +77,13 @@ impl Settings {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self, version: &semver::Version) {
+    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+        if let Some(pipeline) = pipeline {
+            self.output_selection
+                .get_or_insert_with(Selection::default)
+                .extend_with_required(pipeline);
+        }
+
         self.optimizer.normalize(version);
     }
 

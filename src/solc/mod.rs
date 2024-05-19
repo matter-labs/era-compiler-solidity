@@ -71,7 +71,7 @@ impl Compiler {
     pub fn standard_json(
         &mut self,
         mut input: StandardJsonInput,
-        pipeline: Pipeline,
+        pipeline: Option<Pipeline>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
@@ -96,7 +96,7 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
-        input.normalize(&version.default);
+        input.normalize(&version.default, pipeline);
         let input_json = serde_json::to_vec(&input).expect("Always valid");
 
         let process = command.spawn().map_err(|error| {
@@ -138,8 +138,10 @@ impl Compiler {
             )
         })?;
 
-        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
-        output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
+        if let Some(pipeline) = pipeline {
+            let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
+            output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
+        }
         output.remove_evm();
 
         Ok(output)

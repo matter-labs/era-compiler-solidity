@@ -45,30 +45,22 @@ pub struct Input {
 
 impl Input {
     ///
-    /// A shortcut constructor from stdin.
+    /// A shortcut constructor.
     ///
-    pub fn try_from_stdin(solc_pipeline: SolcPipeline) -> anyhow::Result<Self> {
-        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(std::io::stdin()))?;
-        input
-            .settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        Ok(input)
-    }
-
+    /// If the `path` is `None`, the input is read from the stdin.
     ///
-    /// A shortcut constructor from file.
-    ///
-    pub fn try_from_file(solc_pipeline: SolcPipeline, path: &Path) -> anyhow::Result<Self> {
-        let file = std::fs::File::open(path)?;
-        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(file))?;
-        input
-            .settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        Ok(input)
+    pub fn try_from_reader(path: Option<&Path>) -> anyhow::Result<Self> {
+        match path {
+            Some(path) => serde_json::from_reader(
+                std::fs::File::open(path)
+                    .map(std::io::BufReader::new)
+                    .map_err(|error| {
+                        anyhow::anyhow!("Standard JSON file {path:?} opening error: {error}")
+                    })?,
+            ),
+            None => serde_json::from_reader(std::io::BufReader::new(std::io::stdin())),
+        }
+        .map_err(|error| anyhow::anyhow!("Standard JSON reading error: {error}"))
     }
 
     ///
@@ -158,7 +150,7 @@ impl Input {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self, version: &semver::Version) {
-        self.settings.normalize(version);
+    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+        self.settings.normalize(version, pipeline);
     }
 }
