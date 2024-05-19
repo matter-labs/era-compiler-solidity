@@ -21,34 +21,37 @@ pub struct Source {
     pub urls: Option<Vec<String>>,
 }
 
+impl TryInto<String> for Source {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> anyhow::Result<String> {
+        match (self.content, self.urls) {
+            (Some(content), None) => Ok(content),
+            (None, Some(mut urls)) => {
+                let url = match urls.pop() {
+                    Some(url) => url,
+                    None => anyhow::bail!("The URL list is empty"),
+                };
+                if !urls.is_empty() {
+                    anyhow::bail!("Only one source code URL is allowed");
+                }
+
+                let url_path = PathBuf::from(url);
+                let source_with_content = Self::try_from(url_path.as_path())?;
+                Ok(source_with_content.content.expect("Always exists"))
+            }
+            (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
+            (None, None) => anyhow::bail!("Either `content` or `urls` must be set"),
+        }
+    }
+}
+
 impl From<String> for Source {
     fn from(content: String) -> Self {
         Self {
             content: Some(content),
             urls: None,
         }
-    }
-}
-
-impl TryInto<String> for Source {
-    type Error = anyhow::Error;
-
-    fn try_into(self) -> anyhow::Result<String> {
-        if let Some(urls) = self.urls.as_ref() {
-            if urls.len() != 1 {
-                anyhow::bail!("Only one source code URL is allowed");
-            }
-            let url = urls.last().expect("Always exists");
-            let url_path = PathBuf::from(url);
-            let source_with_content = Self::try_from(url_path.as_path())?;
-            return Ok(source_with_content.content.expect("Always exists"));
-        }
-
-        if let Some(content) = self.content {
-            return Ok(content);
-        }
-
-        anyhow::bail!("Neither `content` nor `urls` are set");
     }
 }
 
