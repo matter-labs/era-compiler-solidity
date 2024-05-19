@@ -20,11 +20,10 @@
 //!
 
 pub mod builder;
-
-mod step;
+pub mod full_name;
 pub mod tracker;
 
-pub use builder::Builder;
+mod step;
 
 use self::step::LexicalBlock;
 
