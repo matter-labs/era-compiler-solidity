@@ -29,7 +29,7 @@ impl Translator {
         ectx: &ExprContext,
         is_root: bool,
     ) -> Result<Transformed, Error> {
-        match self.transpile_name(ctx, name) {
+        match self.transpile_name(ctx, name)? {
             identifier::Translated::Function(target) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 Ok(Transformed::Expression(

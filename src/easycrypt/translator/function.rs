@@ -19,6 +19,7 @@ use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
 use crate::yul::path::tracker::PathTracker;
 
+use super::block::Transformed as TransformedBlock;
 use super::context::Context;
 
 pub enum Translated {
@@ -79,72 +80,92 @@ impl Translator {
             .collect();
         let (ctx, ec_block) = self.transpile_block(body, &ctx.clear_locals())?;
         let result_vars = self.bindings_to_definitions(result);
-        let return_type: Type = {
-            let vec: Vec<Type> = result_vars
-                .iter()
-                .map(|d| d.r#type.clone().unwrap_or(Type::UInt(256)))
-                .collect();
-            match vec.len() {
-                0 => Type::Unit,
-                1 => vec[0].clone(),
-                _ => Type::Tuple(vec),
-            }
-        };
+        let return_type: Type = Type::type_of_definitions(&result_vars);
 
         if let Some(body_expr) = Self::get_function_body(&ec_block.statements, &result_vars) {
-            let signature = Signature {
-                formal_parameters,
-                return_type,
-                kind: SignatureKind::Function,
-            };
-            self.tracker.leave();
-            Ok((
-                ctx.clone(),
-                Translated::Function(Function {
-                    name: identifier.clone(),
-                    signature,
-                    body: body_expr.clone(),
-                    location: Some(self.here()),
-                }),
-            ))
+            self.translate_to_function(formal_parameters, return_type, &ctx, identifier, body_expr)
         } else {
-            let signature = Signature {
+            self.translate_to_procedure(
                 formal_parameters,
                 return_type,
-                kind: SignatureKind::Proc,
-            };
-            let statements = if signature.return_type != Type::Unit {
-                let return_statement = Statement::Return(Expression::pack_tuple(
-                    &result_vars
-                        .iter()
-                        .map(|d| Expression::Reference(d.reference()))
-                        .collect::<Vec<_>>(),
-                ));
-                ec_block
-                    .statements
-                    .iter()
-                    .chain(iter::once(&return_statement))
-                    .cloned()
-                    .collect()
-            } else {
-                ec_block.statements
-            };
-            let locals = result_vars
-                .iter()
-                .chain(ctx.locals.iter())
-                .cloned()
-                .collect();
-            self.tracker.leave();
-            Ok((
-                ctx.clone(),
-                Translated::Proc(Proc {
-                    name: identifier.clone(),
-                    signature,
-                    locals,
-                    body: Block { statements },
-                    location: Some(self.here()),
-                }),
-            ))
+                result_vars,
+                ec_block,
+                ctx,
+                identifier,
+            )
         }
+    }
+
+    fn translate_to_procedure(
+        &mut self,
+        formal_parameters: Vec<(Definition, Type)>,
+        return_type: Type,
+        result_vars: Vec<Definition>,
+        ec_block: TransformedBlock,
+        ctx: Context,
+        identifier: &str,
+    ) -> Result<(Context, Translated), Error> {
+        let signature = Signature {
+            formal_parameters,
+            return_type,
+            kind: SignatureKind::Proc,
+        };
+        let statements = if signature.return_type != Type::Unit {
+            let return_statement = Statement::Return(Expression::pack_tuple(
+                &result_vars
+                    .iter()
+                    .map(|d| Expression::Reference(d.reference()))
+                    .collect::<Vec<_>>(),
+            ));
+            ec_block
+                .statements
+                .iter()
+                .chain(iter::once(&return_statement))
+                .cloned()
+                .collect()
+        } else {
+            ec_block.statements
+        };
+        let locals = result_vars
+            .iter()
+            .chain(ctx.locals.iter())
+            .cloned()
+            .collect();
+        self.tracker.leave();
+        Ok((
+            ctx.clone(),
+            Translated::Proc(Proc {
+                name: identifier.to_string(),
+                signature,
+                locals,
+                body: Block { statements },
+                location: Some(self.here()),
+            }),
+        ))
+    }
+
+    fn translate_to_function(
+        &mut self,
+        formal_parameters: Vec<(Definition, Type)>,
+        return_type: Type,
+        ctx: &Context,
+        identifier: &str,
+        body_expr: &Expression,
+    ) -> Result<(Context, Translated), Error> {
+        let signature = Signature {
+            formal_parameters,
+            return_type,
+            kind: SignatureKind::Function,
+        };
+        self.tracker.leave();
+        Ok((
+            ctx.clone(),
+            Translated::Function(Function {
+                name: identifier.to_string(),
+                signature,
+                body: body_expr.clone(),
+                location: Some(self.here()),
+            }),
+        ))
     }
 }

@@ -2,13 +2,12 @@
 //! Path tracker for the EasyCrypt to Yul translation.
 //!
 
+use crate::data_structures::symbol_table::stack_impl::SymbolTable;
+use crate::data_structures::symbol_table::ISymbolTable;
 use crate::easycrypt::syntax::Name;
 use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
-
-use crate::data_structures::symbol_table::stack_impl::SymbolTable;
-use crate::data_structures::symbol_table::ISymbolTable;
 
 /// Path tracker with a symbol table.
 #[derive(Clone, Debug)]

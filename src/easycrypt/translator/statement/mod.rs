@@ -19,8 +19,10 @@ use crate::easycrypt::syntax::module::definition::TopDefinition;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::block;
+use crate::easycrypt::translator::definition_info::kind::Kind;
+use crate::easycrypt::translator::definition_info::DefinitionInfo;
+use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::Statement as YulStatement;
-use crate::Translator;
 
 pub enum Transformed {
     Statements(Vec<Statement>),
@@ -80,17 +82,35 @@ impl Translator {
             YulStatement::FunctionDefinition(fd) => {
                 let (ctx, translation_result) = self.transpile_function_definition(fd, ctx)?;
                 match translation_result {
-                    function::Translated::Function(fd) => {
-                        self.tracker.add_fun(&fd.name);
+                    function::Translated::Function(ec_function) => {
+                        self.tracker.add(
+                            &ec_function.name,
+                            &DefinitionInfo {
+                                kind: Kind::Function,
+                                full_name: self.create_full_name(ec_function.name.as_str()),
+                                r#type: ec_function.signature.get_type(),
+                            },
+                        );
                         let mut new_ctx = ctx.clone();
-                        new_ctx.module.add_def(TopDefinition::Function(fd.clone()));
-                        Ok((new_ctx, Transformed::Function(fd)))
+                        new_ctx
+                            .module
+                            .add_def(TopDefinition::Function(ec_function.clone()));
+                        Ok((new_ctx, Transformed::Function(ec_function)))
                     }
-                    function::Translated::Proc(pd) => {
-                        self.tracker.add_proc(&fd.identifier);
+                    function::Translated::Proc(ec_procedure) => {
+                        self.tracker.add(
+                            &ec_procedure.name,
+                            &DefinitionInfo {
+                                kind: Kind::Procedure,
+                                full_name: self.create_full_name(ec_procedure.name.as_str()),
+                                r#type: ec_procedure.signature.get_type(),
+                            },
+                        );
                         let mut new_ctx = ctx.clone();
-                        new_ctx.module.add_def(TopDefinition::Proc(pd.clone()));
-                        Ok((new_ctx, Transformed::Proc(pd)))
+                        new_ctx
+                            .module
+                            .add_def(TopDefinition::Proc(ec_procedure.clone()));
+                        Ok((new_ctx, Transformed::Proc(ec_procedure)))
                     }
                 }
             }
@@ -99,9 +119,11 @@ impl Translator {
             YulStatement::IfConditional(conditional) => self.transpile_if(conditional, ctx),
             YulStatement::Switch(switch) => self.transpile_switch(switch, ctx),
             YulStatement::ForLoop(for_loop) => self.transpile_for_loop(for_loop, ctx),
-            YulStatement::Continue(_) => anyhow::bail!("The `continue` statement is not supported."),
+            YulStatement::Continue(_) => {
+                anyhow::bail!("The `continue` statement is not supported.")
+            }
             YulStatement::Break(_) => anyhow::bail!("The `break` statement is not supported."),
-            YulStatement::Leave(_) =>  anyhow::bail!("The `leave` statement is not supported."),
+            YulStatement::Leave(_) => anyhow::bail!("The `leave` statement is not supported."),
         }
     }
 }

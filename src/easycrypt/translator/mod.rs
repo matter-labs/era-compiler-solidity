@@ -5,33 +5,31 @@
 pub mod block;
 pub mod code;
 pub mod context;
+pub mod definition_info;
 pub mod expression;
 pub mod function;
 pub mod identifier;
 pub mod object;
-pub mod statement;
-pub mod tracker;
 pub mod r#type;
+pub mod statement;
 
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
-
-use self::tracker::Tracker;
+use crate::yul::path::full_name::FullName;
+use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
 
-use self::context::Context;
 use super::syntax::definition::Definition;
 
-use super::syntax::module::definition::TopDefinition;
-
 use super::syntax::r#type::Type;
-use super::syntax::reference::Reference;
+
+mod kind {}
 
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
-    tracker: Tracker,
+    tracker: SymbolTracker<definition_info::DefinitionInfo>,
     tmp_counter: Counter,
 }
 
@@ -45,19 +43,9 @@ impl Translator {
     /// Create an instance of [`Translator`] with an empty state.
     pub fn new() -> Self {
         Self {
-            tracker: Tracker::new(),
+            tracker: SymbolTracker::new(),
             tmp_counter: Counter::new(),
         }
-    }
-
-    fn get_module_definition(&self, ctx: &Context, name: &str) -> Option<TopDefinition> {
-        let path = self.tracker.get(&name.to_string()).map(|e| e.path);
-
-        let reference = Reference {
-            identifier: name.to_owned(),
-            location: path,
-        };
-        ctx.module.definitions.get(&reference).cloned()
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
@@ -94,5 +82,9 @@ impl Translator {
             location: Some(location),
             r#type,
         }
+    }
+
+    fn create_full_name(&self, identifier: &str) -> FullName {
+        FullName::new(identifier.to_string(), self.here())
     }
 }

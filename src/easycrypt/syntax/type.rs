@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use super::definition::Definition;
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Type {
     Unknown,
@@ -32,6 +34,27 @@ impl Display for Type {
                 f.write_str(")")
             }
             Type::Unknown => f.write_str("Unknown"),
+        }
+    }
+}
+impl Type {
+    /// Default type: currently only `UInt(256)` is used for all definitions, as
+    /// this is the limitation of the current YUL dialect.
+    pub const DEFAULT: &'static Type = &Type::UInt(256);
+
+    /// Returns either:
+    /// - `Type::Unit`, if [`definitions`] is empty;
+    /// - The type of the first definition, if there is only one definition;
+    /// - A tuple with types of all definitions otherwise.
+    pub fn type_of_definitions(definitions: &[Definition]) -> Type {
+        let vec: Vec<Type> = definitions
+            .iter()
+            .map(|d| d.r#type.clone().unwrap_or(Type::DEFAULT.clone()))
+            .collect();
+        match vec.len() {
+            0 => Type::Unit,
+            1 => vec[0].clone(),
+            _ => Type::Tuple(vec),
         }
     }
 }

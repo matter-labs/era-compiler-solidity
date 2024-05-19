@@ -30,7 +30,6 @@ impl Context {
         }
     }
 
-    #[allow(dead_code)]
     pub fn merge(&mut self, other: &Context) {
         self.module.merge(&other.module);
         self.locals.extend(other.locals.clone());
