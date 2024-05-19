@@ -20,15 +20,15 @@ use crate::yul::parser::statement::Statement;
 /// Visitor for YUL syntax tree.
 pub trait Visitor {
     /// Visit `switch` statement in YUL syntax tree.
-    fn visit_switch(&mut self, s: &Switch);
+    fn visit_switch(&mut self, switch: &Switch);
     /// Visit YUL object in YUL syntax tree.
-    fn visit_object(&mut self, obj: &Object);
+    fn visit_object(&mut self, object: &Object);
     /// Visit `for` statement in YUL syntax tree.
     fn visit_for_loop(&mut self, for_loop: &ForLoop);
     /// Visit a variable declaration in YUL syntax tree: `var x` or `var x = <initializer>`.
-    fn visit_variable_declaration(&mut self, vd: &VariableDeclaration);
+    fn visit_variable_declaration(&mut self, variable_definition: &VariableDeclaration);
     /// Visit a function definition in YUL syntax tree.
-    fn visit_function_definition(&mut self, fd: &FunctionDefinition);
+    fn visit_function_definition(&mut self, function_definition: &FunctionDefinition);
     /// Visit an identifier in YUL syntax tree: a user defined one, or one of the predefined set like `lt`.
     fn visit_name(&mut self, name: &Name);
     /// Visit a function call in YUL syntax tree.
