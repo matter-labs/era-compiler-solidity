@@ -42,6 +42,7 @@ pub struct Output {
     /// The compilation errors and warnings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub errors: Option<Vec<SolcStandardJsonOutputError>>,
+
     /// The `solc` compiler version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,

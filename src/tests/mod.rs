@@ -68,7 +68,7 @@ pub fn build_solidity(
         sources.clone(),
         libraries.clone(),
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             true,
             None,
@@ -124,7 +124,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         sources.clone(),
         libraries.clone(),
         None,
-        SolcStandardJsonInputSettingsSelection::new_required(pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             true,
             None,
@@ -202,7 +202,7 @@ pub fn check_solidity_warning(
         sources.clone(),
         libraries,
         None,
-        SolcStandardJsonInputSettingsSelection::new_required(pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             true,
             None,

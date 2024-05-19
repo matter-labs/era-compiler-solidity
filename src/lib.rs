@@ -87,7 +87,7 @@ pub fn yul_to_eravm(
         )?;
         if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
+                "The Yul mode is only supported with the latest supported version of the Solidity compiler: {}",
                 SolcCompiler::LAST_SUPPORTED_VERSION,
             );
         }
@@ -132,7 +132,7 @@ pub fn yul_to_evm(
     )?;
     if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
         anyhow::bail!(
-            "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
+            "The Yul mode is only supported with the latest supported version of the Solidity compiler: {}",
             SolcCompiler::LAST_SUPPORTED_VERSION,
         );
     }
@@ -262,7 +262,7 @@ pub fn standard_output_eravm(
         input_files,
         libraries,
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             solc_optimizer_enabled,
             None,
@@ -359,7 +359,7 @@ pub fn standard_output_evm(
         input_files,
         libraries,
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             solc_optimizer_enabled,
             None,
@@ -500,6 +500,12 @@ pub fn standard_json_eravm(
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc)) => {
             let solc_version = solc.version()?;
+            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+                anyhow::bail!(
+                    "The Yul mode is only supported with the latest supported version of the Solidity compiler: {}",
+                    SolcCompiler::LAST_SUPPORTED_VERSION,
+                );
+            }
 
             let mut solc_output =
                 solc.standard_json(solc_input, None, base_path, include_paths, allow_paths)?;
@@ -631,6 +637,12 @@ pub fn standard_json_evm(
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc)) => {
             let solc_version = solc.version()?;
+            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+                anyhow::bail!(
+                    "The Yul mode is only supported with the latest supported version of the Solidity compiler: {}",
+                    SolcCompiler::LAST_SUPPORTED_VERSION,
+                );
+            }
 
             let mut solc_output =
                 solc.standard_json(solc_input, None, base_path, include_paths, allow_paths)?;

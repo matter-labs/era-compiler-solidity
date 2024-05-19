@@ -78,11 +78,9 @@ impl Settings {
     /// Sets the necessary defaults.
     ///
     pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
-        if let Some(pipeline) = pipeline {
-            self.output_selection
-                .get_or_insert_with(Selection::default)
-                .extend_with_required(pipeline);
-        }
+        self.output_selection
+            .get_or_insert_with(Selection::default)
+            .extend_with_required(pipeline);
 
         self.optimizer.normalize(version);
     }

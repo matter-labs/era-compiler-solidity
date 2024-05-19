@@ -38,6 +38,7 @@ pub struct Input {
     pub sources: BTreeMap<String, Source>,
     /// The compiler settings.
     pub settings: Settings,
+
     /// The suppressed warnings.
     #[serde(skip_serializing)]
     pub suppressed_warnings: Option<Vec<Warning>>,

@@ -16,8 +16,10 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     /// The source code file content.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<String>,
     /// The source file URLs.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub urls: Option<Vec<String>>,
 }
 
