@@ -123,6 +123,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
                     arguments.is_system_mode,
@@ -256,6 +257,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
                     include_metadata_hash,
