@@ -2,33 +2,33 @@
 //! Path tracker for the EasyCrypt to Yul translation.
 //!
 
-pub mod definition_info;
-pub mod kind;
-
 use crate::easycrypt::syntax::Name;
+use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
-use crate::yul::path::Builder;
 use crate::yul::path::Path;
 
 use crate::data_structures::symbol_table::stack_impl::SymbolTable;
 use crate::data_structures::symbol_table::ISymbolTable;
 
-use self::definition_info::DefinitionInfo;
-use self::kind::Kind;
-
-/// Path tracker for the EasyCrypt to Yul translation.
+/// Path tracker with a symbol table.
 #[derive(Clone, Debug)]
-pub struct Tracker {
+pub struct SymbolTracker<T>
+where
+    T: Clone + std::fmt::Debug + PartialEq + Eq,
+{
     /// Lookup table for user-defined functions, variables and procedures. It
     /// matches the name of a function/variable/procedure to its path from the root
     /// of YUL syntax tree.
-    symbols: SymbolTable<Name, DefinitionInfo>,
+    symbols: SymbolTable<Name, T>,
 
     /// Tracker of the current path from the root of the YUL syntax tree.
     location: Builder,
 }
 
-impl PathTracker for Tracker {
+impl<T> PathTracker for SymbolTracker<T>
+where
+    T: Clone + std::fmt::Debug + PartialEq + Eq,
+{
     fn here(&self) -> &Path {
         self.location.here()
     }
@@ -84,41 +84,15 @@ impl PathTracker for Tracker {
     }
 }
 
-impl Tracker {
-    pub fn add_var(&mut self, name: &Name) {
-        self.symbols.add(
-            name,
-            &DefinitionInfo {
-                kind: Kind::Variable,
-                name: name.clone(),
-                path: self.here().clone(),
-            },
-        )
+impl<T> SymbolTracker<T>
+where
+    T: Clone + std::fmt::Debug + PartialEq + Eq,
+{
+    pub fn add(&mut self, name: &Name, value: &T) {
+        self.symbols.add(name, value);
     }
 
-    pub fn add_proc(&mut self, name: &Name) {
-        self.symbols.add(
-            name,
-            &DefinitionInfo {
-                kind: Kind::Proc,
-                name: name.clone(),
-                path: self.here().clone(),
-            },
-        )
-    }
-
-    pub fn add_fun(&mut self, name: &Name) {
-        self.symbols.add(
-            name,
-            &DefinitionInfo {
-                kind: Kind::Function,
-                name: name.clone(),
-                path: self.here().clone(),
-            },
-        )
-    }
-
-    pub fn get(&self, name: &Name) -> Option<DefinitionInfo> {
+    pub fn get(&self, name: &Name) -> Option<T> {
         self.symbols.get(name)
     }
 

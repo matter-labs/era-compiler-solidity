@@ -2,6 +2,8 @@
 //! Tracker of paths from the root of a YUL syntax tree.
 //!
 
+pub mod symbol_tracker;
+
 use super::Path;
 
 /// Tracker of paths from the root of a YUL syntax tree.
