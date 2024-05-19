@@ -25,7 +25,7 @@ impl Translator {
     /// statements if the expression contains a call to a function that becomes
     /// EasyCrypt procedure.
     ///
-    /// let then COND, CSTMT be the result of transpiling COND.
+    /// Let then COND, CSTMT be the result of transpiling COND.
     /// Then `for INIT COND POST BODY` becomes `{ INIT; CSTMT; while (COND) { BODY; POST; CSTMT } }`.
     pub fn transpile_for_loop(
         &mut self,
@@ -40,7 +40,8 @@ impl Translator {
             body,
         } = for_loop;
 
-        self.tracker.leave();
+        // Visit `for` initializer.
+
         self.tracker.enter_for1();
         let (
             ctx,
@@ -50,6 +51,9 @@ impl Translator {
         ) = self.transpile_block(initializer, ctx)?;
 
         self.tracker.leave();
+
+        // Visit `for` condition.
+
         self.tracker.enter_for2();
         let (
             transpiled_condition,
@@ -62,6 +66,8 @@ impl Translator {
             .expect_expression_and_get()?;
 
         self.tracker.leave();
+
+        // Visit `for` finalizer.
         self.tracker.enter_for3();
         let (
             ctx,
@@ -69,6 +75,10 @@ impl Translator {
                 statements: transpiled_finalizer,
             },
         ) = self.transpile_block(finalizer, &ctx)?;
+
+        self.tracker.leave();
+
+        // Visit `for` body.
         let (
             new_ctx,
             TransformedBlock {
@@ -76,6 +86,12 @@ impl Translator {
             },
         ) = self.transpile_block(body, &ctx)?;
 
+        // Combine results so that
+        // `for INIT COND POST BODY`
+        // becomes
+        // `while (COND) { BODY; POST; CSTMT } }`
+        // which in turn will be embedded in
+        // `{ INIT; CSTMT; while (COND) { BODY; POST; CSTMT } }`.
         let transpiled_while = WhileLoop {
             condition: transpiled_condition.clone(),
             body: Box::from(Statement::Block(Block {
@@ -88,6 +104,10 @@ impl Translator {
             })),
         };
 
+        // Combine results so that
+        // `for INIT COND POST BODY`
+        // becomes
+        // `{ INIT; CSTMT; while (COND) { BODY; POST; CSTMT } }`.
         let transpiled_result = transpiled_initializer
             .iter()
             .chain(assignments.iter())
