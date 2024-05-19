@@ -99,9 +99,9 @@ impl Translator {
             YulStatement::IfConditional(conditional) => self.transpile_if(conditional, ctx),
             YulStatement::Switch(switch) => self.transpile_switch(switch, ctx),
             YulStatement::ForLoop(for_loop) => self.transpile_for_loop(for_loop, ctx),
-            YulStatement::Continue(_) => todo!(),
-            YulStatement::Break(_) => todo!(),
-            YulStatement::Leave(_) => todo!(),
+            YulStatement::Continue(_) => anyhow::bail!("The `continue` statement is not supported."),
+            YulStatement::Break(_) => anyhow::bail!("The `break` statement is not supported."),
+            YulStatement::Leave(_) =>  anyhow::bail!("The `leave` statement is not supported."),
         }
     }
 }
