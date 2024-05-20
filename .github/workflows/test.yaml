@@ -66,14 +66,12 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Check CLI test files
+        if: github.event_name == 'pull_request'
         id: changed-files-yaml
         uses: tj-actions/changed-files@v44
         with:
-          skip_initial_fetch: true
           files_yaml: |
             cli_tests:
               - 'cli-tests/**'
@@ -84,14 +82,14 @@ jobs:
         uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@main
 
       - name: Build LLVM
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@main
         with:
           target-env: 'musl'
           enable-assertions: 'false'
 
       - name: Build zksolc
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target || '' }}
@@ -102,7 +100,7 @@ jobs:
           solc-version: ${{ github.event.inputs.solc-version }}
 
       - name: Run tests
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed == 'false'
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: ./.github/actions/unit-tests
         with:
           target: ${{ matrix.target || '' }}
