@@ -8,15 +8,17 @@ use serde::Serialize;
 ///
 /// The `solc --standard-json` input language.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Language {
     /// Solidity language.
     Solidity,
     /// Yul IR.
     Yul,
     /// LLVM IR.
+    #[serde(rename = "LLVM IR")]
     LLVMIR,
     /// EraVM assembly.
+    #[serde(rename = "EraVM Assembly")]
     EraVMAssembly,
 }
 

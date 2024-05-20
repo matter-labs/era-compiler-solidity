@@ -1,11 +1,11 @@
-object "Test_29" {
+object "Test" {
     code {
         {
             return(0, 0)
         }
     }
 
-    object "Test_29_deployed" {
+    object "Test_deployed" {
         code {
             {
                 mstore(0, 42)

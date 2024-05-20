@@ -217,6 +217,68 @@ pub fn build_yul_standard_json(
 }
 
 ///
+/// Builds the LLVM IR standard JSON and returns the standard JSON output.
+///
+pub fn build_llvm_ir_standard_json(
+    solc_input: SolcStandardJsonInput,
+) -> anyhow::Result<SolcStandardJsonOutput> {
+    check_dependencies();
+
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
+        solc_input.settings.optimizer.mode.unwrap_or('0'),
+    )?;
+
+    let sources = solc_input.sources()?;
+    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+
+    let project = Project::try_from_llvm_ir_sources(sources)?;
+    let build = project.compile_to_eravm(
+        optimizer_settings,
+        true,
+        false,
+        zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
+    )?;
+    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
+
+    Ok(solc_output)
+}
+
+///
+/// Builds the EraVM assembly standard JSON and returns the standard JSON output.
+///
+pub fn build_eravm_assembly_standard_json(
+    solc_input: SolcStandardJsonInput,
+) -> anyhow::Result<SolcStandardJsonOutput> {
+    check_dependencies();
+
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
+        solc_input.settings.optimizer.mode.unwrap_or('0'),
+    )?;
+
+    let sources = solc_input.sources()?;
+    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+
+    let project = Project::try_from_eravm_assembly_sources(sources)?;
+    let build = project.compile_to_eravm(
+        optimizer_settings,
+        true,
+        false,
+        zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
+    )?;
+    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
+
+    Ok(solc_output)
+}
+
+///
 /// Checks if the built Solidity project contains the given warning.
 ///
 pub fn check_solidity_warning(

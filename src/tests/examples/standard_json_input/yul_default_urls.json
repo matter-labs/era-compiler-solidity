@@ -1,1 +1,1 @@
-{"language":"Yul","sources":{"Test_29":{"urls":["src/tests/examples/Test_29.yul"]}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}
+{"language":"Yul","sources":{"Test":{"urls":["src/tests/examples/Test.yul"]}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}
