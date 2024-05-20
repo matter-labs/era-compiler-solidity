@@ -43,6 +43,18 @@ impl Type {
     pub const DEFAULT: &'static Type = &Type::UInt(256);
 
     /// Returns either:
+    /// - `Type::Unit`, if [`types`] is empty;
+    /// - First type of [`types`] if there is only one type;
+    /// - A tuple with all types otherwise.
+    pub fn type_of_vec(types: &[Type]) -> Type {
+        match types.len() {
+            0 => Type::Unit,
+            1 => types[0].clone(),
+            _ => Type::Tuple(types.to_vec()),
+        }
+    }
+
+    /// Returns either:
     /// - `Type::Unit`, if [`definitions`] is empty;
     /// - The type of the first definition, if there is only one definition;
     /// - A tuple with types of all definitions otherwise.
@@ -51,10 +63,7 @@ impl Type {
             .iter()
             .map(|d| d.r#type.clone().unwrap_or(Type::DEFAULT.clone()))
             .collect();
-        match vec.len() {
-            0 => Type::Unit,
-            1 => vec[0].clone(),
-            _ => Type::Tuple(vec),
-        }
+
+        Self::type_of_vec(&vec)
     }
 }
