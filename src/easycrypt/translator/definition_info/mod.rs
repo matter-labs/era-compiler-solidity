@@ -12,4 +12,6 @@ pub struct DefinitionInfo {
     pub kind: self::kind::Kind,
     pub full_name: FullName,
     pub r#type: Type,
+    /// True for functions like `lt` or procedures like `mstore`.
+    pub predefined: bool,
 }

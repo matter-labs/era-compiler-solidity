@@ -6,7 +6,7 @@ pub mod arguments;
 use self::arguments::Arguments;
 
 use era_compiler_solidity::ECVisitor;
-use era_compiler_solidity::{Project, Translator, WritePrinter, YulVisitor};
+use era_compiler_solidity::{Project, Translator, WritePrinter};
 
 ///
 /// The application entry point.
@@ -61,10 +61,9 @@ fn main_inner() -> anyhow::Result<()> {
     let project = Project::try_from_yul_path(path, None)?;
     project.contracts.iter().for_each(|(_path, contr)| {
         if let Some(obj) = contr.get_yul_object() {
-            WritePrinter::default().visit_object(obj);
+            //WritePrinter::default().visit_object(obj);
 
-            let mut t = Translator::new();
-            let m = t.transpile_object(obj, true).unwrap();
+            let m = Translator::transpile(obj).unwrap();
             //println!("{:#?}", m);
 
             WritePrinter::default().visit_module(&m);

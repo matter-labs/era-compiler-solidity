@@ -23,7 +23,7 @@ impl Translator {
     /// user-defined custom name or a predefined name like `lt` of `call`.
     pub fn transpile_name(&mut self, _ctx: &Context, name: &YulName) -> Result<Translated, Error> {
         match name {
-            YulName::UserDefined(name_str) => match self.tracker.get(name_str) {
+            YulName::UserDefined(name_str) => match self.get_definition(name_str) {
                 Some(DefinitionInfo { kind, .. }) => {
                     match kind {
                         Kind::Procedure =>

@@ -10,42 +10,56 @@ pub mod expression;
 pub mod function;
 pub mod identifier;
 pub mod object;
-pub mod r#type;
 pub mod statement;
+pub mod r#type;
+pub mod yul_analyzers;
+
+use std::collections::HashMap;
+
+use anyhow::Error;
 
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
+use crate::yul::parser::statement::object::Object as YulObject;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
+use crate::YulVisitor;
+
+use self::definition_info::DefinitionInfo;
+use self::yul_analyzers::definitions::Definitions;
 
 use super::syntax::definition::Definition;
 
-use super::syntax::r#type::Type;
-
-mod kind {}
+use crate::easycrypt::syntax::module::Module;
+use crate::easycrypt::syntax::r#type::Type;
 
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
     tracker: SymbolTracker<definition_info::DefinitionInfo>,
     tmp_counter: Counter,
-}
-
-impl Default for Translator {
-    fn default() -> Self {
-        Self::new()
-    }
+    definitions: HashMap<FullName, DefinitionInfo>,
 }
 
 impl Translator {
-    /// Create an instance of [`Translator`] with an empty state.
-    pub fn new() -> Self {
-        Self {
+    /// Transpile an object
+    pub fn transpile(yul_object: &YulObject) -> Result<Module, Error> {
+        let mut result = Self {
             tracker: SymbolTracker::new(),
             tmp_counter: Counter::new(),
-        }
+            definitions: HashMap::new(),
+        };
+
+        result.init(yul_object);
+        result.transpile_object(yul_object, true)
+    }
+
+    fn init(&mut self, yul_object: &YulObject) {
+        let mut definitions = Definitions::new();
+        definitions.visit_object(yul_object);
+        self.definitions = definitions.all_symbols;
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
@@ -86,5 +100,21 @@ impl Translator {
 
     fn create_full_name(&self, identifier: &str) -> FullName {
         FullName::new(identifier.to_string(), self.here())
+    }
+
+    fn get_definition(&self, name: &str) -> Option<&DefinitionInfo> {
+        let full_name = FullName {
+            name: name.to_string(),
+            path: self.here().clone(),
+        };
+        self.definitions.get(&full_name)
+    }
+
+    fn get_definition_mut(&mut self, name: &str) -> Option<&mut DefinitionInfo> {
+        let full_name = FullName {
+            name: name.to_string(),
+            path: self.here().clone(),
+        };
+        self.definitions.get_mut(&full_name)
     }
 }
