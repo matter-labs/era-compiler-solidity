@@ -11,6 +11,7 @@ mod messages;
 mod optimizer;
 mod remappings;
 mod runtime_code;
+mod standard_json;
 mod unsupported_opcodes;
 
 use std::collections::BTreeMap;
@@ -26,23 +27,6 @@ use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::Compiler as SolcCompiler;
 use crate::warning::Warning;
-
-///
-/// Checks if the required executables are present in `${PATH}`.
-///
-fn check_dependencies() {
-    for executable in [
-        crate::r#const::DEFAULT_EXECUTABLE_NAME,
-        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-    ]
-    .iter()
-    {
-        assert!(
-            which::which(executable).is_ok(),
-            "The `{executable}` executable not found in ${{PATH}}"
-        );
-    }
-}
 
 ///
 /// Builds the Solidity project and returns the standard JSON output.
@@ -167,27 +151,69 @@ pub fn build_solidity_and_detect_missing_libraries(
 }
 
 ///
-/// Checks if the Yul project can be built without errors.
+/// Builds the Yul `sources` and returns the standard JSON output.
 ///
-pub fn build_yul(source_code: &str) -> anyhow::Result<()> {
+pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
-    let mut sources = BTreeMap::new();
-    sources.insert("test.yul".to_owned(), source_code.to_owned());
+    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+
     let project = Project::try_from_yul_sources(sources, BTreeMap::new(), None, None)?;
-    let _build = project.compile_to_eravm(
+    let build = project.compile_to_eravm(
         optimizer_settings,
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
     )?;
+    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
-    Ok(())
+    Ok(solc_output)
+}
+
+///
+/// Builds the Yul standard JSON and returns the standard JSON output.
+///
+pub fn build_yul_standard_json(
+    solc_input: SolcStandardJsonInput,
+    mut solc_compiler: Option<SolcCompiler>,
+) -> anyhow::Result<SolcStandardJsonOutput> {
+    check_dependencies();
+
+    inkwell::support::enable_llvm_pretty_stack_trace();
+    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
+        solc_input.settings.optimizer.mode.unwrap_or('0'),
+    )?;
+
+    let sources = solc_input.sources()?;
+    let (solc_version, mut solc_output) = match solc_compiler.as_mut() {
+        Some(solc_compiler) => {
+            let solc_version = solc_compiler.version()?;
+            let solc_output = solc_compiler.standard_json(solc_input, None, None, vec![], None)?;
+            (Some(solc_version), solc_output)
+        }
+        None => (None, SolcStandardJsonOutput::new(&sources)),
+    };
+
+    let project =
+        Project::try_from_yul_sources(sources, BTreeMap::new(), solc_compiler.as_mut(), None)?;
+    let build = project.compile_to_eravm(
+        optimizer_settings,
+        solc_compiler.is_none(),
+        false,
+        zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
+    )?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
+
+    Ok(solc_output)
 }
 
 ///
@@ -238,4 +264,21 @@ pub fn check_solidity_warning(
         .any(|error| error.formatted_message.contains(warning_substring));
 
     Ok(contains_warning)
+}
+
+///
+/// Checks if the required executables are present in `${PATH}`.
+///
+fn check_dependencies() {
+    for executable in [
+        crate::r#const::DEFAULT_EXECUTABLE_NAME,
+        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+    ]
+    .iter()
+    {
+        assert!(
+            which::which(executable).is_ok(),
+            "The `{executable}` executable not found in ${{PATH}}"
+        );
+    }
 }

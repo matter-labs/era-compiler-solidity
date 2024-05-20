@@ -93,9 +93,9 @@ impl Build {
         };
 
         for (full_path, build) in self.contracts.into_iter() {
-            let full_path_split = full_path.split(':').collect::<Vec<&str>>();
-            let path = full_path_split[0];
-            let name = full_path_split[1];
+            let mut full_path_split = full_path.split(':');
+            let path = full_path_split.next().expect("Always exists");
+            let name = full_path_split.next().unwrap_or(path);
 
             match standard_json_contracts
                 .get_mut(path)

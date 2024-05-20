@@ -154,4 +154,20 @@ impl Input {
     pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
         self.settings.normalize(version, pipeline);
     }
+
+    ///
+    /// Returns an owned tree of loaded sources.
+    ///
+    pub fn sources(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        self.sources
+            .iter()
+            .map(|(path, source)| {
+                let source: String = source
+                    .to_owned()
+                    .try_into()
+                    .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
+                Ok((path.to_owned(), source))
+            })
+            .collect()
+    }
 }

@@ -54,7 +54,6 @@ pub use self::warning::Warning;
 
 mod tests;
 
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
@@ -254,15 +253,7 @@ pub fn standard_output_eravm(
         solc_pipeline == SolcPipeline::Yul,
         suppressed_warnings,
     )?;
-
-    let mut source_code_files = BTreeMap::new();
-    for (path, source) in solc_input.sources.clone().into_iter() {
-        let source: String = source
-            .try_into()
-            .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
-        source_code_files.insert(path.to_owned(), source);
-    }
-
+    let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
@@ -290,7 +281,7 @@ pub fn standard_output_eravm(
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
-        source_code_files,
+        sources,
         libraries,
         solc_pipeline,
         solc_compiler,
@@ -352,15 +343,7 @@ pub fn standard_output_evm(
         solc_pipeline == SolcPipeline::Yul,
         None,
     )?;
-
-    let mut source_code_files = BTreeMap::new();
-    for (path, source) in solc_input.sources.clone().into_iter() {
-        let source: String = source
-            .try_into()
-            .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
-        source_code_files.insert(path.to_owned(), source);
-    }
-
+    let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
@@ -388,7 +371,7 @@ pub fn standard_output_evm(
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
-        source_code_files,
+        sources,
         libraries,
         solc_pipeline,
         solc_compiler,
@@ -418,15 +401,7 @@ pub fn standard_json_eravm(
 
     let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
-
-    let mut sources = BTreeMap::new();
-    for (path, source) in solc_input.sources.clone().into_iter() {
-        let source: String = source
-            .try_into()
-            .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
-        sources.insert(path.to_owned(), source);
-    }
-
+    let sources = solc_input.sources()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let include_metadata_hash = match solc_input.settings.metadata {
@@ -569,15 +544,7 @@ pub fn standard_json_evm(
 
     let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
-
-    let mut sources = BTreeMap::new();
-    for (path, source) in solc_input.sources.clone().into_iter() {
-        let source: String = source
-            .try_into()
-            .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
-        sources.insert(path.to_owned(), source);
-    }
-
+    let sources = solc_input.sources()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let include_metadata_hash = match solc_input.settings.metadata {

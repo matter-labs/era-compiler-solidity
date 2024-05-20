@@ -83,7 +83,7 @@ impl Project {
     ///
     pub fn try_from_solidity_sources(
         solc_output: &mut SolcStandardJsonOutput,
-        source_code_files: BTreeMap<String, String>,
+        sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         pipeline: SolcPipeline,
         solc_compiler: &mut SolcCompiler,
@@ -153,7 +153,7 @@ impl Project {
                     }
                 };
 
-                let source_code = source_code_files
+                let source_code = sources
                     .get(path.as_str())
                     .ok_or_else(|| anyhow::anyhow!("Source code for path `{}` not found", path))?;
                 let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
