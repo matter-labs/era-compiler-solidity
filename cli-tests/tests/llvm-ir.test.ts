@@ -8,7 +8,7 @@ describe("Set of --llvm-ir tests", () => {
   //id1744
   describe(`Run ${zksolcCommand} with --llvm-ir by default`, () => {
     const args = [`${paths.pathToBasicLlvmContract}`, `--llvm-ir`];
-    const invalidArgs = [`--llvm-ir`];
+    const invalidArgs = [`--llvm-ir`, `anyarg`];
     const result = executeCommand(zksolcCommand, args);
     const invalidResult = executeCommand(zksolcCommand, invalidArgs);
 
