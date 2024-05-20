@@ -17,7 +17,7 @@ runs:
       if: inputs.use-prebuilt-zksolc == 'true'
       env:
         ZKSOLC_DOWNLOAD_URL: "https://github.com/matter-labs/era-compiler-solidity/releases/download"
-        ZKSOLC_VERSION: ${{ inputs.zksolc-version }}
+        ZKSOLC_VERSION: ${{ inputs.zksolc-version || '1.4.1' }}
       run: |
         OUTPUT=zksolc
         case "${RUNNER_OS}-${RUNNER_ARCH}" in
