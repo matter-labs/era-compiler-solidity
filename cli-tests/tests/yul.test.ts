@@ -8,9 +8,10 @@ describe("Set of --yul tests", () => {
 
   //id1743
   describe(`Run ${zksolcCommand} with --yul by default`, () => {
-    const args = [`${paths.pathToBasicYulContract}`, `--yul`];
-    const invalidArgs = ['--yul'];
-    const result = executeCommand(zksolcCommand, args);
+    const zksolcArgs = [`${paths.pathToBasicYulContract}`, `--yul`];
+    const solcArgs = [`${paths.pathToBasicYulContract}`, `--strict-assembly`];
+    const invalidArgs = ['--yul', 'anyarg'];
+    const result = executeCommand(zksolcCommand, zksolcArgs);
     const invalidResult = executeCommand(zksolcCommand, invalidArgs);
 
     it("Valid command exit code = 0", () => {
@@ -23,7 +24,7 @@ describe("Set of --yul tests", () => {
     });
 
     xit("solc exit code == zksolc exit code", () => { // issue with solc compilation
-        const solcResult = executeCommand(solcCommand, args);
+        const solcResult = executeCommand(solcCommand, solcArgs);
         expect(solcResult.exitCode).toBe(result.exitCode);
     });
 

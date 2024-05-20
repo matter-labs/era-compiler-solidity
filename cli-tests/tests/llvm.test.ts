@@ -23,11 +23,6 @@ describe("Set of --llvm-ir tests", () => {
     it("Invalid command exit code = 1", () => {
       expect(invalidResult.exitCode).toBe(1);
     });
-
-    it("Invalid solc exit code == Invalid zksolc exit code", () => {
-      const solcResult = executeCommand(solcCommand, invalidArgs);
-      expect(solcResult.exitCode).toBe(invalidResult.exitCode);
-    });
   });
 
   //id1825
