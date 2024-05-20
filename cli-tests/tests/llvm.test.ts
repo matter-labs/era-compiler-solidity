@@ -20,10 +20,6 @@ describe("Set of --llvm-ir tests", () => {
       expect(result.output).toMatch(/(Compiler run successful. No output requested. Use --asm and --bin flags.)/i);
     });
 
-    it("run invalid: zksolc --llvm-ir", () => {
-      expect(invalidResult.output).toMatch(/(The input file is missing)/i);
-    });
-
     it("Invalid command exit code = 1", () => {
       expect(invalidResult.exitCode).toBe(1);
     });

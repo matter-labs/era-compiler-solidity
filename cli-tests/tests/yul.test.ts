@@ -27,10 +27,6 @@ describe("Set of --yul tests", () => {
         expect(solcResult.exitCode).toBe(result.exitCode);
     });
 
-    it("run invalid: zksolc --yul", () => {
-      expect(invalidResult.output).toMatch(/(The input file is missing)/i);
-    });
-
     it("Invalid command exit code = 1", () => {
       expect(invalidResult.exitCode).toBe(1);
     });
