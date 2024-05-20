@@ -73,6 +73,7 @@ jobs:
         id: changed-files-yaml
         uses: tj-actions/changed-files@v44
         with:
+          skip_initial_fetch: true
           files_yaml: |
             cli_tests:
               - 'cli-tests/**'
