@@ -15,7 +15,7 @@ use self::evm::EVM;
 ///
 /// The `solc --standard-json` output contract.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Contract {
     /// The contract ABI.
@@ -39,6 +39,7 @@ pub struct Contract {
     /// The contract optimized IR code.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ir_optimized: Option<String>,
+
     /// The contract EraVM bytecode hash.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hash: Option<String>,

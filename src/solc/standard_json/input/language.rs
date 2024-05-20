@@ -8,12 +8,18 @@ use serde::Serialize;
 ///
 /// The `solc --standard-json` input language.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Language {
-    /// The Solidity language.
+    /// Solidity language.
     Solidity,
-    /// The Yul IR.
+    /// Yul IR.
     Yul,
+    /// LLVM IR.
+    #[serde(rename = "LLVM IR")]
+    LLVMIR,
+    /// EraVM assembly.
+    #[serde(rename = "EraVM Assembly")]
+    EraVMAssembly,
 }
 
 impl std::fmt::Display for Language {
@@ -21,6 +27,8 @@ impl std::fmt::Display for Language {
         match self {
             Self::Solidity => write!(f, "Solidity"),
             Self::Yul => write!(f, "Yul"),
+            Self::LLVMIR => write!(f, "LLVM IR"),
+            Self::EraVMAssembly => write!(f, "EraVM Assembly"),
         }
     }
 }

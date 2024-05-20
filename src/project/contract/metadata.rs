@@ -13,9 +13,9 @@ use serde::Serialize;
 pub struct Metadata {
     /// The `solc` metadata.
     pub solc_metadata: serde_json::Value,
-    /// The `solc` version.
-    pub solc_version: semver::Version,
-    /// The zkVM `solc` edition.
+    /// The `solc` version if used.
+    pub solc_version: Option<semver::Version>,
+    /// The ZKsync `solc` edition.
     pub solc_zkvm_edition: Option<semver::Version>,
     /// The EraVM compiler version.
     pub zk_version: semver::Version,
@@ -29,7 +29,7 @@ impl Metadata {
     ///
     pub fn new(
         solc_metadata: serde_json::Value,
-        solc_version: semver::Version,
+        solc_version: Option<semver::Version>,
         solc_zkvm_edition: Option<semver::Version>,
         zk_version: semver::Version,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,

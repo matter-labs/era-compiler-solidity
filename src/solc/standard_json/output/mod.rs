@@ -10,18 +10,12 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use serde::Serialize;
-use sha3::Digest;
 
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
-use crate::project::contract::ir::IR as ProjectContractIR;
-use crate::project::contract::Contract as ProjectContract;
-use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::statement::object::Object;
 
 use self::contract::Contract;
 use self::error::Error as SolcStandardJsonOutputError;
@@ -41,6 +35,7 @@ pub struct Output {
     /// The compilation errors and warnings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub errors: Option<Vec<SolcStandardJsonOutputError>>,
+
     /// The `solc` compiler version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
@@ -54,98 +49,34 @@ pub struct Output {
 
 impl Output {
     ///
-    /// Converts the `solc` JSON output into a convenient project.
+    /// Initializes a standard JSON output.
     ///
-    pub fn try_to_project(
-        &mut self,
-        source_code_files: BTreeMap<String, String>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
-        pipeline: SolcPipeline,
-        solc_version: &SolcVersion,
-        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
-    ) -> anyhow::Result<Project> {
-        if let SolcPipeline::EVMLA = pipeline {
-            self.preprocess_dependencies()?;
+    /// Is used for projects compiled without `solc`.
+    ///
+    pub fn new(sources: &BTreeMap<String, String>) -> Self {
+        let contracts = sources
+            .keys()
+            .map(|path| {
+                let mut contracts = BTreeMap::new();
+                contracts.insert(path.to_owned(), Contract::default());
+                (path.to_owned(), contracts)
+            })
+            .collect::<BTreeMap<String, BTreeMap<String, Contract>>>();
+
+        let sources = sources
+            .keys()
+            .enumerate()
+            .map(|(index, path)| (path.to_owned(), Source::new(index)))
+            .collect::<BTreeMap<String, Source>>();
+
+        Self {
+            contracts: Some(contracts),
+            sources: Some(sources),
+            errors: None,
+            version: None,
+            long_version: None,
+            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
         }
-
-        let files = match self.contracts.as_ref() {
-            Some(files) => files,
-            None => {
-                anyhow::bail!(
-                    "{}",
-                    self.errors
-                        .as_ref()
-                        .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
-                        .unwrap_or_else(|| "Unknown project assembling error".to_owned())
-                );
-            }
-        };
-        let mut project_contracts = BTreeMap::new();
-
-        for (path, contracts) in files.iter() {
-            for (name, contract) in contracts.iter() {
-                let full_path = format!("{path}:{name}");
-
-                let source = match pipeline {
-                    SolcPipeline::Yul => {
-                        let ir_optimized = match contract.ir_optimized.to_owned() {
-                            Some(ir_optimized) => ir_optimized,
-                            None => continue,
-                        };
-                        if ir_optimized.is_empty() {
-                            continue;
-                        }
-
-                        if let Some(debug_config) = debug_config {
-                            debug_config.dump_yul(
-                                full_path.as_str(),
-                                None,
-                                ir_optimized.as_str(),
-                            )?;
-                        }
-
-                        let mut lexer = Lexer::new(ir_optimized.to_owned());
-                        let object = Object::parse(&mut lexer, None).map_err(|error| {
-                            anyhow::anyhow!("Contract `{}` parsing error: {:?}", full_path, error)
-                        })?;
-
-                        ProjectContractIR::new_yul(ir_optimized.to_owned(), object)
-                    }
-                    SolcPipeline::EVMLA => {
-                        let evm = contract.evm.as_ref();
-                        let assembly = match evm.and_then(|evm| evm.assembly.to_owned()) {
-                            Some(assembly) => assembly.to_owned(),
-                            None => continue,
-                        };
-                        let extra_metadata = evm
-                            .and_then(|evm| evm.extra_metadata.to_owned())
-                            .unwrap_or_default();
-
-                        ProjectContractIR::new_evmla(assembly, extra_metadata)
-                    }
-                };
-
-                let source_code = source_code_files
-                    .get(path.as_str())
-                    .ok_or_else(|| anyhow::anyhow!("Source code for path `{}` not found", path))?;
-                let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-                let project_contract = ProjectContract::new(
-                    full_path.clone(),
-                    source_hash,
-                    solc_version.to_owned(),
-                    source,
-                    contract.metadata.to_owned(),
-                );
-                project_contracts.insert(full_path, project_contract);
-            }
-        }
-
-        Ok(Project::new(
-            solc_version.to_owned(),
-            project_contracts,
-            libraries,
-        ))
     }
 
     ///
@@ -203,7 +134,7 @@ impl Output {
     ///
     /// The pass, which replaces with dependency indexes with actual data.
     ///
-    fn preprocess_dependencies(&mut self) -> anyhow::Result<()> {
+    pub fn preprocess_dependencies(&mut self) -> anyhow::Result<()> {
         let files = match self.contracts.as_mut() {
             Some(files) => files,
             None => return Ok(()),

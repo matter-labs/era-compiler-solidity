@@ -62,39 +62,39 @@ use std::path::PathBuf;
 /// Runs the Yul mode for the EraVM target.
 ///
 pub fn yul_to_eravm(
-    input_files: &[PathBuf],
-    solc: Option<String>,
+    paths: &[PathBuf],
+    libraries: Vec<String>,
+    solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let path = match input_files.len() {
-        1 => input_files.first().expect("Always exists"),
-        0 => anyhow::bail!("The input file is missing"),
-        length => anyhow::bail!(
-            "Only one input file is allowed in the Yul mode, but found {}",
-            length,
-        ),
-    };
-
-    let solc_validator = if is_system_mode {
-        None
-    } else {
-        let mut solc = SolcCompiler::new(
-            solc.unwrap_or_else(|| SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()),
-        )?;
-        if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
-            anyhow::bail!(
-                "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
-                SolcCompiler::LAST_SUPPORTED_VERSION,
-            );
+    let mut solc_compiler = match solc_path {
+        Some(_solc_path) if is_system_mode => {
+            anyhow::bail!("The `solc` validator cannot be used when EraVM extensions are enabled");
         }
-
-        Some(solc)
+        Some(solc_path) => {
+            let mut solc = SolcCompiler::new(solc_path)?;
+            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+                anyhow::bail!(
+                    "Yul can only be validated with the latest supported version of the Solidity compiler: {}",
+                    SolcCompiler::LAST_SUPPORTED_VERSION,
+                );
+            }
+            Some(solc)
+        }
+        None => None,
     };
 
-    let project = Project::try_from_yul_path(path, solc_validator.as_ref())?;
+    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+
+    let project = Project::try_from_yul_paths(
+        paths,
+        libraries,
+        solc_compiler.as_mut(),
+        debug_config.as_ref(),
+    )?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,
@@ -111,32 +111,35 @@ pub fn yul_to_eravm(
 /// Runs the Yul mode for the EVM target.
 ///
 pub fn yul_to_evm(
-    input_files: &[PathBuf],
-    solc: Option<String>,
+    paths: &[PathBuf],
+    libraries: Vec<String>,
+    solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let path = match input_files.len() {
-        1 => input_files.first().expect("Always exists"),
-        0 => anyhow::bail!("The input file is missing"),
-        length => anyhow::bail!(
-            "Only one input file is allowed in the Yul mode, but found {}",
-            length,
-        ),
+    let mut solc_compiler = match solc_path {
+        Some(solc_path) => {
+            let mut solc = SolcCompiler::new(solc_path)?;
+            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
+                anyhow::bail!(
+                    "Yul can only be validated with the latest supported version of the Solidity compiler: {}",
+                    SolcCompiler::LAST_SUPPORTED_VERSION,
+                );
+            }
+            Some(solc)
+        }
+        None => None,
     };
 
-    let mut solc = SolcCompiler::new(
-        solc.unwrap_or_else(|| SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned()),
-    )?;
-    if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
-        anyhow::bail!(
-            "The Yul mode is only supported with the most recent version of the Solidity compiler: {}",
-            SolcCompiler::LAST_SUPPORTED_VERSION,
-        );
-    }
+    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
 
-    let project = Project::try_from_yul_path(path, Some(&solc))?;
+    let project = Project::try_from_yul_paths(
+        paths,
+        libraries,
+        solc_compiler.as_mut(),
+        debug_config.as_ref(),
+    )?;
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
 
@@ -147,22 +150,13 @@ pub fn yul_to_evm(
 /// Runs the LLVM IR mode for the EraVM target.
 ///
 pub fn llvm_ir_to_eravm(
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let path = match input_files.len() {
-        1 => input_files.first().expect("Always exists"),
-        0 => anyhow::bail!("The input file is missing"),
-        length => anyhow::bail!(
-            "Only one input file is allowed in the LLVM IR mode, but found {}",
-            length,
-        ),
-    };
-
-    let project = Project::try_from_llvm_ir_path(path)?;
+    let project = Project::try_from_llvm_ir_paths(paths)?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,
@@ -179,21 +173,12 @@ pub fn llvm_ir_to_eravm(
 /// Runs the LLVM IR mode for the EVM target.
 ///
 pub fn llvm_ir_to_evm(
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let path = match input_files.len() {
-        1 => input_files.first().expect("Always exists"),
-        0 => anyhow::bail!("The input file is missing"),
-        length => anyhow::bail!(
-            "Only one input file is allowed in the LLVM IR mode, but found {}",
-            length,
-        ),
-    };
-
-    let project = Project::try_from_llvm_ir_path(path)?;
+    let project = Project::try_from_llvm_ir_paths(paths)?;
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
 
@@ -204,20 +189,11 @@ pub fn llvm_ir_to_evm(
 /// Runs the EraVM assembly mode.
 ///
 pub fn eravm_assembly(
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let path = match input_files.len() {
-        1 => input_files.first().expect("Always exists"),
-        0 => anyhow::bail!("The input file is missing"),
-        length => anyhow::bail!(
-            "Only one input file is allowed in the EraVM assembly mode, but found {}",
-            length,
-        ),
-    };
-
-    let project = Project::try_from_eravm_assembly_path(path)?;
+    let project = Project::try_from_eravm_assembly_paths(paths)?;
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
     let build = project.compile_to_eravm(
@@ -235,9 +211,9 @@ pub fn eravm_assembly(
 /// Runs the standard output mode for EraVM.
 ///
 pub fn standard_output_eravm(
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     libraries: Vec<String>,
-    solc: &mut SolcCompiler,
+    solc_compiler: &mut SolcCompiler,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -252,16 +228,16 @@ pub fn standard_output_eravm(
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let solc_version = solc.version()?;
+    let solc_version = solc_compiler.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
     let solc_input = SolcStandardJsonInput::try_from_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
-        input_files,
+        paths,
         libraries,
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             solc_optimizer_enabled,
             None,
@@ -277,17 +253,11 @@ pub fn standard_output_eravm(
         solc_pipeline == SolcPipeline::Yul,
         suppressed_warnings,
     )?;
-
-    let source_code_files = solc_input
-        .sources
-        .iter()
-        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
-        .collect();
-
+    let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(
+    let mut solc_output = solc_compiler.standard_json(
         solc_input,
-        solc_pipeline,
+        Some(solc_pipeline),
         base_path,
         include_paths,
         allow_paths,
@@ -309,11 +279,12 @@ pub fn standard_output_eravm(
         }
     }
 
-    let project = solc_output.try_to_project(
-        source_code_files,
+    let project = Project::try_from_solidity_sources(
+        &mut solc_output,
+        sources,
         libraries,
         solc_pipeline,
-        &solc_version,
+        solc_compiler,
         debug_config.as_ref(),
     )?;
 
@@ -332,9 +303,9 @@ pub fn standard_output_eravm(
 /// Runs the standard output mode for EVM.
 ///
 pub fn standard_output_evm(
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     libraries: Vec<String>,
-    solc: &mut SolcCompiler,
+    solc_compiler: &mut SolcCompiler,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -347,16 +318,16 @@ pub fn standard_output_evm(
     remappings: Option<BTreeSet<String>>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let solc_version = solc.version()?;
+    let solc_version = solc_compiler.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
     let solc_input = SolcStandardJsonInput::try_from_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
-        input_files,
+        paths,
         libraries,
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_pipeline),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             solc_optimizer_enabled,
             None,
@@ -372,17 +343,11 @@ pub fn standard_output_evm(
         solc_pipeline == SolcPipeline::Yul,
         None,
     )?;
-
-    let source_code_files = solc_input
-        .sources
-        .iter()
-        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
-        .collect();
-
+    let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(
+    let mut solc_output = solc_compiler.standard_json(
         solc_input,
-        solc_pipeline,
+        Some(solc_pipeline),
         base_path,
         include_paths,
         allow_paths,
@@ -404,11 +369,12 @@ pub fn standard_output_evm(
         }
     }
 
-    let project = solc_output.try_to_project(
-        source_code_files,
+    let project = Project::try_from_solidity_sources(
+        &mut solc_output,
+        sources,
         libraries,
         solc_pipeline,
-        &solc_version,
+        solc_compiler,
         debug_config.as_ref(),
     )?;
 
@@ -421,7 +387,7 @@ pub fn standard_output_evm(
 /// Runs the standard JSON mode for EVM.
 ///
 pub fn standard_json_eravm(
-    solc: &mut SolcCompiler,
+    solc_compiler: Option<&mut SolcCompiler>,
     json_path: Option<PathBuf>,
     detect_missing_libraries: bool,
     force_evmla: bool,
@@ -431,62 +397,121 @@ pub fn standard_json_eravm(
     allow_paths: Option<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = match json_path {
-        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
-        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
-    }
-    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
-    let source_code_files = solc_input
-        .sources
-        .iter()
-        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
-        .collect();
-
+    let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let language = solc_input.language;
+    let sources = solc_input.sources()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
-
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
             metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
-
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(
-        solc_input,
-        solc_pipeline,
-        base_path,
-        include_paths,
-        allow_paths,
-    )?;
 
-    if let Some(errors) = solc_output.errors.as_deref() {
-        for error in errors.iter() {
-            if error.severity.as_str() == "error" {
+    let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
+        (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
+            let solc_version = solc_compiler.version()?;
+            let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+
+            let mut solc_output = solc_compiler.standard_json(
+                solc_input,
+                Some(solc_pipeline),
+                base_path,
+                include_paths,
+                allow_paths,
+            )?;
+            if solc_output
+                .errors
+                .as_deref()
+                .map(|errors| {
+                    errors
+                        .iter()
+                        .any(|error| error.severity.as_str() == "error")
+                })
+                .unwrap_or_default()
+            {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
                 std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
-        }
-    }
 
-    let project = solc_output.try_to_project(
-        source_code_files,
-        libraries,
-        solc_pipeline,
-        &solc_version,
-        debug_config.as_ref(),
-    )?;
+            let project = Project::try_from_solidity_sources(
+                &mut solc_output,
+                sources,
+                libraries,
+                solc_pipeline,
+                solc_compiler,
+                debug_config.as_ref(),
+            )?;
+
+            (solc_output, Some(solc_version), project)
+        }
+        (SolcStandardJsonInputLanguage::Solidity, None) => {
+            anyhow::bail!("Compiling Solidity without `solc` is not supported")
+        }
+        (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
+            let solc_output = solc_compiler.standard_json(
+                solc_input,
+                None,
+                base_path,
+                include_paths,
+                allow_paths,
+            )?;
+            if solc_output
+                .errors
+                .as_deref()
+                .map(|errors| {
+                    errors
+                        .iter()
+                        .any(|error| error.severity.as_str() == "error")
+                })
+                .unwrap_or_default()
+            {
+                serde_json::to_writer(std::io::stdout(), &solc_output)?;
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+            }
+
+            let project = Project::try_from_yul_sources(
+                sources,
+                libraries,
+                Some(solc_compiler),
+                debug_config.as_ref(),
+            )?;
+
+            (solc_output, Some(solc_compiler.version()?), project)
+        }
+        (SolcStandardJsonInputLanguage::Yul, None) => {
+            let solc_output = SolcStandardJsonOutput::new(&sources);
+            let project =
+                Project::try_from_yul_sources(sources, libraries, None, debug_config.as_ref())?;
+            (solc_output, None, project)
+        }
+        (SolcStandardJsonInputLanguage::LLVMIR, Some(_)) => {
+            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
+        }
+        (SolcStandardJsonInputLanguage::LLVMIR, None) => {
+            let solc_output = SolcStandardJsonOutput::new(&sources);
+            let project = Project::try_from_llvm_ir_sources(sources)?;
+            (solc_output, None, project)
+        }
+        (SolcStandardJsonInputLanguage::EraVMAssembly, Some(_)) => {
+            anyhow::bail!("EraVM assembly projects cannot be compiled with `solc`")
+        }
+        (SolcStandardJsonInputLanguage::EraVMAssembly, None) => {
+            let solc_output = SolcStandardJsonOutput::new(&sources);
+            let project = Project::try_from_eravm_assembly_sources(sources)?;
+            (solc_output, None, project)
+        }
+    };
 
     if detect_missing_libraries {
         let missing_libraries = project.get_missing_libraries();
         missing_libraries.write_to_standard_json(
             &mut solc_output,
-            &solc_version,
+            solc_version.as_ref(),
             &zksolc_version,
         )?;
     } else {
@@ -497,7 +522,7 @@ pub fn standard_json_eravm(
             zkevm_assembly::RunningVmEncodingMode::Production,
             debug_config,
         )?;
-        build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
     }
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
@@ -507,7 +532,7 @@ pub fn standard_json_eravm(
 /// Runs the standard JSON mode for EVM.
 ///
 pub fn standard_json_evm(
-    solc: &mut SolcCompiler,
+    solc_compiler: Option<&mut SolcCompiler>,
     json_path: Option<PathBuf>,
     force_evmla: bool,
     base_path: Option<String>,
@@ -515,59 +540,112 @@ pub fn standard_json_evm(
     allow_paths: Option<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let solc_version = solc.version()?;
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = match json_path {
-        Some(json_path) => SolcStandardJsonInput::try_from_file(solc_pipeline, json_path.as_path()),
-        None => SolcStandardJsonInput::try_from_stdin(solc_pipeline),
-    }
-    .map_err(|error| anyhow::anyhow!("Standard JSON error: {error}"))?;
-    let source_code_files = solc_input
-        .sources
-        .iter()
-        .map(|(path, source)| (path.to_owned(), source.content.to_owned()))
-        .collect();
-
+    let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let language = solc_input.language;
+    let sources = solc_input.sources()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
-
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
             metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
-
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
-    let mut solc_output = solc.standard_json(
-        solc_input,
-        solc_pipeline,
-        base_path,
-        include_paths,
-        allow_paths,
-    )?;
 
-    if let Some(errors) = solc_output.errors.as_deref() {
-        for error in errors.iter() {
-            if error.severity.as_str() == "error" {
+    let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
+        (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
+            let solc_version = solc_compiler.version()?;
+            let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+            let mut solc_output = solc_compiler.standard_json(
+                solc_input,
+                Some(solc_pipeline),
+                base_path,
+                include_paths,
+                allow_paths,
+            )?;
+            if solc_output
+                .errors
+                .as_deref()
+                .map(|errors| {
+                    errors
+                        .iter()
+                        .any(|error| error.severity.as_str() == "error")
+                })
+                .unwrap_or_default()
+            {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
                 std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
-        }
-    }
 
-    let project = solc_output.try_to_project(
-        source_code_files,
-        libraries,
-        solc_pipeline,
-        &solc_version,
-        debug_config.as_ref(),
-    )?;
+            let project = Project::try_from_solidity_sources(
+                &mut solc_output,
+                sources,
+                libraries,
+                solc_pipeline,
+                solc_compiler,
+                debug_config.as_ref(),
+            )?;
+
+            (solc_output, Some(solc_version), project)
+        }
+        (SolcStandardJsonInputLanguage::Solidity, None) => {
+            anyhow::bail!("Compiling Solidity without `solc` is not supported")
+        }
+        (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
+            let solc_output = solc_compiler.standard_json(
+                solc_input,
+                None,
+                base_path,
+                include_paths,
+                allow_paths,
+            )?;
+            if solc_output
+                .errors
+                .as_deref()
+                .map(|errors| {
+                    errors
+                        .iter()
+                        .any(|error| error.severity.as_str() == "error")
+                })
+                .unwrap_or_default()
+            {
+                serde_json::to_writer(std::io::stdout(), &solc_output)?;
+                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+            }
+
+            let project = Project::try_from_yul_sources(
+                sources,
+                libraries,
+                Some(solc_compiler),
+                debug_config.as_ref(),
+            )?;
+
+            (solc_output, Some(solc_compiler.version()?), project)
+        }
+        (SolcStandardJsonInputLanguage::Yul, None) => {
+            let solc_output = SolcStandardJsonOutput::new(&sources);
+            let project =
+                Project::try_from_yul_sources(sources, libraries, None, debug_config.as_ref())?;
+            (solc_output, None, project)
+        }
+        (SolcStandardJsonInputLanguage::LLVMIR, Some(_)) => {
+            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
+        }
+        (SolcStandardJsonInputLanguage::LLVMIR, None) => {
+            let solc_output = SolcStandardJsonOutput::new(&sources);
+            let project = Project::try_from_llvm_ir_sources(sources)?;
+            (solc_output, None, project)
+        }
+        (SolcStandardJsonInputLanguage::EraVMAssembly, _) => {
+            anyhow::bail!("Compiling EraVM assembly to EVM is not supported")
+        }
+    };
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
-    build.write_to_standard_json(&mut solc_output, &solc_version, &zksolc_version)?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
     serde_json::to_writer(std::io::stdout(), &solc_output)?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
@@ -577,9 +655,9 @@ pub fn standard_json_evm(
 ///
 pub fn combined_json_eravm(
     format: String,
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     libraries: Vec<String>,
-    solc: &mut SolcCompiler,
+    solc_compiler: &mut SolcCompiler,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -599,9 +677,9 @@ pub fn combined_json_eravm(
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
     let build = standard_output_eravm(
-        input_files,
+        paths,
         libraries,
-        solc,
+        solc_compiler,
         evm_version,
         solc_optimizer_enabled,
         optimizer_settings,
@@ -617,7 +695,7 @@ pub fn combined_json_eravm(
         debug_config,
     )?;
 
-    let mut combined_json = solc.combined_json(input_files, format.as_str())?;
+    let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
     build.write_to_combined_json(&mut combined_json, &zksolc_version)?;
 
     match output_directory {
@@ -642,9 +720,9 @@ pub fn combined_json_eravm(
 ///
 pub fn combined_json_evm(
     format: String,
-    input_files: &[PathBuf],
+    paths: &[PathBuf],
     libraries: Vec<String>,
-    solc: &mut SolcCompiler,
+    solc_compiler: &mut SolcCompiler,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -662,9 +740,9 @@ pub fn combined_json_evm(
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
     let build = standard_output_evm(
-        input_files,
+        paths,
         libraries,
-        solc,
+        solc_compiler,
         evm_version,
         solc_optimizer_enabled,
         optimizer_settings,
@@ -678,7 +756,7 @@ pub fn combined_json_evm(
         debug_config,
     )?;
 
-    let mut combined_json = solc.combined_json(input_files, format.as_str())?;
+    let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
     build.write_to_combined_json(&mut combined_json, &zksolc_version)?;
 
     match output_directory {

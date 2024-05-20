@@ -8,7 +8,7 @@ describe("Set of --llvm-ir tests", () => {
   //id1744
   describe(`Run ${zksolcCommand} with --llvm-ir by default`, () => {
     const args = [`${paths.pathToBasicLlvmContract}`, `--llvm-ir`];
-    const invalidArgs = [`--llvm-ir`];
+    const invalidArgs = [`--llvm-ir`, `anyarg`];
     const result = executeCommand(zksolcCommand, args);
     const invalidResult = executeCommand(zksolcCommand, invalidArgs);
 
@@ -20,17 +20,8 @@ describe("Set of --llvm-ir tests", () => {
       expect(result.output).toMatch(/(Compiler run successful. No output requested. Use --asm and --bin flags.)/i);
     });
 
-    it("run invalid: zksolc --llvm-ir", () => {
-      expect(invalidResult.output).toMatch(/(The input file is missing)/i);
-    });
-
     it("Invalid command exit code = 1", () => {
       expect(invalidResult.exitCode).toBe(1);
-    });
-
-    it("Invalid solc exit code == Invalid zksolc exit code", () => {
-      const solcResult = executeCommand(solcCommand, invalidArgs);
-      expect(solcResult.exitCode).toBe(invalidResult.exitCode);
     });
   });
 

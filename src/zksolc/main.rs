@@ -123,6 +123,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
                     arguments.is_system_mode,
@@ -144,12 +145,12 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let mut solc = match arguments.solc {
+                    Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
+                    None => None,
+                };
                 era_compiler_solidity::standard_json_eravm(
-                    &mut solc,
+                    solc.as_mut(),
                     standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
@@ -256,6 +257,7 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
                     include_metadata_hash,
@@ -269,12 +271,12 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let mut solc = match arguments.solc {
+                    Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
+                    None => None,
+                };
                 era_compiler_solidity::standard_json_evm(
-                    &mut solc,
+                    solc.as_mut(),
                     standard_json.map(PathBuf::from),
                     arguments.force_evmla,
                     arguments.base_path,

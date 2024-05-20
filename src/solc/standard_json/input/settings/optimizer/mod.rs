@@ -17,12 +17,13 @@ use self::details::Details;
 pub struct Optimizer {
     /// Whether the optimizer is enabled.
     pub enabled: bool,
-    /// The optimization mode string.
-    #[serde(skip_serializing)]
-    pub mode: Option<char>,
     /// The `solc` optimizer details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<Details>,
+
+    /// The optimization mode string.
+    #[serde(skip_serializing)]
+    pub mode: Option<char>,
     /// Whether to try to recompile with -Oz if the bytecode is too large.
     #[serde(skip_serializing)]
     pub fallback_to_optimizing_for_size: Option<bool>,

@@ -4,6 +4,7 @@
 
 use std::io::Read;
 use std::path::Path;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -11,16 +12,48 @@ use serde::Serialize;
 ///
 /// The `solc --standard-json` input source.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     /// The source code file content.
-    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+    /// The source file URLs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub urls: Option<Vec<String>>,
+}
+
+impl TryInto<String> for Source {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> anyhow::Result<String> {
+        match (self.content, self.urls) {
+            (Some(content), None) => Ok(content),
+            (None, Some(mut urls)) => {
+                let url = match urls.pop() {
+                    Some(url) => url,
+                    None => anyhow::bail!("The URL list is empty"),
+                };
+                if !urls.is_empty() {
+                    anyhow::bail!("Only one source code URL is allowed");
+                }
+
+                let url_path = PathBuf::from(url);
+                let source_with_content = Self::try_from(url_path.as_path())?;
+                Ok(source_with_content.content.expect("Always exists"))
+            }
+            (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
+            (None, None) => anyhow::bail!("Either `content` or `urls` must be set"),
+        }
+    }
 }
 
 impl From<String> for Source {
     fn from(content: String) -> Self {
-        Self { content }
+        Self {
+            content: Some(content),
+            urls: None,
+        }
     }
 }
 
@@ -39,6 +72,9 @@ impl TryFrom<&Path> for Source {
                 .map_err(|error| anyhow::anyhow!("File {:?} reading error: {}", path, error))?
         };
 
-        Ok(Self { content })
+        Ok(Self {
+            content: Some(content),
+            urls: None,
+        })
     }
 }

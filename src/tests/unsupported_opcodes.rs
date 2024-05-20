@@ -119,7 +119,9 @@ object "ProgramCounter" {
 }
     "#;
 
-    super::build_yul(source_code).expect("Test failure");
+    let mut sources = BTreeMap::new();
+    sources.insert("test.yul".to_owned(), source_code.to_owned());
+    super::build_yul(sources).expect("Test failure");
 }
 
 pub const EXTCODECOPY_TEST_SOURCE: &str = r#"

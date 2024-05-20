@@ -30,23 +30,24 @@ impl File {
     ///
     /// Creates the selection required by our compilation process.
     ///
-    pub fn new_required(pipeline: SolcPipeline) -> Self {
+    pub fn new_required(pipeline: Option<SolcPipeline>) -> Self {
+        let mut per_contract =
+            HashSet::from_iter([SelectionFlag::MethodIdentifiers, SelectionFlag::Metadata]);
+        per_contract.insert(match pipeline {
+            Some(pipeline) => SelectionFlag::from(pipeline),
+            None => SelectionFlag::Yul,
+        });
         Self {
             per_file: Some(HashSet::from_iter([SelectionFlag::AST])),
-            per_contract: Some(HashSet::from_iter([
-                SelectionFlag::MethodIdentifiers,
-                SelectionFlag::Metadata,
-                SelectionFlag::from(pipeline),
-            ])),
+            per_contract: Some(per_contract),
         }
     }
 
     ///
     /// Extends the user's output selection with flag required by our compilation process.
     ///
-    pub fn extend_with_required(&mut self, pipeline: SolcPipeline) -> &mut Self {
+    pub fn extend_with_required(&mut self, pipeline: Option<SolcPipeline>) -> &mut Self {
         let required = Self::new_required(pipeline);
-
         self.per_file
             .get_or_insert_with(HashSet::default)
             .extend(required.per_file.unwrap_or_default());

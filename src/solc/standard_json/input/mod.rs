@@ -38,6 +38,7 @@ pub struct Input {
     pub sources: BTreeMap<String, Source>,
     /// The compiler settings.
     pub settings: Settings,
+
     /// The suppressed warnings.
     #[serde(skip_serializing)]
     pub suppressed_warnings: Option<Vec<Warning>>,
@@ -45,30 +46,22 @@ pub struct Input {
 
 impl Input {
     ///
-    /// A shortcut constructor from stdin.
+    /// A shortcut constructor.
     ///
-    pub fn try_from_stdin(solc_pipeline: SolcPipeline) -> anyhow::Result<Self> {
-        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(std::io::stdin()))?;
-        input
-            .settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        Ok(input)
-    }
-
+    /// If the `path` is `None`, the input is read from the stdin.
     ///
-    /// A shortcut constructor from file.
-    ///
-    pub fn try_from_file(solc_pipeline: SolcPipeline, path: &Path) -> anyhow::Result<Self> {
-        let file = std::fs::File::open(path)?;
-        let mut input: Self = serde_json::from_reader(std::io::BufReader::new(file))?;
-        input
-            .settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        Ok(input)
+    pub fn try_from_reader(path: Option<&Path>) -> anyhow::Result<Self> {
+        match path {
+            Some(path) => serde_json::from_reader(
+                std::fs::File::open(path)
+                    .map(std::io::BufReader::new)
+                    .map_err(|error| {
+                        anyhow::anyhow!("Standard JSON file {path:?} opening error: {error}")
+                    })?,
+            ),
+            None => serde_json::from_reader(std::io::BufReader::new(std::io::stdin())),
+        }
+        .map_err(|error| anyhow::anyhow!("Standard JSON reading error: {error}"))
     }
 
     ///
@@ -158,7 +151,23 @@ impl Input {
     ///
     /// Sets the necessary defaults.
     ///
-    pub fn normalize(&mut self, version: &semver::Version) {
-        self.settings.normalize(version);
+    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+        self.settings.normalize(version, pipeline);
+    }
+
+    ///
+    /// Returns an owned tree of loaded sources.
+    ///
+    pub fn sources(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        self.sources
+            .iter()
+            .map(|(path, source)| {
+                let source: String = source
+                    .to_owned()
+                    .try_into()
+                    .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
+                Ok((path.to_owned(), source))
+            })
+            .collect()
     }
 }

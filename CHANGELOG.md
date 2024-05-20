@@ -1,6 +1,12 @@
 # The `zksolc` changelog
 
-## [1.5.0] - 2024-00-00
+## [Unreleased]
+
+### Added
+
+- The support for compiling multiple files in Yul, LLVM IR, and EraVM assembly modes
+- The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
+- The support for `urls` to local files in standard JSON input
 
 ## [1.4.1] - 2024-04-24
 
