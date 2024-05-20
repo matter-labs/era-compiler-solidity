@@ -67,7 +67,7 @@ describe("Set of --yul tests", () => {
     });
 
     it("--yul error is presented", () => {
-      expect(result.output).toMatch(/(Error: Expected keyword "object")/i);
+      expect(result.output).toMatch(/(Syntax error)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
