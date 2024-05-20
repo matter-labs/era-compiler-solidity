@@ -66,6 +66,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check CLI test files
         id: changed-files-yaml
