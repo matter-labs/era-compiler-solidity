@@ -301,7 +301,7 @@ impl Compiler {
             .lines()
             .nth(2)
             .and_then(|line| line.split(' ').nth(1))
-            .and_then(|line| line.split('-').nth(1))
+            .and_then(|line| line.split('-').last())
             .and_then(|version| version.parse().ok());
 
         let version = Version::new(long, default, l2_revision);
