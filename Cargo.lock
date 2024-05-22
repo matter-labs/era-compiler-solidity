@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1702-support-extcodecopy-codecopy#df2f3d30b0e1b73f30e3c7775e4ac42a24336c45"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1702-support-extcodecopy-codecopy#7291c25efe8273e37541c4fb73c04aaa0fab9720"
 dependencies = [
  "anyhow",
  "era-compiler-common",
