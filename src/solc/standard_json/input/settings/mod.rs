@@ -75,7 +75,7 @@ impl Settings {
     }
 
     ///
-    /// Sets the necessary defaults.
+    /// Sets the necessary defaults for EraVM compilation.
     ///
     pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
         self.output_selection
@@ -83,6 +83,15 @@ impl Settings {
             .extend_with_required(pipeline);
 
         self.optimizer.normalize(version);
+    }
+
+    ///
+    /// Sets the necessary defaults for Yul validation.
+    ///
+    pub fn normalize_yul_validation(&mut self) {
+        self.output_selection
+            .get_or_insert_with(Selection::new_yul_validation)
+            .extend_with_yul_validation();
     }
 
     ///

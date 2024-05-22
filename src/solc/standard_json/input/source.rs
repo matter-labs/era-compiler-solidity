@@ -23,6 +23,29 @@ pub struct Source {
     pub urls: Option<Vec<String>>,
 }
 
+impl Source {
+    ///
+    /// Reads the source from the file system.
+    ///
+    pub fn try_read(path: &Path) -> anyhow::Result<Self> {
+        let content = if path.to_string_lossy() == "-" {
+            let mut solidity_code = String::with_capacity(16384);
+            std::io::stdin()
+                .read_to_string(&mut solidity_code)
+                .map_err(|error| anyhow::anyhow!("<stdin> reading error: {}", error))?;
+            solidity_code
+        } else {
+            std::fs::read_to_string(path)
+                .map_err(|error| anyhow::anyhow!("File {:?} reading error: {}", path, error))?
+        };
+
+        Ok(Self {
+            content: Some(content),
+            urls: None,
+        })
+    }
+}
+
 impl TryInto<String> for Source {
     type Error = anyhow::Error;
 
@@ -39,7 +62,7 @@ impl TryInto<String> for Source {
                 }
 
                 let url_path = PathBuf::from(url);
-                let source_with_content = Self::try_from(url_path.as_path())?;
+                let source_with_content = Self::try_read(url_path.as_path())?;
                 Ok(source_with_content.content.expect("Always exists"))
             }
             (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
@@ -57,24 +80,11 @@ impl From<String> for Source {
     }
 }
 
-impl TryFrom<&Path> for Source {
-    type Error = anyhow::Error;
-
-    fn try_from(path: &Path) -> Result<Self, Self::Error> {
-        let content = if path.to_string_lossy() == "-" {
-            let mut solidity_code = String::with_capacity(16384);
-            std::io::stdin()
-                .read_to_string(&mut solidity_code)
-                .map_err(|error| anyhow::anyhow!("<stdin> reading error: {}", error))?;
-            solidity_code
-        } else {
-            std::fs::read_to_string(path)
-                .map_err(|error| anyhow::anyhow!("File {:?} reading error: {}", path, error))?
-        };
-
-        Ok(Self {
-            content: Some(content),
-            urls: None,
-        })
+impl From<&Path> for Source {
+    fn from(path: &Path) -> Self {
+        Self {
+            content: None,
+            urls: Some(vec![path.to_string_lossy().to_string()]),
+        }
     }
 }

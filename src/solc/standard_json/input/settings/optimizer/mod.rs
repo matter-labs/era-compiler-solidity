@@ -7,6 +7,8 @@ pub mod details;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::solc::Compiler as SolcCompiler;
+
 use self::details::Details;
 
 ///
@@ -50,11 +52,29 @@ impl Optimizer {
         Self {
             enabled,
             mode,
-            details: Some(Details::disabled(version)),
+            details: if version >= &semver::Version::new(0, 5, 5) {
+                Some(Details::disabled(version))
+            } else {
+                None
+            },
             fallback_to_optimizing_for_size: Some(fallback_to_optimizing_for_size),
             disable_system_request_memoization: Some(disable_system_request_memoization),
             jump_table_density_threshold,
         }
+    }
+
+    ///
+    /// A shortcut constructor for Yul validation.
+    ///
+    pub fn new_yul_validation() -> Self {
+        Self::new(
+            true,
+            None,
+            &SolcCompiler::LAST_SUPPORTED_VERSION,
+            false,
+            false,
+            None,
+        )
     }
 
     ///
