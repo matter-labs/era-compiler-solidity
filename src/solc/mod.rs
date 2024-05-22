@@ -98,7 +98,6 @@ impl Compiler {
         }
 
         let input_json = serde_json::to_vec(&input).expect("Always valid");
-        dbg!(&input);
 
         let process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
@@ -138,7 +137,6 @@ impl Compiler {
                 .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
             )
         })?;
-        dbg!(&output);
 
         if let Some(pipeline) = pipeline {
             let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
