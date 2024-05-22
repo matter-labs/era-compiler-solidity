@@ -183,7 +183,7 @@ impl Project {
     pub fn try_from_yul_paths(
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        solc_compiler: Option<&mut SolcCompiler>,
+        solc_version: Option<SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
         let sources = paths
@@ -194,7 +194,7 @@ impl Project {
                 Ok((path.to_string_lossy().to_string(), source_code))
             })
             .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
-        Self::try_from_yul_sources(sources, libraries, solc_compiler, debug_config)
+        Self::try_from_yul_sources(sources, libraries, solc_version, debug_config)
     }
 
     ///
@@ -203,26 +203,9 @@ impl Project {
     pub fn try_from_yul_sources(
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        solc_compiler: Option<&mut SolcCompiler>,
+        solc_version: Option<SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        let solc_version = match solc_compiler {
-            Some(solc) => {
-                if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
-                    anyhow::bail!(
-                        "The Yul mode is only supported with the latest supported version of the Solidity compiler: {}",
-                        SolcCompiler::LAST_SUPPORTED_VERSION,
-                    );
-                }
-
-                for path in sources.keys() {
-                    solc.validate_yul(PathBuf::from(path).as_path())?;
-                }
-                Some(solc.version()?)
-            }
-            None => None,
-        };
-
         let project_contracts = sources
             .into_par_iter()
             .map(|(path, source_code)| {

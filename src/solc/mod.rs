@@ -7,12 +7,13 @@ pub mod pipeline;
 pub mod standard_json;
 pub mod version;
 
+use std::collections::BTreeMap;
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 
 use self::combined_json::CombinedJson;
 use self::pipeline::Pipeline;
+use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::Output as StandardJsonOutput;
 use self::version::Version;
@@ -96,8 +97,8 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
-        input.normalize(&version.default, pipeline);
         let input_json = serde_json::to_vec(&input).expect("Always valid");
+        dbg!(&input);
 
         let process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
@@ -137,6 +138,7 @@ impl Compiler {
                 .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
             )
         })?;
+        dbg!(&output);
 
         if let Some(pipeline) = pipeline {
             let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
@@ -230,25 +232,58 @@ impl Compiler {
     }
 
     ///
-    /// The `solc` Yul validator.
+    /// Validates the Yul project as paths and libraries.
     ///
-    pub fn validate_yul(&self, path: &Path) -> anyhow::Result<()> {
-        let mut command = std::process::Command::new(self.executable.as_str());
-        command.arg("--strict-assembly");
-        command.arg(path);
-
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
+    pub fn validate_yul_paths(
+        &mut self,
+        paths: &[PathBuf],
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+    ) -> anyhow::Result<StandardJsonOutput> {
+        if self.version()?.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
+                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
+                Self::LAST_SUPPORTED_VERSION,
             );
         }
 
-        Ok(())
+        let solc_input = StandardJsonInput::from_yul_paths(
+            paths,
+            libraries.clone(),
+            StandardJsonInputSettingsOptimizer::new_yul_validation(),
+        );
+        self.validate_yul_standard_json(solc_input)
+    }
+
+    ///
+    /// Validates the Yul project as standard JSON input.
+    ///
+    pub fn validate_yul_standard_json(
+        &mut self,
+        mut solc_input: StandardJsonInput,
+    ) -> anyhow::Result<StandardJsonOutput> {
+        if self.version()?.default != Self::LAST_SUPPORTED_VERSION {
+            anyhow::bail!(
+                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
+                Self::LAST_SUPPORTED_VERSION,
+            );
+        }
+
+        solc_input.normalize_yul_validation();
+        let solc_output = self.standard_json(solc_input, None, None, vec![], None)?;
+        if solc_output.contracts.is_none() {
+            anyhow::bail!(
+                "{}",
+                solc_output
+                    .errors
+                    .as_ref()
+                    .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
+                    .unwrap_or_else(|| {
+                        "Unknown Yul validation error: both `contracts` and `errors` are unset"
+                            .to_owned()
+                    })
+            );
+        }
+        Ok(solc_output)
     }
 
     ///

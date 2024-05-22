@@ -65,9 +65,9 @@ impl Input {
     }
 
     ///
-    /// A shortcut constructor from paths.
+    /// A shortcut constructor from Solidity source paths.
     ///
-    pub fn try_from_paths(
+    pub fn try_from_solidity_paths(
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
         paths: &[PathBuf],
@@ -88,7 +88,7 @@ impl Input {
         let sources = paths
             .into_par_iter()
             .map(|path| {
-                let source = Source::try_from(path.as_path()).unwrap_or_else(|error| {
+                let source = Source::try_read(path.as_path()).unwrap_or_else(|error| {
                     panic!("Source code file {path:?} reading error: {error}")
                 });
                 (path.to_string_lossy().to_string(), source)
@@ -112,11 +112,9 @@ impl Input {
     }
 
     ///
-    /// A shortcut constructor from source code.
+    /// A shortcut constructor from Solidity source code.
     ///
-    /// Only for the integration test purposes.
-    ///
-    pub fn try_from_sources(
+    pub fn try_from_solidity_sources(
         evm_version: Option<era_compiler_common::EVMVersion>,
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
@@ -149,10 +147,82 @@ impl Input {
     }
 
     ///
-    /// Sets the necessary defaults.
+    /// A shortcut constructor from source code.
+    ///
+    pub fn from_yul_sources(
+        sources: BTreeMap<String, String>,
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
+    ) -> Self {
+        let sources = sources
+            .into_iter()
+            .map(|(path, content)| (path, Source::from(content)))
+            .collect();
+        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
+
+        Self {
+            language: Language::Yul,
+            sources,
+            settings: Settings::new(
+                None,
+                libraries,
+                None,
+                output_selection,
+                false,
+                optimizer,
+                None,
+            ),
+            suppressed_warnings: None,
+        }
+    }
+
+    ///
+    /// A shortcut constructor from source code.
+    ///
+    pub fn from_yul_paths(
+        paths: &[PathBuf],
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
+    ) -> Self {
+        let sources = paths
+            .iter()
+            .map(|path| {
+                (
+                    path.to_string_lossy().to_string(),
+                    Source::from(path.as_path()),
+                )
+            })
+            .collect();
+        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
+
+        Self {
+            language: Language::Yul,
+            sources,
+            settings: Settings::new(
+                None,
+                libraries,
+                None,
+                output_selection,
+                false,
+                optimizer,
+                None,
+            ),
+            suppressed_warnings: None,
+        }
+    }
+
+    ///
+    /// Sets the necessary defaults for EraVM compilation.
     ///
     pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
         self.settings.normalize(version, pipeline);
+    }
+
+    ///
+    /// Sets the necessary defaults for Yul validation.
+    ///
+    pub fn normalize_yul_validation(&mut self) {
+        self.settings.normalize_yul_validation();
     }
 
     ///

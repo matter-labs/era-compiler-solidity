@@ -70,31 +70,22 @@ pub fn yul_to_eravm(
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let mut solc_compiler = match solc_path {
-        Some(_solc_path) if is_system_mode => {
-            anyhow::bail!("The `solc` validator cannot be used when EraVM extensions are enabled");
-        }
+    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+
+    let solc_version = match solc_path {
         Some(solc_path) => {
-            let mut solc = SolcCompiler::new(solc_path)?;
-            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
-                anyhow::bail!(
-                    "Yul can only be validated with the latest supported version of the Solidity compiler: {}",
-                    SolcCompiler::LAST_SUPPORTED_VERSION,
-                );
+            if is_system_mode {
+                anyhow::bail!("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`.")
             }
-            Some(solc)
+            let mut solc_compiler = SolcCompiler::new(solc_path)?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone())?;
+            Some(solc_compiler.version()?)
         }
         None => None,
     };
 
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
-
-    let project = Project::try_from_yul_paths(
-        paths,
-        libraries,
-        solc_compiler.as_mut(),
-        debug_config.as_ref(),
-    )?;
+    let project =
+        Project::try_from_yul_paths(paths, libraries, solc_version, debug_config.as_ref())?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,
@@ -118,28 +109,19 @@ pub fn yul_to_evm(
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let mut solc_compiler = match solc_path {
+    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+
+    let solc_version = match solc_path {
         Some(solc_path) => {
-            let mut solc = SolcCompiler::new(solc_path)?;
-            if solc.version()?.default != SolcCompiler::LAST_SUPPORTED_VERSION {
-                anyhow::bail!(
-                    "Yul can only be validated with the latest supported version of the Solidity compiler: {}",
-                    SolcCompiler::LAST_SUPPORTED_VERSION,
-                );
-            }
-            Some(solc)
+            let mut solc_compiler = SolcCompiler::new(solc_path)?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone())?;
+            Some(solc_compiler.version()?)
         }
         None => None,
     };
 
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
-
-    let project = Project::try_from_yul_paths(
-        paths,
-        libraries,
-        solc_compiler.as_mut(),
-        debug_config.as_ref(),
-    )?;
+    let project =
+        Project::try_from_yul_paths(paths, libraries, solc_version, debug_config.as_ref())?;
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
 
@@ -231,7 +213,7 @@ pub fn standard_output_eravm(
     let solc_version = solc_compiler.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
-    let solc_input = SolcStandardJsonInput::try_from_paths(
+    let solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
         paths,
@@ -321,7 +303,7 @@ pub fn standard_output_evm(
     let solc_version = solc_compiler.version()?;
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
-    let solc_input = SolcStandardJsonInput::try_from_paths(
+    let solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
         paths,
@@ -399,7 +381,7 @@ pub fn standard_json_eravm(
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
     let optimizer_settings =
@@ -416,6 +398,7 @@ pub fn standard_json_eravm(
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
             let solc_version = solc_compiler.version()?;
             let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+            solc_input.normalize(&solc_version.default, Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
@@ -453,35 +436,17 @@ pub fn standard_json_eravm(
             anyhow::bail!("Compiling Solidity without `solc` is not supported")
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let solc_output = solc_compiler.standard_json(
-                solc_input,
-                None,
-                base_path,
-                include_paths,
-                allow_paths,
-            )?;
-            if solc_output
-                .errors
-                .as_deref()
-                .map(|errors| {
-                    errors
-                        .iter()
-                        .any(|error| error.severity.as_str() == "error")
-                })
-                .unwrap_or_default()
-            {
-                serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
-            }
+            let solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
+            let solc_version = solc_compiler.version()?;
 
             let project = Project::try_from_yul_sources(
                 sources,
                 libraries,
-                Some(solc_compiler),
+                Some(solc_version.clone()),
                 debug_config.as_ref(),
             )?;
 
-            (solc_output, Some(solc_compiler.version()?), project)
+            (solc_output, Some(solc_version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
             let solc_output = SolcStandardJsonOutput::new(&sources);
@@ -542,7 +507,7 @@ pub fn standard_json_evm(
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
     let optimizer_settings =
@@ -559,6 +524,8 @@ pub fn standard_json_evm(
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
             let solc_version = solc_compiler.version()?;
             let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+            solc_input.normalize(&solc_version.default, Some(solc_pipeline));
+
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
                 Some(solc_pipeline),
@@ -595,35 +562,17 @@ pub fn standard_json_evm(
             anyhow::bail!("Compiling Solidity without `solc` is not supported")
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let solc_output = solc_compiler.standard_json(
-                solc_input,
-                None,
-                base_path,
-                include_paths,
-                allow_paths,
-            )?;
-            if solc_output
-                .errors
-                .as_deref()
-                .map(|errors| {
-                    errors
-                        .iter()
-                        .any(|error| error.severity.as_str() == "error")
-                })
-                .unwrap_or_default()
-            {
-                serde_json::to_writer(std::io::stdout(), &solc_output)?;
-                std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
-            }
+            let solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
+            let solc_version = solc_compiler.version()?;
 
             let project = Project::try_from_yul_sources(
                 sources,
                 libraries,
-                Some(solc_compiler),
+                Some(solc_version.clone()),
                 debug_config.as_ref(),
             )?;
 
-            (solc_output, Some(solc_compiler.version()?), project)
+            (solc_output, Some(solc_version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
             let solc_output = SolcStandardJsonOutput::new(&sources);

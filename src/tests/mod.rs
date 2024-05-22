@@ -47,7 +47,7 @@ pub fn build_solidity(
     let mut solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
     let solc_version = solc_compiler.version()?;
 
-    let input = SolcStandardJsonInput::try_from_sources(
+    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
@@ -66,7 +66,8 @@ pub fn build_solidity(
         None,
     )?;
 
-    let mut solc_output = solc_compiler.standard_json(input, Some(pipeline), None, vec![], None)?;
+    let mut solc_output =
+        solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
@@ -110,7 +111,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let mut solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())?;
     let solc_version = solc_compiler.version()?;
 
-    let input = SolcStandardJsonInput::try_from_sources(
+    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
@@ -129,7 +130,8 @@ pub fn build_solidity_and_detect_missing_libraries(
         None,
     )?;
 
-    let mut solc_output = solc_compiler.standard_json(input, Some(pipeline), None, vec![], None)?;
+    let mut solc_output =
+        solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
@@ -158,6 +160,8 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
@@ -179,6 +183,8 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 ///
 /// Builds the Yul standard JSON and returns the standard JSON output.
 ///
+/// If `solc_compiler` is set, the standard JSON is validated with `solc`.
+///
 pub fn build_yul_standard_json(
     solc_input: SolcStandardJsonInput,
     mut solc_compiler: Option<SolcCompiler>,
@@ -187,6 +193,8 @@ pub fn build_yul_standard_json(
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode.unwrap_or('0'),
@@ -196,14 +204,14 @@ pub fn build_yul_standard_json(
     let (solc_version, mut solc_output) = match solc_compiler.as_mut() {
         Some(solc_compiler) => {
             let solc_version = solc_compiler.version()?;
-            let solc_output = solc_compiler.standard_json(solc_input, None, None, vec![], None)?;
+            let solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
             (Some(solc_version), solc_output)
         }
         None => (None, SolcStandardJsonOutput::new(&sources)),
     };
 
     let project =
-        Project::try_from_yul_sources(sources, BTreeMap::new(), solc_compiler.as_mut(), None)?;
+        Project::try_from_yul_sources(sources, BTreeMap::new(), solc_version.clone(), None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         solc_compiler.is_none(),
@@ -226,6 +234,8 @@ pub fn build_llvm_ir_standard_json(
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode.unwrap_or('0'),
@@ -257,6 +267,8 @@ pub fn build_eravm_assembly_standard_json(
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
+
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode.unwrap_or('0'),
@@ -299,7 +311,7 @@ pub fn check_solidity_warning(
 
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_string(), source_code.to_string());
-    let input = SolcStandardJsonInput::try_from_sources(
+    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries,
@@ -318,8 +330,8 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let output = solc.standard_json(input, Some(pipeline), None, vec![], None)?;
-    let contains_warning = output
+    let solc_output = solc.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
+    let contains_warning = solc_output
         .errors
         .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?
         .iter()
