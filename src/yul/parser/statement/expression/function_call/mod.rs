@@ -745,17 +745,6 @@ impl FunctionCall {
                 )
                 .map(Some)
             }
-            Name::ExtCodeCopy => {
-                let arguments = self.pop_arguments_llvm::<D, 4>(context)?;
-                era_compiler_llvm_context::eravm_evm_ext_code::copy(
-                    context,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                    arguments[2].into_int_value(),
-                    arguments[3].into_int_value(),
-                )
-                .map(|_| None)
-            }
 
             Name::Return => {
                 let arguments = self.pop_arguments_llvm::<D, 2>(context)?;
@@ -1104,6 +1093,13 @@ impl FunctionCall {
                 anyhow::bail!("{} The `CALLCODE` instruction is not supported", location)
             }
             Name::Pc => anyhow::bail!("{} The `PC` instruction is not supported", location),
+            Name::ExtCodeCopy => {
+                let _arguments = self.pop_arguments_llvm::<D, 4>(context)?;
+                anyhow::bail!(
+                    "{} The `EXTCODECOPY` instruction is not supported",
+                    location
+                )
+            }
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
                 anyhow::bail!(

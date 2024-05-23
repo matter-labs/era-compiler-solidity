@@ -989,17 +989,6 @@ where
                 )
                 .map(Some)
             }
-            InstructionName::EXTCODECOPY => {
-                let arguments = self.pop_arguments_llvm(context)?;
-                era_compiler_llvm_context::eravm_evm_ext_code::copy(
-                    context,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                    arguments[2].into_int_value(),
-                    arguments[3].into_int_value(),
-                )
-                .map(|_| None)
-            }
 
             InstructionName::RETURN => {
                 let arguments = self.pop_arguments_llvm(context)?;
@@ -1282,6 +1271,10 @@ where
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
+            }
+            InstructionName::EXTCODECOPY => {
+                let _arguments = self.pop_arguments_llvm(context)?;
+                anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
                 let _arguments = self.pop_arguments_llvm(context)?;
@@ -2116,14 +2109,6 @@ where
             }
             InstructionName::EXTCODEHASH => {
                 let arguments = self.pop_arguments_llvm_evm(context)?;
-                era_compiler_llvm_context::evm_code::ext_hash(
-                    context,
-                    arguments[0].into_int_value(),
-                )
-                .map(|_| None)
-            }
-            InstructionName::EXTCODECOPY => {
-                let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::ext_copy(
                     context,
                     arguments[0].into_int_value(),
@@ -2392,6 +2377,10 @@ where
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
+            }
+            InstructionName::EXTCODECOPY => {
+                let _arguments = self.pop_arguments_llvm_evm(context)?;
+                anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
