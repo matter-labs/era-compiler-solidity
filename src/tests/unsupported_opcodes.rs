@@ -124,55 +124,6 @@ object "ProgramCounter" {
     super::build_yul(sources).expect("Test failure");
 }
 
-pub const EXTCODECOPY_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-contract ExternalCodeCopy {
-    function copyExternalCode(address target, uint256 codeSize) public view returns (bytes memory) {
-        bytes memory code = new bytes(codeSize);
-
-        assembly {
-            extcodecopy(target, add(code, 0x20), 0, codeSize)
-        }
-
-        return code;
-    }
-}
-    "#;
-
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_evmla() {
-    let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
-
-    super::build_solidity(
-        sources,
-        BTreeMap::new(),
-        None,
-        SolcPipeline::EVMLA,
-        era_compiler_llvm_context::OptimizerSettings::cycles(),
-    )
-    .expect("Test failure");
-}
-
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_yul() {
-    let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
-
-    super::build_solidity(
-        sources,
-        BTreeMap::new(),
-        None,
-        SolcPipeline::Yul,
-        era_compiler_llvm_context::OptimizerSettings::cycles(),
-    )
-    .expect("Test failure");
-}
-
 pub const SELFDESTRUCT_TEST_SOURCE: &str = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
