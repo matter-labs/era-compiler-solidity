@@ -47,4 +47,8 @@ pub trait Visitor {
     fn visit_block(&mut self, block: &Block);
     /// Visit a `code` block of an object in YUL syntax tree.
     fn visit_code(&mut self, code: &Code);
+
+    /// By convention, methods not implemented for a specific visitor should
+    /// panic with this message.
+    const MSG_METHOD_NOT_IMPLEMENTED: &'static str = "Method not implemented for this visitor.";
 }

@@ -25,10 +25,10 @@ use crate::yul::path::full_name::FullName;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
-use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
-use self::yul_analyzers::definitions::Definitions;
+use self::yul_analyzers::collect_definitions::CollectDefinitions;
+use self::yul_analyzers::for_each_statement::Statements;
 
 use super::syntax::definition::Definition;
 
@@ -57,9 +57,9 @@ impl Translator {
     }
 
     fn init(&mut self, yul_object: &YulObject) {
-        let mut definitions = Definitions::new();
-        definitions.visit_object(yul_object);
-        self.definitions = definitions.all_symbols;
+        self.definitions = Statements::from(yul_object)
+            .for_each(CollectDefinitions::new())
+            .all_symbols;
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
