@@ -425,15 +425,14 @@ impl Project {
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
-        let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EVMContractBuild>> = self
             .contracts
-            .into_par_iter()
+            .par_iter()
             .map(|(full_path, contract)| {
                 let process_output: anyhow::Result<EVMProcessOutput> = crate::process::call(
                     EVMProcessInput::new(
-                        contract,
-                        project.clone(),
+                        Cow::Borrowed(contract),
+                        Cow::Borrowed(&self),
                         include_metadata_hash,
                         optimizer_settings.clone(),
                         debug_config.clone(),
@@ -441,7 +440,10 @@ impl Project {
                     era_compiler_llvm_context::Target::EVM,
                 );
 
-                (full_path, process_output.map(|output| output.build))
+                (
+                    full_path.to_owned(),
+                    process_output.map(|output| output.build),
+                )
             })
             .collect();
 
