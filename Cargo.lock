@@ -298,7 +298,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#da780bbb2ccf4b4ef0f66f3e67268fdcfb9adcfc"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9969de17367fc850cd2c7fc82dc26a4ade550a05"
 dependencies = [
  "anyhow",
  "serde",
@@ -575,7 +575,7 @@ source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c0821d
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -829,9 +829,9 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
-version = "0.12.2"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e4af0ca4f6caed20e900d564c242b8e5d4903fdacf31d3daf527b66fe6f42fb"
+checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
 dependencies = [
  "lock_api",
  "parking_lot_core",
@@ -1154,7 +1154,7 @@ checksum = "6048858004bcff69094cd972ed40a32500f153bd3be9f716b2eed2e8217c4838"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -1287,9 +1287,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.65"
+version = "2.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2863d96a84c6439701d7a38f9de935ec562c8832cc55d1dde0f513b52fad106"
+checksum = "c42f3f41a2de00b01c0aaad383c5a45241efc8b2d1eda5661812fda5f3cdcff5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1337,7 +1337,7 @@ checksum = "46c3384250002a6d5af4d114f2845d37b57521033f30d5c3f46c4d70e1197533"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -1629,7 +1629,7 @@ checksum = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d"
 [[package]]
 name = "zkevm-assembly"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-zkEVM-assembly?branch=v1.5.0#2faea98303377cad71f4c7d8dacb9c6546874602"
+source = "git+https://github.com/matter-labs/era-zkEVM-assembly?branch=v1.5.0#48303aa435810adb12e277494e5dae3764313330"
 dependencies = [
  "env_logger",
  "hex",

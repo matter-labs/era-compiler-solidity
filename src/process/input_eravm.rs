@@ -4,6 +4,8 @@
 //! The EraVM input data.
 //!
 
+use std::borrow::Cow;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -14,11 +16,11 @@ use crate::project::Project;
 /// The EraVM input data.
 ///
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Input {
+pub struct Input<'a> {
     /// The contract representation.
-    pub contract: Contract,
+    pub contract: Cow<'a, Contract>,
     /// The project representation.
-    pub project: Project,
+    pub project: Cow<'a, Project>,
     /// The system mode flag.
     pub is_system_mode: bool,
     /// Whether to append the metadata hash.
@@ -31,13 +33,13 @@ pub struct Input {
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
 
-impl Input {
+impl<'a> Input<'a> {
     ///
     /// A shortcut constructor.
     ///
     pub fn new(
-        contract: Contract,
-        project: Project,
+        contract: Cow<'a, Contract>,
+        project: Cow<'a, Project>,
         is_system_mode: bool,
         include_metadata_hash: bool,
         enable_test_encoding: bool,
