@@ -105,7 +105,7 @@ where
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
-    let mut process = command.spawn().map_err(|error| {
+    let process = command.spawn().map_err(|error| {
         anyhow::anyhow!("{:?} subprocess spawning error: {:?}", executable, error)
     })?;
 
@@ -120,34 +120,20 @@ where
             error
         )
     })?;
-    let status = process.wait().map_err(|error| {
+    let result = process.wait_with_output().map_err(|error| {
         anyhow::anyhow!("{:?} subprocess waiting error: {:?}", executable, error)
     })?;
-    if !status.success() {
-        let stderr = process
-            .stderr
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stderr getting error", executable))?;
-        anyhow::bail!(
-            "{}",
-            std::io::read_to_string(stderr).map_err(|error| {
-                anyhow::anyhow!(
-                    "{:?} subprocess stderr reading error: {:?}",
-                    executable,
-                    error
-                )
-            })?
-        );
+    if !result.status.success() {
+        anyhow::bail!("{}", String::from_utf8_lossy(result.stderr.as_slice()),);
     }
 
-    let stdout = process
-        .stdout
-        .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdout getting error", executable))?;
-    let output: O = era_compiler_common::deserialize_from_reader(stdout).map_err(|error| {
-        anyhow::anyhow!(
-            "{:?} subprocess stdout parsing error: {}",
-            executable,
-            error,
-        )
-    })?;
+    let output: O =
+        era_compiler_common::deserialize_from_slice(result.stdout.as_slice()).map_err(|error| {
+            anyhow::anyhow!(
+                "{:?} subprocess stdout parsing error: {}",
+                executable,
+                error,
+            )
+        })?;
     Ok(output)
 }
