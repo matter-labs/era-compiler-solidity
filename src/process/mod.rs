@@ -42,8 +42,8 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             if input.enable_test_encoding {
                 zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
             }
-            let result = input.contract.compile_to_eravm(
-                input.project,
+            let result = input.contract.into_owned().compile_to_eravm(
+                input.project.into_owned(),
                 input.optimizer_settings,
                 input.is_system_mode,
                 input.include_metadata_hash,
@@ -107,8 +107,6 @@ where
     I: Serialize,
     O: DeserializeOwned,
 {
-    let input_json = serde_json::to_vec(&input).expect("Always valid");
-
     let executable = match EXECUTABLE.get() {
         Some(executable) => executable.to_owned(),
         None => std::env::current_exe()?,
@@ -121,33 +119,44 @@ where
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
-    let process = command.spawn().map_err(|error| {
+    let mut process = command.spawn().map_err(|error| {
         anyhow::anyhow!("{:?} subprocess spawning error: {:?}", executable, error)
     })?;
 
-    process
+    let stdin = process
         .stdin
         .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("{:?} stdin getting error", executable))?
-        .write_all(input_json.as_slice())
+        .ok_or_else(|| anyhow::anyhow!("{:?} stdin getting error", executable))?;
+    serde_json::to_writer(stdin, &input)
         .map_err(|error| anyhow::anyhow!("{:?} stdin writing error: {:?}", executable, error))?;
-    let output = process.wait_with_output().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess output error: {:?}", executable, error)
+    let status = process.wait().map_err(|error| {
+        anyhow::anyhow!("{:?} subprocess waiting error: {:?}", executable, error)
     })?;
-    if !output.status.success() {
+    if !status.success() {
+        let stderr = process
+            .stderr
+            .ok_or_else(|| anyhow::anyhow!("{:?} stderr getting error", executable))?;
         anyhow::bail!(
             "{}",
-            String::from_utf8_lossy(output.stderr.as_slice()).to_string(),
+            std::io::read_to_string(stderr).map_err(|error| {
+                anyhow::anyhow!(
+                    "{:?} subprocess stderr reading error: {:?}",
+                    executable,
+                    error
+                )
+            })?
         );
     }
 
-    let output: O =
-        era_compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
-            anyhow::anyhow!(
-                "{:?} subprocess output parsing error: {}",
-                executable,
-                error,
-            )
-        })?;
+    let stdout = process
+        .stdout
+        .ok_or_else(|| anyhow::anyhow!("{:?} stdout getting error", executable))?;
+    let output: O = era_compiler_common::deserialize_from_reader(stdout).map_err(|error| {
+        anyhow::anyhow!(
+            "{:?} subprocess stdout parsing error: {}",
+            executable,
+            error,
+        )
+    })?;
     Ok(output)
 }

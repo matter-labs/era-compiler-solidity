@@ -4,12 +4,14 @@
 
 pub mod contract;
 
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use serde::Deserialize;
 use serde::Serialize;
@@ -343,15 +345,14 @@ impl Project {
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EraVMContractBuild>> = self
             .contracts
-            .into_par_iter()
+            .par_iter()
             .map(|(full_path, contract)| {
                 let process_output: anyhow::Result<EraVMProcessOutput> = crate::process::call(
                     EraVMProcessInput::new(
-                        contract,
-                        project.clone(),
+                        Cow::Borrowed(contract),
+                        Cow::Borrowed(&self),
                         is_system_mode,
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
@@ -361,7 +362,10 @@ impl Project {
                     era_compiler_llvm_context::Target::EraVM,
                 );
 
-                (full_path, process_output.map(|output| output.build))
+                (
+                    full_path.to_owned(),
+                    process_output.map(|output| output.build),
+                )
             })
             .collect();
 
@@ -381,7 +385,7 @@ impl Project {
             match result {
                 Ok(mut contract) => {
                     for dependency in contract.factory_dependencies.drain() {
-                        let dependency_path = project
+                        let dependency_path = self
                             .identifier_paths
                             .get(dependency.as_str())
                             .cloned()
