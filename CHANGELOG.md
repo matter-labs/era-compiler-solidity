@@ -7,6 +7,11 @@
 - The support for compiling multiple files in Yul, LLVM IR, and EraVM assembly modes
 - The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
 - The support for `urls` to local files in standard JSON input
+- More LLVM optimizations
+
+### Fixed
+
+- Excessive RAM usage with some projects
 
 ## [1.4.1] - 2024-04-24
 
