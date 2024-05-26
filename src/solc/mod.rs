@@ -24,9 +24,13 @@ use self::version::Version;
 pub struct Compiler {
     /// The binary executable name.
     pub executable: String,
-    /// The lazily-initialized compiler version.
-    pub version: Option<Version>,
+    /// The `solc` compiler version.
+    pub version: Version,
 }
+
+/// The executable which is only initialized once.
+/// It can optimize the compiler usage by caching `--version` and other output.
+pub static EXECUTABLE: once_cell::sync::OnceCell<Compiler> = once_cell::sync::OnceCell::new();
 
 impl Compiler {
     /// The default executable name.
@@ -48,21 +52,24 @@ impl Compiler {
     pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 25);
 
     ///
-    /// A shortcut constructor.
+    /// A shortcut constructor lazily using a thread-safe cell.
     ///
     /// Different tools may use different `executable` names. For example, the integration tester
     /// uses `solc-<version>` format.
     ///
-    pub fn new(executable: String) -> anyhow::Result<Self> {
-        if let Err(error) = which::which(executable.as_str()) {
-            anyhow::bail!(
-                "The `{executable}` executable not found in ${{PATH}}: {}",
-                error
-            );
-        }
-        Ok(Self {
-            executable,
-            version: None,
+    pub fn new(executable: &str) -> anyhow::Result<&'static Self> {
+        EXECUTABLE.get_or_try_init(|| {
+            if let Err(error) = which::which(executable) {
+                anyhow::bail!(
+                    "The `{executable}` executable not found in ${{PATH}}: {}",
+                    error
+                );
+            }
+            let version = Self::parse_version(executable)?;
+            Ok(Self {
+                executable: executable.to_owned(),
+                version,
+            })
         })
     }
 
@@ -70,15 +77,13 @@ impl Compiler {
     /// The Solidity `--standard-json` mirror.
     ///
     pub fn standard_json(
-        &mut self,
+        &self,
         mut input: StandardJsonInput,
         pipeline: Option<Pipeline>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        let version = self.version()?;
-
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
@@ -140,7 +145,7 @@ impl Compiler {
 
         if let Some(pipeline) = pipeline {
             let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
-            output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
+            output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
         }
         output.remove_evm();
 
@@ -233,11 +238,11 @@ impl Compiler {
     /// Validates the Yul project as paths and libraries.
     ///
     pub fn validate_yul_paths(
-        &mut self,
+        &self,
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        if self.version()?.default != Self::LAST_SUPPORTED_VERSION {
+        if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
                 "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
                 Self::LAST_SUPPORTED_VERSION,
@@ -256,10 +261,10 @@ impl Compiler {
     /// Validates the Yul project as standard JSON input.
     ///
     pub fn validate_yul_standard_json(
-        &mut self,
+        &self,
         mut solc_input: StandardJsonInput,
     ) -> anyhow::Result<StandardJsonOutput> {
-        if self.version()?.default != Self::LAST_SUPPORTED_VERSION {
+        if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
                 "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
                 Self::LAST_SUPPORTED_VERSION,
@@ -287,20 +292,16 @@ impl Compiler {
     ///
     /// The `solc --version` mini-parser.
     ///
-    pub fn version(&mut self) -> anyhow::Result<Version> {
-        if let Some(version) = self.version.as_ref() {
-            return Ok(version.to_owned());
-        }
-
-        let mut command = std::process::Command::new(self.executable.as_str());
+    fn parse_version(executable: &str) -> anyhow::Result<Version> {
+        let mut command = std::process::Command::new(executable);
         command.arg("--version");
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
+        let output = command
+            .output()
+            .map_err(|error| anyhow::anyhow!("{} subprocess error: {:?}", executable, error))?;
         if !output.status.success() {
             anyhow::bail!(
                 "{} error: {}",
-                self.executable,
+                executable,
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
         }
@@ -309,26 +310,22 @@ impl Compiler {
         let long = stdout
             .lines()
             .nth(1)
-            .ok_or_else(|| {
-                anyhow::anyhow!("{} version parsing: not enough lines", self.executable)
-            })?
+            .ok_or_else(|| anyhow::anyhow!("{} version parsing: not enough lines", executable))?
             .split(' ')
             .nth(1)
             .ok_or_else(|| {
                 anyhow::anyhow!(
                     "{} version parsing: not enough words in the 2nd line",
-                    self.executable
+                    executable
                 )
             })?
             .to_owned();
         let default: semver::Version = long
             .split('+')
             .next()
-            .ok_or_else(|| {
-                anyhow::anyhow!("{} version parsing: metadata dropping", self.executable)
-            })?
+            .ok_or_else(|| anyhow::anyhow!("{} version parsing: metadata dropping", executable))?
             .parse()
-            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", self.executable, error))?;
+            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", executable, error))?;
 
         let l2_revision: Option<semver::Version> = stdout
             .lines()
@@ -352,8 +349,6 @@ impl Compiler {
                 version.default
             );
         }
-
-        self.version = Some(version.clone());
 
         Ok(version)
     }

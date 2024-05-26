@@ -88,7 +88,7 @@ impl Project {
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         pipeline: SolcPipeline,
-        solc_compiler: &mut SolcCompiler,
+        solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
         if let SolcPipeline::EVMLA = pipeline {
@@ -110,7 +110,7 @@ impl Project {
         };
         let mut project_contracts = BTreeMap::new();
 
-        let solc_version = solc_compiler.version()?;
+        let solc_version = solc_compiler.version.to_owned();
 
         for (path, contracts) in files.iter() {
             for (name, contract) in contracts.iter() {
@@ -185,7 +185,7 @@ impl Project {
     pub fn try_from_yul_paths(
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        solc_version: Option<SolcVersion>,
+        solc_version: Option<&SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
         let sources = paths
@@ -205,7 +205,7 @@ impl Project {
     pub fn try_from_yul_sources(
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        solc_version: Option<SolcVersion>,
+        solc_version: Option<&SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
         let project_contracts = sources
@@ -227,7 +227,7 @@ impl Project {
                     IR::new_yul(source_code.to_owned(), object),
                     None,
                     hash,
-                    solc_version.as_ref(),
+                    solc_version,
                 );
 
                 Ok((path, contract))
@@ -236,7 +236,7 @@ impl Project {
 
         Ok(Self::new(
             SolcStandardJsonInputLanguage::Yul,
-            solc_version,
+            solc_version.cloned(),
             project_contracts,
             libraries,
         ))

@@ -40,7 +40,7 @@ fn standard_json_yul_default_validated() {
         PathBuf::from("src/tests/examples/standard_json_input/yul_default.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())
+    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
         super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
@@ -93,7 +93,7 @@ fn standard_json_yul_default_urls_validated() {
         PathBuf::from("src/tests/examples/standard_json_input/yul_default_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())
+    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
         super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
@@ -146,7 +146,7 @@ fn standard_json_yul_eravm_validated() {
         PathBuf::from("src/tests/examples/standard_json_input/yul_eravm.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())
+    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
         super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
@@ -199,7 +199,7 @@ fn standard_json_yul_eravm_urls_validated() {
         PathBuf::from("src/tests/examples/standard_json_input/yul_eravm_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned())
+    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
         super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
