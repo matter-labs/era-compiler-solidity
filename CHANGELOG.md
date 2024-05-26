@@ -8,6 +8,7 @@
 - The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
 - The support for `urls` to local files in standard JSON input
 - More LLVM optimizations
+- Caching of the underlying compiler's metadata, including `--version`
 
 ### Fixed
 
