@@ -66,6 +66,7 @@ impl Compiler {
         {
             return Ok(executable);
         }
+        let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
             anyhow::bail!(
@@ -79,16 +80,8 @@ impl Compiler {
             version,
         };
 
-        Self::executables()
-            .write()
-            .expect("Sync")
-            .insert(executable.to_owned(), compiler);
-        Ok(Self::executables()
-            .read()
-            .expect("Sync")
-            .get(executable)
-            .cloned()
-            .expect("Always exists"))
+        executables.insert(executable.to_owned(), compiler.clone());
+        Ok(compiler)
     }
 
     ///
