@@ -145,12 +145,12 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let solc = match arguments.solc.as_deref() {
+                let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
                 era_compiler_solidity::standard_json_eravm(
-                    solc,
+                    solc_compiler.as_ref(),
                     standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
@@ -162,7 +162,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                let solc = era_compiler_solidity::SolcCompiler::new(
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
                         .solc
                         .as_deref()
@@ -172,7 +172,7 @@ fn main_inner() -> anyhow::Result<()> {
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
-                    solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
@@ -191,7 +191,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else {
-                let solc = era_compiler_solidity::SolcCompiler::new(
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
                         .solc
                         .as_deref()
@@ -200,7 +200,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::standard_output_eravm(
                     input_files.as_slice(),
                     arguments.libraries,
-                    solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
@@ -275,12 +275,12 @@ fn main_inner() -> anyhow::Result<()> {
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let solc = match arguments.solc.as_deref() {
+                let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
                 era_compiler_solidity::standard_json_evm(
-                    solc,
+                    solc_compiler.as_ref(),
                     standard_json.map(PathBuf::from),
                     arguments.force_evmla,
                     arguments.base_path,
@@ -290,7 +290,7 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                let solc = era_compiler_solidity::SolcCompiler::new(
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
                         .solc
                         .as_deref()
@@ -300,7 +300,7 @@ fn main_inner() -> anyhow::Result<()> {
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
-                    solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
@@ -326,7 +326,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::standard_output_evm(
                     input_files.as_slice(),
                     arguments.libraries,
-                    solc,
+                    &solc,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,

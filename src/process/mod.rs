@@ -10,8 +10,7 @@ pub mod output_evm;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
-
-use once_cell::sync::OnceCell;
+use std::sync::OnceLock;
 
 use self::input_eravm::Input as EraVMInput;
 use self::input_evm::Input as EVMInput;
@@ -19,7 +18,7 @@ use self::output_eravm::Output as EraVMOutput;
 use self::output_evm::Output as EVMOutput;
 
 /// The overriden executable name used when the compiler is run as a library.
-pub static EXECUTABLE: OnceCell<PathBuf> = OnceCell::new();
+pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.

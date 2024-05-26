@@ -8,8 +8,11 @@ pub mod standard_json;
 pub mod version;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
+use std::sync::OnceLock;
+use std::sync::RwLock;
 
 use self::combined_json::CombinedJson;
 use self::pipeline::Pipeline;
@@ -21,16 +24,13 @@ use self::version::Version;
 ///
 /// The Solidity compiler.
 ///
+#[derive(Debug, Clone)]
 pub struct Compiler {
     /// The binary executable name.
     pub executable: String,
     /// The `solc` compiler version.
     pub version: Version,
 }
-
-/// The executable which is only initialized once.
-/// It can optimize the compiler usage by caching `--version` and other output.
-pub static EXECUTABLE: once_cell::sync::OnceCell<Compiler> = once_cell::sync::OnceCell::new();
 
 impl Compiler {
     /// The default executable name.
@@ -57,20 +57,38 @@ impl Compiler {
     /// Different tools may use different `executable` names. For example, the integration tester
     /// uses `solc-<version>` format.
     ///
-    pub fn new(executable: &str) -> anyhow::Result<&'static Self> {
-        EXECUTABLE.get_or_try_init(|| {
-            if let Err(error) = which::which(executable) {
-                anyhow::bail!(
-                    "The `{executable}` executable not found in ${{PATH}}: {}",
-                    error
-                );
-            }
-            let version = Self::parse_version(executable)?;
-            Ok(Self {
-                executable: executable.to_owned(),
-                version,
-            })
-        })
+    pub fn new(executable: &str) -> anyhow::Result<Self> {
+        if let Some(executable) = Self::executables()
+            .read()
+            .expect("Sync")
+            .get(executable)
+            .cloned()
+        {
+            return Ok(executable);
+        }
+
+        if let Err(error) = which::which(executable) {
+            anyhow::bail!(
+                "The `{executable}` executable not found in ${{PATH}}: {}",
+                error
+            );
+        }
+        let version = Self::parse_version(executable)?;
+        let compiler = Self {
+            executable: executable.to_owned(),
+            version,
+        };
+
+        Self::executables()
+            .write()
+            .expect("Sync")
+            .insert(executable.to_owned(), compiler);
+        Ok(Self::executables()
+            .read()
+            .expect("Sync")
+            .get(executable)
+            .cloned()
+            .expect("Always exists"))
     }
 
     ///
@@ -287,6 +305,14 @@ impl Compiler {
             );
         }
         Ok(solc_output)
+    }
+
+    ///
+    /// Returns the global shared array of `solc` executables.
+    ///
+    fn executables() -> &'static RwLock<HashMap<String, Self>> {
+        static EXECUTABLES: OnceLock<RwLock<HashMap<String, Compiler>>> = OnceLock::new();
+        EXECUTABLES.get_or_init(|| RwLock::new(HashMap::new()))
     }
 
     ///

@@ -73,7 +73,7 @@ pub fn build_solidity(
         sources,
         libraries,
         pipeline,
-        solc_compiler,
+        &solc_compiler,
         None,
     )?;
 
@@ -136,7 +136,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         sources,
         libraries,
         pipeline,
-        solc_compiler,
+        &solc_compiler,
         None,
     )?;
 

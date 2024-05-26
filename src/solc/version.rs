@@ -2,13 +2,10 @@
 //! The Solidity compiler version.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The Solidity compiler version.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Version {
     /// The long version string.
     pub long: String,

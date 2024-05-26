@@ -79,13 +79,17 @@ pub fn yul_to_eravm(
             }
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
             solc_compiler.validate_yul_paths(paths, libraries.clone())?;
-            Some(&solc_compiler.version)
+            Some(solc_compiler.version)
         }
         None => None,
     };
 
-    let project =
-        Project::try_from_yul_paths(paths, libraries, solc_version, debug_config.as_ref())?;
+    let project = Project::try_from_yul_paths(
+        paths,
+        libraries,
+        solc_version.as_ref(),
+        debug_config.as_ref(),
+    )?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,
@@ -115,13 +119,17 @@ pub fn yul_to_evm(
         Some(solc_path) => {
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
             solc_compiler.validate_yul_paths(paths, libraries.clone())?;
-            Some(&solc_compiler.version)
+            Some(solc_compiler.version)
         }
         None => None,
     };
 
-    let project =
-        Project::try_from_yul_paths(paths, libraries, solc_version, debug_config.as_ref())?;
+    let project = Project::try_from_yul_paths(
+        paths,
+        libraries,
+        solc_version.as_ref(),
+        debug_config.as_ref(),
+    )?;
 
     let build = project.compile_to_evm(optimizer_settings, include_metadata_hash, debug_config)?;
 

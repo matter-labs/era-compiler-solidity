@@ -43,7 +43,7 @@ fn standard_json_yul_default_validated() {
     let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
-        super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
+        super::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -96,7 +96,7 @@ fn standard_json_yul_default_urls_validated() {
     let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
-        super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
+        super::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -149,7 +149,7 @@ fn standard_json_yul_eravm_validated() {
     let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
-        super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
+        super::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -202,7 +202,7 @@ fn standard_json_yul_eravm_urls_validated() {
     let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)
         .expect("`solc` initialization error");
     let solc_output =
-        super::build_yul_standard_json(solc_input, Some(solc_compiler)).expect("Test failure");
+        super::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts

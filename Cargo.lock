@@ -338,7 +338,6 @@ dependencies = [
  "md5",
  "mimalloc",
  "num",
- "once_cell",
  "path-slash",
  "rand",
  "rayon",
