@@ -9,7 +9,6 @@ pub mod version;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
-use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
@@ -96,6 +95,7 @@ impl Compiler {
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
         let executable = self.executable.to_owned();
+        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
 
         let mut command = std::process::Command::new(executable.as_str());
         command.stdin(std::process::Stdio::piped());
@@ -116,19 +116,14 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
-        let input_json = serde_json::to_vec(&input).expect("Always valid");
-
         let mut process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
         })?;
-        process
+        let stdin = process
             .stdin
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", executable))?
-            .write_all(input_json.as_slice())
-            .map_err(|error| {
-                anyhow::anyhow!("{} subprocess stdin writing error: {:?}", executable, error)
-            })?;
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdin getting error", executable))?;
+        let stdin_thread = std::thread::spawn(move || serde_json::to_writer(stdin, &input));
 
         let stdout = process
             .stdout
@@ -147,6 +142,12 @@ impl Compiler {
         let status = process.wait().map_err(|error| {
             anyhow::anyhow!("{executable} subprocess status reading error: {error:?}")
         })?;
+        stdin_thread
+            .join()
+            .expect("Thread error")
+            .map_err(|error| {
+                anyhow::anyhow!("{executable} subprocess stdin writing error: {error:?}")
+            })?;
         let stderr_message = stderr_thread
             .join()
             .expect("Thread error")
@@ -162,13 +163,11 @@ impl Compiler {
                     executable
                 )
             })?;
-
         if !status.success() {
             anyhow::bail!("{} error: {}", executable, stderr_message);
         }
 
         if let Some(pipeline) = pipeline {
-            let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
             solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
         }
         solc_output.remove_evm();
@@ -186,7 +185,7 @@ impl Compiler {
     ) -> anyhow::Result<CombinedJson> {
         let executable = self.executable.to_owned();
 
-        let mut command = std::process::Command::new(self.executable.as_str());
+        let mut command = std::process::Command::new(executable.as_str());
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
         command.args(paths);
