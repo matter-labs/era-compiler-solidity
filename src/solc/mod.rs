@@ -187,6 +187,8 @@ impl Compiler {
         let executable = self.executable.to_owned();
 
         let mut command = std::process::Command::new(self.executable.as_str());
+        command.stdout(std::process::Stdio::piped());
+        command.stderr(std::process::Stdio::piped());
         command.args(paths);
 
         let mut combined_json_flags = Vec::new();
