@@ -90,7 +90,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
 pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> anyhow::Result<O>
 where
     I: serde::Serialize,
-    O: serde::de::DeserializeOwned + Send + 'static,
+    O: serde::de::DeserializeOwned,
 {
     let executable = match EXECUTABLE.get() {
         Some(executable) => executable.to_owned(),
@@ -105,7 +105,7 @@ where
     command.arg("--target");
     command.arg(target.to_string());
 
-    let mut process = command
+    let process = command
         .spawn()
         .map_err(|error| anyhow::anyhow!("{executable:?} subprocess spawning error: {error:?}"))?;
 
@@ -117,37 +117,17 @@ where
         anyhow::anyhow!("{executable:?} subprocess stdin writing error: {error:?}",)
     })?;
 
-    let stdout = process
-        .stdout
-        .take()
-        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stdout getting error"))?;
-    let stdout_thread =
-        std::thread::spawn(|| era_compiler_common::deserialize_from_reader::<_, O>(stdout));
-
-    let stderr = process
-        .stderr
-        .take()
-        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stderr getting error"))?;
-    let stderr_thread = std::thread::spawn(|| std::io::read_to_string(stderr));
-
-    let status = process.wait().map_err(|error| {
-        anyhow::anyhow!("{executable:?} subprocess status reading error: {error:?}")
+    let result = process.wait_with_output().map_err(|error| {
+        anyhow::anyhow!("{executable:?} subprocess output reading error: {error:?}")
     })?;
-    let stderr_message = stderr_thread
-        .join()
-        .expect("Thread error")
-        .map_err(|error| {
-            anyhow::anyhow!("{executable:?} subprocess stderr reading error: {error:?}")
-        })?;
-    let output = stdout_thread
-        .join()
-        .expect("Thread error")
-        .map_err(|error| {
-            anyhow::anyhow!(
-                "{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
-            )
-        })?;
-    if !status.success() {
+    let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+    let output = match era_compiler_common::deserialize_from_slice::<O>(result.stdout.as_slice()) {
+        Ok(combined_json) => combined_json,
+        Err(error) => {
+            anyhow::bail!("{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})");
+        }
+    };
+    if !result.status.success() {
         anyhow::bail!("{executable:?} error: {stderr_message}");
     }
 

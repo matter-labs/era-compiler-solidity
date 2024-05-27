@@ -70,7 +70,7 @@ impl Compiler {
         if let Err(error) = which::which(executable) {
             anyhow::bail!(
                 "The `{executable}` executable not found in ${{PATH}}: {}",
-                error
+                error,
             );
         }
         let version = Self::parse_version(executable)?;
@@ -94,10 +94,9 @@ impl Compiler {
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        let executable = self.executable.to_owned();
         let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
 
-        let mut command = std::process::Command::new(executable.as_str());
+        let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
@@ -117,54 +116,39 @@ impl Compiler {
         }
 
         let mut process = command.spawn().map_err(|error| {
-            anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
+            anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
         })?;
         let stdin = process
             .stdin
             .take()
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdin getting error", executable))?;
-        let stdin_thread = std::thread::spawn(move || serde_json::to_writer(stdin, &input));
-
-        let stdout = process
-            .stdout
-            .take()
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdout getting error", executable))?;
-        let stdout_thread = std::thread::spawn(|| {
-            era_compiler_common::deserialize_from_reader::<_, StandardJsonOutput>(stdout)
-        });
-
-        let stderr = process
-            .stderr
-            .take()
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stderr getting error", executable))?;
-        let stderr_thread = std::thread::spawn(|| std::io::read_to_string(stderr));
-
-        let status = process.wait().map_err(|error| {
-            anyhow::anyhow!("{executable} subprocess status reading error: {error:?}")
+            .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
+        serde_json::to_writer(stdin, &input).map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess stdin writing error: {error:?}",
+                self.executable
+            )
         })?;
-        stdin_thread
-            .join()
-            .expect("Thread error")
-            .map_err(|error| {
-                anyhow::anyhow!("{executable} subprocess stdin writing error: {error:?}")
-            })?;
-        let stderr_message = stderr_thread
-            .join()
-            .expect("Thread error")
-            .map_err(|error| {
-                anyhow::anyhow!("{executable} subprocess stderr reading error: {error:?}")
-            })?;
-        let mut solc_output = stdout_thread
-            .join()
-            .expect("Thread error")
-            .map_err(|error| {
-                anyhow::anyhow!(
+
+        let result = process.wait_with_output().map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess output reading error: {error:?}",
+                self.executable
+            )
+        })?;
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut solc_output = match era_compiler_common::deserialize_from_slice::<StandardJsonOutput>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(solc_output) => solc_output,
+            Err(error) => {
+                anyhow::bail!(
                     "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
-                    executable
-                )
-            })?;
-        if !status.success() {
-            anyhow::bail!("{} error: {}", executable, stderr_message);
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
         }
 
         if let Some(pipeline) = pipeline {
@@ -206,44 +190,30 @@ impl Compiler {
         command.arg("--combined-json");
         command.arg(combined_json_flags.join(","));
 
-        let mut process = command.spawn().map_err(|error| {
+        let process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
         })?;
 
-        let stdout = process
-            .stdout
-            .take()
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdout getting error", executable))?;
-        let stdout_thread = std::thread::spawn(|| {
-            era_compiler_common::deserialize_from_reader::<_, CombinedJson>(stdout)
-        });
-
-        let stderr = process
-            .stderr
-            .take()
-            .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stderr getting error", executable))?;
-        let stderr_thread = std::thread::spawn(|| std::io::read_to_string(stderr));
-
-        let status = process.wait().map_err(|error| {
-            anyhow::anyhow!("{executable} subprocess status reading error: {error:?}")
+        let result = process.wait_with_output().map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess output reading error: {error:?}",
+                self.executable
+            )
         })?;
-        let stderr_message = stderr_thread
-            .join()
-            .expect("Thread error")
-            .map_err(|error| {
-                anyhow::anyhow!("{executable} subprocess stderr reading error: {error:?}")
-            })?;
-        let mut combined_json = stdout_thread
-            .join()
-            .expect("Thread error")
-            .map_err(|error| {
-                anyhow::anyhow!(
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(combined_json) => combined_json,
+            Err(error) => {
+                anyhow::bail!(
                     "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
-                    executable
-                )
-            })?;
-        if !status.success() {
-            anyhow::bail!("{executable} error: {stderr_message}");
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
         }
 
         for filtered_flag in filtered_flags.into_iter() {
