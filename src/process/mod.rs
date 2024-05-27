@@ -90,7 +90,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
 pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> anyhow::Result<O>
 where
     I: serde::Serialize,
-    O: serde::de::DeserializeOwned,
+    O: serde::de::DeserializeOwned + Send + 'static,
 {
     let executable = match EXECUTABLE.get() {
         Some(executable) => executable.to_owned(),
@@ -104,35 +104,52 @@ where
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
-    let process = command.spawn().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess spawning error: {:?}", executable, error)
-    })?;
+
+    let mut process = command
+        .spawn()
+        .map_err(|error| anyhow::anyhow!("{executable:?} subprocess spawning error: {error:?}"))?;
 
     let stdin = process
         .stdin
         .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdin getting error", executable))?;
+        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stdin getting error"))?;
     serde_json::to_writer(stdin, &input).map_err(|error| {
-        anyhow::anyhow!(
-            "{:?} subprocess stdin writing error: {:?}",
-            executable,
-            error
-        )
+        anyhow::anyhow!("{executable:?} subprocess stdin writing error: {error:?}",)
     })?;
-    let result = process.wait_with_output().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess waiting error: {:?}", executable, error)
-    })?;
-    if !result.status.success() {
-        anyhow::bail!("{}", String::from_utf8_lossy(result.stderr.as_slice()),);
-    }
 
-    let output: O =
-        era_compiler_common::deserialize_from_slice(result.stdout.as_slice()).map_err(|error| {
+    let stdout = process
+        .stdout
+        .take()
+        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stdout getting error"))?;
+    let stdout_thread =
+        std::thread::spawn(|| era_compiler_common::deserialize_from_reader::<_, O>(stdout));
+
+    let stderr = process
+        .stderr
+        .take()
+        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stderr getting error"))?;
+    let stderr_thread = std::thread::spawn(|| std::io::read_to_string(stderr));
+
+    let status = process.wait().map_err(|error| {
+        anyhow::anyhow!("{executable:?} subprocess status reading error: {error:?}")
+    })?;
+    let stderr_message = stderr_thread
+        .join()
+        .expect("Thread error")
+        .map_err(|error| {
+            anyhow::anyhow!("{executable:?} subprocess stderr reading error: {error:?}")
+        })?;
+    let output = stdout_thread
+        .join()
+        .expect("Thread error")
+        .map_err(|error| {
             anyhow::anyhow!(
-                "{:?} subprocess stdout parsing error: {}",
-                executable,
-                error,
+                "{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
             )
         })?;
+    if !status.success() {
+        anyhow::bail!("{executable:?} error: {stderr_message}");
+    }
+
     Ok(output)
 }
