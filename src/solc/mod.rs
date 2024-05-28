@@ -9,7 +9,6 @@ pub mod version;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
-use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
@@ -71,7 +70,7 @@ impl Compiler {
         if let Err(error) = which::which(executable) {
             anyhow::bail!(
                 "The `{executable}` executable not found in ${{PATH}}: {}",
-                error
+                error,
             );
         }
         let version = Self::parse_version(executable)?;
@@ -95,9 +94,12 @@ impl Compiler {
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
+        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
+
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
+        command.stderr(std::process::Stdio::piped());
         command.arg("--standard-json");
 
         if let Some(base_path) = base_path {
@@ -113,54 +115,48 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
-        let input_json = serde_json::to_vec(&input).expect("Always valid");
-
-        let process = command.spawn().map_err(|error| {
+        let mut process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
         })?;
-        process
+        let stdin = process
             .stdin
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("{} stdin getting error", self.executable))?
-            .write_all(input_json.as_slice())
-            .map_err(|error| {
-                anyhow::anyhow!("{} stdin writing error: {:?}", self.executable, error)
-            })?;
-
-        let output = process.wait_with_output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess output error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
-            );
-        }
-
-        let mut output: StandardJsonOutput = era_compiler_common::deserialize_from_slice(
-            output.stdout.as_slice(),
-        )
-        .map_err(|error| {
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
+        serde_json::to_writer(stdin, &input).map_err(|error| {
             anyhow::anyhow!(
-                "{} subprocess output parsing error: {}\n{}",
-                self.executable,
-                error,
-                era_compiler_common::deserialize_from_slice::<serde_json::Value>(
-                    output.stdout.as_slice()
-                )
-                .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
+                "{} subprocess stdin writing error: {error:?}",
+                self.executable
             )
         })?;
 
-        if let Some(pipeline) = pipeline {
-            let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
-            output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
+        let result = process.wait_with_output().map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess output reading error: {error:?}",
+                self.executable
+            )
+        })?;
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut solc_output = match era_compiler_common::deserialize_from_slice::<StandardJsonOutput>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(solc_output) => solc_output,
+            Err(error) => {
+                anyhow::bail!(
+                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
         }
-        output.remove_evm();
 
-        Ok(output)
+        if let Some(pipeline) = pipeline {
+            solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
+        }
+        solc_output.remove_evm();
+
+        Ok(solc_output)
     }
 
     ///
@@ -171,7 +167,11 @@ impl Compiler {
         paths: &[PathBuf],
         combined_json_argument: &str,
     ) -> anyhow::Result<CombinedJson> {
-        let mut command = std::process::Command::new(self.executable.as_str());
+        let executable = self.executable.to_owned();
+
+        let mut command = std::process::Command::new(executable.as_str());
+        command.stdout(std::process::Stdio::piped());
+        command.stderr(std::process::Stdio::piped());
         command.args(paths);
 
         let mut combined_json_flags = Vec::new();
@@ -190,42 +190,32 @@ impl Compiler {
         command.arg("--combined-json");
         command.arg(combined_json_flags.join(","));
 
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
+        let process = command.spawn().map_err(|error| {
+            anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
         })?;
-        if !output.status.success() {
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                String::from_utf8_lossy(output.stdout.as_slice())
-            )?;
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                String::from_utf8_lossy(output.stderr.as_slice())
-            )?;
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stdout.as_slice()).to_string()
-            );
-        }
 
-        let mut combined_json: CombinedJson = era_compiler_common::deserialize_from_slice(
-            output.stdout.as_slice(),
-        )
-        .map_err(|error| {
+        let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!(
-                "{} subprocess output parsing error: {}\n{}",
-                self.executable,
-                error,
-                era_compiler_common::deserialize_from_slice::<serde_json::Value>(
-                    output.stdout.as_slice()
-                )
-                .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
+                "{} subprocess output reading error: {error:?}",
+                self.executable
             )
         })?;
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(combined_json) => combined_json,
+            Err(error) => {
+                anyhow::bail!(
+                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
+        }
+
         for filtered_flag in filtered_flags.into_iter() {
             for (_path, contract) in combined_json.contracts.iter_mut() {
                 match filtered_flag {

@@ -26,7 +26,9 @@ pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
     match target {
         era_compiler_llvm_context::Target::EraVM => {
-            let input: EraVMInput = era_compiler_common::deserialize_from_reader(std::io::stdin())
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
             if input.enable_test_encoding {
@@ -56,7 +58,9 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             }
         }
         era_compiler_llvm_context::Target::EVM => {
-            let input: EVMInput = era_compiler_common::deserialize_from_reader(std::io::stdin())
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
             let result = input.contract.into_owned().compile_to_evm(
@@ -104,35 +108,32 @@ where
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
-    let process = command.spawn().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess spawning error: {:?}", executable, error)
-    })?;
+
+    let process = command
+        .spawn()
+        .map_err(|error| anyhow::anyhow!("{executable:?} subprocess spawning error: {error:?}"))?;
 
     let stdin = process
         .stdin
         .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("{:?} subprocess stdin getting error", executable))?;
+        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stdin getting error"))?;
     serde_json::to_writer(stdin, &input).map_err(|error| {
-        anyhow::anyhow!(
-            "{:?} subprocess stdin writing error: {:?}",
-            executable,
-            error
-        )
+        anyhow::anyhow!("{executable:?} subprocess stdin writing error: {error:?}",)
     })?;
+
     let result = process.wait_with_output().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess waiting error: {:?}", executable, error)
+        anyhow::anyhow!("{executable:?} subprocess output reading error: {error:?}")
     })?;
+    let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+    let output = match era_compiler_common::deserialize_from_slice::<O>(result.stdout.as_slice()) {
+        Ok(combined_json) => combined_json,
+        Err(error) => {
+            anyhow::bail!("{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})");
+        }
+    };
     if !result.status.success() {
-        anyhow::bail!("{}", String::from_utf8_lossy(result.stderr.as_slice()),);
+        anyhow::bail!("{executable:?} error: {stderr_message}");
     }
 
-    let output: O =
-        era_compiler_common::deserialize_from_slice(result.stdout.as_slice()).map_err(|error| {
-            anyhow::anyhow!(
-                "{:?} subprocess stdout parsing error: {}",
-                executable,
-                error,
-            )
-        })?;
     Ok(output)
 }
