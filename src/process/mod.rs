@@ -26,7 +26,9 @@ pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
     match target {
         era_compiler_llvm_context::Target::EraVM => {
-            let input: EraVMInput = era_compiler_common::deserialize_from_reader(std::io::stdin())
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
             if input.enable_test_encoding {
@@ -56,7 +58,9 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             }
         }
         era_compiler_llvm_context::Target::EVM => {
-            let input: EVMInput = era_compiler_common::deserialize_from_reader(std::io::stdin())
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
             let result = input.contract.into_owned().compile_to_evm(
