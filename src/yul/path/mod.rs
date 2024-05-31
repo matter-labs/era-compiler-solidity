@@ -60,6 +60,8 @@ impl Path {
 
     /// Iterate over all parents of this path, starting from the path itself.
     pub fn parents(&self) -> impl '_ + Iterator<Item = Path> {
-        prefixes(self.stack.as_slice()).rev().map(|s| Path { stack: s.to_vec() })
+        prefixes(self.stack.as_slice())
+            .rev()
+            .map(|s| Path { stack: s.to_vec() })
     }
 }

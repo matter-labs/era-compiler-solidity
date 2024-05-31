@@ -2,6 +2,8 @@
 //! Implementation of a visitor pattern for YUL syntax tree.
 //!
 
+pub mod statements;
+
 use crate::yul::parser::statement::assignment::Assignment;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::code::Code;
