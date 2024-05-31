@@ -27,6 +27,7 @@ pub mod tracker;
 mod step;
 
 use self::step::LexicalBlock;
+use crate::util::iter::prefixes;
 
 /// Path from the root of YUL syntax tree to a specific lexical block in it,
 /// including all the blocks on the way from root.
@@ -45,5 +46,20 @@ impl Path {
                 let contribution = LexicalBlock::full_name_contribution(step);
                 format!("{acc}_{contribution}")
             })
+    }
+
+    /// Pops the latest lexical scope for the path, so that it becomes its parent.
+    pub fn leave(&mut self) {
+        self.stack.pop();
+    }
+
+    /// True if the path is empty (the root of YUL syntax tree).
+    pub fn is_empty(&self) -> bool {
+        self.stack.is_empty()
+    }
+
+    /// Iterate over all parents of this path, starting from the path itself.
+    pub fn parents(&self) -> impl '_ + Iterator<Item = Path> {
+        prefixes(self.stack.as_slice()).rev().map(|s| Path { stack: s.to_vec() })
     }
 }
