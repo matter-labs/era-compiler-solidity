@@ -16,18 +16,17 @@ pub mod yul_analyzers;
 
 use anyhow::Error;
 
-
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::module::Module;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::object::Object as YulObject;
-use crate::yul::path::Path;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
-use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
+use crate::yul::path::tracker::PathTracker;
+use crate::yul::path::Path;
 use crate::yul::visitor::statements::Statements;
 
 use self::definition_info::DefinitionInfo;
@@ -104,12 +103,4 @@ impl Translator {
     fn create_full_name(&self, identifier: &str) -> FullName {
         FullName::new(identifier.to_string(), self.here())
     }
-
-    // fn get_definition_mut(&mut self, name: &str) -> Option<&mut DefinitionInfo> {
-    //     let full_name = FullName {
-    //         name: name.to_string(),
-    //         path: self.here().clone(),
-    //     };
-    //     self.definitions.get_mut(&full_name)
-    // }
 }

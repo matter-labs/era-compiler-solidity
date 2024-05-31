@@ -3,7 +3,6 @@
 //!
 
 pub mod name;
-pub mod special;
 
 use crate::easycrypt::syntax::expression::binary::BinaryOpType;
 use crate::easycrypt::syntax::expression::unary::UnaryOpType;
@@ -16,7 +15,7 @@ use crate::easycrypt::syntax::Name;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 
-use self::special::YulSpecial;
+use super::yul_analyzers::functions::kind::YulSpecial;
 
 pub enum Translated {
     Function(FunctionName),

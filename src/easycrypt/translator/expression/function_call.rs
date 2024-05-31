@@ -6,6 +6,7 @@ use anyhow::Error;
 
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::expression::Transformed;
+use crate::easycrypt::translator::yul_analyzers::functions::kind::YulSpecial;
 use crate::Translator;
 
 use crate::easycrypt::syntax::expression::call::FunctionCall;
@@ -85,7 +86,7 @@ impl Translator {
                 ))
             }
             identifier::Translated::Special(special) if is_root => match special {
-                identifier::special::YulSpecial::Return => {
+                YulSpecial::Return => {
                     let (arguments, ectx) =
                         self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                     assert!(ectx.locals.is_empty());
@@ -96,9 +97,7 @@ impl Translator {
                         ctx.clone(),
                     ))
                 }
-                identifier::special::YulSpecial::Stop
-                | identifier::special::YulSpecial::Invalid
-                | identifier::special::YulSpecial::Revert => {
+                YulSpecial::Stop | YulSpecial::Invalid | YulSpecial::Revert => {
                     //assert!(yul_arguments.is_empty());
 
                     Ok(Transformed::Statements(

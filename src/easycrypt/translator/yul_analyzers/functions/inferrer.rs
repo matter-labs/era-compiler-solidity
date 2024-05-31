@@ -5,20 +5,19 @@
 
 use anyhow::Error;
 
-
-use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::yul_analyzers::functions::kind::FunctionKind;
+use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::yul_analyzers::functions::kind::derive_kind;
+use crate::easycrypt::translator::yul_analyzers::functions::kind::FunctionKind;
 
-use crate::yul::parser::statement::Statement;
-use crate::yul::parser::statement::expression::Expression;
 use crate::yul::parser::statement::expression::function_call::FunctionCall;
+use crate::yul::parser::statement::expression::Expression;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
 use crate::yul::parser::statement::object::Object;
-use crate::yul::path::Path;
+use crate::yul::parser::statement::Statement;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
+use crate::yul::path::Path;
 
 use crate::yul::visitor::statements::StatementAction;
 use crate::yul::visitor::statements::Statements;
@@ -95,11 +94,11 @@ impl<'a> InferenceRound<'a> {
                     Ok(true)
                 } else {
                     for argument in arguments.iter() {
-                        if self.prevents_promotion(&argument, path)? {
+                        if self.prevents_promotion(argument, path)? {
                             return Ok(true);
                         }
                     }
-                    return Ok(false);
+                    Ok(false)
                 }
             }
             Expression::Identifier(_) | Expression::Literal(_) => Ok(false),

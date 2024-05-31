@@ -2,5 +2,5 @@
 //! Function analyses
 //!
 //!
-pub mod kind;
 pub mod inferrer;
+pub mod kind;
