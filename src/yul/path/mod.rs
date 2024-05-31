@@ -21,6 +21,7 @@
 
 pub mod builder;
 pub mod full_name;
+pub mod symbol_table;
 pub mod tracker;
 
 mod step;

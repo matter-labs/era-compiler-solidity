@@ -1,10 +1,10 @@
 //!
-//! Implementation of [`ILookup`] as a stack of stacks. Stacks are backed by vectors.
+//! Implementation of [`IEnvironment`] as a stack of stacks. Stacks are backed by vectors.
 //!
 
 use std::fmt::Debug;
 
-use super::ISymbolTable;
+use super::IEnvironment;
 
 /// An entry in a lookup data structure.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -20,7 +20,7 @@ where
 type Table<K, V> = Vec<Entry<K, V>>;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SymbolTable<K, V>
+pub struct Environment<K, V>
 where
     K: Clone + std::fmt::Debug + PartialEq + Eq,
     V: Clone + std::fmt::Debug + PartialEq + Eq,
@@ -28,7 +28,7 @@ where
     tables: Vec<Table<K, V>>,
 }
 
-impl<K, V> ISymbolTable<K, V> for SymbolTable<K, V>
+impl<K, V> IEnvironment<K, V> for Environment<K, V>
 where
     K: Clone + std::fmt::Debug + PartialEq + Eq,
     V: Clone + std::fmt::Debug + PartialEq + Eq,
@@ -58,7 +58,7 @@ where
     }
 }
 
-impl<K, V> SymbolTable<K, V>
+impl<K, V> Environment<K, V>
 where
     K: Clone + std::fmt::Debug + PartialEq + Eq,
     V: Clone + std::fmt::Debug + PartialEq + Eq,

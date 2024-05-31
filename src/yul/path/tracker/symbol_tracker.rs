@@ -2,8 +2,8 @@
 //! Path tracker for the EasyCrypt to Yul translation.
 //!
 
-use crate::data_structures::symbol_table::stack_impl::SymbolTable;
-use crate::data_structures::symbol_table::ISymbolTable;
+use crate::data_structures::environment::stack_impl::Environment;
+use crate::data_structures::environment::IEnvironment;
 use crate::easycrypt::syntax::Name;
 use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
@@ -18,7 +18,7 @@ where
     /// Lookup table for user-defined functions, variables and procedures. It
     /// matches the name of a function/variable/procedure to its path from the root
     /// of YUL syntax tree.
-    symbols: SymbolTable<Name, T>,
+    symbols: Environment<Name, T>,
 
     /// Tracker of the current path from the root of the YUL syntax tree.
     location: Builder,
@@ -91,15 +91,21 @@ where
         self.symbols.add(name, value);
     }
 
-    pub fn get(&self, name: &Name) -> Option<T> {
-        self.symbols.get(name)
-    }
-
     /// Creates a new, empty instance of [`Tracker`]
     pub fn new() -> Self {
         Self {
-            symbols: SymbolTable::new(),
+            symbols: Environment::new(),
             location: Builder::new(),
         }
+    }
+}
+
+impl<T> SymbolTracker<T>
+where
+    T: Clone + std::fmt::Debug + PartialEq + Eq,
+{
+    #[allow(dead_code)]
+    pub fn get(&self, name: &Name) -> Option<T> {
+        self.symbols.get(name)
     }
 }

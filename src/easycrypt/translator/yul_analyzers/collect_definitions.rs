@@ -2,7 +2,6 @@
 //! Collect all the definitions in YUL program and derive their EasyCrypt types.
 //!
 
-use std::collections::HashMap;
 use std::iter::repeat;
 
 use crate::easycrypt::syntax::r#type::Type as ECType;
@@ -13,6 +12,7 @@ use crate::yul::parser::statement::function_definition::FunctionDefinition;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 use crate::yul::parser::statement::Statement;
 use crate::yul::path::full_name::FullName;
+use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::Path;
 
@@ -24,7 +24,7 @@ pub struct CollectDefinitions {
     /// Tracks current location and allows binding the identifiers in the current scope.
     pub tracker: SymbolTracker<DefinitionInfo>,
     /// Collects all definitions in YUL code.
-    pub all_symbols: HashMap<FullName, DefinitionInfo>,
+    pub all_symbols: SymbolTable<DefinitionInfo>,
 }
 
 impl StatementAction for CollectDefinitions {
@@ -41,7 +41,7 @@ impl CollectDefinitions {
     pub fn new() -> Self {
         Self {
             tracker: SymbolTracker::new(),
-            all_symbols: HashMap::new(),
+            all_symbols: SymbolTable::new(),
         }
     }
 
@@ -59,7 +59,7 @@ impl CollectDefinitions {
             predefined: false,
         };
         self.tracker.add(name, &definition);
-        self.all_symbols.insert(full_name, definition);
+        self.all_symbols.insert(&full_name, &definition);
     }
 
     fn add_variable_declaration(
@@ -105,7 +105,7 @@ impl CollectDefinitions {
             predefined: false,
         };
         self.tracker.add(name, &definition);
-        self.all_symbols.insert(full_name, definition);
+        self.all_symbols.insert(&full_name, &definition);
 
         for return_value in result {
             self.add_var(return_value, path)

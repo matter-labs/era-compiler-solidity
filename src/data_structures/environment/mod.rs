@@ -9,7 +9,7 @@ pub mod stack_impl;
 /// Lookup map for user-defined functions, variables and procedures. It matches
 /// the name of a function/variable/procedure to its path from the root of YUL
 /// syntax tree.
-pub trait ISymbolTable<K, V>
+pub trait IEnvironment<K, V>
 where
     K: Clone + std::fmt::Debug + Eq + PartialEq,
     V: Clone + std::fmt::Debug + Eq + PartialEq,

@@ -14,14 +14,13 @@ pub mod statement;
 pub mod r#type;
 pub mod yul_analyzers;
 
-use std::collections::HashMap;
-
 use anyhow::Error;
 
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::object::Object as YulObject;
 use crate::yul::path::full_name::FullName;
+use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
