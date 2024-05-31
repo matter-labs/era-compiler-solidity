@@ -34,31 +34,6 @@ impl Translator {
         (self.new_definition_here(&name, Some(typ.clone())), typ)
     }
 
-    /// If a YUL function is transpiled into an EasyCrypt function (not
-    /// EasyCrypt procedure), return a reference to its body expression.
-    fn get_function_body<'a>(
-        body: &'a [Statement],
-        result_vars: &[Definition],
-    ) -> Option<&'a Expression> {
-        if body.len() != 1 {
-            None
-        } else {
-            match &body[0] {
-                Statement::Expression(e) => Some(e),
-                Statement::EAssignment(lhs, rhs)
-                    if lhs
-                        .iter()
-                        .map(|i| &i.identifier)
-                        .zip(result_vars.iter().map(|d| &d.identifier))
-                        .all(|(x, y)| x == y) =>
-                {
-                    Some(rhs)
-                }
-                _ => None,
-            }
-        }
-    }
-
     /// Transpile an arbitrary YUL function into an EasyCrypt function or procedure.
     pub fn transpile_function_definition(
         &mut self,
@@ -73,6 +48,12 @@ impl Translator {
             body,
             attributes: _,
         } = fd;
+        let kind = self
+            .definitions
+            .get_mut(&self.create_full_name(identifier))
+            .unwrap()
+            .kind
+            .clone();
         self.tracker.enter_function(identifier);
         let formal_parameters = arguments
             .iter()
@@ -82,9 +63,17 @@ impl Translator {
         let result_vars = self.bindings_to_definitions(result);
         let return_type: Type = Type::type_of_definitions(&result_vars);
 
-        if let Some(body_expr) = Self::get_function_body(&ec_block.statements, &result_vars) {
-            self.translate_to_function(formal_parameters, return_type, &ctx, identifier, body_expr)
-        } else {
+        match kind {
+            super::definition_info::kind::Kind::Function => {
+                match &ec_block.statements[0] {
+                    Statement::EAssignment(_, expr) =>  {
+            self.translate_to_function(formal_parameters, return_type, &ctx, identifier, expr)
+                    },
+                    _ => anyhow::bail!("Attempt to translate a YUL function into EasyCrypt function, but only translating to procedure is possible."),
+
+                }
+            }
+            super::definition_info::kind::Kind::Procedure => {
             self.translate_to_procedure(
                 formal_parameters,
                 return_type,
@@ -93,6 +82,8 @@ impl Translator {
                 ctx,
                 identifier,
             )
+            }
+            super::definition_info::kind::Kind::Variable => anyhow::bail!("Malformed collection of definitions")
         }
     }
 

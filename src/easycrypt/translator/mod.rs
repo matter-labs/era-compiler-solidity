@@ -16,49 +16,53 @@ pub mod yul_analyzers;
 
 use anyhow::Error;
 
+
+use crate::easycrypt::syntax::definition::Definition;
+use crate::easycrypt::syntax::module::Module;
+use crate::easycrypt::syntax::r#type::Type;
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::object::Object as YulObject;
+use crate::yul::path::Path;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
-use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
-use crate::yul::path::Path;
+use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
+use crate::yul::visitor::statements::Statements;
 
 use self::definition_info::DefinitionInfo;
 use self::yul_analyzers::collect_definitions::CollectDefinitions;
-use self::yul_analyzers::for_each_statement::Statements;
-
-use super::syntax::definition::Definition;
-
-use crate::easycrypt::syntax::module::Module;
-use crate::easycrypt::syntax::r#type::Type;
+use self::yul_analyzers::functions::inferrer::infer_function_types;
 
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
+    root: YulObject,
     tracker: SymbolTracker<definition_info::DefinitionInfo>,
     tmp_counter: Counter,
-    definitions: HashMap<FullName, DefinitionInfo>,
+    definitions: SymbolTable<DefinitionInfo>,
 }
 
 impl Translator {
     /// Transpile an object
     pub fn transpile(yul_object: &YulObject) -> Result<Module, Error> {
         let mut result = Self {
+            root: yul_object.clone(),
             tracker: SymbolTracker::new(),
             tmp_counter: Counter::new(),
-            definitions: HashMap::new(),
+            definitions: SymbolTable::new(),
         };
 
-        result.init(yul_object);
+        result.init();
         result.transpile_object(yul_object, true)
     }
 
-    fn init(&mut self, yul_object: &YulObject) {
-        self.definitions = Statements::from(yul_object)
+    fn init(&mut self) {
+        self.definitions = Statements::from(&self.root)
             .for_each(CollectDefinitions::new())
             .all_symbols;
+
+        infer_function_types(&mut self.definitions, &self.root);
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
@@ -101,19 +105,11 @@ impl Translator {
         FullName::new(identifier.to_string(), self.here())
     }
 
-    fn get_definition(&self, name: &str) -> Option<&DefinitionInfo> {
-        let full_name = FullName {
-            name: name.to_string(),
-            path: self.here().clone(),
-        };
-        self.definitions.get(&full_name)
-    }
-
-    fn get_definition_mut(&mut self, name: &str) -> Option<&mut DefinitionInfo> {
-        let full_name = FullName {
-            name: name.to_string(),
-            path: self.here().clone(),
-        };
-        self.definitions.get_mut(&full_name)
-    }
+    // fn get_definition_mut(&mut self, name: &str) -> Option<&mut DefinitionInfo> {
+    //     let full_name = FullName {
+    //         name: name.to_string(),
+    //         path: self.here().clone(),
+    //     };
+    //     self.definitions.get_mut(&full_name)
+    // }
 }

@@ -111,6 +111,10 @@ impl Translator {
             identifier::Translated::Special(_) => {
                 anyhow::bail!("Unsupported type of YUL function call.")
             }
+            identifier::Translated::Variable(_) => anyhow::bail!(
+                "Expected a name of function or procedure, got a name of variable instead. {:#?}",
+                name
+            ),
         }
     }
 }

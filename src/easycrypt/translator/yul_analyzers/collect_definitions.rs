@@ -15,8 +15,7 @@ use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::Path;
-
-use super::for_each_statement::StatementAction;
+use crate::yul::visitor::statements::StatementAction;
 
 /// Collect all definitions in the YUL code.
 #[derive(Clone, Debug, PartialEq, Eq)]

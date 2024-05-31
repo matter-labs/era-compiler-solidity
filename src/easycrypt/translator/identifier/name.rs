@@ -23,16 +23,19 @@ impl Translator {
     /// user-defined custom name or a predefined name like `lt` of `call`.
     pub fn transpile_name(&mut self, _ctx: &Context, name: &YulName) -> Result<Translated, Error> {
         match name {
-            YulName::UserDefined(name_str) => match self.get_definition(name_str) {
+            YulName::UserDefined(name_str) => match self.definitions.get(&self.create_full_name(name_str)) {
                 Some(DefinitionInfo { kind, .. }) => {
                     match kind {
-                        Kind::Procedure =>
-                            Ok(Translated::Proc(ProcName::UserDefined(name_str.clone()))),
-                        Kind::Function => Ok(Translated::Function(FunctionName::UserDefined(name_str.clone()))),
+                        Kind::Procedure => {
+                            Ok(Translated::Proc(ProcName::UserDefined(name_str.clone())))
+                        },
+                        Kind::Function => {
+                            Ok(Translated::Function(FunctionName::UserDefined(name_str.clone())))
+                        },
                         Kind::Variable => anyhow::bail!("Invalid YUL: a variable name clashes with the name of a previously defined function or a predefined function name."),
                     }
                 },
-                None => Ok(Translated::ProcOrFunction(name_str.clone())),
+                None => anyhow::bail!("Can't find name {} at {:?} in definitions {:#?}", name_str, self.here(), &self.definitions),
             },
             YulName::Add => Ok(Translated::BinOp(BinaryOpType::Add)),
             YulName::Sub => Ok(Translated::BinOp(BinaryOpType::Sub)),

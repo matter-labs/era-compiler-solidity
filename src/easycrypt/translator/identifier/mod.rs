@@ -25,6 +25,7 @@ pub enum Translated {
     BinOp(BinaryOpType),
     UnOp(UnaryOpType),
     Special(YulSpecial),
+    Variable(Name),
 }
 
 impl Translator {
