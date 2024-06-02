@@ -41,7 +41,6 @@ impl Translator {
                     kind: Kind::Variable,
                     full_name,
                     r#type: Type::DEFAULT.clone(),
-                    predefined: false,
                 },
             )
         }

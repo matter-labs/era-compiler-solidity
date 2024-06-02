@@ -89,7 +89,6 @@ impl Translator {
                                 kind: Kind::Function,
                                 full_name: self.create_full_name(ec_function.name.as_str()),
                                 r#type: ec_function.signature.get_type(),
-                                predefined: false,
                             },
                         );
                         let mut new_ctx = ctx.clone();
@@ -105,7 +104,6 @@ impl Translator {
                                 kind: Kind::Procedure,
                                 full_name: self.create_full_name(ec_procedure.name.as_str()),
                                 r#type: ec_procedure.signature.get_type(),
-                                predefined: false,
                             },
                         );
                         let mut new_ctx = ctx.clone();

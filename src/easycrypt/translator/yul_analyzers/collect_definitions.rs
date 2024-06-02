@@ -55,7 +55,6 @@ impl CollectDefinitions {
             kind: Kind::Variable,
             r#type,
             full_name: full_name.clone(),
-            predefined: false,
         };
         self.tracker.add(name, &definition);
         self.all_symbols.insert(&full_name, &definition);
@@ -101,7 +100,6 @@ impl CollectDefinitions {
             kind: Kind::Procedure,
             r#type,
             full_name: full_name.clone(),
-            predefined: false,
         };
         self.tracker.add(name, &definition);
         self.all_symbols.insert(&full_name, &definition);
