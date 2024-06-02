@@ -182,7 +182,10 @@ impl<T: IPrinter> Visitor for T {
         let ProcCall { target, arguments } = call;
         self.visit_proc_name(target);
         self.print("(");
-        for arg in arguments {
+        for (i, arg) in arguments.iter().enumerate() {
+            if i > 0 {
+                self.print(", ")
+            }
             self.visit_expression(arg);
         }
         self.print(")");
