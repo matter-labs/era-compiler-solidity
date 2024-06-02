@@ -61,7 +61,7 @@ impl Translator {
             .collect::<Vec<_>>();
 
         for (index, yul_case) in cases.iter().enumerate() {
-            let transpiled_case_literal = Self::transpile_literal(&yul_case.literal);
+            let transpiled_case_literal = Self::transpile_literal(&yul_case.literal)?;
 
             let (new_ctx, TransformedBlock { statements }) =
                 self.transpile_block(&yul_case.block, &ctx)?;

@@ -125,10 +125,6 @@ impl<T: IPrinter> Visitor for T {
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral) {
         match int_literal {
             IntegerLiteral::Decimal { inner } => self.print(inner),
-            IntegerLiteral::Hexadecimal { inner } => {
-                self.print("0x");
-                self.print(inner)
-            }
         }
     }
 
