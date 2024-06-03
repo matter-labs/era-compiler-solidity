@@ -32,6 +32,7 @@ use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
 use self::yul_analyzers::collect_definitions::CollectDefinitions;
+use self::yul_analyzers::functions::effects::derive::infer_effects;
 use self::yul_analyzers::functions::kind::infer_function_types;
 
 /// Global state of YUL to EasyCrypt translator
@@ -65,6 +66,10 @@ impl Translator {
         };
 
         infer_function_types(&mut self.definitions, &self.root);
+        infer_effects(&mut self.definitions, &self.root);
+
+        eprintln!("{:#?}", self.definitions)
+
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {
