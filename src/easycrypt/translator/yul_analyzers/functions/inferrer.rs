@@ -7,6 +7,8 @@ use anyhow::Error;
 
 use crate::easycrypt::translator::definition_info::kind::Kind;
 use crate::easycrypt::translator::definition_info::DefinitionInfo;
+use crate::easycrypt::translator::yul_analyzers::common::round::Round;
+use crate::easycrypt::translator::yul_analyzers::common::state::State;
 use crate::easycrypt::translator::yul_analyzers::functions::kind::derive_kind;
 use crate::easycrypt::translator::yul_analyzers::functions::kind::FunctionKind;
 
@@ -22,20 +24,12 @@ use crate::yul::path::Path;
 use crate::yul::visitor::statements::StatementAction;
 use crate::yul::visitor::statements::Statements;
 
-/// Infers YUL function kinds.
-pub struct InferenceRound<'a> {
-    state: PassState,
-    /// Collects all definitions in YUL code.
-    all_definitions: &'a mut SymbolTable<DefinitionInfo>,
+struct FunctionKindRound<'a> {
+    round: Round,
+    state: State<'a>,
 }
 
-/// State of the inferrer. The inferring turns until [`changed`] is true.
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct PassState {
-    changed: bool,
-}
-
-impl<'a> StatementAction for InferenceRound<'a> {
+impl<'a> StatementAction for FunctionKindRound<'a> {
     fn action(&mut self, statement: &Statement, path: &Path) {
         if let Statement::FunctionDefinition(fd) = statement {
             let full_name = FullName {
@@ -45,8 +39,8 @@ impl<'a> StatementAction for InferenceRound<'a> {
 
             match self.becomes_function(fd, path) {
                 Ok(true) => {
-                    let definition = self.all_definitions.get_mut(&full_name).unwrap();
-                    promote_to_function(&mut self.state, definition);
+                    let definition = self.state.symbol_table.get_mut(&full_name).unwrap();
+                    promote_to_function(&mut self.round, definition);
                 }
                 Ok(false) => (),
                 Err(msg) => panic!("{}", msg),
@@ -56,40 +50,40 @@ impl<'a> StatementAction for InferenceRound<'a> {
 }
 /// Promote a procedure to a function. By default, all functions are translated
 /// into procedures.
-fn promote_to_function(state: &mut PassState, definition: &mut DefinitionInfo) {
+fn promote_to_function(round: &mut Round, definition: &mut DefinitionInfo) {
     match definition.kind {
         Kind::Procedure => {
             definition.kind = Kind::Function;
-            state.changed = true
+            round.register_effect()
         }
         Kind::Function => (),
         Kind::Variable => panic!("Can not promote variable to function"),
     }
 }
 
-impl<'a> InferenceRound<'a> {
-    /// Returns true if a round of inference has promoted any procedure to a
-    /// function. If this did not happen, inference is complete.
-    pub fn had_effect(&self) -> bool {
-        self.state.changed
-    }
 
-    /// Returns a new instance of [`Inferrer`].
+impl<'a> FunctionKindRound<'a> {
+    /// Returns a new instance.
     pub fn new(all_definitions: &'a mut SymbolTable<DefinitionInfo>) -> Self {
         Self {
-            state: PassState { changed: false },
-            all_definitions,
+            round: Round::new(),
+            state: State::new(all_definitions),
         }
     }
 
-    /// Recursively analyzer an expression to determine if it has any calls to
+    /// Returns true if the round did any work.
+    pub fn had_effect(&self) -> bool {
+        self.round.had_effect()
+    }
+
+    /// Recursively analyze an expression to determine if it has any calls to
     /// procedures.
     fn prevents_promotion(&self, expr: &Expression, path: &Path) -> Result<bool, Error> {
         match expr {
             Expression::FunctionCall(FunctionCall {
                 name, arguments, ..
             }) => {
-                let kind = derive_kind(self.all_definitions, name, path)?;
+                let kind = derive_kind(self.state.symbol_table, name, path)?;
                 if matches!(kind, FunctionKind::Proc(_) | FunctionKind::Special(_)) {
                     Ok(true)
                 } else {
@@ -132,7 +126,7 @@ impl<'a> InferenceRound<'a> {
 /// Infer types of all YUL functions.
 pub fn infer_function_types(environment: &mut SymbolTable<DefinitionInfo>, root: &Object) {
     while Statements::from(root)
-        .for_each(InferenceRound::new(environment))
+        .for_each(FunctionKindRound::new(environment))
         .had_effect()
     {}
 }
