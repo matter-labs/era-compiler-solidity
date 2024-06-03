@@ -140,37 +140,4 @@ where
         self.visit_block(&code.block);
         self.tracker.leave();
     }
-
-    fn visit_variable_declaration(
-        &mut self,
-        _: &crate::yul::parser::statement::variable_declaration::VariableDeclaration,
-    ) {
-        unreachable!("Method not implemented for this visitor.")
-    }
-
-    fn visit_name(
-        &mut self,
-        _: &crate::yul::parser::statement::expression::function_call::name::Name,
-    ) {
-        unreachable!("Method not implemented for this visitor.")
-    }
-
-    fn visit_function_call(
-        &mut self,
-        _: &crate::yul::parser::statement::expression::function_call::FunctionCall,
-    ) {
-        unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
-    }
-
-    fn visit_literal(&mut self, _: &crate::yul::parser::statement::expression::literal::Literal) {
-        unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
-    }
-
-    fn visit_expression(&mut self, _: &crate::yul::parser::statement::expression::Expression) {
-        unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
-    }
-
-    fn visit_assignment(&mut self, _: &crate::yul::parser::statement::assignment::Assignment) {
-        unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
-    }
 }
