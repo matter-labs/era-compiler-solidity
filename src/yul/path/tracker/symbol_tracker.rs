@@ -95,7 +95,7 @@ where
     pub fn new() -> Self {
         Self {
             symbols: Environment::new(),
-            location: Builder::new(),
+            location: Builder::new(Path::empty()),
         }
     }
 }

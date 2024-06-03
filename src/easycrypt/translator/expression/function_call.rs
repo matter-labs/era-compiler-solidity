@@ -5,8 +5,8 @@
 use anyhow::Error;
 
 use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::definition_info::kind::YulSpecial;
 use crate::easycrypt::translator::expression::Transformed;
-use crate::easycrypt::translator::yul_analyzers::functions::kind::YulSpecial;
 use crate::Translator;
 
 use crate::easycrypt::syntax::expression::call::FunctionCall;

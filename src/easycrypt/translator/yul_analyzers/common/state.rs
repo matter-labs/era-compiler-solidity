@@ -2,10 +2,8 @@
 //! State for a generic analysis pass.
 //!
 
-
 use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::yul::path::symbol_table::SymbolTable;
-
 
 /// State of a pass.
 pub struct State<'a> {

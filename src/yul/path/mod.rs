@@ -64,4 +64,8 @@ impl Path {
             .rev()
             .map(|s| Path { stack: s.to_vec() })
     }
+
+    pub(crate) fn empty() -> Path {
+        Path { stack: vec![] }
+    }
 }

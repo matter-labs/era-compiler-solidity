@@ -13,9 +13,12 @@ use std::iter;
 use anyhow::Error;
 
 use super::context::Context;
+use super::definition_info::kind;
 use super::function;
+use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::function::Function;
 use crate::easycrypt::syntax::module::definition::TopDefinition;
+use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::block;
@@ -86,7 +89,9 @@ impl Translator {
                         self.tracker.add(
                             &ec_function.name,
                             &DefinitionInfo {
-                                kind: Kind::Function,
+                                kind: Kind::Function(FunctionName::UserDefined(
+                                    ec_function.name.clone(),
+                                )),
                                 full_name: self.create_full_name(ec_function.name.as_str()),
                                 r#type: ec_function.signature.get_type(),
                             },
@@ -101,7 +106,10 @@ impl Translator {
                         self.tracker.add(
                             &ec_procedure.name,
                             &DefinitionInfo {
-                                kind: Kind::Procedure,
+                                kind: Kind::Proc(kind::ProcKind {
+                                    name: ProcName::UserDefined(ec_procedure.name.clone()),
+                                    attributes: Default::default(),
+                                }),
                                 full_name: self.create_full_name(ec_procedure.name.as_str()),
                                 r#type: ec_procedure.signature.get_type(),
                             },

@@ -15,7 +15,7 @@ use crate::easycrypt::syntax::Name;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 
-use super::yul_analyzers::functions::kind::YulSpecial;
+use super::definition_info::kind::YulSpecial;
 
 pub enum Translated {
     Function(FunctionName),

@@ -22,40 +22,27 @@ pub trait StatementAction {
     fn action(&mut self, statement: &Statement, path: &Path);
 }
 
-pub struct Statements<'a, A>
+pub struct Statements<A>
 where
     A: StatementAction,
 {
-    root: &'a Object,
-    action: Option<A>,
+    pub action: A,
     tracker: Builder,
 }
 
-impl<'a, A> From<&'a Object> for Statements<'a, A>
+impl<A> Statements<A>
 where
     A: StatementAction,
 {
-    fn from(value: &'a Object) -> Self {
+    pub fn new(action: A, path: Path) -> Self {
         Self {
-            root: value,
-            action: None,
-            tracker: Builder::new(),
+            action,
+            tracker: Builder::new(path),
         }
     }
 }
 
-impl<'a, A> Statements<'a, A>
-where
-    A: StatementAction,
-{
-    pub fn for_each(mut self, action: A) -> A {
-        self.action = Some(action);
-        self.visit_object(self.root);
-        self.action.unwrap()
-    }
-}
-
-impl<'a, A> Visitor for Statements<'a, A>
+impl<A> Visitor for Statements<A>
 where
     A: StatementAction,
 {
@@ -120,10 +107,7 @@ where
             Statement::ForLoop(for_loop) => self.visit_for_loop(for_loop),
             Statement::Continue(_) | Statement::Break(_) | Statement::Leave(_) => (),
         };
-        self.action
-            .as_mut()
-            .unwrap()
-            .action(stmt, self.tracker.here())
+        self.action.action(stmt, self.tracker.here())
     }
 
     fn visit_block(&mut self, block: &Block) {

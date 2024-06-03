@@ -21,6 +21,7 @@ use crate::yul::path::tracker::PathTracker;
 
 use super::block::Transformed as TransformedBlock;
 use super::context::Context;
+use super::definition_info::kind::Kind;
 
 pub enum Translated {
     Function(Function),
@@ -64,7 +65,7 @@ impl Translator {
         let return_type: Type = Type::type_of_definitions(&result_vars);
 
         match kind {
-            super::definition_info::kind::Kind::Function => {
+            Kind::Function(_) => {
                 match &ec_block.statements[0] {
                     Statement::EAssignment(_, expr) =>  {
             self.translate_to_function(formal_parameters, return_type, &ctx, identifier, expr)
@@ -72,8 +73,8 @@ impl Translator {
                     _ => anyhow::bail!("Attempt to translate a YUL function into EasyCrypt function, but only translating to procedure is possible."),
 
                 }
-            }
-            super::definition_info::kind::Kind::Procedure => {
+            },
+            Kind::Proc(_) => {
             self.translate_to_procedure(
                 formal_parameters,
                 return_type,
@@ -83,7 +84,7 @@ impl Translator {
                 identifier,
             )
             }
-            super::definition_info::kind::Kind::Variable => anyhow::bail!("Malformed collection of definitions")
+            _ => anyhow::bail!("Malformed collection of definitions"),
         }
     }
 

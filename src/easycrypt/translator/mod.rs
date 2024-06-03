@@ -28,10 +28,11 @@ use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
 use crate::yul::visitor::statements::Statements;
+use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
 use self::yul_analyzers::collect_definitions::CollectDefinitions;
-use self::yul_analyzers::functions::inferrer::infer_function_types;
+use self::yul_analyzers::functions::kind::infer_function_types;
 
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
@@ -57,9 +58,11 @@ impl Translator {
     }
 
     fn init(&mut self) {
-        self.definitions = Statements::from(&self.root)
-            .for_each(CollectDefinitions::new())
-            .all_symbols;
+        self.definitions = {
+            let mut stmts = Statements::new(CollectDefinitions::new(), Path::empty());
+            stmts.visit_object(&self.root);
+            stmts.action.all_symbols
+        };
 
         infer_function_types(&mut self.definitions, &self.root);
     }

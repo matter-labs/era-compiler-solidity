@@ -4,8 +4,10 @@
 
 use std::iter::repeat;
 
+use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::r#type::Type as ECType;
 use crate::easycrypt::translator::definition_info::kind::Kind;
+use crate::easycrypt::translator::definition_info::kind::ProcKind;
 use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::yul::parser::identifier::Identifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
@@ -97,7 +99,10 @@ impl CollectDefinitions {
             ECType::Arrow(Box::new(arg_type), Box::new(ret_type))
         };
         let definition = DefinitionInfo {
-            kind: Kind::Procedure,
+            kind: Kind::Proc(ProcKind {
+                name: ProcName::UserDefined(name.to_string()),
+                attributes: Default::default(),
+            }),
             r#type,
             full_name: full_name.clone(),
         };

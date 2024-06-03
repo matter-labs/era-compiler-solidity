@@ -20,9 +20,9 @@ pub struct Builder {
 
 impl Builder {
     /// Create a new instance of the path builder.
-    pub fn new() -> Self {
+    pub fn new(elements: Path) -> Self {
         Self {
-            elements: Path { stack: [].to_vec() },
+            elements,
             block_counter: Counter::new(),
             code_counter: Counter::new(),
             if_counter: Counter::new(),
