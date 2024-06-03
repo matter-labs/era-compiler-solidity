@@ -7,6 +7,7 @@
 - The support for compiling multiple files in Yul, LLVM IR, and EraVM assembly modes
 - The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
 - The support for `urls` to local files in standard JSON input
+- The solc v0.8.26 support
 - More LLVM optimizations
 - Caching of the underlying compiler's metadata, including `--version`
 
