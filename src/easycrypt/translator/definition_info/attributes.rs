@@ -43,4 +43,13 @@ impl Attributes {
             ..Default::default()
         }
     }
+
+    pub fn union(&self, other: Self) -> Self {
+        Self {
+            heap_user: self.heap_user.union(&other.heap_user),
+            storage_user: self.storage_user.union(&other.storage_user),
+            transient_user: self.transient_user.union(&other.transient_user),
+            other: self.other.union(&other.other),
+        }
+    }
 }
