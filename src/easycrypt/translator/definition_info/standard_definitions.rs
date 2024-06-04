@@ -234,6 +234,13 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         YulName::SelfDestruct => {
             proc_other(ProcName::SelfDestruct, "SelfDestruct", Usage::WRITE, 1, 0)
         }
+        | YulName::Verbatim { input_size, output_size }=> {
+                proc_other(ProcName::Verbatim { input_size: *input_size, output_size: *output_size },
+                           format!("verbatim_i{}_o{}", input_size, output_size).as_str(),
+                           Usage::RW,
+                           *input_size,
+                           *output_size)
+        },
         YulName::ZkCreate
         | YulName::ZkCreate2
         | YulName::ZkToL1
@@ -269,7 +276,6 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         | YulName::ZkMultiplicationHigh
         | YulName::ZkGlobalLoad
         | YulName::ZkGlobalExtraAbiData
-        | YulName::Verbatim { .. }
         | YulName::ZkGlobalStore => anyhow::bail!(
             "Transpilation of this YUL definition is not yet supported: {:?}",
             yul_name
