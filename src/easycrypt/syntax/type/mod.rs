@@ -1,5 +1,8 @@
+pub mod context_kind;
+
 use std::fmt::Display;
 
+use self::context_kind::ContextKind;
 use super::definition::Definition;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -12,6 +15,7 @@ pub enum Type {
     Custom(String),
     Tuple(Vec<Type>),
     Arrow(Box<Type>, Box<Type>),
+    Context(ContextKind),
 }
 
 impl Display for Type {
@@ -34,6 +38,12 @@ impl Display for Type {
                 f.write_str(")")
             }
             Type::Unknown => f.write_str("Unknown"),
+            Type::Context(ctx) => match ctx {
+                ContextKind::Memory => todo!(),
+                ContextKind::Storage => todo!(),
+                ContextKind::TransientStorage => todo!(),
+                ContextKind::Other => todo!(),
+            },
         }
     }
 }
