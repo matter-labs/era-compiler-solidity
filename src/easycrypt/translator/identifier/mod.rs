@@ -20,7 +20,6 @@ use super::definition_info::kind::YulSpecial;
 pub enum Translated {
     Function(FunctionName),
     Proc(ProcName),
-    ProcOrFunction(Name),
     BinOp(BinaryOpType),
     UnOp(UnaryOpType),
     Special(YulSpecial),

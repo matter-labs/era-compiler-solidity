@@ -42,12 +42,11 @@ impl Translator {
         ctx: &Context,
     ) -> Result<(Context, Translated), Error> {
         let FunctionDefinition {
-            location: _,
             identifier,
             arguments,
             result,
             body,
-            attributes: _,
+            ..
         } = fd;
         let kind = self
             .definitions

@@ -11,7 +11,6 @@ use crate::Translator;
 
 use crate::easycrypt::syntax::expression::call::FunctionCall;
 use crate::easycrypt::syntax::expression::Expression;
-use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::translator::identifier;
 use crate::yul::parser::statement::expression::function_call::name::Name as YulName;
@@ -41,27 +40,11 @@ impl Translator {
 
             identifier::Translated::Proc(target) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+
                 let definition = self.new_tmp_definition_here();
                 let mut new_ctx = ectx;
 
                 new_ctx.add_assignment(&definition, ProcCall { target, arguments });
-                Ok(Transformed::Expression(
-                    Expression::Reference(definition.reference()),
-                    new_ctx,
-                ))
-            }
-            identifier::Translated::ProcOrFunction(name) => {
-                let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-                let definition = self.new_tmp_definition_here();
-                let mut new_ctx = ectx;
-
-                new_ctx.add_assignment(
-                    &definition,
-                    ProcCall {
-                        target: ProcName::UserDefined(name.clone()),
-                        arguments,
-                    },
-                );
                 Ok(Transformed::Expression(
                     Expression::Reference(definition.reference()),
                     new_ctx,
