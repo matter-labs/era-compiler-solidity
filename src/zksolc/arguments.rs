@@ -74,6 +74,10 @@ pub struct Arguments {
     #[structopt(long = "jump-table-density-threshold")]
     pub jump_table_density_threshold: Option<u32>,
 
+    /// Pass arbitary options to LLVM.
+    #[structopt(long = "llvm-options")]
+    pub llvm_options: Option<Vec<String>>,
+
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
     /// Beware that it will prevent libraries from being inlined.

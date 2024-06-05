@@ -98,6 +98,7 @@ impl Contract {
         mut self,
         project: Project,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         is_system_mode: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -160,6 +161,7 @@ impl Contract {
         let mut context = era_compiler_llvm_context::EraVMContext::new(
             &llvm,
             module,
+            llvm_options.to_owned(),
             optimizer,
             Some(project),
             include_metadata_hash,
@@ -223,6 +225,7 @@ impl Contract {
         mut self,
         project: Project,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMContractBuild> {
@@ -271,6 +274,7 @@ impl Contract {
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
+                        llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
                         Some(project.clone()),
@@ -329,6 +333,7 @@ impl Contract {
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
+                        llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
                         Some(project.clone()),
@@ -380,6 +385,7 @@ impl Contract {
                 let context = era_compiler_llvm_context::EVMContext::new(
                     &llvm,
                     module,
+                    llvm_options.to_owned(),
                     era_compiler_llvm_context::CodeType::Runtime,
                     optimizer,
                     Some(project),

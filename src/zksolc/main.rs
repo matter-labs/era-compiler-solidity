@@ -108,6 +108,7 @@ fn main_inner() -> anyhow::Result<()> {
     }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
+    let llvm_options = arguments.llvm_options.unwrap_or_default();
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
@@ -126,6 +127,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.is_system_mode,
                     include_metadata_hash,
                     debug_config,
@@ -134,6 +136,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.is_system_mode,
                     include_metadata_hash,
                     debug_config,
@@ -141,6 +144,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else if arguments.zkasm {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -151,6 +155,7 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_eravm(
                     solc_compiler.as_ref(),
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
@@ -176,6 +181,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     arguments.is_system_mode,
                     include_metadata_hash,
@@ -204,6 +210,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     arguments.is_system_mode,
                     include_metadata_hash,
@@ -264,6 +271,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -271,6 +279,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -281,6 +290,7 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_evm(
                     solc_compiler.as_ref(),
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.force_evmla,
                     arguments.base_path,
@@ -304,6 +314,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -330,6 +341,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,

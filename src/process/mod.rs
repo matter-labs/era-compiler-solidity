@@ -37,6 +37,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             let result = input.contract.into_owned().compile_to_eravm(
                 input.project.into_owned(),
                 input.optimizer_settings,
+                input.llvm_options.as_slice(),
                 input.is_system_mode,
                 input.include_metadata_hash,
                 input.debug_config,
@@ -66,6 +67,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             let result = input.contract.into_owned().compile_to_evm(
                 input.project.into_owned(),
                 input.optimizer_settings,
+                input.llvm_options.as_slice(),
                 input.include_metadata_hash,
                 input.debug_config,
             );

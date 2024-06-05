@@ -25,6 +25,8 @@ pub struct Input<'a> {
     pub include_metadata_hash: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    /// The extra LLVM arguments.
+    pub llvm_options: Vec<String>,
     /// The debug output config.
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
@@ -38,6 +40,7 @@ impl<'a> Input<'a> {
         project: Cow<'a, Project>,
         include_metadata_hash: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> Self {
         Self {
@@ -45,6 +48,7 @@ impl<'a> Input<'a> {
             project,
             include_metadata_hash,
             optimizer_settings,
+            llvm_options,
             debug_config,
         }
     }

@@ -340,6 +340,7 @@ impl Project {
     pub fn compile_to_eravm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         is_system_mode: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
@@ -357,6 +358,7 @@ impl Project {
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
                         optimizer_settings.clone(),
+                        llvm_options.to_owned(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EraVM,
@@ -422,6 +424,7 @@ impl Project {
     pub fn compile_to_evm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
@@ -435,6 +438,7 @@ impl Project {
                         Cow::Borrowed(&self),
                         include_metadata_hash,
                         optimizer_settings.clone(),
+                        llvm_options.to_owned(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EVM,
@@ -495,6 +499,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
         project: Self,
         identifier: &str,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         is_system_mode: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -515,6 +520,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             .compile_to_eravm(
                 project,
                 optimizer_settings,
+                llvm_options,
                 is_system_mode,
                 include_metadata_hash,
                 debug_config,
@@ -560,6 +566,7 @@ impl era_compiler_llvm_context::EVMDependency for Project {
         _project: Self,
         _identifier: &str,
         _optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        _llvm_options: &[String],
         _include_metadata_hash: bool,
         _debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {

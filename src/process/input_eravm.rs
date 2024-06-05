@@ -29,6 +29,8 @@ pub struct Input<'a> {
     pub enable_test_encoding: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    /// The extra LLVM arguments.
+    pub llvm_options: Vec<String>,
     /// The debug output config.
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
@@ -44,6 +46,7 @@ impl<'a> Input<'a> {
         include_metadata_hash: bool,
         enable_test_encoding: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> Self {
         Self {
@@ -53,6 +56,7 @@ impl<'a> Input<'a> {
             include_metadata_hash,
             enable_test_encoding,
             optimizer_settings,
+            llvm_options,
             debug_config,
         }
     }
