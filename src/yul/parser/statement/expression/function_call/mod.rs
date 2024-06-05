@@ -620,7 +620,7 @@ impl FunctionCall {
 
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
@@ -637,7 +637,7 @@ impl FunctionCall {
             Name::CallDataSize => {
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
@@ -652,7 +652,7 @@ impl FunctionCall {
 
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         let calldata_size =
@@ -680,7 +680,7 @@ impl FunctionCall {
             Name::CodeSize => {
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         era_compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
@@ -699,7 +699,7 @@ impl FunctionCall {
             Name::CodeCopy => {
                 if let era_compiler_llvm_context::CodeType::Runtime = context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     anyhow::bail!(
                         "{} The `CODECOPY` instruction is not supported in the runtime code",

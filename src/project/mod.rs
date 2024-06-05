@@ -374,15 +374,12 @@ impl Project {
         let mut build = EraVMBuild::default();
         let mut hashes = HashMap::with_capacity(results.len());
         for (path, result) in results.iter() {
-            match result {
-                Ok(contract) => {
-                    hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
-                }
-                Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
-                }
+            if let Ok(ref contract) = result {
+                hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
             }
         }
+
+        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
             match result {
                 Ok(mut contract) => {
@@ -410,9 +407,20 @@ impl Project {
                     build.contracts.insert(path, contract);
                 }
                 Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                    errors.push((path, error));
                 }
             }
+        }
+
+        if !errors.is_empty() {
+            anyhow::bail!(
+                "{}",
+                errors
+                    .into_iter()
+                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
         }
 
         Ok(build)
@@ -452,15 +460,27 @@ impl Project {
             .collect();
 
         let mut build = EVMBuild::default();
+        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
             match result {
                 Ok(contract) => {
                     build.contracts.insert(path, contract);
                 }
                 Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                    errors.push((path, error));
                 }
             }
+        }
+
+        if !errors.is_empty() {
+            anyhow::bail!(
+                "{}",
+                errors
+                    .into_iter()
+                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
         }
 
         Ok(build)

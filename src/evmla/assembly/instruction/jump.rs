@@ -18,7 +18,7 @@ where
 {
     let code_type = context
         .code_type()
-        .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
+        .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?;
     let block_key = match code_type {
         era_compiler_llvm_context::CodeType::Deploy
             if destination > num::BigUint::from(u32::MAX) =>
@@ -54,7 +54,7 @@ where
 {
     let code_type = context
         .code_type()
-        .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?;
+        .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?;
     let block_key = match code_type {
         era_compiler_llvm_context::CodeType::Deploy
             if destination > num::BigUint::from(u32::MAX) =>
