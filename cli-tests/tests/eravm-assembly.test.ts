@@ -58,7 +58,7 @@ describe("Set of --zkasm tests", () => {
     });
 
     it("--zkasm error is presented", () => {
-        expect(result.output).toMatch(/(Only one modes is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.)/i);
+        expect(result.output).toMatch(/(Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.)/i);
     });
   });
 });

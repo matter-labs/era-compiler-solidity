@@ -61,7 +61,7 @@ fn main_inner() -> anyhow::Result<()> {
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
-    
+
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(target);
 

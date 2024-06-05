@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1731-allow-passing-arbitrary-llvm-arguments-in-fe#dc5fcb596edadd9bd8fee26ffaa5d3bf0567f69c"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#029dfd1f144d62774950ad014fbad3cb84fb93b3"
 dependencies = [
  "anyhow",
  "era-compiler-common",

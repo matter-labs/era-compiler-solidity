@@ -121,6 +121,7 @@ impl Contract {
                 .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
+            llvm_options,
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
@@ -237,6 +238,7 @@ impl Contract {
                 .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
+            llvm_options,
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =

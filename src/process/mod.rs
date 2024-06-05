@@ -136,7 +136,7 @@ where
         anyhow::bail!("{stderr_message}");
     }
     let output = match era_compiler_common::deserialize_from_slice::<O>(result.stdout.as_slice()) {
-        Ok(combined_json) => combined_json,
+        Ok(output) => output,
         Err(error) => {
             anyhow::bail!("{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})");
         }
