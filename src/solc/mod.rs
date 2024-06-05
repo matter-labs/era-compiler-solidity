@@ -9,6 +9,7 @@ pub mod version;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
@@ -120,9 +121,15 @@ impl Compiler {
         })?;
         let stdin = process
             .stdin
-            .take()
+            .as_mut()
             .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
-        serde_json::to_writer(stdin, &input).map_err(|error| {
+        let stdin_input = serde_json::to_vec(&input).map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess standard JSON input serialization error: {error:?}",
+                self.executable
+            )
+        })?;
+        stdin.write_all(stdin_input.as_slice()).map_err(|error| {
             anyhow::anyhow!(
                 "{} subprocess stdin writing error: {error:?}",
                 self.executable

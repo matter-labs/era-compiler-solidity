@@ -116,6 +116,10 @@ pub struct Arguments {
     #[structopt(long = "target")]
     pub target: Option<String>,
 
+    /// Sets the number of threads, which execute the tests concurrently.
+    #[structopt(short = "t", long = "threads")]
+    pub threads: Option<usize>,
+
     /// Switch to missing deployable libraries detection mode.
     /// Only available for standard JSON input/output mode.
     /// Contracts are not compiled in this mode, and all compilation artifacts are not included.

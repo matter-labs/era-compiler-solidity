@@ -53,7 +53,11 @@ fn main_inner() -> anyhow::Result<()> {
         None => era_compiler_llvm_context::Target::EraVM,
     };
 
-    rayon::ThreadPoolBuilder::new()
+    let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
+    if let Some(threads) = arguments.threads {
+        thread_pool_builder = thread_pool_builder.num_threads(threads);
+    }
+    thread_pool_builder
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
@@ -108,7 +112,13 @@ fn main_inner() -> anyhow::Result<()> {
     }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
-    let llvm_options = arguments.llvm_options.unwrap_or_default();
+
+    let llvm_options: Vec<String> = arguments
+        .llvm_options
+        .unwrap_or_default()
+        .into_iter()
+        .map(|option| option.replace('\\', ""))
+        .collect();
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
