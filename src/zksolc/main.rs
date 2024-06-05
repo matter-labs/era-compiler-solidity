@@ -61,6 +61,7 @@ fn main_inner() -> anyhow::Result<()> {
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
+    
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(target);
 
@@ -68,7 +69,7 @@ fn main_inner() -> anyhow::Result<()> {
         return era_compiler_solidity::run_process(target);
     }
     if let era_compiler_llvm_context::Target::EVM = target {
-        anyhow::bail!("The EVM target is under development and not supported yet.")
+        anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
     let debug_config = match arguments.debug_output_directory {
@@ -113,12 +114,11 @@ fn main_inner() -> anyhow::Result<()> {
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
-    let llvm_options: Vec<String> = arguments
+    let llvm_options: Vec<&str> = arguments
         .llvm_options
-        .unwrap_or_default()
-        .into_iter()
-        .map(|option| option.replace('\\', ""))
-        .collect();
+        .as_ref()
+        .map(|options| options.split(' ').collect())
+        .unwrap_or_default();
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {

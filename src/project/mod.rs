@@ -136,7 +136,7 @@ impl Project {
 
                         let mut lexer = Lexer::new(ir_optimized.to_owned());
                         let object = Object::parse(&mut lexer, None).map_err(|error| {
-                            anyhow::anyhow!("Contract `{}` parsing error: {:?}", full_path, error)
+                            anyhow::anyhow!("Contract `{}` parsing: {:?}", full_path, error)
                         })?;
 
                         ProjectContractIR::new_yul(ir_optimized.to_owned(), object)
@@ -192,7 +192,7 @@ impl Project {
             .iter()
             .map(|path| {
                 let source_code = std::fs::read_to_string(path.as_path())
-                    .map_err(|error| anyhow::anyhow!("Yul file {path:?} reading error: {error}"))?;
+                    .map_err(|error| anyhow::anyhow!("Yul file {path:?} reading: {error}"))?;
                 Ok((path.to_string_lossy().to_string(), source_code))
             })
             .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
@@ -214,9 +214,8 @@ impl Project {
                 let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
 
                 let mut lexer = Lexer::new(source_code.to_owned());
-                let object = Object::parse(&mut lexer, None).map_err(|error| {
-                    anyhow::anyhow!("Yul object `{}` parsing error: {}", path, error)
-                })?;
+                let object = Object::parse(&mut lexer, None)
+                    .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing: {}", path, error))?;
 
                 if let Some(debug_config) = debug_config {
                     debug_config.dump_yul(path.as_str(), None, source_code.as_str())?;
@@ -249,9 +248,8 @@ impl Project {
         let sources = paths
             .iter()
             .map(|path| {
-                let source_code = std::fs::read_to_string(path.as_path()).map_err(|error| {
-                    anyhow::anyhow!("LLVM IR file {path:?} reading error: {error}")
-                })?;
+                let source_code = std::fs::read_to_string(path.as_path())
+                    .map_err(|error| anyhow::anyhow!("LLVM IR file {path:?} reading: {error}"))?;
                 Ok((path.to_string_lossy().to_string(), source_code))
             })
             .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
@@ -295,7 +293,7 @@ impl Project {
             .iter()
             .map(|path| {
                 let source_code = std::fs::read_to_string(path.as_path()).map_err(|error| {
-                    anyhow::anyhow!("EraVM assembly file {path:?} reading error: {error}")
+                    anyhow::anyhow!("EraVM assembly file {path:?} reading: {error}")
                 })?;
                 Ok((path.to_string_lossy().to_string(), source_code))
             })
@@ -340,7 +338,7 @@ impl Project {
     pub fn compile_to_eravm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[String],
+        llvm_options: &[&str],
         is_system_mode: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
@@ -358,7 +356,10 @@ impl Project {
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
                         optimizer_settings.clone(),
-                        llvm_options.to_owned(),
+                        llvm_options
+                            .iter()
+                            .map(|option| (*option).to_owned())
+                            .collect(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EraVM,
@@ -394,8 +395,7 @@ impl Project {
                         let hash = match hashes.get(dependency_path.as_str()) {
                             Some(hash) => hash.to_owned(),
                             None => anyhow::bail!(
-                                "Dependency contract `{}` not found in the project",
-                                dependency_path
+                                "dependency `{dependency_path}` not found in the project"
                             ),
                         };
                         contract
@@ -417,7 +417,7 @@ impl Project {
                 "{}",
                 errors
                     .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
+                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
                     .collect::<Vec<String>>()
                     .join("\n")
             );
@@ -432,7 +432,7 @@ impl Project {
     pub fn compile_to_evm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[String],
+        llvm_options: &[&str],
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
@@ -446,7 +446,10 @@ impl Project {
                         Cow::Borrowed(&self),
                         include_metadata_hash,
                         optimizer_settings.clone(),
-                        llvm_options.to_owned(),
+                        llvm_options
+                            .iter()
+                            .map(|option| (*option).to_owned())
+                            .collect(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EVM,
@@ -477,7 +480,7 @@ impl Project {
                 "{}",
                 errors
                     .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
+                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
                     .collect::<Vec<String>>()
                     .join("\n")
             );
@@ -530,10 +533,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             .get(contract_path.as_str())
             .cloned()
             .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "Dependency contract `{}` not found in the project",
-                    contract_path
-                )
+                anyhow::anyhow!("dependency `{contract_path}` not found in the project")
             })?;
 
         contract
@@ -545,13 +545,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
                 include_metadata_hash,
                 debug_config,
             )
-            .map_err(|error| {
-                anyhow::anyhow!(
-                    "Dependency contract `{}` compiling error: {}",
-                    identifier,
-                    error
-                )
-            })
+            .map_err(|error| anyhow::anyhow!("dependency `{identifier}`: {error}"))
             .map(|contract| contract.build.bytecode_hash)
     }
 
@@ -577,7 +571,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             }
         }
 
-        anyhow::bail!("Library `{}` not found in the project", path);
+        anyhow::bail!("library `{path}` not found in the project");
     }
 }
 

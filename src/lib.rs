@@ -66,7 +66,7 @@ pub fn yul_to_eravm(
     libraries: Vec<String>,
     solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -112,7 +112,7 @@ pub fn yul_to_evm(
     libraries: Vec<String>,
     solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -150,7 +150,7 @@ pub fn yul_to_evm(
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     is_system_mode: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -175,7 +175,7 @@ pub fn llvm_ir_to_eravm(
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -196,7 +196,7 @@ pub fn llvm_ir_to_evm(
 ///
 pub fn eravm_assembly(
     paths: &[PathBuf],
-    llvm_options: &[String],
+    llvm_options: &[&str],
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -225,7 +225,7 @@ pub fn standard_output_eravm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     force_evmla: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -319,7 +319,7 @@ pub fn standard_output_evm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     force_evmla: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
@@ -404,7 +404,7 @@ pub fn standard_output_evm(
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<&SolcCompiler>,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     json_path: Option<PathBuf>,
     detect_missing_libraries: bool,
     force_evmla: bool,
@@ -532,7 +532,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<&SolcCompiler>,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     json_path: Option<PathBuf>,
     force_evmla: bool,
     base_path: Option<String>,
@@ -648,7 +648,7 @@ pub fn combined_json_eravm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     force_evmla: bool,
     is_system_mode: bool,
     include_metadata_hash: bool,
@@ -715,7 +715,7 @@ pub fn combined_json_evm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[String],
+    llvm_options: &[&str],
     force_evmla: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,

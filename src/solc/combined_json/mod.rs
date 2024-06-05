@@ -98,9 +98,9 @@ impl CombinedJson {
         }
 
         File::create(&file_path)
-            .map_err(|error| anyhow::anyhow!("File {:?} creating error: {}", file_path, error))?
+            .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
             .write_all(serde_json::to_vec(&self).expect("Always valid").as_slice())
-            .map_err(|error| anyhow::anyhow!("File {:?} writing error: {}", file_path, error))?;
+            .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
 
         Ok(())
     }

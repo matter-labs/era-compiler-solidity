@@ -74,9 +74,9 @@ pub struct Arguments {
     #[structopt(long = "jump-table-density-threshold")]
     pub jump_table_density_threshold: Option<u32>,
 
-    /// Pass arbitary options to LLVM.
+    /// Pass arbitary space-separated options to LLVM.
     #[structopt(long = "llvm-options")]
-    pub llvm_options: Option<Vec<String>>,
+    pub llvm_options: Option<String>,
 
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
@@ -243,7 +243,7 @@ impl Arguments {
         .filter(|&&x| x)
         .count();
         if modes_count > 1 {
-            anyhow::bail!("Only one modes is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
+            anyhow::bail!("Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
         }
 
         if self.yul || self.llvm_ir || self.zkasm {
@@ -258,11 +258,6 @@ impl Arguments {
             if self.allow_paths.is_some() {
                 anyhow::bail!(
                     "`allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
-                );
-            }
-            if !self.libraries.is_empty() {
-                anyhow::bail!(
-                    "Libraries are not supported in Yul, LLVM IR and EraVM assembly modes."
                 );
             }
 
@@ -282,6 +277,10 @@ impl Arguments {
         }
 
         if self.llvm_ir || self.zkasm {
+            if !self.libraries.is_empty() {
+                anyhow::bail!("Libraries are not supported in LLVM IR and EraVM assembly modes.");
+            }
+
             if self.solc.is_some() {
                 anyhow::bail!("`solc` is not used in LLVM IR and EraVM assembly modes.");
             }

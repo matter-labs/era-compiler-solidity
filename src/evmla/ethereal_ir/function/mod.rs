@@ -1047,7 +1047,7 @@ impl Function {
                 block_key.code_type,
                 return_address.to_owned(),
             ),
-            ref element => anyhow::bail!("Expected the function return address, found {}", element),
+            ref element => anyhow::bail!("Expected the function return address, found {element}"),
         };
         let mut stack = Stack::with_capacity(1 + recursive_function.input_size);
         stack.push(StackElement::ReturnAddress(

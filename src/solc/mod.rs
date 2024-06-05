@@ -69,10 +69,7 @@ impl Compiler {
         let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
-            anyhow::bail!(
-                "The `{executable}` executable not found in ${{PATH}}: {}",
-                error,
-            );
+            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}");
         }
         let version = Self::parse_version(executable)?;
         let compiler = Self {
@@ -316,7 +313,7 @@ impl Compiler {
             .map_err(|error| anyhow::anyhow!("{} subprocess error: {:?}", executable, error))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} error: {}",
+                "{} version getting error: {}",
                 executable,
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
