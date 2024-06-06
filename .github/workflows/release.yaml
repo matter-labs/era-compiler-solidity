@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: "Git REF to use for manual pre-release"
-        required: true
+        description: "Git REF to use for manual pre-release. Keep it empty to use the workflow branch."
+        required: false
         type: string
       prerelease_suffix:
         description: "Suffix which has been used for manual pre-release name"
@@ -41,61 +41,60 @@ on:
     tags:
       - "*.*.*"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
+
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.prepare-matrix.outputs.matrix }}
+    steps:
+      - name: Prepare matrix
+        id: prepare-matrix
+        run: |
+          # Define general matrix parameters
+          WINDOWS='{"name":"Windows","runner":"windows-2022-github-hosted-64core","release-suffix":"windows-amd64"}'
+          MACOS_AMD64='{"name":"MacOS-x86","runner":"macos-12-large","release-suffix":"macosx-amd64"}'
+          MACOS_ARM64='{"name":"MacOS-arm64","runner":["self-hosted","macOS","ARM64"],"release-suffix":"macosx-arm64"}'
+          LINUX_AMD64='{"name":"Linux-AMD64","runner":"matterlabs-ci-runner","image":"matterlabs/llvm_runner:ubuntu22-llvm17-latest","target":"x86_64-unknown-linux-musl","release-suffix":"linux-amd64-musl"}'
+          LINUX_ARM64='{"name":"Linux-ARM64","runner":"matterlabs-ci-runner-arm","image":"matterlabs/llvm_runner:ubuntu22-llvm17-latest","target":"aarch64-unknown-linux-musl","release-suffix":"linux-arm64-musl"}'
+          # Disable platforms for non-tag builds if user requested
+          if [ ${GITHUB_REF_TYPE} != tag ]; then
+            [ ${{ github.event.inputs.release_windows_amd64 }} != true ] && WINDOWS=
+            [ ${{ github.event.inputs.release_macos_amd64 }} != true ] && MACOS_AMD64=
+            [ ${{ github.event.inputs.release_macos_arm64 }} != true ] && MACOS_ARM64=
+            [ ${{ github.event.inputs.release_linux_amd64 }} != true ] && LINUX_AMD64=
+            [ ${{ github.event.inputs.release_linux_arm64 }} != true ] && LINUX_ARM64=
+          fi
+          PLATFORMS=(${WINDOWS} ${MACOS_AMD64} ${MACOS_ARM64} ${LINUX_AMD64} ${LINUX_ARM64})
+          echo "matrix={ \"include\": [ $(IFS=, ; echo "${PLATFORMS[*]}") ] }" | tee -a "${GITHUB_OUTPUT}"
+
   build:
+    needs: prepare-matrix
     strategy:
-      matrix:
-        include:
-          - name: "MacOS x86"
-            runner: macos-12-large
-            release-suffix: macosx-amd64
-            required: ${{ github.event.inputs.release_macos_amd64 }}
-          - name: "MacOS arm64"
-            runner: [self-hosted, macOS, ARM64]
-            release-suffix: macosx-arm64
-            required: ${{ github.event.inputs.release_macos_arm64 }}
-          - name: "Linux x86"
-            runner: matterlabs-ci-runner
-            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
-            target: "x86_64-unknown-linux-musl"
-            release-suffix: linux-amd64-musl
-            required: ${{ github.event.inputs.release_linux_amd64 }}
-          - name: "Linux ARM64"
-            runner: matterlabs-ci-runner-arm
-            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
-            target: "aarch64-unknown-linux-musl"
-            release-suffix: linux-arm64-musl
-            required: ${{ github.event.inputs.release_linux_arm64 }}
-          - name: "Windows"
-            runner: windows-2022-github-hosted-16core
-            release-suffix: windows-amd64-gnu
-            required: ${{ github.event.inputs.release_windows_amd64 }}
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
     name: ${{ matrix.name }}
     steps:
       - name: Checkout source
-        if: matrix.required == 'true'
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
 
       - name: Prepare Windows env
-        if: matrix.required == 'true' && runner.os == 'Windows'
-        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@main
+        if: runner.os == 'Windows'
+        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@v1
 
       - name: Build LLVM
-        if: matrix.required == 'true'
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@main
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
           target-env: 'musl'
           enable-assertions: 'false'
 
       - name: Build zksolc
-        if: matrix.required == 'true'
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target }}
