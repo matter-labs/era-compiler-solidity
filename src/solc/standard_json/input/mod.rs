@@ -56,12 +56,12 @@ impl Input {
                 std::fs::File::open(path)
                     .map(std::io::BufReader::new)
                     .map_err(|error| {
-                        anyhow::anyhow!("Standard JSON file {path:?} opening error: {error}")
+                        anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
                     })?,
             ),
             None => serde_json::from_reader(std::io::BufReader::new(std::io::stdin())),
         }
-        .map_err(|error| anyhow::anyhow!("Standard JSON reading error: {error}"))
+        .map_err(|error| anyhow::anyhow!("Standard JSON reading: {error}"))
     }
 
     ///
@@ -88,9 +88,8 @@ impl Input {
         let sources = paths
             .into_par_iter()
             .map(|path| {
-                let source = Source::try_read(path.as_path()).unwrap_or_else(|error| {
-                    panic!("Source code file {path:?} reading error: {error}")
-                });
+                let source = Source::try_read(path.as_path())
+                    .unwrap_or_else(|error| panic!("Source code file {path:?} reading: {error}"));
                 (path.to_string_lossy().to_string(), source)
             })
             .collect();
@@ -235,7 +234,7 @@ impl Input {
                 let source: String = source
                     .to_owned()
                     .try_into()
-                    .map_err(|error| anyhow::anyhow!("Source `{path}` error: {error}"))?;
+                    .map_err(|error| anyhow::anyhow!("Source `{path}`: {error}"))?;
                 Ok((path.to_owned(), source))
             })
             .collect()

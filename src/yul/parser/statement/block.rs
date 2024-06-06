@@ -200,9 +200,8 @@ where
                     break;
                 }
                 statement => anyhow::bail!(
-                    "{} Unexpected local statement: {:?}",
+                    "{} Unexpected local statement: {statement:?}",
                     statement.location(),
-                    statement
                 ),
             }
         }
@@ -273,9 +272,8 @@ where
                     break;
                 }
                 statement => anyhow::bail!(
-                    "{} Unexpected local statement: {:?}",
+                    "{} Unexpected local statement: {statement:?}",
                     statement.location(),
-                    statement
                 ),
             }
         }

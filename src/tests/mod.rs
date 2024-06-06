@@ -79,6 +79,7 @@ pub fn build_solidity(
 
     let build = project.compile_to_eravm(
         optimizer_settings,
+        &[],
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -168,6 +169,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let project = Project::try_from_yul_sources(sources, BTreeMap::new(), None, None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
+        &[],
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -210,6 +212,7 @@ pub fn build_yul_standard_json(
     let project = Project::try_from_yul_sources(sources, BTreeMap::new(), solc_version, None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
+        &[],
         solc_compiler.is_none(),
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -243,6 +246,7 @@ pub fn build_llvm_ir_standard_json(
     let project = Project::try_from_llvm_ir_sources(sources)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
+        &[],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -276,6 +280,7 @@ pub fn build_eravm_assembly_standard_json(
     let project = Project::try_from_eravm_assembly_sources(sources)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
+        &[],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,

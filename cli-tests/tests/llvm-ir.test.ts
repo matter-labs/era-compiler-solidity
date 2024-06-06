@@ -73,7 +73,7 @@ describe("Set of --llvm-ir tests", () => {
     });
 
     it("--llvm-ir error is presented", () => {
-      expect(result.output).toMatch(/(Only one modes is allowed at the same time:)/i);
+      expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
@@ -92,7 +92,7 @@ describe("Set of --llvm-ir tests", () => {
     });
 
     it("--llvm-ir error is presented", () => {
-      expect(result.output).toMatch(/(Only one modes is allowed at the same time:)/i);
+      expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {

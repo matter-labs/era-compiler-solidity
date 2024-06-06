@@ -53,10 +53,15 @@ fn main_inner() -> anyhow::Result<()> {
         None => era_compiler_llvm_context::Target::EraVM,
     };
 
-    rayon::ThreadPoolBuilder::new()
+    let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
+    if let Some(threads) = arguments.threads {
+        thread_pool_builder = thread_pool_builder.num_threads(threads);
+    }
+    thread_pool_builder
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
+
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(target);
 
@@ -64,7 +69,7 @@ fn main_inner() -> anyhow::Result<()> {
         return era_compiler_solidity::run_process(target);
     }
     if let era_compiler_llvm_context::Target::EVM = target {
-        anyhow::bail!("The EVM target is under development and not supported yet.")
+        anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
     let debug_config = match arguments.debug_output_directory {
@@ -109,6 +114,12 @@ fn main_inner() -> anyhow::Result<()> {
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
+    let llvm_options: Vec<&str> = arguments
+        .llvm_options
+        .as_ref()
+        .map(|options| options.split(' ').collect())
+        .unwrap_or_default();
+
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
             let metadata =
@@ -126,6 +137,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.is_system_mode,
                     include_metadata_hash,
                     debug_config,
@@ -134,6 +146,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.is_system_mode,
                     include_metadata_hash,
                     debug_config,
@@ -141,6 +154,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else if arguments.zkasm {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -151,6 +165,7 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_eravm(
                     solc_compiler.as_ref(),
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.detect_missing_libraries,
                     arguments.force_evmla,
@@ -176,6 +191,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     arguments.is_system_mode,
                     include_metadata_hash,
@@ -204,6 +220,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     arguments.is_system_mode,
                     include_metadata_hash,
@@ -264,6 +281,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -271,6 +289,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -281,6 +300,7 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_evm(
                     solc_compiler.as_ref(),
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.force_evmla,
                     arguments.base_path,
@@ -304,6 +324,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -330,6 +351,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,

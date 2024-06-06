@@ -9,6 +9,7 @@ pub mod version;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
@@ -68,10 +69,7 @@ impl Compiler {
         let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
-            anyhow::bail!(
-                "The `{executable}` executable not found in ${{PATH}}: {}",
-                error,
-            );
+            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}");
         }
         let version = Self::parse_version(executable)?;
         let compiler = Self {
@@ -120,9 +118,15 @@ impl Compiler {
         })?;
         let stdin = process
             .stdin
-            .take()
+            .as_mut()
             .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
-        serde_json::to_writer(stdin, &input).map_err(|error| {
+        let stdin_input = serde_json::to_vec(&input).map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess standard JSON input serialization error: {error:?}",
+                self.executable
+            )
+        })?;
+        stdin.write_all(stdin_input.as_slice()).map_err(|error| {
             anyhow::anyhow!(
                 "{} subprocess stdin writing error: {error:?}",
                 self.executable
@@ -309,7 +313,7 @@ impl Compiler {
             .map_err(|error| anyhow::anyhow!("{} subprocess error: {:?}", executable, error))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} error: {}",
+                "{} version getting error: {}",
                 executable,
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );

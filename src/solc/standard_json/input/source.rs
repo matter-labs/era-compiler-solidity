@@ -32,11 +32,11 @@ impl Source {
             let mut solidity_code = String::with_capacity(16384);
             std::io::stdin()
                 .read_to_string(&mut solidity_code)
-                .map_err(|error| anyhow::anyhow!("<stdin> reading error: {}", error))?;
+                .map_err(|error| anyhow::anyhow!("<stdin> reading error: {error}"))?;
             solidity_code
         } else {
             std::fs::read_to_string(path)
-                .map_err(|error| anyhow::anyhow!("File {:?} reading error: {}", path, error))?
+                .map_err(|error| anyhow::anyhow!("File {path:?} reading error: {error}"))?
         };
 
         Ok(Self {

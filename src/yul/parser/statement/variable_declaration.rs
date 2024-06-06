@@ -183,8 +183,7 @@ where
         );
         if expression.value.get_type() != llvm_type.as_basic_type_enum() {
             anyhow::bail!(
-                "{} Assignment to {:?} received an invalid number of arguments",
-                location,
+                "{location} Assignment to {:?} received an invalid number of arguments",
                 self.bindings
             );
         }
@@ -295,8 +294,7 @@ where
         );
         if expression.value.get_type() != llvm_type.as_basic_type_enum() {
             anyhow::bail!(
-                "{} Assignment to {:?} received an invalid number of arguments",
-                location,
+                "{location} Assignment to {:?} received an invalid number of arguments",
                 self.bindings
             );
         }
