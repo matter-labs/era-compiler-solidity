@@ -16,9 +16,17 @@
 ### Changed
 
 - Updated to EraVM v1.5.0
+- Renamed the `--system-mode` flag to `--enable-eravm-extensions`
+- Added all missing CLI flags to standard JSON input
+
+### Deprecated
+
+- `force-evmla`, `detect-missing-libraries`, `system-mode` CLI flags in standard JSON mode
+- `system-mode` alias of `enable-eravm-extension` flag
 
 ### Fixed
 
+- The bytes-to-cells LLVM misoptimization
 - Excessive RAM usage and compilation time with some projects
 - Redundancy in error printing
 

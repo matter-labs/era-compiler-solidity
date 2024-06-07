@@ -339,7 +339,7 @@ where
                     context.current_function().borrow().r#return(),
                     era_compiler_llvm_context::FunctionReturn::Compound { .. }
                 )
-                && context.is_system_mode()
+                && context.are_eravm_extensions_enabled()
             {
                 index += 1;
             }

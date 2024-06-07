@@ -105,19 +105,13 @@ fn main_inner() -> anyhow::Result<()> {
     if arguments.fallback_to_optimizing_for_size {
         optimizer_settings.enable_fallback_to_size();
     }
-    if arguments.disable_system_request_memoization {
-        optimizer_settings.disable_system_request_memoization();
-    }
-    if let Some(value) = arguments.jump_table_density_threshold {
-        optimizer_settings.set_jump_table_density_threshold(value);
-    }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
-    let llvm_options: Vec<&str> = arguments
+    let llvm_options: Vec<String> = arguments
         .llvm_options
         .as_ref()
-        .map(|options| options.split(' ').collect())
+        .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
         .unwrap_or_default();
 
     let include_metadata_hash = match arguments.metadata_hash {
@@ -137,8 +131,8 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
-                    llvm_options.as_slice(),
-                    arguments.is_system_mode,
+                    llvm_options,
+                    arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -146,15 +140,14 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
-                    llvm_options.as_slice(),
-                    arguments.is_system_mode,
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
             } else if arguments.zkasm {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -165,11 +158,10 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_eravm(
                     solc_compiler.as_ref(),
-                    llvm_options.as_slice(),
-                    standard_json.map(PathBuf::from),
-                    arguments.detect_missing_libraries,
                     arguments.force_evmla,
-                    arguments.is_system_mode,
+                    arguments.enable_eravm_extensions,
+                    arguments.detect_missing_libraries,
+                    standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
@@ -190,20 +182,20 @@ fn main_inner() -> anyhow::Result<()> {
                     &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    llvm_options.as_slice(),
                     arguments.force_evmla,
-                    arguments.is_system_mode,
+                    arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
-                    suppressed_warnings,
-                    debug_config,
                     arguments.output_directory,
                     arguments.overwrite,
+                    optimizer_settings,
+                    llvm_options,
+                    suppressed_warnings,
+                    debug_config,
                 )?;
                 return Ok(());
             } else {
@@ -219,16 +211,16 @@ fn main_inner() -> anyhow::Result<()> {
                     &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    llvm_options.as_slice(),
                     arguments.force_evmla,
-                    arguments.is_system_mode,
+                    arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
+                    optimizer_settings,
+                    llvm_options,
                     suppressed_warnings,
                     debug_config,
                 )
@@ -281,7 +273,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -289,7 +281,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -300,9 +292,8 @@ fn main_inner() -> anyhow::Result<()> {
                 };
                 era_compiler_solidity::standard_json_evm(
                     solc_compiler.as_ref(),
-                    llvm_options.as_slice(),
-                    standard_json.map(PathBuf::from),
                     arguments.force_evmla,
+                    standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
@@ -323,8 +314,6 @@ fn main_inner() -> anyhow::Result<()> {
                     &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -332,9 +321,11 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
-                    debug_config,
                     arguments.output_directory,
                     arguments.overwrite,
+                    optimizer_settings,
+                    llvm_options,
+                    debug_config,
                 )?;
                 return Ok(());
             } else {
@@ -350,8 +341,6 @@ fn main_inner() -> anyhow::Result<()> {
                     &solc,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    optimizer_settings,
-                    llvm_options.as_slice(),
                     arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
@@ -359,6 +348,8 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.include_paths,
                     arguments.allow_paths,
                     remappings,
+                    optimizer_settings,
+                    llvm_options,
                     debug_config,
                 )
             }?;

@@ -99,7 +99,7 @@ impl Contract {
         project: Project,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
-        is_system_mode: bool,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMContractBuild> {
@@ -171,7 +171,8 @@ impl Contract {
         context.set_solidity_data(era_compiler_llvm_context::EraVMContextSolidityData::default());
         match self.ir {
             IR::Yul(_) => {
-                let yul_data = era_compiler_llvm_context::EraVMContextYulData::new(is_system_mode);
+                let yul_data =
+                    era_compiler_llvm_context::EraVMContextYulData::new(enable_eravm_extensions);
                 context.set_yul_data(yul_data);
             }
             IR::EVMLA(_) => {

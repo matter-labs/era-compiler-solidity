@@ -338,8 +338,8 @@ impl Project {
     pub fn compile_to_eravm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[&str],
-        is_system_mode: bool,
+        llvm_options: Vec<String>,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -352,14 +352,11 @@ impl Project {
                     EraVMProcessInput::new(
                         Cow::Borrowed(contract),
                         Cow::Borrowed(&self),
-                        is_system_mode,
+                        enable_eravm_extensions,
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
                         optimizer_settings.clone(),
-                        llvm_options
-                            .iter()
-                            .map(|option| (*option).to_owned())
-                            .collect(),
+                        llvm_options.clone(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EraVM,
@@ -432,7 +429,7 @@ impl Project {
     pub fn compile_to_evm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[&str],
+        llvm_options: Vec<String>,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
@@ -446,10 +443,7 @@ impl Project {
                         Cow::Borrowed(&self),
                         include_metadata_hash,
                         optimizer_settings.clone(),
-                        llvm_options
-                            .iter()
-                            .map(|option| (*option).to_owned())
-                            .collect(),
+                        llvm_options.clone(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EVM,
@@ -523,7 +517,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
         identifier: &str,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
-        is_system_mode: bool,
+        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {
@@ -541,7 +535,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
                 project,
                 optimizer_settings,
                 llvm_options,
-                is_system_mode,
+                enable_eravm_extensions,
                 include_metadata_hash,
                 debug_config,
             )

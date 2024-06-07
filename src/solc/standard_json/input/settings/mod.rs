@@ -36,15 +36,27 @@ pub struct Settings {
     /// The output selection filters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
-    /// Whether to compile via IR. Only for testing with solc >=0.8.13.
+    /// Whether to compile via EVM assembly.
+    #[serde(rename = "forceEVMLA", skip_serializing)]
+    pub force_evmla: Option<bool>,
+    /// Whether to add the Yul step to compilation via EVM assembly.
     #[serde(
         rename = "viaIR",
-        skip_serializing_if = "Option::is_none",
-        skip_deserializing
+        skip_deserializing,
+        skip_serializing_if = "Option::is_none"
     )]
     pub via_ir: Option<bool>,
+    /// Whether to enable EraVM extensions.
+    #[serde(rename = "enableEraVMExtensions", skip_serializing)]
+    pub enable_eravm_extensions: Option<bool>,
+    /// Whether to enable the missing libraries detection mode.
+    #[serde(rename = "detectMissingLibraries", skip_serializing)]
+    pub detect_missing_libraries: Option<bool>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
+    /// The extra LLVM options.
+    #[serde(rename = "LLVMOptions", skip_serializing)]
+    pub llvm_options: Option<Vec<String>>,
     /// The metadata settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<Metadata>,
@@ -59,8 +71,12 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: Option<BTreeSet<String>>,
         output_selection: Selection,
+        force_evmla: bool,
         via_ir: bool,
+        enable_eravm_extensions: bool,
+        detect_missing_libraries: bool,
         optimizer: Optimizer,
+        llvm_options: Vec<String>,
         metadata: Option<Metadata>,
     ) -> Self {
         Self {
@@ -68,8 +84,20 @@ impl Settings {
             libraries: Some(libraries),
             remappings,
             output_selection: Some(output_selection),
+            force_evmla: if force_evmla { Some(true) } else { None },
             via_ir: if via_ir { Some(true) } else { None },
+            enable_eravm_extensions: if enable_eravm_extensions {
+                Some(true)
+            } else {
+                None
+            },
+            detect_missing_libraries: if detect_missing_libraries {
+                Some(true)
+            } else {
+                None
+            },
             optimizer,
+            llvm_options: Some(llvm_options),
             metadata,
         }
     }

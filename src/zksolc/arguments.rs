@@ -66,14 +66,6 @@ pub struct Arguments {
     #[structopt(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
-    /// Disable the system request memoization.
-    #[structopt(long = "disable-system-request-memoization")]
-    pub disable_system_request_memoization: bool,
-
-    /// Set the jump table density threshold.
-    #[structopt(long = "jump-table-density-threshold")]
-    pub jump_table_density_threshold: Option<u32>,
-
     /// Pass arbitary space-separated options to LLVM.
     #[structopt(long = "llvm-options")]
     pub llvm_options: Option<String>,
@@ -152,12 +144,11 @@ pub struct Arguments {
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
 
-    /// Enable system contract compilation mode.
-    /// In this mode EraVM extensions are enabled. For example, calls to addresses `0xFFFF` and below
-    /// are substituted by special EraVM instructions.
-    /// In the Yul mode, the `verbatim_*` instruction family is available.
-    #[structopt(long = "system-mode")]
-    pub is_system_mode: bool,
+    /// Enable EraVM extensions.
+    /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
+    /// In the Yul mode, the `verbatim_*` instruction family becomes available.
+    #[structopt(long = "enable-eravm-extensions", alias = "system-mode")]
+    pub enable_eravm_extensions: bool,
 
     /// Set metadata hash mode.
     /// The only supported value is `none` that disables appending the metadata hash.
@@ -268,7 +259,7 @@ impl Arguments {
             }
 
             if self.force_evmla {
-                anyhow::bail!("EVM legacy assembly mode is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
 
             if self.disable_solc_optimizer {
@@ -285,9 +276,14 @@ impl Arguments {
                 anyhow::bail!("`solc` is not used in LLVM IR and EraVM assembly modes.");
             }
 
-            if self.is_system_mode {
+            if self.enable_eravm_extensions {
                 anyhow::bail!(
-                    "System contract mode is not supported in LLVM IR and EraVM assembly modes."
+                    "EraVM extensions are not supported in LLVM IR and EraVM assembly modes."
+                );
+            }
+            if self.detect_missing_libraries {
+                anyhow::bail!(
+                    "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes."
                 );
             }
         }
@@ -299,23 +295,23 @@ impl Arguments {
             if self.optimization.is_some() {
                 anyhow::bail!("LLVM optimizations are not supported in EraVM assembly mode.");
             }
-
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
             }
-            if self.disable_system_request_memoization {
-                anyhow::bail!("Disabling the system request memoization is not supported in EraVM assembly mode.");
-            }
-            if self.jump_table_density_threshold.is_some() {
-                anyhow::bail!(
-                    "Setting the jump table density threshold is not supported in EraVM assembly mode."
-                );
+            if self.llvm_options.is_some() {
+                anyhow::bail!("LLVM options are not supported in EraVM assembly mode.");
             }
         }
 
         if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
             anyhow::bail!(
                 "Cannot output assembly or binary outside of JSON in combined JSON mode."
+            );
+        }
+
+        if self.standard_json.is_none() && self.detect_missing_libraries {
+            anyhow::bail!(
+                "Missing deployable libraries detection mode is only supported in standard JSON mode."
             );
         }
 
@@ -357,15 +353,8 @@ impl Arguments {
                     "Falling back to -Oz must be specified in standard JSON input settings."
                 );
             }
-            if self.disable_system_request_memoization {
-                anyhow::bail!(
-                    "Disabling the system request memoization must be specified in standard JSON input settings."
-                );
-            }
-            if self.jump_table_density_threshold.is_some() {
-                anyhow::bail!(
-                    "Setting the jump table density threshold must be specified in standard JSON input settings."
-                );
+            if self.llvm_options.is_some() {
+                anyhow::bail!("LLVM options must be specified in standard JSON input settings.");
             }
             if self.metadata_hash.is_some() {
                 anyhow::bail!(

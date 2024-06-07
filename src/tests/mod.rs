@@ -57,11 +57,13 @@ pub fn build_solidity(
             None,
             &solc_compiler.version.default,
             false,
-            false,
-            None,
         ),
         None,
-        pipeline == SolcPipeline::Yul,
+        pipeline == SolcPipeline::EVMLA,
+        false,
+        true,
+        false,
+        vec![],
         None,
     )?;
 
@@ -79,7 +81,7 @@ pub fn build_solidity(
 
     let build = project.compile_to_eravm(
         optimizer_settings,
-        &[],
+        vec![],
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -121,11 +123,13 @@ pub fn build_solidity_and_detect_missing_libraries(
             None,
             &solc_compiler.version.default,
             false,
-            false,
-            None,
         ),
         None,
-        pipeline == SolcPipeline::Yul,
+        pipeline == SolcPipeline::EVMLA,
+        false,
+        false,
+        false,
+        vec![],
         None,
     )?;
 
@@ -169,7 +173,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let project = Project::try_from_yul_sources(sources, BTreeMap::new(), None, None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
-        &[],
+        vec![],
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -212,7 +216,7 @@ pub fn build_yul_standard_json(
     let project = Project::try_from_yul_sources(sources, BTreeMap::new(), solc_version, None)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
-        &[],
+        vec![],
         solc_compiler.is_none(),
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -246,7 +250,7 @@ pub fn build_llvm_ir_standard_json(
     let project = Project::try_from_llvm_ir_sources(sources)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
-        &[],
+        vec![],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -280,7 +284,7 @@ pub fn build_eravm_assembly_standard_json(
     let project = Project::try_from_eravm_assembly_sources(sources)?;
     let build = project.compile_to_eravm(
         optimizer_settings,
-        &[],
+        vec![],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -318,16 +322,13 @@ pub fn check_solidity_warning(
         libraries,
         None,
         SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            true,
-            None,
-            &solc_version.default,
-            false,
-            false,
-            None,
-        ),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
         None,
-        pipeline == SolcPipeline::Yul,
+        pipeline == SolcPipeline::EVMLA,
+        false,
+        false,
+        false,
+        vec![],
         suppressed_warnings,
     )?;
 

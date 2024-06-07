@@ -38,7 +38,7 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
                 input.project.into_owned(),
                 input.optimizer_settings,
                 input.llvm_options.as_slice(),
-                input.is_system_mode,
+                input.enable_eravm_extensions,
                 input.include_metadata_hash,
                 input.debug_config,
             );

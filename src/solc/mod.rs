@@ -42,7 +42,7 @@ impl Compiler {
     /// The first version of `solc`, where Yul codegen is considered robust enough.
     pub const FIRST_YUL_VERSION: semver::Version = semver::Version::new(0, 8, 0);
 
-    /// The first version of `solc`, where `--via-ir` codegen mode is supported.
+    /// The first version of `solc`, where `--via-ir` codegen option is supported.
     pub const FIRST_VIA_IR_VERSION: semver::Version = semver::Version::new(0, 8, 13);
 
     /// The first version of `solc`, where EVM Cancun is supported.
@@ -258,6 +258,7 @@ impl Compiler {
             paths,
             libraries.clone(),
             StandardJsonInputSettingsOptimizer::new_yul_validation(),
+            vec![],
         );
         self.validate_yul_standard_json(solc_input)
     }
