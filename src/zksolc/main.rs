@@ -108,10 +108,10 @@ fn main_inner() -> anyhow::Result<()> {
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
 
-    let llvm_options: Vec<&str> = arguments
+    let llvm_options: Vec<String> = arguments
         .llvm_options
         .as_ref()
-        .map(|options| options.split(' ').collect())
+        .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
         .unwrap_or_default();
 
     let include_metadata_hash = match arguments.metadata_hash {
@@ -131,7 +131,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     debug_config,
@@ -140,14 +140,14 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
             } else if arguments.zkasm {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -161,7 +161,6 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.force_evmla,
                     arguments.enable_eravm_extensions,
                     arguments.detect_missing_libraries,
-                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
@@ -194,7 +193,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.output_directory,
                     arguments.overwrite,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     suppressed_warnings,
                     debug_config,
                 )?;
@@ -221,7 +220,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     suppressed_warnings,
                     debug_config,
                 )
@@ -274,7 +273,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -282,7 +281,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     include_metadata_hash,
                     debug_config,
                 )
@@ -294,7 +293,6 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::standard_json_evm(
                     solc_compiler.as_ref(),
                     arguments.force_evmla,
-                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
@@ -326,7 +324,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.output_directory,
                     arguments.overwrite,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     debug_config,
                 )?;
                 return Ok(());
@@ -351,7 +349,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
-                    llvm_options.as_slice(),
+                    llvm_options,
                     debug_config,
                 )
             }?;

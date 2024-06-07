@@ -54,6 +54,9 @@ pub struct Settings {
     pub detect_missing_libraries: Option<bool>,
     /// The optimizer settings.
     pub optimizer: Optimizer,
+    /// The extra LLVM options.
+    #[serde(rename = "LLVMOptions", skip_serializing)]
+    pub llvm_options: Option<Vec<String>>,
     /// The metadata settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<Metadata>,
@@ -73,6 +76,7 @@ impl Settings {
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         optimizer: Optimizer,
+        llvm_options: Vec<String>,
         metadata: Option<Metadata>,
     ) -> Self {
         Self {
@@ -93,6 +97,7 @@ impl Settings {
                 None
             },
             optimizer,
+            llvm_options: Some(llvm_options),
             metadata,
         }
     }

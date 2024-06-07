@@ -17,7 +17,7 @@
 
 - Updated to EraVM v1.5.0
 - Renamed the `--system-mode` flag to `--enable-eravm-extensions`
-- Added all missing flags to standard JSON input
+- Added all missing CLI flags to standard JSON input
 
 ### Deprecated
 

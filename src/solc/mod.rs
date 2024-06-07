@@ -258,6 +258,7 @@ impl Compiler {
             paths,
             libraries.clone(),
             StandardJsonInputSettingsOptimizer::new_yul_validation(),
+            vec![],
         );
         self.validate_yul_standard_json(solc_input)
     }

@@ -80,6 +80,7 @@ impl Input {
         via_ir: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
+        llvm_options: Vec<String>,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
@@ -110,6 +111,7 @@ impl Input {
                 enable_eravm_extensions,
                 detect_missing_libraries,
                 optimizer,
+                llvm_options,
                 metadata,
             ),
             suppressed_warnings,
@@ -131,6 +133,7 @@ impl Input {
         via_ir: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
+        llvm_options: Vec<String>,
         suppressed_warnings: Option<Vec<Warning>>,
     ) -> anyhow::Result<Self> {
         let sources = sources
@@ -151,6 +154,7 @@ impl Input {
                 enable_eravm_extensions,
                 detect_missing_libraries,
                 optimizer,
+                llvm_options,
                 metadata,
             ),
             suppressed_warnings,
@@ -164,6 +168,7 @@ impl Input {
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        llvm_options: Vec<String>,
     ) -> Self {
         let sources = sources
             .into_iter()
@@ -184,6 +189,7 @@ impl Input {
                 false,
                 false,
                 optimizer,
+                llvm_options,
                 None,
             ),
             suppressed_warnings: None,
@@ -197,6 +203,7 @@ impl Input {
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        llvm_options: Vec<String>,
     ) -> Self {
         let sources = paths
             .iter()
@@ -222,6 +229,7 @@ impl Input {
                 false,
                 false,
                 optimizer,
+                llvm_options,
                 None,
             ),
             suppressed_warnings: None,

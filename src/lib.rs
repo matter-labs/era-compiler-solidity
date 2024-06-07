@@ -66,7 +66,7 @@ pub fn yul_to_eravm(
     libraries: Vec<String>,
     solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     enable_eravm_extensions: bool,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -112,7 +112,7 @@ pub fn yul_to_evm(
     libraries: Vec<String>,
     solc_path: Option<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -150,7 +150,7 @@ pub fn yul_to_evm(
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -174,7 +174,7 @@ pub fn llvm_ir_to_eravm(
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -195,7 +195,7 @@ pub fn llvm_ir_to_evm(
 ///
 pub fn eravm_assembly(
     paths: &[PathBuf],
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     include_metadata_hash: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -232,7 +232,7 @@ pub fn standard_output_eravm(
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -260,6 +260,7 @@ pub fn standard_output_eravm(
         false,
         enable_eravm_extensions,
         false,
+        llvm_options.clone(),
         suppressed_warnings,
     )?;
     let sources = solc_input.sources()?;
@@ -326,7 +327,7 @@ pub fn standard_output_evm(
     allow_paths: Option<String>,
     remappings: Option<BTreeSet<String>>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -353,6 +354,7 @@ pub fn standard_output_evm(
         false,
         false,
         false,
+        llvm_options.clone(),
         None,
     )?;
     let sources = solc_input.sources()?;
@@ -408,7 +410,6 @@ pub fn standard_json_eravm(
     force_evmla: bool,
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
-    llvm_options: &[&str],
     json_path: Option<PathBuf>,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -420,8 +421,12 @@ pub fn standard_json_eravm(
     let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
+    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
+    let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
+
     let force_evmla = solc_input.settings.force_evmla.unwrap_or_default() || force_evmla;
     let enable_eravm_extensions = solc_input
         .settings
@@ -439,7 +444,6 @@ pub fn standard_json_eravm(
         }
         None => true,
     };
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
@@ -545,7 +549,6 @@ pub fn standard_json_eravm(
 pub fn standard_json_evm(
     solc_compiler: Option<&SolcCompiler>,
     force_evmla: bool,
-    llvm_options: &[&str],
     json_path: Option<PathBuf>,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -557,15 +560,18 @@ pub fn standard_json_evm(
     let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
+    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
+    let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
+
     let include_metadata_hash = match solc_input.settings.metadata {
         Some(ref metadata) => {
             metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
         }
         None => true,
     };
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
@@ -670,7 +676,7 @@ pub fn combined_json_eravm(
     output_directory: Option<PathBuf>,
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     suppressed_warnings: Option<Vec<Warning>>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
@@ -736,7 +742,7 @@ pub fn combined_json_evm(
     output_directory: Option<PathBuf>,
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: &[&str],
+    llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
