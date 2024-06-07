@@ -7,12 +7,16 @@ pub mod pipeline;
 pub mod standard_json;
 pub mod version;
 
+use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
+use std::sync::OnceLock;
+use std::sync::RwLock;
 
 use self::combined_json::CombinedJson;
 use self::pipeline::Pipeline;
+use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::Output as StandardJsonOutput;
 use self::version::Version;
@@ -20,11 +24,12 @@ use self::version::Version;
 ///
 /// The Solidity compiler.
 ///
+#[derive(Debug, Clone)]
 pub struct Compiler {
     /// The binary executable name.
     pub executable: String,
-    /// The lazily-initialized compiler version.
-    pub version: Option<Version>,
+    /// The `solc` compiler version.
+    pub version: Version,
 }
 
 impl Compiler {
@@ -44,43 +49,55 @@ impl Compiler {
     pub const FIRST_CANCUN_VERSION: semver::Version = semver::Version::new(0, 8, 24);
 
     /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 25);
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 26);
 
     ///
-    /// A shortcut constructor.
+    /// A shortcut constructor lazily using a thread-safe cell.
     ///
     /// Different tools may use different `executable` names. For example, the integration tester
     /// uses `solc-<version>` format.
     ///
-    pub fn new(executable: String) -> anyhow::Result<Self> {
-        if let Err(error) = which::which(executable.as_str()) {
-            anyhow::bail!(
-                "The `{executable}` executable not found in ${{PATH}}: {}",
-                error
-            );
+    pub fn new(executable: &str) -> anyhow::Result<Self> {
+        if let Some(executable) = Self::executables()
+            .read()
+            .expect("Sync")
+            .get(executable)
+            .cloned()
+        {
+            return Ok(executable);
         }
-        Ok(Self {
-            executable,
-            version: None,
-        })
+        let mut executables = Self::executables().write().expect("Sync");
+
+        if let Err(error) = which::which(executable) {
+            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}");
+        }
+        let version = Self::parse_version(executable)?;
+        let compiler = Self {
+            executable: executable.to_owned(),
+            version,
+        };
+
+        executables.insert(executable.to_owned(), compiler.clone());
+        Ok(compiler)
     }
 
     ///
-    /// Compiles the Solidity `--standard-json` input into Yul IR.
+    /// The Solidity `--standard-json` mirror.
     ///
     pub fn standard_json(
-        &mut self,
+        &self,
         mut input: StandardJsonInput,
-        pipeline: Pipeline,
+        pipeline: Option<Pipeline>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        let version = self.version()?;
+        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
 
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
+        command.stderr(std::process::Stdio::piped());
         command.arg("--standard-json");
 
         if let Some(base_path) = base_path {
@@ -96,52 +113,54 @@ impl Compiler {
             command.arg(allow_paths);
         }
 
-        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
-
-        let input_json = serde_json::to_vec(&input).expect("Always valid");
-
-        let process = command.spawn().map_err(|error| {
+        let mut process = command.spawn().map_err(|error| {
             anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
         })?;
-        process
+        let stdin = process
             .stdin
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("{} stdin getting error", self.executable))?
-            .write_all(input_json.as_slice())
-            .map_err(|error| {
-                anyhow::anyhow!("{} stdin writing error: {:?}", self.executable, error)
-            })?;
-
-        let output = process.wait_with_output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess output error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
-            );
-        }
-
-        let mut output: StandardJsonOutput = era_compiler_common::deserialize_from_slice(
-            output.stdout.as_slice(),
-        )
-        .map_err(|error| {
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
+        let stdin_input = serde_json::to_vec(&input).map_err(|error| {
             anyhow::anyhow!(
-                "{} subprocess output parsing error: {}\n{}",
-                self.executable,
-                error,
-                era_compiler_common::deserialize_from_slice::<serde_json::Value>(
-                    output.stdout.as_slice()
-                )
-                .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
+                "{} subprocess standard JSON input serialization error: {error:?}",
+                self.executable
             )
         })?;
-        output.preprocess_ast(&version, pipeline, suppressed_warnings.as_slice())?;
-        output.remove_evm();
+        stdin.write_all(stdin_input.as_slice()).map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess stdin writing error: {error:?}",
+                self.executable
+            )
+        })?;
 
-        Ok(output)
+        let result = process.wait_with_output().map_err(|error| {
+            anyhow::anyhow!(
+                "{} subprocess output reading error: {error:?}",
+                self.executable
+            )
+        })?;
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut solc_output = match era_compiler_common::deserialize_from_slice::<StandardJsonOutput>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(solc_output) => solc_output,
+            Err(error) => {
+                anyhow::bail!(
+                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
+        }
+
+        if let Some(pipeline) = pipeline {
+            solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
+        }
+        solc_output.remove_evm();
+
+        Ok(solc_output)
     }
 
     ///
@@ -152,7 +171,11 @@ impl Compiler {
         paths: &[PathBuf],
         combined_json_argument: &str,
     ) -> anyhow::Result<CombinedJson> {
-        let mut command = std::process::Command::new(self.executable.as_str());
+        let executable = self.executable.to_owned();
+
+        let mut command = std::process::Command::new(executable.as_str());
+        command.stdout(std::process::Stdio::piped());
+        command.stderr(std::process::Stdio::piped());
         command.args(paths);
 
         let mut combined_json_flags = Vec::new();
@@ -171,42 +194,32 @@ impl Compiler {
         command.arg("--combined-json");
         command.arg(combined_json_flags.join(","));
 
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
+        let process = command.spawn().map_err(|error| {
+            anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
         })?;
-        if !output.status.success() {
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                String::from_utf8_lossy(output.stdout.as_slice())
-            )?;
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                String::from_utf8_lossy(output.stderr.as_slice())
-            )?;
-            anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stdout.as_slice()).to_string()
-            );
-        }
 
-        let mut combined_json: CombinedJson = era_compiler_common::deserialize_from_slice(
-            output.stdout.as_slice(),
-        )
-        .map_err(|error| {
+        let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!(
-                "{} subprocess output parsing error: {}\n{}",
-                self.executable,
-                error,
-                era_compiler_common::deserialize_from_slice::<serde_json::Value>(
-                    output.stdout.as_slice()
-                )
-                .map(|json| serde_json::to_string_pretty(&json).expect("Always valid"))
-                .unwrap_or_else(|_| String::from_utf8_lossy(output.stdout.as_slice()).to_string()),
+                "{} subprocess output reading error: {error:?}",
+                self.executable
             )
         })?;
+        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+        let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
+            result.stdout.as_slice(),
+        ) {
+            Ok(combined_json) => combined_json,
+            Err(error) => {
+                anyhow::bail!(
+                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    self.executable
+                );
+            }
+        };
+        if !result.status.success() {
+            anyhow::bail!("{} error: {stderr_message}", self.executable);
+        }
+
         for filtered_flag in filtered_flags.into_iter() {
             for (_path, contract) in combined_json.contracts.iter_mut() {
                 match filtered_flag {
@@ -227,44 +240,81 @@ impl Compiler {
     }
 
     ///
-    /// The `solc` Yul validator.
+    /// Validates the Yul project as paths and libraries.
     ///
-    pub fn validate_yul(&self, path: &Path) -> anyhow::Result<()> {
-        let mut command = std::process::Command::new(self.executable.as_str());
-        command.arg("--strict-assembly");
-        command.arg(path);
-
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
-        if !output.status.success() {
+    pub fn validate_yul_paths(
+        &self,
+        paths: &[PathBuf],
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+    ) -> anyhow::Result<StandardJsonOutput> {
+        if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "{} error: {}",
-                self.executable,
-                String::from_utf8_lossy(output.stderr.as_slice()).to_string()
+                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
+                Self::LAST_SUPPORTED_VERSION,
             );
         }
 
-        Ok(())
+        let solc_input = StandardJsonInput::from_yul_paths(
+            paths,
+            libraries.clone(),
+            StandardJsonInputSettingsOptimizer::new_yul_validation(),
+        );
+        self.validate_yul_standard_json(solc_input)
+    }
+
+    ///
+    /// Validates the Yul project as standard JSON input.
+    ///
+    pub fn validate_yul_standard_json(
+        &self,
+        mut solc_input: StandardJsonInput,
+    ) -> anyhow::Result<StandardJsonOutput> {
+        if self.version.default != Self::LAST_SUPPORTED_VERSION {
+            anyhow::bail!(
+                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
+                Self::LAST_SUPPORTED_VERSION,
+            );
+        }
+
+        solc_input.normalize_yul_validation();
+        let solc_output = self.standard_json(solc_input, None, None, vec![], None)?;
+        if solc_output.contracts.is_none() {
+            anyhow::bail!(
+                "{}",
+                solc_output
+                    .errors
+                    .as_ref()
+                    .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
+                    .unwrap_or_else(|| {
+                        "Unknown Yul validation error: both `contracts` and `errors` are unset"
+                            .to_owned()
+                    })
+            );
+        }
+        Ok(solc_output)
+    }
+
+    ///
+    /// Returns the global shared array of `solc` executables.
+    ///
+    fn executables() -> &'static RwLock<HashMap<String, Self>> {
+        static EXECUTABLES: OnceLock<RwLock<HashMap<String, Compiler>>> = OnceLock::new();
+        EXECUTABLES.get_or_init(|| RwLock::new(HashMap::new()))
     }
 
     ///
     /// The `solc --version` mini-parser.
     ///
-    pub fn version(&mut self) -> anyhow::Result<Version> {
-        if let Some(version) = self.version.as_ref() {
-            return Ok(version.to_owned());
-        }
-
-        let mut command = std::process::Command::new(self.executable.as_str());
+    fn parse_version(executable: &str) -> anyhow::Result<Version> {
+        let mut command = std::process::Command::new(executable);
         command.arg("--version");
-        let output = command.output().map_err(|error| {
-            anyhow::anyhow!("{} subprocess error: {:?}", self.executable, error)
-        })?;
+        let output = command
+            .output()
+            .map_err(|error| anyhow::anyhow!("{} subprocess error: {:?}", executable, error))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} error: {}",
-                self.executable,
+                "{} version getting error: {}",
+                executable,
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
         }
@@ -273,32 +323,28 @@ impl Compiler {
         let long = stdout
             .lines()
             .nth(1)
-            .ok_or_else(|| {
-                anyhow::anyhow!("{} version parsing: not enough lines", self.executable)
-            })?
+            .ok_or_else(|| anyhow::anyhow!("{} version parsing: not enough lines", executable))?
             .split(' ')
             .nth(1)
             .ok_or_else(|| {
                 anyhow::anyhow!(
                     "{} version parsing: not enough words in the 2nd line",
-                    self.executable
+                    executable
                 )
             })?
             .to_owned();
         let default: semver::Version = long
             .split('+')
             .next()
-            .ok_or_else(|| {
-                anyhow::anyhow!("{} version parsing: metadata dropping", self.executable)
-            })?
+            .ok_or_else(|| anyhow::anyhow!("{} version parsing: metadata dropping", executable))?
             .parse()
-            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", self.executable, error))?;
+            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", executable, error))?;
 
         let l2_revision: Option<semver::Version> = stdout
             .lines()
             .nth(2)
             .and_then(|line| line.split(' ').nth(1))
-            .and_then(|line| line.split('-').nth(1))
+            .and_then(|line| line.split('-').last())
             .and_then(|version| version.parse().ok());
 
         let version = Version::new(long, default, l2_revision);
@@ -316,8 +362,6 @@ impl Compiler {
                 version.default
             );
         }
-
-        self.version = Some(version.clone());
 
         Ok(version)
     }

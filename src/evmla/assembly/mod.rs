@@ -87,10 +87,10 @@ impl Assembly {
         {
             Data::Assembly(assembly) => Ok(assembly),
             Data::Hash(hash) => {
-                anyhow::bail!("Expected runtime code, found hash `{}`", hash);
+                anyhow::bail!("Expected runtime code, found hash `{hash}`");
             }
             Data::Path(path) => {
-                anyhow::bail!("Expected runtime code, found path `{}`", path);
+                anyhow::bail!("Expected runtime code, found path `{path}`");
             }
         }
     }
@@ -281,10 +281,10 @@ where
                 .code
                 .ok_or_else(|| anyhow::anyhow!("Runtime code instructions not found"))?,
             Data::Hash(hash) => {
-                anyhow::bail!("Expected runtime code instructions, found hash `{}`", hash)
+                anyhow::bail!("Expected runtime code instructions, found hash `{hash}`")
             }
             Data::Path(path) => {
-                anyhow::bail!("Expected runtime code instructions, found path `{}`", path)
+                anyhow::bail!("Expected runtime code instructions, found path `{path}`")
             }
         };
         let runtime_code_blocks = EtherealIR::get_blocks(

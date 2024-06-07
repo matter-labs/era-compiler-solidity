@@ -89,7 +89,7 @@ impl Stack {
     pub fn pop_tag(&mut self) -> anyhow::Result<num::BigUint> {
         match self.elements.pop() {
             Some(Element::Tag(tag)) => Ok(tag),
-            Some(element) => anyhow::bail!("Expected tag, found {}", element),
+            Some(element) => anyhow::bail!("Expected tag, found {element}"),
             None => anyhow::bail!("Stack underflow"),
         }
     }

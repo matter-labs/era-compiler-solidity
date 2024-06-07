@@ -7,6 +7,8 @@ pub mod details;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::solc::Compiler as SolcCompiler;
+
 use self::details::Details;
 
 ///
@@ -17,21 +19,16 @@ use self::details::Details;
 pub struct Optimizer {
     /// Whether the optimizer is enabled.
     pub enabled: bool,
-    /// The optimization mode string.
-    #[serde(skip_serializing)]
-    pub mode: Option<char>,
     /// The `solc` optimizer details.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<Details>,
+
+    /// The optimization mode string.
+    #[serde(skip_serializing)]
+    pub mode: Option<char>,
     /// Whether to try to recompile with -Oz if the bytecode is too large.
     #[serde(skip_serializing)]
     pub fallback_to_optimizing_for_size: Option<bool>,
-    /// Whether to disable the system request memoization.
-    #[serde(skip_serializing)]
-    pub disable_system_request_memoization: Option<bool>,
-    /// Set the jump table density threshold.
-    #[serde(skip_serializing)]
-    pub jump_table_density_threshold: Option<u32>,
 }
 
 impl Optimizer {
@@ -43,17 +40,24 @@ impl Optimizer {
         mode: Option<char>,
         version: &semver::Version,
         fallback_to_optimizing_for_size: bool,
-        disable_system_request_memoization: bool,
-        jump_table_density_threshold: Option<u32>,
     ) -> Self {
         Self {
             enabled,
             mode,
-            details: Some(Details::disabled(version)),
+            details: if version >= &semver::Version::new(0, 5, 5) {
+                Some(Details::disabled(version))
+            } else {
+                None
+            },
             fallback_to_optimizing_for_size: Some(fallback_to_optimizing_for_size),
-            disable_system_request_memoization: Some(disable_system_request_memoization),
-            jump_table_density_threshold,
         }
+    }
+
+    ///
+    /// A shortcut constructor for Yul validation.
+    ///
+    pub fn new_yul_validation() -> Self {
+        Self::new(true, None, &SolcCompiler::LAST_SUPPORTED_VERSION, false)
     }
 
     ///
@@ -78,9 +82,6 @@ impl TryFrom<&Optimizer> for era_compiler_llvm_context::OptimizerSettings {
         };
         if value.fallback_to_optimizing_for_size.unwrap_or_default() {
             result.enable_fallback_to_size();
-        }
-        if value.disable_system_request_memoization.unwrap_or_default() {
-            result.disable_system_request_memoization();
         }
         Ok(result)
     }

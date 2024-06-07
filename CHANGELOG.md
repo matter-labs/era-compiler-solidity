@@ -1,17 +1,29 @@
 # The `zksolc` changelog
 
-## [1.5.0] - 2024-00-00
+## [Unreleased]
+
+### Added
+
+- The support for compiling multiple files in Yul, LLVM IR, and EraVM assembly modes
+- The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
+- The support for `urls` to local files in standard JSON input
+- The solc v0.8.26 support
+- More LLVM optimizations
+- The `--llvm-options` parameter to pass arbitrary options to LLVM
+- The `--threads` parameter to control the number of threads
+- Caching of the underlying compiler's metadata, including `--version`
 
 ### Changed
 
-- Made the `solc` codegen specifier mandatory
-- Renamed the codegen flags to `--via-evm-assembly` and `--via-ir`
+- Updated to EraVM v1.5.0
 - Renamed the `--system-mode` flag to `--enable-eravm-extensions`
-- Forbidden to set flags via CLI in standard JSON mode
+- Added all missing flags to standard JSON input
 
 ### Fixed
 
 - The bytes-to-cells LLVM misoptimization
+- Excessive RAM usage and compilation time with some projects
+- Redundancy in error printing
 
 ## [1.4.1] - 2024-04-24
 

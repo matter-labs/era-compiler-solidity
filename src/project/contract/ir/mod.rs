@@ -61,7 +61,7 @@ impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_zkasm(path: String, source: String) -> Self {
+    pub fn new_eravm_assembly(path: String, source: String) -> Self {
         Self::ZKASM(ZKASM::new(path, source))
     }
 

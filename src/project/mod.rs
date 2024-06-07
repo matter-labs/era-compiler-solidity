@@ -4,12 +4,14 @@
 
 pub mod contract;
 
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,7 +26,12 @@ use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::process::output_eravm::Output as EraVMProcessOutput;
 use crate::process::output_evm::Output as EVMProcessOutput;
+use crate::project::contract::ir::IR as ProjectContractIR;
 use crate::project::contract::ir::IR;
+use crate::project::contract::Contract as ProjectContract;
+use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
 use crate::yul::lexer::Lexer;
@@ -37,8 +44,10 @@ use self::contract::Contract;
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
-    /// The source code version.
-    pub version: SolcVersion,
+    /// The project language.
+    pub language: SolcStandardJsonInputLanguage,
+    /// The `solc` compiler version.
+    pub solc_version: Option<SolcVersion>,
     /// The project contracts,
     pub contracts: BTreeMap<String, Contract>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
@@ -52,7 +61,8 @@ impl Project {
     /// A shortcut constructor.
     ///
     pub fn new(
-        version: SolcVersion,
+        language: SolcStandardJsonInputLanguage,
+        solc_version: Option<SolcVersion>,
         contracts: BTreeMap<String, Contract>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
     ) -> Self {
@@ -62,11 +72,264 @@ impl Project {
         }
 
         Self {
-            version,
+            language,
+            solc_version,
             contracts,
             identifier_paths,
             libraries,
         }
+    }
+
+    ///
+    /// Parses the Solidity `sources` and returns a Solidity project.
+    ///
+    pub fn try_from_solidity_sources(
+        solc_output: &mut SolcStandardJsonOutput,
+        sources: BTreeMap<String, String>,
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        pipeline: SolcPipeline,
+        solc_compiler: &SolcCompiler,
+        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<Self> {
+        if let SolcPipeline::EVMLA = pipeline {
+            solc_output.preprocess_dependencies()?;
+        }
+
+        let files = match solc_output.contracts.as_ref() {
+            Some(files) => files,
+            None => {
+                anyhow::bail!(
+                    "{}",
+                    solc_output
+                        .errors
+                        .as_ref()
+                        .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
+                        .unwrap_or_else(|| "Unknown project assembling error".to_owned())
+                );
+            }
+        };
+        let mut project_contracts = BTreeMap::new();
+
+        let solc_version = solc_compiler.version.to_owned();
+
+        for (path, contracts) in files.iter() {
+            for (name, contract) in contracts.iter() {
+                let full_path = format!("{path}:{name}");
+
+                let source = match pipeline {
+                    SolcPipeline::Yul => {
+                        let ir_optimized = match contract.ir_optimized.to_owned() {
+                            Some(ir_optimized) => ir_optimized,
+                            None => continue,
+                        };
+                        if ir_optimized.is_empty() {
+                            continue;
+                        }
+
+                        if let Some(debug_config) = debug_config {
+                            debug_config.dump_yul(
+                                full_path.as_str(),
+                                None,
+                                ir_optimized.as_str(),
+                            )?;
+                        }
+
+                        let mut lexer = Lexer::new(ir_optimized.to_owned());
+                        let object = Object::parse(&mut lexer, None).map_err(|error| {
+                            anyhow::anyhow!("Contract `{}` parsing: {:?}", full_path, error)
+                        })?;
+
+                        ProjectContractIR::new_yul(ir_optimized.to_owned(), object)
+                    }
+                    SolcPipeline::EVMLA => {
+                        let evm = contract.evm.as_ref();
+                        let assembly = match evm.and_then(|evm| evm.assembly.to_owned()) {
+                            Some(assembly) => assembly.to_owned(),
+                            None => continue,
+                        };
+                        let extra_metadata = evm
+                            .and_then(|evm| evm.extra_metadata.to_owned())
+                            .unwrap_or_default();
+
+                        ProjectContractIR::new_evmla(assembly, extra_metadata)
+                    }
+                };
+
+                let source_code = sources
+                    .get(path.as_str())
+                    .ok_or_else(|| anyhow::anyhow!("Source code for path `{}` not found", path))?;
+                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                let project_contract = ProjectContract::new(
+                    full_path.clone(),
+                    source,
+                    contract.metadata.to_owned(),
+                    hash,
+                    Some(&solc_version),
+                );
+                project_contracts.insert(full_path, project_contract);
+            }
+        }
+
+        Ok(Project::new(
+            SolcStandardJsonInputLanguage::Solidity,
+            Some(solc_version.to_owned()),
+            project_contracts,
+            libraries,
+        ))
+    }
+
+    ///
+    /// Reads the Yul source code `paths` and returns a Yul project.
+    ///
+    pub fn try_from_yul_paths(
+        paths: &[PathBuf],
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        solc_version: Option<&SolcVersion>,
+        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<Self> {
+        let sources = paths
+            .iter()
+            .map(|path| {
+                let source_code = std::fs::read_to_string(path.as_path())
+                    .map_err(|error| anyhow::anyhow!("Yul file {path:?} reading: {error}"))?;
+                Ok((path.to_string_lossy().to_string(), source_code))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
+        Self::try_from_yul_sources(sources, libraries, solc_version, debug_config)
+    }
+
+    ///
+    /// Parses the Yul `sources` and returns a Yul project.
+    ///
+    pub fn try_from_yul_sources(
+        sources: BTreeMap<String, String>,
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        solc_version: Option<&SolcVersion>,
+        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<Self> {
+        let project_contracts = sources
+            .into_par_iter()
+            .map(|(path, source_code)| {
+                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                let mut lexer = Lexer::new(source_code.to_owned());
+                let object = Object::parse(&mut lexer, None)
+                    .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing: {}", path, error))?;
+
+                if let Some(debug_config) = debug_config {
+                    debug_config.dump_yul(path.as_str(), None, source_code.as_str())?;
+                }
+
+                let contract = Contract::new(
+                    path.clone(),
+                    IR::new_yul(source_code.to_owned(), object),
+                    None,
+                    hash,
+                    solc_version,
+                );
+
+                Ok((path, contract))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, Contract>>>()?;
+
+        Ok(Self::new(
+            SolcStandardJsonInputLanguage::Yul,
+            solc_version.cloned(),
+            project_contracts,
+            libraries,
+        ))
+    }
+
+    ///
+    /// Reads the LLVM IR source code `paths` and returns an LLVM IR project.
+    ///
+    pub fn try_from_llvm_ir_paths(paths: &[PathBuf]) -> anyhow::Result<Self> {
+        let sources = paths
+            .iter()
+            .map(|path| {
+                let source_code = std::fs::read_to_string(path.as_path())
+                    .map_err(|error| anyhow::anyhow!("LLVM IR file {path:?} reading: {error}"))?;
+                Ok((path.to_string_lossy().to_string(), source_code))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
+        Self::try_from_llvm_ir_sources(sources)
+    }
+
+    ///
+    /// Parses the LLVM IR `sources` and returns an LLVM IR project.
+    ///
+    pub fn try_from_llvm_ir_sources(sources: BTreeMap<String, String>) -> anyhow::Result<Self> {
+        let project_contracts = sources
+            .into_par_iter()
+            .map(|(path, source_code)| {
+                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                let contract = Contract::new(
+                    path.clone(),
+                    IR::new_llvm_ir(path.clone(), source_code),
+                    None,
+                    hash,
+                    None,
+                );
+
+                Ok((path, contract))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, Contract>>>()?;
+
+        Ok(Self::new(
+            SolcStandardJsonInputLanguage::LLVMIR,
+            None,
+            project_contracts,
+            BTreeMap::new(),
+        ))
+    }
+
+    ///
+    /// Reads the EraVM assembly source code `paths` and returns an EraVM assembly project.
+    ///
+    pub fn try_from_eravm_assembly_paths(paths: &[PathBuf]) -> anyhow::Result<Self> {
+        let sources = paths
+            .iter()
+            .map(|path| {
+                let source_code = std::fs::read_to_string(path.as_path()).map_err(|error| {
+                    anyhow::anyhow!("EraVM assembly file {path:?} reading: {error}")
+                })?;
+                Ok((path.to_string_lossy().to_string(), source_code))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
+        Self::try_from_eravm_assembly_sources(sources)
+    }
+
+    ///
+    /// Parses the EraVM assembly `sources` and returns an EraVM assembly project.
+    ///
+    pub fn try_from_eravm_assembly_sources(
+        sources: BTreeMap<String, String>,
+    ) -> anyhow::Result<Self> {
+        let project_contracts = sources
+            .into_par_iter()
+            .map(|(path, source_code)| {
+                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+
+                let contract = Contract::new(
+                    path.clone(),
+                    IR::new_eravm_assembly(path.clone(), source_code),
+                    None,
+                    hash,
+                    None,
+                );
+
+                Ok((path, contract))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, Contract>>>()?;
+
+        Ok(Self::new(
+            SolcStandardJsonInputLanguage::EraVMAssembly,
+            None,
+            project_contracts,
+            BTreeMap::new(),
+        ))
     }
 
     ///
@@ -75,50 +338,54 @@ impl Project {
     pub fn compile_to_eravm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[&str],
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EraVMContractBuild>> = self
             .contracts
-            .into_par_iter()
+            .par_iter()
             .map(|(full_path, contract)| {
                 let process_output: anyhow::Result<EraVMProcessOutput> = crate::process::call(
                     EraVMProcessInput::new(
-                        contract,
-                        project.clone(),
+                        Cow::Borrowed(contract),
+                        Cow::Borrowed(&self),
                         enable_eravm_extensions,
                         include_metadata_hash,
                         bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
                         optimizer_settings.clone(),
+                        llvm_options
+                            .iter()
+                            .map(|option| (*option).to_owned())
+                            .collect(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EraVM,
                 );
 
-                (full_path, process_output.map(|output| output.build))
+                (
+                    full_path.to_owned(),
+                    process_output.map(|output| output.build),
+                )
             })
             .collect();
 
         let mut build = EraVMBuild::default();
         let mut hashes = HashMap::with_capacity(results.len());
         for (path, result) in results.iter() {
-            match result {
-                Ok(contract) => {
-                    hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
-                }
-                Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
-                }
+            if let Ok(ref contract) = result {
+                hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
             }
         }
+
+        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
             match result {
                 Ok(mut contract) => {
                     for dependency in contract.factory_dependencies.drain() {
-                        let dependency_path = project
+                        let dependency_path = self
                             .identifier_paths
                             .get(dependency.as_str())
                             .cloned()
@@ -128,8 +395,7 @@ impl Project {
                         let hash = match hashes.get(dependency_path.as_str()) {
                             Some(hash) => hash.to_owned(),
                             None => anyhow::bail!(
-                                "Dependency contract `{}` not found in the project",
-                                dependency_path
+                                "dependency `{dependency_path}` not found in the project"
                             ),
                         };
                         contract
@@ -141,9 +407,20 @@ impl Project {
                     build.contracts.insert(path, contract);
                 }
                 Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                    errors.push((path, error));
                 }
             }
+        }
+
+        if !errors.is_empty() {
+            anyhow::bail!(
+                "{}",
+                errors
+                    .into_iter()
+                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
         }
 
         Ok(build)
@@ -155,39 +432,58 @@ impl Project {
     pub fn compile_to_evm(
         self,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[&str],
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
-        let project = self.clone();
         let results: BTreeMap<String, anyhow::Result<EVMContractBuild>> = self
             .contracts
-            .into_par_iter()
+            .par_iter()
             .map(|(full_path, contract)| {
                 let process_output: anyhow::Result<EVMProcessOutput> = crate::process::call(
                     EVMProcessInput::new(
-                        contract,
-                        project.clone(),
+                        Cow::Borrowed(contract),
+                        Cow::Borrowed(&self),
                         include_metadata_hash,
                         optimizer_settings.clone(),
+                        llvm_options
+                            .iter()
+                            .map(|option| (*option).to_owned())
+                            .collect(),
                         debug_config.clone(),
                     ),
                     era_compiler_llvm_context::Target::EVM,
                 );
 
-                (full_path, process_output.map(|output| output.build))
+                (
+                    full_path.to_owned(),
+                    process_output.map(|output| output.build),
+                )
             })
             .collect();
 
         let mut build = EVMBuild::default();
+        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
             match result {
                 Ok(contract) => {
                     build.contracts.insert(path, contract);
                 }
                 Err(error) => {
-                    anyhow::bail!("Contract `{}` compiling error: {:?}", path, error);
+                    errors.push((path, error));
                 }
             }
+        }
+
+        if !errors.is_empty() {
+            anyhow::bail!(
+                "{}",
+                errors
+                    .into_iter()
+                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
         }
 
         Ok(build)
@@ -219,121 +515,6 @@ impl Project {
         }
         MissingLibraries::new(missing_deployable_libraries)
     }
-
-    ///
-    /// Parses the Yul source code file and returns the source data.
-    ///
-    pub fn try_from_yul_path(
-        path: &Path,
-        solc_validator: Option<&SolcCompiler>,
-    ) -> anyhow::Result<Self> {
-        let source_code = std::fs::read_to_string(path)
-            .map_err(|error| anyhow::anyhow!("Yul file {:?} reading error: {}", path, error))?;
-        Self::try_from_yul_string(path, source_code.as_str(), solc_validator)
-    }
-
-    ///
-    /// Parses the test Yul source code string and returns the source data.
-    ///
-    /// Only for integration testing purposes.
-    ///
-    pub fn try_from_yul_string(
-        path: &Path,
-        source_code: &str,
-        solc_validator: Option<&SolcCompiler>,
-    ) -> anyhow::Result<Self> {
-        if let Some(solc) = solc_validator {
-            solc.validate_yul(path)?;
-        }
-
-        let source_version = SolcVersion::new_simple(SolcCompiler::LAST_SUPPORTED_VERSION);
-        let path = path.to_string_lossy().to_string();
-        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-        let mut lexer = Lexer::new(source_code.to_owned());
-        let object = Object::parse(&mut lexer, None)
-            .map_err(|error| anyhow::anyhow!("Yul object `{}` parsing error: {}", path, error))?;
-
-        let mut project_contracts = BTreeMap::new();
-        project_contracts.insert(
-            path.to_owned(),
-            Contract::new(
-                path,
-                source_hash,
-                source_version.clone(),
-                IR::new_yul(source_code.to_owned(), object),
-                None,
-            ),
-        );
-
-        Ok(Self::new(
-            source_version,
-            project_contracts,
-            BTreeMap::new(),
-        ))
-    }
-
-    ///
-    /// Parses the LLVM IR source code file and returns the source data.
-    ///
-    pub fn try_from_llvm_ir_path(path: &Path) -> anyhow::Result<Self> {
-        let source_code = std::fs::read_to_string(path)
-            .map_err(|error| anyhow::anyhow!("LLVM IR file {:?} reading error: {}", path, error))?;
-        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-        let source_version = SolcVersion::new_simple(era_compiler_llvm_context::LLVM_VERSION);
-        let path = path.to_string_lossy().to_string();
-
-        let mut project_contracts = BTreeMap::new();
-        project_contracts.insert(
-            path.clone(),
-            Contract::new(
-                path.clone(),
-                source_hash,
-                source_version.clone(),
-                IR::new_llvm_ir(path, source_code),
-                None,
-            ),
-        );
-
-        Ok(Self::new(
-            source_version,
-            project_contracts,
-            BTreeMap::new(),
-        ))
-    }
-
-    ///
-    /// Parses the EraVM assembly source code file and returns the source data.
-    ///
-    pub fn try_from_eravm_assembly_path(path: &Path) -> anyhow::Result<Self> {
-        let source_code = std::fs::read_to_string(path).map_err(|error| {
-            anyhow::anyhow!("EraVM assembly file {:?} reading error: {}", path, error)
-        })?;
-        let source_hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-        let source_version =
-            SolcVersion::new_simple(era_compiler_llvm_context::eravm_const::ZKEVM_VERSION);
-        let path = path.to_string_lossy().to_string();
-
-        let mut project_contracts = BTreeMap::new();
-        project_contracts.insert(
-            path.clone(),
-            Contract::new(
-                path.clone(),
-                source_hash,
-                source_version.clone(),
-                IR::new_zkasm(path, source_code),
-                None,
-            ),
-        );
-
-        Ok(Self::new(
-            source_version,
-            project_contracts,
-            BTreeMap::new(),
-        ))
-    }
 }
 
 impl era_compiler_llvm_context::EraVMDependency for Project {
@@ -341,6 +522,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
         project: Self,
         identifier: &str,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -351,27 +533,19 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             .get(contract_path.as_str())
             .cloned()
             .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "Dependency contract `{}` not found in the project",
-                    contract_path
-                )
+                anyhow::anyhow!("dependency `{contract_path}` not found in the project")
             })?;
 
         contract
             .compile_to_eravm(
                 project,
                 optimizer_settings,
+                llvm_options,
                 enable_eravm_extensions,
                 include_metadata_hash,
                 debug_config,
             )
-            .map_err(|error| {
-                anyhow::anyhow!(
-                    "Dependency contract `{}` compiling error: {}",
-                    identifier,
-                    error
-                )
-            })
+            .map_err(|error| anyhow::anyhow!("dependency `{identifier}`: {error}"))
             .map(|contract| contract.build.bytecode_hash)
     }
 
@@ -397,7 +571,7 @@ impl era_compiler_llvm_context::EraVMDependency for Project {
             }
         }
 
-        anyhow::bail!("Library `{}` not found in the project", path);
+        anyhow::bail!("library `{path}` not found in the project");
     }
 }
 
@@ -406,6 +580,7 @@ impl era_compiler_llvm_context::EVMDependency for Project {
         _project: Self,
         _identifier: &str,
         _optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        _llvm_options: &[String],
         _include_metadata_hash: bool,
         _debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<String> {

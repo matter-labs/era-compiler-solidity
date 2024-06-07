@@ -7,14 +7,10 @@ pub mod input_evm;
 pub mod output_eravm;
 pub mod output_evm;
 
-use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
-
-use once_cell::sync::OnceCell;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
+use std::sync::OnceLock;
 
 use self::input_eravm::Input as EraVMInput;
 use self::input_evm::Input as EVMInput;
@@ -22,29 +18,26 @@ use self::output_eravm::Output as EraVMOutput;
 use self::output_evm::Output as EVMOutput;
 
 /// The overriden executable name used when the compiler is run as a library.
-pub static EXECUTABLE: OnceCell<PathBuf> = OnceCell::new();
+pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.
 ///
 pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
-    let mut stdin = std::io::stdin();
-    let mut stdout = std::io::stdout();
-    let mut stderr = std::io::stderr();
-
-    let mut buffer = Vec::with_capacity(16384);
-    stdin.read_to_end(&mut buffer).expect("Stdin reading error");
-
     match target {
         era_compiler_llvm_context::Target::EraVM => {
-            let input: EraVMInput = era_compiler_common::deserialize_from_slice(buffer.as_slice())?;
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
+                .expect("Stdin reading error");
 
             if input.enable_test_encoding {
                 zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
             }
-            let result = input.contract.compile_to_eravm(
-                input.project,
+            let result = input.contract.into_owned().compile_to_eravm(
+                input.project.into_owned(),
                 input.optimizer_settings,
+                input.llvm_options.as_slice(),
                 input.enable_eravm_extensions,
                 input.include_metadata_hash,
                 input.debug_config,
@@ -53,27 +46,30 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             match result {
                 Ok(build) => {
                     let output = EraVMOutput::new(build);
-                    let json = serde_json::to_vec(&output).expect("Always valid");
-                    stdout
-                        .write_all(json.as_slice())
+                    let output_json = serde_json::to_vec(&output).expect("Always valid");
+                    std::io::stdout()
+                        .write_all(output_json.as_slice())
                         .expect("Stdout writing error");
                     Ok(())
                 }
                 Err(error) => {
-                    let message = error.to_string();
-                    stderr
-                        .write_all(message.as_bytes())
+                    std::io::stderr()
+                        .write_all(error.to_string().as_bytes())
                         .expect("Stderr writing error");
                     Err(error)
                 }
             }
         }
         era_compiler_llvm_context::Target::EVM => {
-            let input: EVMInput = era_compiler_common::deserialize_from_slice(buffer.as_slice())?;
+            let input_json =
+                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
+                .expect("Stdin reading error");
 
-            let result = input.contract.compile_to_evm(
-                input.project,
+            let result = input.contract.into_owned().compile_to_evm(
+                input.project.into_owned(),
                 input.optimizer_settings,
+                input.llvm_options.as_slice(),
                 input.include_metadata_hash,
                 input.debug_config,
             );
@@ -81,16 +77,15 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             match result {
                 Ok(build) => {
                     let output = EVMOutput::new(build);
-                    let json = serde_json::to_vec(&output).expect("Always valid");
-                    stdout
-                        .write_all(json.as_slice())
+                    let output_json = serde_json::to_vec(&output).expect("Always valid");
+                    std::io::stdout()
+                        .write_all(output_json.as_slice())
                         .expect("Stdout writing error");
                     Ok(())
                 }
                 Err(error) => {
-                    let message = error.to_string();
-                    stderr
-                        .write_all(message.as_bytes())
+                    std::io::stderr()
+                        .write_all(error.to_string().as_bytes())
                         .expect("Stderr writing error");
                     Err(error)
                 }
@@ -104,11 +99,9 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
 ///
 pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> anyhow::Result<O>
 where
-    I: Serialize,
-    O: DeserializeOwned,
+    I: serde::Serialize,
+    O: serde::de::DeserializeOwned,
 {
-    let input_json = serde_json::to_vec(&input).expect("Always valid");
-
     let executable = match EXECUTABLE.get() {
         Some(executable) => executable.to_owned(),
         None => std::env::current_exe()?,
@@ -121,33 +114,33 @@ where
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
-    let process = command.spawn().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess spawning error: {:?}", executable, error)
-    })?;
 
-    process
+    let mut process = command
+        .spawn()
+        .map_err(|error| anyhow::anyhow!("{executable:?} subprocess spawning error: {error:?}"))?;
+
+    let stdin = process
         .stdin
-        .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("{:?} stdin getting error", executable))?
-        .write_all(input_json.as_slice())
-        .map_err(|error| anyhow::anyhow!("{:?} stdin writing error: {:?}", executable, error))?;
-    let output = process.wait_with_output().map_err(|error| {
-        anyhow::anyhow!("{:?} subprocess output error: {:?}", executable, error)
+        .as_mut()
+        .ok_or_else(|| anyhow::anyhow!("{executable:?} subprocess stdin getting error"))?;
+    let stdin_input = serde_json::to_vec(&input).expect("Always valid");
+    stdin.write_all(stdin_input.as_slice()).map_err(|error| {
+        anyhow::anyhow!("{executable:?} subprocess stdin writing error: {error:?}",)
     })?;
-    if !output.status.success() {
-        anyhow::bail!(
-            "{}",
-            String::from_utf8_lossy(output.stderr.as_slice()).to_string(),
-        );
-    }
 
-    let output: O =
-        era_compiler_common::deserialize_from_slice(output.stdout.as_slice()).map_err(|error| {
-            anyhow::anyhow!(
-                "{:?} subprocess output parsing error: {}",
-                executable,
-                error,
-            )
-        })?;
+    let result = process.wait_with_output().map_err(|error| {
+        anyhow::anyhow!("{executable:?} subprocess output reading error: {error:?}")
+    })?;
+    let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+    if !result.status.success() {
+        anyhow::bail!("{stderr_message}");
+    }
+    let output = match era_compiler_common::deserialize_from_slice::<O>(result.stdout.as_slice()) {
+        Ok(output) => output,
+        Err(error) => {
+            anyhow::bail!("{executable:?} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})");
+        }
+    };
+
     Ok(output)
 }

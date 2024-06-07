@@ -53,10 +53,15 @@ fn main_inner() -> anyhow::Result<()> {
         None => era_compiler_llvm_context::Target::EraVM,
     };
 
-    rayon::ThreadPoolBuilder::new()
+    let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
+    if let Some(threads) = arguments.threads {
+        thread_pool_builder = thread_pool_builder.num_threads(threads);
+    }
+    thread_pool_builder
         .stack_size(RAYON_WORKER_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
+
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(target);
 
@@ -64,7 +69,7 @@ fn main_inner() -> anyhow::Result<()> {
         return era_compiler_solidity::run_process(target);
     }
     if let era_compiler_llvm_context::Target::EVM = target {
-        anyhow::bail!("The EVM target is under development and not supported yet.")
+        anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
     let debug_config = match arguments.debug_output_directory {
@@ -100,14 +105,14 @@ fn main_inner() -> anyhow::Result<()> {
     if arguments.fallback_to_optimizing_for_size {
         optimizer_settings.enable_fallback_to_size();
     }
-    if arguments.disable_system_request_memoization {
-        optimizer_settings.disable_system_request_memoization();
-    }
-    if let Some(value) = arguments.jump_table_density_threshold {
-        optimizer_settings.set_jump_table_density_threshold(value);
-    }
     optimizer_settings.is_verify_each_enabled = arguments.llvm_verify_each;
     optimizer_settings.is_debug_logging_enabled = arguments.llvm_debug_logging;
+
+    let llvm_options: Vec<&str> = arguments
+        .llvm_options
+        .as_ref()
+        .map(|options| options.split(' ').collect())
+        .unwrap_or_default();
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
@@ -123,8 +128,10 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     arguments.enable_eravm_extensions,
                     include_metadata_hash,
                     debug_config,
@@ -133,22 +140,28 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
             } else if arguments.zkasm {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc_compiler = match arguments.solc.as_deref() {
+                    Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
+                    None => None,
+                };
                 era_compiler_solidity::standard_json_eravm(
-                    &mut solc,
+                    solc_compiler.as_ref(),
+                    arguments.force_evmla,
+                    arguments.enable_eravm_extensions,
+                    arguments.detect_missing_libraries,
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
@@ -157,19 +170,20 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
+                    arguments
+                        .solc
+                        .as_deref()
+                        .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
+                )?;
                 era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
-                    &mut solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    arguments.via_evm_assembly,
-                    arguments.via_yul,
+                    arguments.force_evmla,
                     arguments.enable_eravm_extensions,
                     arguments.detect_missing_libraries,
                     include_metadata_hash,
@@ -181,23 +195,25 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.output_directory,
                     arguments.overwrite,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     suppressed_warnings,
                     debug_config,
                 )?;
                 return Ok(());
             } else {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
+                    arguments
+                        .solc
+                        .as_deref()
+                        .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
+                )?;
                 era_compiler_solidity::standard_output_eravm(
                     input_files.as_slice(),
                     arguments.libraries,
-                    &mut solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    arguments.via_evm_assembly,
-                    arguments.via_yul,
+                    arguments.force_evmla,
                     arguments.enable_eravm_extensions,
                     arguments.detect_missing_libraries,
                     include_metadata_hash,
@@ -207,6 +223,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     suppressed_warnings,
                     debug_config,
                 )
@@ -256,8 +273,10 @@ fn main_inner() -> anyhow::Result<()> {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
+                    arguments.libraries,
                     arguments.solc,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
@@ -265,16 +284,19 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     include_metadata_hash,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc_compiler = match arguments.solc.as_deref() {
+                    Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
+                    None => None,
+                };
                 era_compiler_solidity::standard_json_evm(
-                    &mut solc,
+                    solc_compiler.as_ref(),
+                    arguments.force_evmla,
+                    llvm_options.as_slice(),
                     standard_json.map(PathBuf::from),
                     arguments.base_path,
                     arguments.include_paths,
@@ -283,19 +305,20 @@ fn main_inner() -> anyhow::Result<()> {
                 )?;
                 return Ok(());
             } else if let Some(format) = arguments.combined_json {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc_compiler = era_compiler_solidity::SolcCompiler::new(
+                    arguments
+                        .solc
+                        .as_deref()
+                        .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
+                )?;
                 era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
-                    &mut solc,
+                    &solc_compiler,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    arguments.via_evm_assembly,
-                    arguments.via_yul,
+                    arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
@@ -305,22 +328,24 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.output_directory,
                     arguments.overwrite,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     debug_config,
                 )?;
                 return Ok(());
             } else {
-                let mut solc =
-                    era_compiler_solidity::SolcCompiler::new(arguments.solc.unwrap_or_else(
-                        || era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME.to_owned(),
-                    ))?;
+                let solc = era_compiler_solidity::SolcCompiler::new(
+                    arguments
+                        .solc
+                        .as_deref()
+                        .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
+                )?;
                 era_compiler_solidity::standard_output_evm(
                     input_files.as_slice(),
                     arguments.libraries,
-                    &mut solc,
+                    &solc,
                     evm_version,
                     !arguments.disable_solc_optimizer,
-                    arguments.via_evm_assembly,
-                    arguments.via_yul,
+                    arguments.force_evmla,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
@@ -328,6 +353,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
+                    llvm_options.as_slice(),
                     debug_config,
                 )
             }?;

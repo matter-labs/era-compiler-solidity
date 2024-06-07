@@ -176,10 +176,7 @@ impl FunctionCall {
                     function.borrow().declaration().value.count_params() as usize;
                 if expected_arguments_count != (values.len() - 2) {
                     anyhow::bail!(
-                        "{} Function `{}` expected {} arguments, found {}",
-                        location,
-                        name,
-                        expected_arguments_count,
+                        "{location} Function `{name}` expected {expected_arguments_count} arguments, found {}",
                         values.len()
                     );
                 }
@@ -220,10 +217,7 @@ impl FunctionCall {
                     function.borrow().declaration().value.count_params() as usize;
                 if expected_arguments_count != values.len() {
                     anyhow::bail!(
-                        "{} Function `{}` expected {} arguments, found {}",
-                        location,
-                        name,
-                        expected_arguments_count,
+                        "{location} Function `{name}` expected {expected_arguments_count} arguments, found {}",
                         values.len()
                     );
                 }
@@ -620,7 +614,7 @@ impl FunctionCall {
 
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
@@ -637,7 +631,7 @@ impl FunctionCall {
             Name::CallDataSize => {
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
@@ -652,7 +646,7 @@ impl FunctionCall {
 
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         let calldata_size =
@@ -680,7 +674,7 @@ impl FunctionCall {
             Name::CodeSize => {
                 match context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     era_compiler_llvm_context::CodeType::Deploy => {
                         era_compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
@@ -699,11 +693,10 @@ impl FunctionCall {
             Name::CodeCopy => {
                 if let era_compiler_llvm_context::CodeType::Runtime = context
                     .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("The contract code part type is undefined"))?
+                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
                 {
                     anyhow::bail!(
-                        "{} The `CODECOPY` instruction is not supported in the runtime code",
-                        location,
+                        "{location} The `CODECOPY` instruction is not supported in the runtime code"
                     );
                 }
 
@@ -1062,7 +1055,7 @@ impl FunctionCall {
             }
             Name::BlobHash => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!("{} The `BLOBHASH` instruction is not supported", location);
+                anyhow::bail!("{location} The `BLOBHASH` instruction is not supported");
             }
             Name::Difficulty | Name::Prevrandao => {
                 era_compiler_llvm_context::eravm_evm_contract_context::difficulty(context).map(Some)
@@ -1074,10 +1067,7 @@ impl FunctionCall {
                 era_compiler_llvm_context::eravm_evm_contract_context::basefee(context).map(Some)
             }
             Name::BlobBaseFee => {
-                anyhow::bail!(
-                    "{} The `BLOBBASEFEE` instruction is not supported",
-                    location
-                );
+                anyhow::bail!("{location} The `BLOBBASEFEE` instruction is not supported");
             }
             Name::MSize => {
                 era_compiler_llvm_context::eravm_evm_contract_context::msize(context).map(Some)
@@ -1090,22 +1080,16 @@ impl FunctionCall {
 
             Name::CallCode => {
                 let _arguments = self.pop_arguments_llvm::<D, 7>(context)?;
-                anyhow::bail!("{} The `CALLCODE` instruction is not supported", location)
+                anyhow::bail!("{location} The `CALLCODE` instruction is not supported")
             }
-            Name::Pc => anyhow::bail!("{} The `PC` instruction is not supported", location),
+            Name::Pc => anyhow::bail!("{location} The `PC` instruction is not supported"),
             Name::ExtCodeCopy => {
                 let _arguments = self.pop_arguments_llvm::<D, 4>(context)?;
-                anyhow::bail!(
-                    "{} The `EXTCODECOPY` instruction is not supported",
-                    location
-                )
+                anyhow::bail!("{location} The `EXTCODECOPY` instruction is not supported")
             }
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!(
-                    "{} The `SELFDESTRUCT` instruction is not supported",
-                    location
-                )
+                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
             }
 
             Name::ZkToL1 => {
@@ -1603,10 +1587,7 @@ impl FunctionCall {
                     function.borrow().declaration().value.count_params() as usize;
                 if expected_arguments_count != values.len() {
                     anyhow::bail!(
-                        "{} Function `{}` expected {} arguments, found {}",
-                        location,
-                        name,
-                        expected_arguments_count,
+                        "{location} Function `{name}` expected {expected_arguments_count} arguments, found {}",
                         values.len()
                     );
                 }
@@ -2237,15 +2218,12 @@ impl FunctionCall {
 
             Name::CallCode => {
                 let _arguments = self.pop_arguments_llvm_evm::<D, 7>(context)?;
-                anyhow::bail!("{} The `CALLCODE` instruction is not supported", location)
+                anyhow::bail!("{location} The `CALLCODE` instruction is not supported")
             }
-            Name::Pc => anyhow::bail!("{} The `PC` instruction is not supported", location),
+            Name::Pc => anyhow::bail!("{location} The `PC` instruction is not supported"),
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm_evm::<D, 1>(context)?;
-                anyhow::bail!(
-                    "{} The `SELFDESTRUCT` instruction is not supported",
-                    location
-                )
+                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
             }
 
             _ => Ok(None),

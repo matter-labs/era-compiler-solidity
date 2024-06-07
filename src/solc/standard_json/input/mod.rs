@@ -8,6 +8,7 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::path::Path;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -19,7 +20,6 @@ use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
-use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::language::Language;
@@ -38,6 +38,7 @@ pub struct Input {
     pub sources: BTreeMap<String, Source>,
     /// The compiler settings.
     pub settings: Settings,
+
     /// The suppressed warnings.
     #[serde(skip_serializing)]
     pub suppressed_warnings: Option<Vec<Warning>>,
@@ -45,10 +46,28 @@ pub struct Input {
 
 impl Input {
     ///
-    /// A shortcut constructor from paths.
+    /// A shortcut constructor.
     ///
-    #[allow(clippy::too_many_arguments)]
-    pub fn try_from_paths(
+    /// If the `path` is `None`, the input is read from the stdin.
+    ///
+    pub fn try_from_reader(path: Option<&Path>) -> anyhow::Result<Self> {
+        match path {
+            Some(path) => serde_json::from_reader(
+                std::fs::File::open(path)
+                    .map(std::io::BufReader::new)
+                    .map_err(|error| {
+                        anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
+                    })?,
+            ),
+            None => serde_json::from_reader(std::io::BufReader::new(std::io::stdin())),
+        }
+        .map_err(|error| anyhow::anyhow!("Standard JSON reading: {error}"))
+    }
+
+    ///
+    /// A shortcut constructor from Solidity source paths.
+    ///
+    pub fn try_from_solidity_paths(
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
         paths: &[PathBuf],
@@ -57,9 +76,8 @@ impl Input {
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         metadata: Option<SolcStandardJsonInputSettingsMetadata>,
-        via_evm_assembly: bool,
+        force_evmla: bool,
         via_ir: bool,
-        via_yul: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         suppressed_warnings: Option<Vec<Warning>>,
@@ -73,9 +91,8 @@ impl Input {
         let sources = paths
             .into_par_iter()
             .map(|path| {
-                let source = Source::try_from(path.as_path()).unwrap_or_else(|error| {
-                    panic!("Source code file {path:?} reading error: {error}")
-                });
+                let source = Source::try_read(path.as_path())
+                    .unwrap_or_else(|error| panic!("Source code file {path:?} reading: {error}"));
                 (path.to_string_lossy().to_string(), source)
             })
             .collect();
@@ -88,9 +105,49 @@ impl Input {
                 libraries,
                 remappings,
                 output_selection,
-                via_evm_assembly,
+                force_evmla,
                 via_ir,
-                via_yul,
+                enable_eravm_extensions,
+                detect_missing_libraries,
+                optimizer,
+                metadata,
+            ),
+            suppressed_warnings,
+        })
+    }
+
+    ///
+    /// A shortcut constructor from Solidity source code.
+    ///
+    pub fn try_from_solidity_sources(
+        evm_version: Option<era_compiler_common::EVMVersion>,
+        sources: BTreeMap<String, String>,
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        remappings: Option<BTreeSet<String>>,
+        output_selection: SolcStandardJsonInputSettingsSelection,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
+        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
+        force_evmla: bool,
+        via_ir: bool,
+        enable_eravm_extensions: bool,
+        detect_missing_libraries: bool,
+        suppressed_warnings: Option<Vec<Warning>>,
+    ) -> anyhow::Result<Self> {
+        let sources = sources
+            .into_iter()
+            .map(|(path, content)| (path, Source::from(content)))
+            .collect();
+
+        Ok(Self {
+            language: Language::Solidity,
+            sources,
+            settings: Settings::new(
+                evm_version,
+                libraries,
+                remappings,
+                output_selection,
+                force_evmla,
+                via_ir,
                 enable_eravm_extensions,
                 detect_missing_libraries,
                 optimizer,
@@ -103,57 +160,101 @@ impl Input {
     ///
     /// A shortcut constructor from source code.
     ///
-    /// Only for the integration test purposes.
-    ///
-    #[allow(clippy::too_many_arguments)]
-    pub fn try_from_sources(
-        evm_version: Option<era_compiler_common::EVMVersion>,
+    pub fn from_yul_sources(
         sources: BTreeMap<String, String>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        remappings: Option<BTreeSet<String>>,
-        output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
-        via_evm_assembly: bool,
-        via_ir: bool,
-        via_yul: bool,
-        enable_eravm_extensions: bool,
-        detect_missing_libraries: bool,
-        suppressed_warnings: Option<Vec<Warning>>,
-    ) -> anyhow::Result<Self> {
+    ) -> Self {
         let sources = sources
-            .into_par_iter()
+            .into_iter()
             .map(|(path, content)| (path, Source::from(content)))
             .collect();
+        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
 
-        Ok(Self {
-            language: Language::Solidity,
+        Self {
+            language: Language::Yul,
             sources,
             settings: Settings::new(
-                evm_version,
+                None,
                 libraries,
-                remappings,
+                None,
                 output_selection,
-                via_evm_assembly,
-                via_ir,
-                via_yul,
-                enable_eravm_extensions,
-                detect_missing_libraries,
+                false,
+                false,
+                false,
+                false,
                 optimizer,
-                metadata,
+                None,
             ),
-            suppressed_warnings,
-        })
+            suppressed_warnings: None,
+        }
     }
 
     ///
-    /// Sets the necessary defaults.
+    /// A shortcut constructor from source code.
     ///
-    pub fn normalize(&mut self, solc_version: &SolcVersion, solc_pipeline: SolcPipeline) {
-        self.settings
-            .output_selection
-            .get_or_insert_with(SolcStandardJsonInputSettingsSelection::default)
-            .extend_with_required(solc_pipeline);
-        self.settings.normalize(&solc_version.default);
+    pub fn from_yul_paths(
+        paths: &[PathBuf],
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        optimizer: SolcStandardJsonInputSettingsOptimizer,
+    ) -> Self {
+        let sources = paths
+            .iter()
+            .map(|path| {
+                (
+                    path.to_string_lossy().to_string(),
+                    Source::from(path.as_path()),
+                )
+            })
+            .collect();
+        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
+
+        Self {
+            language: Language::Yul,
+            sources,
+            settings: Settings::new(
+                None,
+                libraries,
+                None,
+                output_selection,
+                false,
+                false,
+                false,
+                false,
+                optimizer,
+                None,
+            ),
+            suppressed_warnings: None,
+        }
+    }
+
+    ///
+    /// Sets the necessary defaults for EraVM compilation.
+    ///
+    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+        self.settings.normalize(version, pipeline);
+    }
+
+    ///
+    /// Sets the necessary defaults for Yul validation.
+    ///
+    pub fn normalize_yul_validation(&mut self) {
+        self.settings.normalize_yul_validation();
+    }
+
+    ///
+    /// Returns an owned tree of loaded sources.
+    ///
+    pub fn sources(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        self.sources
+            .iter()
+            .map(|(path, source)| {
+                let source: String = source
+                    .to_owned()
+                    .try_into()
+                    .map_err(|error| anyhow::anyhow!("Source `{path}`: {error}"))?;
+                Ok((path.to_owned(), source))
+            })
+            .collect()
     }
 }

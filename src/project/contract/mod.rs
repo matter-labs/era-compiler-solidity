@@ -40,15 +40,20 @@ impl Contract {
     ///
     pub fn new(
         path: String,
-        source_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
-        source_version: SolcVersion,
         ir: IR,
         metadata_json: Option<serde_json::Value>,
+        hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+        solc_version: Option<&SolcVersion>,
     ) -> Self {
+        let hash = hex::encode(hash.as_slice());
+        let solc_version = solc_version
+            .as_ref()
+            .map(|solc_version| serde_json::to_value(solc_version).expect("Always valid"))
+            .unwrap_or(serde_json::Value::Null);
         let metadata_json = metadata_json.unwrap_or_else(|| {
             serde_json::json!({
-                "source_hash": hex::encode(source_hash.as_slice()),
-                "source_version": serde_json::to_value(&source_version).expect("Always valid"),
+                "solc_version": solc_version,
+                "hash": hash,
             })
         });
 
@@ -93,6 +98,7 @@ impl Contract {
         mut self,
         project: Project,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -102,15 +108,20 @@ impl Contract {
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
-        let version = project.version.clone();
         let identifier = self.identifier().to_owned();
+        let solc_version = project.solc_version.clone();
 
         let metadata = Metadata::new(
             self.metadata_json.take(),
-            version.default.clone(),
-            version.l2_revision.clone(),
+            solc_version
+                .as_ref()
+                .map(|version| version.default.to_owned()),
+            solc_version
+                .as_ref()
+                .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
+            llvm_options,
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
@@ -151,6 +162,7 @@ impl Contract {
         let mut context = era_compiler_llvm_context::EraVMContext::new(
             &llvm,
             module,
+            llvm_options.to_owned(),
             optimizer,
             Some(project),
             include_metadata_hash,
@@ -164,8 +176,17 @@ impl Contract {
                 context.set_yul_data(yul_data);
             }
             IR::EVMLA(_) => {
+                let solc_version = match solc_version {
+                    Some(solc_version) => solc_version,
+                    None => {
+                        anyhow::bail!(
+                            "The EVM assembly pipeline cannot be executed without `solc`"
+                        );
+                    }
+                };
+
                 let evmla_data =
-                    era_compiler_llvm_context::EraVMContextEVMLAData::new(version.default);
+                    era_compiler_llvm_context::EraVMContextEVMLAData::new(solc_version.default);
                 context.set_evmla_data(evmla_data);
             }
             _ => {}
@@ -173,20 +194,12 @@ impl Contract {
 
         let factory_dependencies = self.drain_factory_dependencies();
 
-        self.ir.declare(&mut context).map_err(|error| {
-            anyhow::anyhow!(
-                "The contract `{}` LLVM IR generator declaration pass error: {}",
-                self.path,
-                error
-            )
-        })?;
-        self.ir.into_llvm(&mut context).map_err(|error| {
-            anyhow::anyhow!(
-                "The contract `{}` LLVM IR generator definition pass error: {}",
-                self.path,
-                error
-            )
-        })?;
+        self.ir
+            .declare(&mut context)
+            .map_err(|error| anyhow::anyhow!("LLVM IR generator declaration pass: {error}"))?;
+        self.ir
+            .into_llvm(&mut context)
+            .map_err(|error| anyhow::anyhow!("LLVM IR generator definition pass: {error}"))?;
 
         let build = context.build(self.path.as_str(), metadata_hash)?;
 
@@ -206,6 +219,7 @@ impl Contract {
         mut self,
         project: Project,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: &[String],
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMContractBuild> {
@@ -213,14 +227,19 @@ impl Contract {
 
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
-        let version = project.version.clone();
+        let solc_version = project.solc_version.clone();
 
         let metadata = Metadata::new(
             self.metadata_json.take(),
-            version.default.clone(),
-            version.l2_revision.clone(),
+            solc_version
+                .as_ref()
+                .map(|version| version.default.to_owned()),
+            solc_version
+                .as_ref()
+                .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
+            llvm_options,
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
@@ -240,16 +259,21 @@ impl Contract {
                 })?;
                 let deploy_code = yul.object;
 
-                let [deploy_build, runtime_build]: [anyhow::Result<era_compiler_llvm_context::EVMBuild>; 2] = [
+                let [deploy_build, runtime_build]: [anyhow::Result<
+                    era_compiler_llvm_context::EVMBuild,
+                >; 2] = [
                     (era_compiler_llvm_context::CodeType::Deploy, deploy_code),
                     (era_compiler_llvm_context::CodeType::Runtime, runtime_code),
-                ].into_iter().map(|(code_type, mut code)| {
+                ]
+                .into_iter()
+                .map(|(code_type, mut code)| {
                     let llvm = inkwell::context::Context::create();
-                    let module = llvm
-                        .create_module(format!("{}.{}", self.path, code_type).as_str());
+                    let module =
+                        llvm.create_module(format!("{}.{}", self.path, code_type).as_str());
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
+                        llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
                         Some(project.clone()),
@@ -257,24 +281,17 @@ impl Contract {
                         debug_config.clone(),
                     );
                     code.declare(&mut context).map_err(|error| {
-                        anyhow::anyhow!(
-                            "The contract `{}` deploy code LLVM IR generator declaration pass error: {}",
-                            self.path,
-                            error
-                        )
+                        anyhow::anyhow!("deploy code LLVM IR generator declaration pass: {error}")
                     })?;
-                    code
-                        .into_llvm(&mut context)
-                        .map_err(|error| {
-                            anyhow::anyhow!(
-                            "The contract `{}` deploy code LLVM IR generator definition pass error: {}",
-                            self.path,
-                            error
-                        )
-                        })?;
+                    code.into_llvm(&mut context).map_err(|error| {
+                        anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
+                    })?;
                     let build = context.build(self.path.as_str(), metadata_hash)?;
                     Ok(build)
-                }).collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>().try_into().expect("Always valid");
+                })
+                .collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>()
+                .try_into()
+                .expect("Always valid");
 
                 Ok(EVMContractBuild::new(
                     self.path,
@@ -285,48 +302,62 @@ impl Contract {
                 ))
             }
             IR::EVMLA(evmla) => {
+                let solc_version = match solc_version {
+                    Some(solc_version) => solc_version,
+                    None => {
+                        anyhow::bail!(
+                            "The EVM assembly pipeline cannot be executed without `solc`"
+                        );
+                    }
+                };
+
                 let mut runtime_code_assembly = evmla.assembly.get_runtime_code()?.to_owned();
                 let deploy_code_assembly = evmla.assembly;
                 runtime_code_assembly.set_full_path(deploy_code_assembly.full_path().to_owned());
 
-                let [deploy_build, runtime_build]: [anyhow::Result<era_compiler_llvm_context::EVMBuild>; 2] = [
-                    (era_compiler_llvm_context::CodeType::Deploy, deploy_code_assembly),
-                    (era_compiler_llvm_context::CodeType::Runtime, runtime_code_assembly),
-                ].into_iter().map(|(code_type, mut code)| {
+                let [deploy_build, runtime_build]: [anyhow::Result<
+                    era_compiler_llvm_context::EVMBuild,
+                >; 2] = [
+                    (
+                        era_compiler_llvm_context::CodeType::Deploy,
+                        deploy_code_assembly,
+                    ),
+                    (
+                        era_compiler_llvm_context::CodeType::Runtime,
+                        runtime_code_assembly,
+                    ),
+                ]
+                .into_iter()
+                .map(|(code_type, mut code)| {
                     let llvm = inkwell::context::Context::create();
-                    let module = llvm
-                        .create_module(format!("{}.{}", self.path, code_type).as_str());
+                    let module =
+                        llvm.create_module(format!("{}.{}", self.path, code_type).as_str());
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
+                        llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
                         Some(project.clone()),
                         include_metadata_hash,
                         debug_config.clone(),
                     );
-                    let evmla_data =
-                        era_compiler_llvm_context::EVMContextEVMLAData::new(version.default.to_owned());
+                    let evmla_data = era_compiler_llvm_context::EVMContextEVMLAData::new(
+                        solc_version.default.clone(),
+                    );
                     context.set_evmla_data(evmla_data);
                     code.declare(&mut context).map_err(|error| {
-                        anyhow::anyhow!(
-                            "The contract `{}` deploy code LLVM IR generator declaration pass error: {}",
-                            self.path,
-                            error
-                        )
+                        anyhow::anyhow!("deploy code LLVM IR generator declaration pass: {error}")
                     })?;
-                    code
-                        .into_llvm(&mut context)
-                        .map_err(|error| {
-                            anyhow::anyhow!(
-                            "The contract `{}` deploy code LLVM IR generator definition pass error: {}",
-                            self.path,
-                            error
-                        )
-                        })?;
+                    code.into_llvm(&mut context).map_err(|error| {
+                        anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
+                    })?;
                     let build = context.build(self.path.as_str(), metadata_hash)?;
                     Ok(build)
-                }).collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>().try_into().expect("Always valid");
+                })
+                .collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>()
+                .try_into()
+                .expect("Always valid");
 
                 Ok(EVMContractBuild::new(
                     self.path,
@@ -349,6 +380,7 @@ impl Contract {
                 let context = era_compiler_llvm_context::EVMContext::new(
                     &llvm,
                     module,
+                    llvm_options.to_owned(),
                     era_compiler_llvm_context::CodeType::Runtime,
                     optimizer,
                     Some(project),

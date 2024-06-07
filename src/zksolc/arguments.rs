@@ -66,13 +66,9 @@ pub struct Arguments {
     #[structopt(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
-    /// Disable the system request memoization.
-    #[structopt(long = "disable-system-request-memoization")]
-    pub disable_system_request_memoization: bool,
-
-    /// Set the jump table density threshold.
-    #[structopt(long = "jump-table-density-threshold")]
-    pub jump_table_density_threshold: Option<u32>,
+    /// Pass arbitary space-separated options to LLVM.
+    #[structopt(long = "llvm-options")]
+    pub llvm_options: Option<String>,
 
     /// Disable the `solc` optimizer.
     /// Use it if your project uses the `MSIZE` instruction, or in other cases.
@@ -112,6 +108,10 @@ pub struct Arguments {
     #[structopt(long = "target")]
     pub target: Option<String>,
 
+    /// Sets the number of threads, which execute the tests concurrently.
+    #[structopt(short = "t", long = "threads")]
+    pub threads: Option<usize>,
+
     /// Switch to missing deployable libraries detection mode.
     /// Only available for standard JSON input/output mode.
     /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
@@ -138,22 +138,16 @@ pub struct Arguments {
     #[structopt(long = "zkasm")]
     pub zkasm: bool,
 
-    /// Use the EVM assembly codegen.
+    /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
-    /// Only available for the upstream `solc`, where `zksolc` enforces the Yul codegen by default.
-    #[structopt(long = "via-evm-assembly")]
-    pub via_evm_assembly: bool,
-
-    /// Use the Yul codegen.
-    /// Only available for the ZKsync for of `solc`, where `zksolc` uses default codegen settings.
-    #[structopt(long = "via-yul")]
-    pub via_yul: bool,
+    #[structopt(long = "force-evmla")]
+    pub force_evmla: bool,
 
     /// Enable EraVM extensions.
     /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
     /// In the Yul mode, the `verbatim_*` instruction family becomes available.
-    #[structopt(long = "enable-eravm-extensions")]
+    #[structopt(long = "enable-eravm-extensions", alias = "system-mode")]
     pub enable_eravm_extensions: bool,
 
     /// Set metadata hash mode.
@@ -240,7 +234,7 @@ impl Arguments {
         .filter(|&&x| x)
         .count();
         if modes_count > 1 {
-            anyhow::bail!("Only one modes is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
+            anyhow::bail!("Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
         }
 
         if self.yul || self.llvm_ir || self.zkasm {
@@ -257,11 +251,6 @@ impl Arguments {
                     "`allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
                 );
             }
-            if !self.libraries.is_empty() {
-                anyhow::bail!(
-                    "Libraries are not supported in Yul, LLVM IR and EraVM assembly modes."
-                );
-            }
 
             if self.evm_version.is_some() {
                 anyhow::bail!(
@@ -269,13 +258,8 @@ impl Arguments {
                 );
             }
 
-            if self.via_evm_assembly {
+            if self.force_evmla {
                 anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
-            }
-            if self.via_yul {
-                anyhow::bail!(
-                    "Yul codegen is not supported in Yul, LLVM IR and EraVM assembly modes."
-                );
             }
 
             if self.disable_solc_optimizer {
@@ -284,6 +268,10 @@ impl Arguments {
         }
 
         if self.llvm_ir || self.zkasm {
+            if !self.libraries.is_empty() {
+                anyhow::bail!("Libraries are not supported in LLVM IR and EraVM assembly modes.");
+            }
+
             if self.solc.is_some() {
                 anyhow::bail!("`solc` is not used in LLVM IR and EraVM assembly modes.");
             }
@@ -307,17 +295,11 @@ impl Arguments {
             if self.optimization.is_some() {
                 anyhow::bail!("LLVM optimizations are not supported in EraVM assembly mode.");
             }
-
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
             }
-            if self.disable_system_request_memoization {
-                anyhow::bail!("Disabling the system request memoization is not supported in EraVM assembly mode.");
-            }
-            if self.jump_table_density_threshold.is_some() {
-                anyhow::bail!(
-                    "Setting the jump table density threshold is not supported in EraVM assembly mode."
-                );
+            if self.llvm_options.is_some() {
+                anyhow::bail!("LLVM options are not supported in EraVM assembly mode.");
             }
         }
 
@@ -365,15 +347,8 @@ impl Arguments {
                     "Falling back to -Oz must be specified in standard JSON input settings."
                 );
             }
-            if self.disable_system_request_memoization {
-                anyhow::bail!(
-                    "Disabling the system request memoization must be specified in standard JSON input settings."
-                );
-            }
-            if self.jump_table_density_threshold.is_some() {
-                anyhow::bail!(
-                    "Setting the jump table density threshold must be specified in standard JSON input settings."
-                );
+            if self.llvm_options.is_some() {
+                anyhow::bail!("LLVM options must be specified in standard JSON input settings.");
             }
             if self.metadata_hash.is_some() {
                 anyhow::bail!(
@@ -383,23 +358,6 @@ impl Arguments {
             if self.metadata_literal {
                 anyhow::bail!(
                     "Metadata literal content must be specified in standard JSON input settings."
-                );
-            }
-
-            if self.via_evm_assembly {
-                anyhow::bail!("EVM legacy assembly codegen must be specified in standard JSON input settings.");
-            }
-            if self.via_yul {
-                anyhow::bail!("Yul codegen must be specified in standard JSON input settings.");
-            }
-            if self.enable_eravm_extensions {
-                anyhow::bail!(
-                    "EraVM extensions must be specified in standard JSON input settings."
-                );
-            }
-            if self.detect_missing_libraries {
-                anyhow::bail!(
-                    "Missing deployable libraries detection mode must be specified in standard JSON input settings."
                 );
             }
         }

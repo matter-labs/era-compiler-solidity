@@ -24,6 +24,15 @@ pub struct Source {
 
 impl Source {
     ///
+    /// Initializes a standard JSON source.
+    ///
+    /// Is used for projects compiled without `solc`.
+    ///
+    pub fn new(id: usize) -> Self {
+        Self { id, ast: None }
+    }
+
+    ///
     /// Checks the AST node for the `ecrecover` function usage.
     ///
     pub fn check_ecrecover(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {

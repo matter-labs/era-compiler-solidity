@@ -8,9 +8,10 @@ describe("Set of --yul tests", () => {
 
   //id1743
   describe(`Run ${zksolcCommand} with --yul by default`, () => {
-    const args = [`${paths.pathToBasicYulContract}`, `--yul`];
-    const invalidArgs = ['--yul'];
-    const result = executeCommand(zksolcCommand, args);
+    const zksolcArgs = [`${paths.pathToBasicYulContract}`, `--yul`];
+    const solcArgs = [`${paths.pathToBasicYulContract}`, `--strict-assembly`];
+    const invalidArgs = ['--yul', 'anyarg'];
+    const result = executeCommand(zksolcCommand, zksolcArgs);
     const invalidResult = executeCommand(zksolcCommand, invalidArgs);
 
     it("Valid command exit code = 0", () => {
@@ -23,12 +24,8 @@ describe("Set of --yul tests", () => {
     });
 
     xit("solc exit code == zksolc exit code", () => { // issue with solc compilation
-        const solcResult = executeCommand(solcCommand, args);
+        const solcResult = executeCommand(solcCommand, solcArgs);
         expect(solcResult.exitCode).toBe(result.exitCode);
-    });
-
-    it("run invalid: zksolc --yul", () => {
-      expect(invalidResult.output).toMatch(/(The input file is missing)/i);
     });
 
     it("Invalid command exit code = 1", () => {
@@ -70,7 +67,7 @@ describe("Set of --yul tests", () => {
     });
 
     it("--yul error is presented", () => {
-      expect(result.output).toMatch(/(Error: Expected keyword "object")/i);
+      expect(result.output).toMatch(/(Syntax error)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
@@ -89,7 +86,7 @@ describe("Set of --yul tests", () => {
     });
 
     it("--yul error is presented", () => {
-      expect(result.output).toMatch(/(Only one modes is allowed at the same time:)/i);
+      expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {
@@ -108,7 +105,7 @@ describe("Set of --yul tests", () => {
     });
 
     it("--yul error is presented", () => {
-      expect(result.output).toMatch(/(Only one modes is allowed at the same time:)/i);
+      expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
     });
 
     it("solc exit code == zksolc exit code", () => {

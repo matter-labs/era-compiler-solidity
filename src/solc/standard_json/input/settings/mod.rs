@@ -12,6 +12,8 @@ use std::collections::BTreeSet;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::solc::pipeline::Pipeline as SolcPipeline;
+
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::Selection;
@@ -35,8 +37,8 @@ pub struct Settings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
     /// Whether to compile via EVM assembly.
-    #[serde(rename = "viaEVMAssembly", skip_serializing)]
-    pub via_evm_assembly: Option<bool>,
+    #[serde(rename = "forceEVMLA", skip_serializing)]
+    pub force_evmla: Option<bool>,
     /// Whether to add the Yul step to compilation via EVM assembly.
     #[serde(
         rename = "viaIR",
@@ -44,9 +46,6 @@ pub struct Settings {
         skip_serializing_if = "Option::is_none"
     )]
     pub via_ir: Option<bool>,
-    /// Whether to compile via Yul.
-    #[serde(rename = "viaYul", skip_serializing)]
-    pub via_yul: Option<bool>,
     /// Whether to enable EraVM extensions.
     #[serde(rename = "enableEraVMExtensions", skip_serializing)]
     pub enable_eravm_extensions: Option<bool>,
@@ -69,9 +68,8 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: Option<BTreeSet<String>>,
         output_selection: Selection,
-        via_evm_assembly: bool,
+        force_evmla: bool,
         via_ir: bool,
-        via_yul: bool,
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         optimizer: Optimizer,
@@ -82,9 +80,8 @@ impl Settings {
             libraries: Some(libraries),
             remappings,
             output_selection: Some(output_selection),
-            via_evm_assembly: if via_evm_assembly { Some(true) } else { None },
+            force_evmla: if force_evmla { Some(true) } else { None },
             via_ir: if via_ir { Some(true) } else { None },
-            via_yul: if via_yul { Some(true) } else { None },
             enable_eravm_extensions: if enable_eravm_extensions {
                 Some(true)
             } else {
@@ -101,10 +98,23 @@ impl Settings {
     }
 
     ///
-    /// Sets the necessary defaults.
+    /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, version: &semver::Version) {
+    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+        self.output_selection
+            .get_or_insert_with(Selection::default)
+            .extend_with_required(pipeline);
+
         self.optimizer.normalize(version);
+    }
+
+    ///
+    /// Sets the necessary defaults for Yul validation.
+    ///
+    pub fn normalize_yul_validation(&mut self) {
+        self.output_selection
+            .get_or_insert_with(Selection::new_yul_validation)
+            .extend_with_yul_validation();
     }
 
     ///
