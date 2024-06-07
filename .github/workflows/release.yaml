@@ -121,9 +121,9 @@ jobs:
         id: release
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            git config --global --add safe.directory $GITHUB_WORKSPACE
             VERSION_OR_SHA=$(git rev-parse --short HEAD)
             echo "version_or_sha=${VERSION_OR_SHA}" >> $GITHUB_OUTPUT
+            echo "full_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
             echo "release_title=prerelease-${VERSION_OR_SHA}-${{ github.event.inputs.prerelease_suffix }}" >> $GITHUB_OUTPUT
           else
             VERSION_OR_SHA="${GITHUB_REF#refs/tags/}"
@@ -137,7 +137,7 @@ jobs:
         run: |
           tree ./releases
           BINARIES=($(find ./releases -type f))
-          [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && TARGET_PARAM="--target ${{ github.event.inputs.ref }}"
+          [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && TARGET_PARAM="--target ${{ steps.release.outputs.full_sha }}"
           gh release create ${{ steps.release.outputs.version_or_sha }} \
             --title ${{ steps.release.outputs.release_title }} \
             --prerelease ${TARGET_PARAM} \
