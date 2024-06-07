@@ -225,7 +225,6 @@ pub fn standard_output_eravm(
     solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
-    detect_missing_libraries: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -260,7 +259,7 @@ pub fn standard_output_eravm(
         force_evmla,
         false,
         enable_eravm_extensions,
-        detect_missing_libraries,
+        false,
         suppressed_warnings,
     )?;
     let sources = solc_input.sources()?;
@@ -662,7 +661,6 @@ pub fn combined_json_eravm(
     solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
-    detect_missing_libraries: bool,
     include_metadata_hash: bool,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -686,7 +684,6 @@ pub fn combined_json_eravm(
         solc_optimizer_enabled,
         force_evmla,
         enable_eravm_extensions,
-        detect_missing_libraries,
         include_metadata_hash,
         use_literal_content,
         base_path,

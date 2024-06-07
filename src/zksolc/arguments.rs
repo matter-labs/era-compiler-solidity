@@ -309,6 +309,12 @@ impl Arguments {
             );
         }
 
+        if self.standard_json.is_none() && self.detect_missing_libraries {
+            anyhow::bail!(
+                "Missing deployable libraries detection mode is only supported in standard JSON mode."
+            );
+        }
+
         if self.standard_json.is_some() {
             if self.output_assembly || self.output_binary {
                 anyhow::bail!(
