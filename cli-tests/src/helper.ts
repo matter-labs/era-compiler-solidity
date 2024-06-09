@@ -74,11 +74,11 @@ export const changeDirectoryPermissions = (directoryPath: string, permission: st
 };
 
 export const pathToSolBinOutputFile = (destination: string): string  => {
-  return path.join(destination, paths.contractSolFilename, paths.binExtension);
+  return path.join(destination, paths.contractSolFilename, paths.binOutputFile);
 };
 
 export const pathToSolEraVMAssemblyOutputFile = (destination: string): string  => {
-  return path.join(destination, paths.contractSolFilename, paths.eraVMAssemblyExtension);
+  return path.join(destination, paths.contractSolFilename, paths.eraVMAssemblyOutputFile);
 };
 
 export const isOutputTheSame = (file: string, cliOutput: string): boolean => {

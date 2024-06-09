@@ -1,8 +1,8 @@
 import * as path from 'path';
 
 const outputDir = 'artifacts';
-const binExtension = ':C.zbin';
-const eraVMAssemblyExtension = ':C.zasm';
+const binOutputFile = 'C.zbin';
+const eraVMAssemblyOutputFile = 'C.zasm';
 const libraryDefault = 'MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC';
 const contractSolFilename = 'contract.sol';
 const contractYulFilename = 'contract.yul';
@@ -19,8 +19,8 @@ const pathToBasicJSONContract = path.join(pathToContracts, "json", contractJSONF
 
 export const paths = {
   outputDir: outputDir,
-  binExtension: binExtension,
-  eraVMAssemblyExtension: eraVMAssemblyExtension,
+  binOutputFile: binOutputFile,
+  eraVMAssemblyOutputFile: eraVMAssemblyOutputFile,
   libraryDefault: libraryDefault,
   contractSolFilename: contractSolFilename,
   contractEraVMAssemblyFilename: contractEraVMAssemblyFilename,

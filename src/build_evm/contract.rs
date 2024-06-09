@@ -61,7 +61,7 @@ impl Contract {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let file_name = Self::contract_name(self.path.as_str());
+        let (file_name, contract_name) = Self::split_path(self.path.as_str());
 
         if output_binary {
             for (code_type, bytecode) in [
@@ -71,14 +71,16 @@ impl Contract {
             .into_iter()
             .zip([self.deploy_build.bytecode, self.runtime_build.bytecode].into_iter())
             {
-                let file_name = format!(
+                let output_name = format!(
                     "{}.{}.{}",
-                    file_name,
+                    contract_name,
                     code_type,
                     era_compiler_common::EXTENSION_EVM_BINARY
                 );
                 let mut file_path = path.to_owned();
-                file_path.push(file_name);
+                file_path.push(file_name.as_str());
+                std::fs::create_dir_all(file_path.as_path())?;
+                file_path.push(output_name.as_str());
 
                 if file_path.exists() && !overwrite {
                     anyhow::bail!(
@@ -156,10 +158,13 @@ impl Contract {
     }
 
     ///
-    /// Extracts the contract file name from the full path.
+    /// Extracts the file and contract names from the full path.
     ///
-    pub fn contract_name(path: &str) -> String {
+    pub fn split_path(path: &str) -> (String, String) {
         let path = path.trim().replace(['\\', ':'], "/");
-        path.split('/').last().expect("Always exists").to_owned()
+        let mut path_iterator = path.split('/').rev();
+        let contract_name = path_iterator.next().expect("Always exists");
+        let file_name = path_iterator.next().expect("Always exists");
+        (file_name.to_owned(), contract_name.to_owned())
     }
 }

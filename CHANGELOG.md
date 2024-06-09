@@ -29,6 +29,7 @@
 ### Fixed
 
 - The bytes-to-cells LLVM misoptimization
+- Removed `:` from output filenames, as it is not allowed on Windows
 - Excessive RAM usage and compilation time with some projects
 - Redundancy in error printing
 
