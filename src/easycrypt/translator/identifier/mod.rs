@@ -28,7 +28,7 @@ pub enum Translated {
 
 impl Translator {
     /// Transpile an arbitrary YUL identifier.
-    pub fn transpile_identifier(&mut self, ident: &YulIdentifier) -> (Name, Type) {
+    pub fn transpile_identifier(&self, ident: &YulIdentifier) -> (Name, Type) {
         let new_type = match &ident.r#type {
             Some(typ) => Self::transpile_type(typ).unwrap(),
             None => Self::DEFAULT_TYPE,
