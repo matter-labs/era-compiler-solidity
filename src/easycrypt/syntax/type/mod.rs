@@ -38,12 +38,7 @@ impl Display for Type {
                 f.write_str(")")
             }
             Type::Unknown => f.write_str("Unknown"),
-            Type::Context(ctx) => match ctx {
-                ContextKind::Memory => todo!(),
-                ContextKind::Storage => todo!(),
-                ContextKind::TransientStorage => todo!(),
-                ContextKind::Other => todo!(),
-            },
+            Type::Context(ctx) => f.write_fmt(format_args!("{}", ctx)),
         }
     }
 }

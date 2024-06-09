@@ -9,6 +9,7 @@ use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::function::Function;
 use crate::easycrypt::syntax::proc::Proc;
+use crate::easycrypt::syntax::r#type::context_kind::ContextKind;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::signature::Signature;
 use crate::easycrypt::syntax::signature::SignatureKind;
