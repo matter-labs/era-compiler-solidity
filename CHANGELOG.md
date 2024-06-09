@@ -16,13 +16,15 @@
 ### Changed
 
 - Updated to EraVM v1.5.0
-- Renamed the `--system-mode` flag to `--enable-eravm-extensions`
+- Renamed the `system-mode` flag to `enable-eravm-extensions`
+- Renamed the `zkasm` flag to `eravm`
 - Added all missing CLI flags to standard JSON input
 
 ### Deprecated
 
 - `force-evmla`, `detect-missing-libraries`, `system-mode` CLI flags in standard JSON mode
 - `system-mode` alias of `enable-eravm-extension` flag
+- `zkasm` alias of `eravm` flag
 
 ### Fixed
 

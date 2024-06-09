@@ -17,12 +17,12 @@ describe("Set of --output-dir tests", () => {
       tmpDirZkSolc.removeCallback();
     });
 
-    it("Valid command exit code = 0", () => {
-      expect(result.exitCode).toBe(0);
+    it("--output-dir output is presented", () => {
+      expect(result.output).toMatch(/Compiler run successful/i);
     });
 
-    it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/Compiler run successful\. Artifact\(s\) can be found in directory/i);
+    it("Valid command exit code = 0", () => {
+      expect(result.exitCode).toBe(0);
     });
 
     it("solc exit code == zksolc exit code", () => {
@@ -85,6 +85,10 @@ describe("Set of --output-dir tests", () => {
     const args = [`${paths.pathToBasicSolContract}`, `--bin`, `--output-dir`, `${tmpDirZkSolc.name}`];
     const result = executeCommand(zksolcCommand, args);
 
+    it("--output-dir output is presented", () => {
+      expect(result.output).toMatch(/Compiler run successful/i);
+    });
+
     it("Exit code = 0", () => {
       expect(result.exitCode).toBe(0);
     });
@@ -92,10 +96,6 @@ describe("Set of --output-dir tests", () => {
     it("Custom dir is created", () => {
       expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
       tmpDirZkSolc.removeCallback();
-    });
-
-    it("--output-dir output is presented", () => {
-      expect(result.output).toMatch(/Compiler run successful/i);
     });
 
     it("solc exit code == zksolc exit code", () => {

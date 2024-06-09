@@ -61,7 +61,7 @@ impl Contract {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let file_name = Self::short_path(self.path.as_str());
+        let file_name = Self::contract_name(self.path.as_str());
 
         if output_assembly {
             let file_name = format!(
@@ -171,9 +171,10 @@ impl Contract {
     }
 
     ///
-    /// Converts the full path to a short one.
+    /// Extracts the contract file name from the full path.
     ///
-    pub fn short_path(path: &str) -> &str {
-        path.split(std::path::MAIN_SEPARATOR).last().unwrap_or(path)
+    pub fn contract_name(path: &str) -> String {
+        let path = path.trim().replace('\\', "/");
+        path.split('/').last().expect("Always exists").to_owned()
     }
 }

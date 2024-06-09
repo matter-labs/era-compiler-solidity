@@ -36,7 +36,6 @@ describe("Common tests", () => {
         ];
         const result = executeCommand(zksolcCommand, args);
 
-
         it("Compiler run successful", () => {
             expect(result.output).toMatch(/(Compiler run successful.)/i);
         });
@@ -79,20 +78,25 @@ describe("Common tests", () => {
         it("Compiler run successful", () => {
             expect(result.output).toMatch(/(Compiler run successful.)/i);
         });
+
         it("Exit code = 0", () => {
             expect(result.exitCode).toBe(0);
         });
+
         it("Output dir is created", () => {
             expect(isDestinationExist(tmpDirZkSolc.name)).toBe(true);
         });
+
         it("Output files are created", () => {
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
             expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
+
         it("The output files are not empty", () => {
             expect(isFileEmpty(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(false);
             expect(isFileEmpty(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(false);
         });
+        
         it("No 'Error'/'Warning'/'Fail' in the output", () => {
             expect(result.output).not.toMatch(/([Ee]rror|[Ww]arning|[Ff]ail)/i);
             tmpDirZkSolc.removeCallback();
