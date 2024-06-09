@@ -4,7 +4,6 @@
 
 use crate::data_structures::environment::stack_impl::Environment;
 use crate::data_structures::environment::IEnvironment;
-use crate::easycrypt::syntax::Name;
 use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
@@ -18,7 +17,7 @@ where
     /// Lookup table for user-defined functions, variables and procedures. It
     /// matches the name of a function/variable/procedure to its path from the root
     /// of YUL syntax tree.
-    symbols: Environment<Name, T>,
+    symbols: Environment<String, T>,
 
     /// Tracker of the current path from the root of the YUL syntax tree.
     location: Builder,
@@ -87,7 +86,7 @@ impl<T> SymbolTracker<T>
 where
     T: Clone + std::fmt::Debug + PartialEq + Eq,
 {
-    pub fn add(&mut self, name: &Name, value: &T) {
+    pub fn add(&mut self, name: &String, value: &T) {
         self.symbols.add(name, value);
     }
 
@@ -105,7 +104,7 @@ where
     T: Clone + std::fmt::Debug + PartialEq + Eq,
 {
     #[allow(dead_code)]
-    pub fn get(&self, name: &Name) -> Option<T> {
+    pub fn get(&self, name: &String) -> Option<T> {
         self.symbols.get(name)
     }
 }
