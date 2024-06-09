@@ -3,10 +3,8 @@ import { paths } from '../src/entities';
 
 describe("Set of --libraries tests", () => {
     const zksolcCommand = 'zksolc';
-    const solcCommand = 'solc';
 
-
-    //id1750 - ISSUE unknown scenario
+    //id1750
     xdescribe(`Run ${zksolcCommand} with Sol + --libraries}`, () => {
         const args = [`${paths.pathToBasicSolContract}`, ` --libraries`, `${paths.libraryDefault}`];
         const result = executeCommand(zksolcCommand, args);

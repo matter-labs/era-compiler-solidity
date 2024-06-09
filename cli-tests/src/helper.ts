@@ -78,11 +78,11 @@ export const pathToSolBinOutputFile = (destination: string): string  => {
 };
 
 export const pathToSolAsmOutputFile = (destination: string): string  => {
-  return path.join(destination, paths.contractSolFilename + paths.asmExtension);
+  return path.join(destination, paths.contractSolFilename + paths.eraVMAssemblyExtension);
 };
 
 export const pathToLlvmContractsFile = (destination: string): string  => {
-  return path.join(destination, paths.contractLlvmFilename + paths.llvmExtension);
+  return path.join(destination, paths.contractLlvmFilename + paths.llvmBinaryCodeExtension);
 };
 
 export const isOutputTheSame = (file: string, cliOutput: string): boolean => {

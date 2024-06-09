@@ -144,7 +144,7 @@ fn main_inner() -> anyhow::Result<()> {
                     include_metadata_hash,
                     debug_config,
                 )
-            } else if arguments.zkasm {
+            } else if arguments.eravm_assembly {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
                     llvm_options,

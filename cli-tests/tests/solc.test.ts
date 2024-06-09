@@ -1,15 +1,10 @@
 import {executeCommand} from "../src/helper";
 import { paths } from '../src/entities';
-import * as os from 'os';
 
 describe("Set of --solc tests", () => {
     const zksolcCommand = 'zksolc';
     
     let pathToCustomSolc = executeCommand('which', ['solc']).output;
-        if ( os.platform() === 'win32' ) {
-            pathToCustomSolc = executeCommand('where', ['solc']).output;
-        }
-
 
     //id1748
     describe(`Run ${zksolcCommand} with --solc }`, () => {
