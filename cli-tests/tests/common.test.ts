@@ -1,4 +1,4 @@
-import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolAsmOutputFile, isOutputTheSame} from "../src/helper";
+import {executeCommand, isDestinationExist, isFileEmpty, createTmpDirectory, pathToSolBinOutputFile, pathToSolEraVMAssemblyOutputFile, isOutputTheSame} from "../src/helper";
 import { paths } from '../src/entities';
 
 describe("Common tests", () => {
@@ -89,12 +89,12 @@ describe("Common tests", () => {
 
         it("Output files are created", () => {
             expect(isDestinationExist(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(true);
-            expect(isDestinationExist(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(true);
+            expect(isDestinationExist(pathToSolEraVMAssemblyOutputFile(tmpDirZkSolc.name))).toBe(true);
         });
 
         it("The output files are not empty", () => {
             expect(isFileEmpty(pathToSolBinOutputFile(tmpDirZkSolc.name))).toBe(false);
-            expect(isFileEmpty(pathToSolAsmOutputFile(tmpDirZkSolc.name))).toBe(false);
+            expect(isFileEmpty(pathToSolEraVMAssemblyOutputFile(tmpDirZkSolc.name))).toBe(false);
         });
         
         it("No 'Error'/'Warning'/'Fail' in the output", () => {

@@ -159,7 +159,7 @@ impl Contract {
     /// Extracts the contract file name from the full path.
     ///
     pub fn contract_name(path: &str) -> String {
-        let path = path.trim().replace('\\', "/");
+        let path = path.trim().replace(['\\', ':'], "/");
         path.split('/').last().expect("Always exists").to_owned()
     }
 }
