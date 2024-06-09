@@ -77,7 +77,7 @@ impl Translator {
     }
 
     fn new_tmp_definition_here(&mut self) -> Definition {
-        let name = format!("TMP{}", self.tmp_counter.get_value());
+        let name = format!("tmp{}", self.tmp_counter.get_value());
         self.tmp_counter.increment();
         Self::new_definition(self.here(), &name, None)
     }
