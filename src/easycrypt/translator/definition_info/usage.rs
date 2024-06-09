@@ -40,4 +40,12 @@ impl Usage {
             meta: self.meta || other.meta,
         }
     }
+
+    pub fn needs_read_access(&self) -> bool {
+        self.read || self.write || self.meta
+    }
+
+    pub fn needs_write_access(&self) -> bool {
+        self.write
+    }
 }
