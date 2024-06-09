@@ -31,8 +31,8 @@ pub enum Translated {
 
 impl Translator {
     /// Transpile a formal parameter of a YUL function, encountered in its signature.
-    pub fn transpile_formal_parameter(&mut self, ident: &YulIdentifier) -> (Definition, Type) {
-        let (name, typ) = self.transpile_identifier(ident);
+    pub fn transpile_formal_parameter(&self, ident: &YulIdentifier) -> (Definition, Type) {
+        let (name, typ) = Self::transpile_identifier(ident);
         (self.new_definition_here(&name, Some(typ.clone())), typ)
     }
 
