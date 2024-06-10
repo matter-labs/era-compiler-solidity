@@ -133,10 +133,10 @@ pub struct Arguments {
 
     /// Switch to EraVM assembly mode.
     /// Only one input EraVM assembly file is allowed.
-    /// Cannot be used with combined and standard JSON modes.
+    /// Cannot be used with combined JSON modes.
     /// Use this mode at your own risk, as EraVM assembly input validation is not implemented.
-    #[structopt(long = "zkasm")]
-    pub zkasm: bool,
+    #[structopt(long = "eravm", alias = "zkasm")]
+    pub eravm_assembly: bool,
 
     /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
@@ -226,7 +226,7 @@ impl Arguments {
         let modes_count = [
             self.yul,
             self.llvm_ir,
-            self.zkasm,
+            self.eravm_assembly,
             self.combined_json.is_some(),
             self.standard_json.is_some(),
         ]
@@ -237,7 +237,7 @@ impl Arguments {
             anyhow::bail!("Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
         }
 
-        if self.yul || self.llvm_ir || self.zkasm {
+        if self.yul || self.llvm_ir || self.eravm_assembly {
             if self.base_path.is_some() {
                 anyhow::bail!("`base-path` is not used in Yul, LLVM IR and EraVM assembly modes.");
             }
@@ -267,7 +267,7 @@ impl Arguments {
             }
         }
 
-        if self.llvm_ir || self.zkasm {
+        if self.llvm_ir || self.eravm_assembly {
             if !self.libraries.is_empty() {
                 anyhow::bail!("Libraries are not supported in LLVM IR and EraVM assembly modes.");
             }
@@ -288,7 +288,7 @@ impl Arguments {
             }
         }
 
-        if self.zkasm {
+        if self.eravm_assembly {
             if Some(era_compiler_llvm_context::Target::EVM.to_string()) == self.target {
                 anyhow::bail!("EraVM assembly cannot be compiled to EVM bytecode.");
             }

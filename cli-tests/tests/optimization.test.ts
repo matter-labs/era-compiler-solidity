@@ -6,22 +6,21 @@ describe("Set of --optimization tests", () => {
   const solcCommand = 'solc';
   const optimization_args: string[] = [`0`, `1`, `2`, `3`, `s`, `z`];
 
-
   //id1752:I
   for (let i = 0; i < optimization_args.length; i++) {
-  describe(`Run ${zksolcCommand} with -O${optimization_args[i]}`, () => {
-    const args = [`${paths.pathToBasicSolContract}`, `-O${optimization_args[i]}`];
-    const result = executeCommand(zksolcCommand, args);
+    describe(`Run ${zksolcCommand} with -O${optimization_args[i]}`, () => {
+      const args = [`${paths.pathToBasicSolContract}`, `-O${optimization_args[i]}`];
+      const result = executeCommand(zksolcCommand, args);
 
-    it("Valid command exit code = 0", () => {
-      expect(result.exitCode).toBe(0);
+      it("Valid command exit code = 0", () => {
+        expect(result.exitCode).toBe(0);
+      });
+
+      it("--metadata-hash info is presented", () => {
+        expect(result.output).toMatch(/(Compiler run successful)/i);
+      });
+
     });
-
-    it("--metadata-hash info is presented", () => {
-      expect(result.output).toMatch(/(Compiler run successful)/i);
-    });
-
-  });
   }
 
   //id1752:II

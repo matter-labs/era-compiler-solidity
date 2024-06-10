@@ -61,16 +61,18 @@ impl Contract {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let file_name = Self::short_path(self.path.as_str());
+        let (file_name, contract_name) = Self::split_path(self.path.as_str());
 
         if output_assembly {
-            let file_name = format!(
+            let output_name = format!(
                 "{}.{}",
-                file_name,
+                contract_name,
                 era_compiler_common::EXTENSION_ERAVM_ASSEMBLY
             );
             let mut file_path = path.to_owned();
-            file_path.push(file_name);
+            file_path.push(file_name.as_str());
+            std::fs::create_dir_all(file_path.as_path())?;
+            file_path.push(output_name.as_str());
 
             if file_path.exists() && !overwrite {
                 anyhow::bail!(
@@ -89,13 +91,15 @@ impl Contract {
         }
 
         if output_binary {
-            let file_name = format!(
+            let output_name = format!(
                 "{}.{}",
-                file_name,
+                contract_name,
                 era_compiler_common::EXTENSION_ERAVM_BINARY
             );
             let mut file_path = path.to_owned();
-            file_path.push(file_name);
+            file_path.push(file_name.as_str());
+            std::fs::create_dir_all(file_path.as_path())?;
+            file_path.push(output_name.as_str());
 
             if file_path.exists() && !overwrite {
                 anyhow::bail!(
@@ -171,11 +175,13 @@ impl Contract {
     }
 
     ///
-    /// Converts the full path to a short one.
+    /// Extracts the file and contract names from the full path.
     ///
-    pub fn short_path(path: &str) -> &str {
-        path.rfind('/')
-            .map(|last_slash| &path[last_slash + 1..])
-            .unwrap_or_else(|| path)
+    pub fn split_path(path: &str) -> (String, String) {
+        let path = path.trim().replace(['\\', ':'], "/");
+        let mut path_iterator = path.split('/').rev();
+        let contract_name = path_iterator.next().expect("Always exists");
+        let file_name = path_iterator.next().expect("Always exists");
+        (file_name.to_owned(), contract_name.to_owned())
     }
 }

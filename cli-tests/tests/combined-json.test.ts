@@ -1,7 +1,6 @@
 import {executeCommand} from "../src/helper";
 import { paths } from '../src/entities';
 
-
 describe("Set of --combined-json tests", () => {
     const zksolcCommand = 'zksolc';
     const solcCommand = 'solc';

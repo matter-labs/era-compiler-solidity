@@ -5,7 +5,6 @@ describe("Set of --metadata-hash tests", () => {
   const zksolcCommand = 'zksolc';
   const solcCommand = 'solc';
 
-
   //id1751:I
   describe(`Run ${zksolcCommand} with --metadata-hash default`, () => {
     const args = [`${paths.pathToBasicSolContract}`, `--metadata-hash=none`];

@@ -1,7 +1,6 @@
 import {executeCommand} from "../src/helper";
 import { paths } from '../src/entities';
 
-
 describe("Set of --yul tests", () => {
   const zksolcCommand = 'zksolc';
   const solcCommand = 'solc';
@@ -23,7 +22,7 @@ describe("Set of --yul tests", () => {
       expect(result.output).toMatch(/(No output requested)/i);
     });
 
-    xit("solc exit code == zksolc exit code", () => { // issue with solc compilation
+    xit("solc exit code == zksolc exit code", () => {
         const solcResult = executeCommand(solcCommand, solcArgs);
         expect(solcResult.exitCode).toBe(result.exitCode);
     });

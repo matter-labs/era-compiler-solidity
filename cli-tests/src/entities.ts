@@ -1,38 +1,34 @@
 import * as path from 'path';
 
-
 const outputDir = 'artifacts';
-const binExtension = ':C.zbin';
-const asmExtension = ':C.zasm';
-const llvmExtension = ':C.bc';
+const binOutputFile = 'C.zbin';
+const eraVMAssemblyOutputFile = 'C.zasm';
 const libraryDefault = 'MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC';
 const contractSolFilename = 'contract.sol';
 const contractYulFilename = 'contract.yul';
-const contractZkasmFilename = 'contract.zkasm';
+const contractEraVMAssemblyFilename = 'contract.zasm';
 const contractLlvmFilename = 'contract.ll';
 const contractJSONFilename = 'contract.json';
 const pathToOutputDir = path.join( __dirname, '..', outputDir);
 const pathToContracts = path.join( __dirname, '..', 'src', 'contracts');
 const pathToBasicYulContract = path.join(pathToContracts, 'yul', contractYulFilename);
-const pathToBasicZkasmContract = path.join(pathToContracts, 'zkasm', contractZkasmFilename);
+const pathToBasicEraVMAssemblyContract = path.join(pathToContracts, 'eravm', contractEraVMAssemblyFilename);
 const pathToBasicSolContract = path.join(pathToContracts, 'solidity', contractSolFilename);
 const pathToBasicLlvmContract = path.join(pathToContracts, "llvm", contractLlvmFilename);
 const pathToBasicJSONContract = path.join(pathToContracts, "json", contractJSONFilename);
 
-
 export const paths = {
   outputDir: outputDir,
-  binExtension: binExtension,
-  asmExtension: asmExtension,
-  llvmExtension: llvmExtension,
+  binOutputFile: binOutputFile,
+  eraVMAssemblyOutputFile: eraVMAssemblyOutputFile,
   libraryDefault: libraryDefault,
   contractSolFilename: contractSolFilename,
-  contractZkasmFilename: contractZkasmFilename,
+  contractEraVMAssemblyFilename: contractEraVMAssemblyFilename,
   contractYulFilename: contractYulFilename,
   contractLlvmFilename: contractLlvmFilename,
   pathToOutputDir: pathToOutputDir,
   pathToContracts: pathToContracts,
-  pathToBasicZkasmContract: pathToBasicZkasmContract,
+  pathToBasicEraVMAssemblyContract: pathToBasicEraVMAssemblyContract,
   pathToBasicSolContract: pathToBasicSolContract,
   pathToBasicYulContract: pathToBasicYulContract,
   pathToBasicLlvmContract: pathToBasicLlvmContract,

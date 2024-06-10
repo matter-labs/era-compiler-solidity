@@ -5,8 +5,7 @@ describe("Set of --standard-json tests", () => {
   const zksolcCommand = 'zksolc';
   const solcCommand = 'solc';
 
-
-  //id1741:I //BUG CPR-1409
+  //id1741:I
   xdescribe(`Run ${zksolcCommand} with --standard-json contract.json}`, () => {
     const args = [`--standard-json`, `${paths.pathToBasicJSONContract}`];
     const result = executeCommand(zksolcCommand, args);
@@ -39,7 +38,6 @@ describe("Set of --standard-json tests", () => {
       expect(result.output).toMatch(/Input files must be passed via standard JSON input/i);
     });
 
-    //solc exit code == 0 
     xit("solc exit code == zksolc exit code", () => {
       const solcResult = executeCommand(solcCommand, args);
       expect(solcResult.exitCode).toBe(result.exitCode);
