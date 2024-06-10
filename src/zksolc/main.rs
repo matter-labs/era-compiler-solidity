@@ -241,31 +241,7 @@ fn main_inner() -> anyhow::Result<()> {
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
             } else if arguments.output_assembly || arguments.output_binary {
-                for (path, build) in build.contracts.into_iter() {
-                    match build {
-                        Ok(build) => {
-                            if arguments.output_assembly {
-                                writeln!(
-                                    std::io::stdout(),
-                                    "Contract `{}` assembly:\n\n{}",
-                                    path,
-                                    build.build.assembly_text
-                                )?;
-                            }
-                            if arguments.output_binary {
-                                writeln!(
-                                    std::io::stdout(),
-                                    "Contract `{}` bytecode: 0x{}",
-                                    path,
-                                    hex::encode(build.build.bytecode)
-                                )?;
-                            }
-                        }
-                        Err(error) => {
-                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}")?;
-                        }
-                    }
-                }
+                build.write_to_terminal(arguments.output_assembly, arguments.output_binary)?;
             } else {
                 writeln!(
                     std::io::stderr(),
@@ -376,29 +352,7 @@ fn main_inner() -> anyhow::Result<()> {
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
             } else if arguments.output_assembly || arguments.output_binary {
-                for (path, build) in build.contracts.into_iter() {
-                    match build {
-                        Ok(build) => {
-                            if arguments.output_binary {
-                                writeln!(
-                                    std::io::stdout(),
-                                    "Contract `{}` deploy bytecode: 0x{}",
-                                    path,
-                                    hex::encode(build.deploy_build.bytecode)
-                                )?;
-                                writeln!(
-                                    std::io::stdout(),
-                                    "Contract `{}` runtime bytecode: 0x{}",
-                                    path,
-                                    hex::encode(build.runtime_build.bytecode)
-                                )?;
-                            }
-                        }
-                        Err(error) => {
-                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}")?;
-                        }
-                    }
-                }
+                build.write_to_terminal(arguments.output_assembly, arguments.output_binary)?;
             } else {
                 writeln!(
                     std::io::stderr(),

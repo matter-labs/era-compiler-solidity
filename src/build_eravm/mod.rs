@@ -27,6 +27,25 @@ pub struct Build {
 
 impl Build {
     ///
+    /// Writes all contracts to the terminal.
+    ///
+    pub fn write_to_terminal(
+        self,
+        output_assembly: bool,
+        output_binary: bool,
+    ) -> anyhow::Result<()> {
+        self.check_errors()?;
+
+        for (path, build) in self.contracts.into_iter() {
+            build
+                .expect("Always valid")
+                .write_to_terminal(path, output_assembly, output_binary)?;
+        }
+
+        Ok(())
+    }
+
+    ///
     /// Writes all contracts to the specified directory.
     ///
     pub fn write_to_directory(
