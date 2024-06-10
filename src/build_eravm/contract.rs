@@ -52,6 +52,33 @@ impl Contract {
     }
 
     ///
+    /// Writes the contract text assembly and bytecode to terminal.
+    ///
+    pub fn write_to_terminal(
+        self,
+        path: String,
+        output_assembly: bool,
+        output_binary: bool,
+    ) -> anyhow::Result<()> {
+        if output_assembly {
+            writeln!(
+                std::io::stdout(),
+                "Contract `{path}` assembly:\n\n{}",
+                self.build.assembly_text
+            )?;
+        }
+        if output_binary {
+            writeln!(
+                std::io::stdout(),
+                "Contract `{path}` bytecode: 0x{}",
+                hex::encode(self.build.bytecode)
+            )?;
+        }
+
+        Ok(())
+    }
+
+    ///
     /// Writes the contract text assembly and bytecode to files.
     ///
     pub fn write_to_directory(

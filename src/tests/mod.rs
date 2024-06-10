@@ -93,6 +93,7 @@ pub fn build_solidity(
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -152,6 +153,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -181,6 +183,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -224,6 +227,7 @@ pub fn build_yul_standard_json(
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -258,6 +262,7 @@ pub fn build_llvm_ir_standard_json(
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -292,6 +297,7 @@ pub fn build_eravm_assembly_standard_json(
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 

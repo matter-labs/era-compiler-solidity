@@ -80,6 +80,34 @@ impl Output {
     }
 
     ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn check_errors(&self) -> anyhow::Result<()> {
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "error"))
+            .unwrap_or_default()
+        {
+            anyhow::bail!(
+                "{}",
+                self.errors
+                    .as_ref()
+                    .map(|errors| {
+                        errors
+                            .iter()
+                            .map(|error| error.message.clone())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    })
+                    .unwrap_or_default()
+            );
+        }
+
+        Ok(())
+    }
+
+    ///
     /// Removes EVM artifacts to prevent their accidental usage.
     ///
     pub fn remove_evm(&mut self) {

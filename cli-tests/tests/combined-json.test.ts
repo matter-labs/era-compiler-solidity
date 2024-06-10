@@ -139,7 +139,7 @@ describe("Set of --combined-json tests", () => {
             });
 
             it("--combined-json error is presented", () => {
-                expect(result.output).toMatch(/(ParserError: Expected identifier)/i); 
+                expect(result.output).toMatch(/(Expected identifier)/i); 
             });
 
             it("solc exit code == zksolc exit code", () => {
