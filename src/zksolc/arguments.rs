@@ -15,11 +15,11 @@ use structopt::StructOpt;
 /// chosen options, either to the standard output or to files within the designated
 /// output directory.
 ///
-/// Example: zksolc ERC20.sol -O3 --bin --output-dir './build/'
+/// Example: zksolc ERC20.sol -O3 --bin --output-dir "./build/"
 ///
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "The EraVM Solidity compiler",
+    name = "Solidity compiler for ZKsync",
     global_settings = &[structopt::clap::AppSettings::ArgRequiredElseHelp],
 )]
 pub struct Arguments {
@@ -364,6 +364,22 @@ impl Arguments {
             if self.metadata_literal {
                 anyhow::bail!(
                     "Metadata literal content must be specified in standard JSON input settings."
+                );
+            }
+
+            if self.enable_eravm_extensions {
+                eprintln!(
+                    "EraVM extensions CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                );
+            }
+            if self.force_evmla {
+                eprintln!(
+                    "EVM legacy assembly pipeline CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                );
+            }
+            if self.detect_missing_libraries {
+                eprintln!(
+                    "Missing deployable libraries detection mode CLI flag is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
         }

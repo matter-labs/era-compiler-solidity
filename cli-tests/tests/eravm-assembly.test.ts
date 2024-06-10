@@ -20,7 +20,7 @@ describe("Set of --eravm tests", () => {
   });
 
   //id1822
-  describe(`Run ${zksolcCommand} with double zkasm options`, () => {
+  describe(`Run ${zksolcCommand} with double eravm options`, () => {
     const args = [`${paths.pathToBasicEraVMAssemblyContract}`, `--eravm`, `--eravm`];
     const result = executeCommand(zksolcCommand, args);
 
