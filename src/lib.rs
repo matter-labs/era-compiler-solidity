@@ -55,7 +55,6 @@ pub use self::warning::Warning;
 mod tests;
 
 use std::collections::BTreeSet;
-use std::io::Write;
 use std::path::PathBuf;
 
 ///
@@ -100,7 +99,7 @@ pub fn yul_to_eravm(
         zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
-
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -140,7 +139,7 @@ pub fn yul_to_evm(
         include_metadata_hash,
         debug_config,
     )?;
-
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -164,7 +163,7 @@ pub fn llvm_ir_to_eravm(
         zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
-
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -186,7 +185,7 @@ pub fn llvm_ir_to_evm(
         include_metadata_hash,
         debug_config,
     )?;
-
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -210,7 +209,7 @@ pub fn eravm_assembly(
         zkevm_assembly::RunningVmEncodingMode::Production,
         debug_config,
     )?;
-
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -272,22 +271,7 @@ pub fn standard_output_eravm(
         include_paths,
         allow_paths,
     )?;
-
-    if let Some(errors) = solc_output.errors.as_deref() {
-        let mut has_errors = false;
-
-        for error in errors.iter() {
-            if error.severity.as_str() == "error" {
-                has_errors = true;
-            }
-
-            writeln!(std::io::stderr(), "{error}")?;
-        }
-
-        if has_errors {
-            anyhow::bail!("Error(s) found. Compilation aborted");
-        }
-    }
+    solc_output.check_errors()?;
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
@@ -366,22 +350,7 @@ pub fn standard_output_evm(
         include_paths,
         allow_paths,
     )?;
-
-    if let Some(errors) = solc_output.errors.as_deref() {
-        let mut has_errors = false;
-
-        for error in errors.iter() {
-            if error.severity.as_str() == "error" {
-                has_errors = true;
-            }
-
-            writeln!(std::io::stderr(), "{error}")?;
-        }
-
-        if has_errors {
-            anyhow::bail!("Error(s) found. Compilation aborted");
-        }
-    }
+    solc_output.check_errors()?;
 
     let project = Project::try_from_solidity_sources(
         &mut solc_output,
@@ -457,16 +426,7 @@ pub fn standard_json_eravm(
                 include_paths,
                 allow_paths,
             )?;
-            if solc_output
-                .errors
-                .as_deref()
-                .map(|errors| {
-                    errors
-                        .iter()
-                        .any(|error| error.severity.as_str() == "error")
-                })
-                .unwrap_or_default()
-            {
+            if solc_output.check_errors().is_err() {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
                 std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
@@ -585,16 +545,7 @@ pub fn standard_json_evm(
                 include_paths,
                 allow_paths,
             )?;
-            if solc_output
-                .errors
-                .as_deref()
-                .map(|errors| {
-                    errors
-                        .iter()
-                        .any(|error| error.severity.as_str() == "error")
-                })
-                .unwrap_or_default()
-            {
+            if solc_output.check_errors().is_err() {
                 serde_json::to_writer(std::io::stdout(), &solc_output)?;
                 std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
             }
@@ -708,15 +659,10 @@ pub fn combined_json_eravm(
     match output_directory {
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
-
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                serde_json::to_string(&combined_json).expect("Always valid")
-            )?;
+            serde_json::to_writer(std::io::stdout(), &combined_json)?;
         }
     }
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
@@ -771,15 +717,10 @@ pub fn combined_json_evm(
     match output_directory {
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
-
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
         }
         None => {
-            writeln!(
-                std::io::stdout(),
-                "{}",
-                serde_json::to_string(&combined_json).expect("Always valid")
-            )?;
+            serde_json::to_writer(std::io::stdout(), &combined_json)?;
         }
     }
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);

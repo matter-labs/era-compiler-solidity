@@ -262,7 +262,7 @@ fn main_inner() -> anyhow::Result<()> {
                             }
                         }
                         Err(error) => {
-                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}",)?;
+                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}")?;
                         }
                     }
                 }
@@ -395,7 +395,7 @@ fn main_inner() -> anyhow::Result<()> {
                             }
                         }
                         Err(error) => {
-                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}",)?;
+                            writeln!(std::io::stderr(), "Contract `{path}` error: {error}")?;
                         }
                     }
                 }

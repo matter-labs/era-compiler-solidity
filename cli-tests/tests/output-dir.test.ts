@@ -66,7 +66,7 @@ describe("Set of --output-dir tests", () => {
     });
 
     it("Compiler warning/error is presented", () => {
-      expect(result.output).toMatch(/No input sources specified\.\s*Error\(s\) found\. Compilation aborted/i);
+      expect(result.output).toMatch(/No input sources specified/i);
       tmpDirZkSolc.removeCallback();
     });
 

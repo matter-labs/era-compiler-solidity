@@ -21,6 +21,15 @@ pub struct SourceLocation {
     pub end: isize,
 }
 
+impl SourceLocation {
+    ///
+    /// A shortcut constructor.
+    ///
+    pub fn new(file: String, start: isize, end: isize) -> Self {
+        Self { file, start, end }
+    }
+}
+
 impl FromStr for SourceLocation {
     type Err = anyhow::Error;
 

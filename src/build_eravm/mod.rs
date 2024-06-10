@@ -9,6 +9,7 @@ use std::path::Path;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
+use crate::solc::standard_json::output::error::source_location::SourceLocation as StandardJsonOutputErrorSourceLocation;
 use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
 use crate::solc::standard_json::output::Output as StandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
@@ -164,7 +165,11 @@ impl Build {
                         formatted_message: message.clone(),
                         message,
                         severity: "error".to_owned(),
-                        source_location: None,
+                        source_location: Some(StandardJsonOutputErrorSourceLocation::new(
+                            path.to_owned(),
+                            0,
+                            0,
+                        )),
                         r#type: "Error".to_owned(),
                     });
                 }
@@ -176,6 +181,30 @@ impl Build {
             standard_json.long_version = Some(solc_version.long.to_owned());
         }
         standard_json.zk_version = Some(zksolc_version.to_string());
+
+        Ok(())
+    }
+
+    ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn check_errors(&self) -> anyhow::Result<()> {
+        let mut errors = Vec::new();
+        for (path, contract) in self.contracts.iter() {
+            if let Err(ref error) = contract {
+                errors.push((path.to_owned(), error.to_string()));
+            }
+        }
+        if !errors.is_empty() {
+            anyhow::bail!(
+                "{}",
+                errors
+                    .iter()
+                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
+        }
 
         Ok(())
     }
