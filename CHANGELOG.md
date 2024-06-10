@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.0] - 2024-06-10
 
 ### Added
 
@@ -29,6 +29,7 @@
 ### Fixed
 
 - The bytes-to-cells LLVM misoptimization
+- All errors are now written to JSON in standard JSON mode
 - Removed `:` from output filenames, as it is not allowed on Windows
 - Excessive RAM usage and compilation time with some projects
 - Redundancy in error printing

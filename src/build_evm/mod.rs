@@ -36,30 +36,15 @@ impl Build {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let mut errors = Vec::new();
-        for (path, build) in self.contracts.into_iter() {
-            match build {
-                Ok(build) => build.write_to_directory(
-                    output_directory,
-                    output_assembly,
-                    output_binary,
-                    overwrite,
-                )?,
-                Err(error) => {
-                    errors.push((path, error));
-                }
-            }
-        }
+        self.check_errors()?;
 
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
+        for build in self.contracts.into_values() {
+            build.expect("Always valid").write_to_directory(
+                output_directory,
+                output_assembly,
+                output_binary,
+                overwrite,
+            )?;
         }
 
         Ok(())
@@ -73,7 +58,8 @@ impl Build {
         combined_json: &mut CombinedJson,
         zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
-        let mut errors = Vec::new();
+        self.check_errors()?;
+
         for (path, build) in self.contracts.into_iter() {
             let combined_json_contract = combined_json
                 .contracts
@@ -87,26 +73,12 @@ impl Build {
                 })
                 .ok_or_else(|| anyhow::anyhow!("Contract `{}` not found in the project", path))?;
 
-            match build {
-                Ok(build) => build.write_to_combined_json(combined_json_contract)?,
-                Err(error) => {
-                    errors.push((path, error));
-                }
-            }
+            build
+                .expect("Always valid")
+                .write_to_combined_json(combined_json_contract)?;
         }
 
         combined_json.zk_version = Some(zksolc_version.to_string());
-
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        }
 
         Ok(())
     }
