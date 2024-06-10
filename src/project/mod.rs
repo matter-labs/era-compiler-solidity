@@ -377,9 +377,8 @@ impl Project {
             }
         }
 
-        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
-            match result {
+            let result = match result {
                 Ok(mut contract) => {
                     for dependency in contract.factory_dependencies.drain() {
                         let dependency_path = self
@@ -401,23 +400,11 @@ impl Project {
                             .insert(hash, dependency_path);
                     }
 
-                    build.contracts.insert(path, contract);
+                    Ok(contract)
                 }
-                Err(error) => {
-                    errors.push((path, error));
-                }
-            }
-        }
-
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
+                Err(error) => Err(error),
+            };
+            build.contracts.insert(path, result);
         }
 
         Ok(build)
@@ -457,27 +444,8 @@ impl Project {
             .collect();
 
         let mut build = EVMBuild::default();
-        let mut errors = Vec::with_capacity(results.len());
         for (path, result) in results.into_iter() {
-            match result {
-                Ok(contract) => {
-                    build.contracts.insert(path, contract);
-                }
-                Err(error) => {
-                    errors.push((path, error));
-                }
-            }
-        }
-
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .into_iter()
-                    .map(|(path, error)| format!("Contract `{path}`: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
+            build.contracts.insert(path, result);
         }
 
         Ok(build)
