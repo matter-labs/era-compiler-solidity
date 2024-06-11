@@ -31,7 +31,7 @@ runs:
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
         mkdir -p ./releases/${{ inputs.release-suffix }}
-        [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="-${GITHUB_REF_NAME}"
+        [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="-v${GITHUB_REF_NAME}"
         [ "$RUNNER_OS" = "Windows" ] && WIN_SUFFIX=".exe"
         strip "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}"
         mv "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}" \

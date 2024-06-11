@@ -131,18 +131,6 @@ jobs:
             echo "release_title=${VERSION_OR_SHA}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          tree ./releases
-          BINARIES=($(find ./releases -type f))
-          [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && TARGET_PARAM="--target ${{ steps.release.outputs.full_sha }}"
-          gh release create ${{ steps.release.outputs.version_or_sha }} \
-            --title ${{ steps.release.outputs.release_title }} \
-            --prerelease ${TARGET_PARAM} \
-            "${BINARIES[@]}"
-
       - name: Get changelog
         if: github.ref_type == 'tag'
         id: changelog_reader
@@ -151,22 +139,13 @@ jobs:
           validation_level: warn
           path: ./CHANGELOG.md
 
-      - name: Prepare CHANGELOG for publishing
-        id: prepare_changelog
-        if: github.ref_type == 'tag'
-        run: |
-          echo "## ${{ github.event.repository.name }}" >> ./release_changelog.md
-          echo "## [${{ steps.changelog_reader.outputs.version }}] - ${{ steps.changelog_reader.outputs.date }}" >> ./release_changelog.md
-          echo '${{ steps.changelog_reader.outputs.changes }}' >> ./release_changelog.md
-          echo "changes=$(sed -z 's/\n/\\n/g' ./release_changelog.md)" >> $GITHUB_OUTPUT
-
-      - name: Send Slack notification
-        if: github.ref_type == 'tag'
-        uses: slackapi/slack-github-action@v1.25.0
+      - name: Prepare release
+        uses: softprops/action-gh-release@v2
         with:
-          payload: |
-            {
-              "text": "${{ steps.prepare_changelog.outputs.changes }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
+          name: ${{ steps.release.outputs.release_title }}
+          body: ${{ steps.changelog_reader.outputs.changes }}
+          generate_release_notes: false
+          tag_name: ${{ steps.release.outputs.version_or_sha }}
+          target_commitish: ${{ steps.release.outputs.full_sha }}
+          prerelease: true
+          files: releases/**/**
