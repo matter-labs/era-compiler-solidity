@@ -30,7 +30,7 @@ pub struct DefinitionInfo {
     /// Type of definition.
     pub r#type: Type,
 }
-
+// FIXME inefficient
 pub fn get_definition(
     environment: &SymbolTable<DefinitionInfo>,
     name: &YulName,

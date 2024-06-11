@@ -8,6 +8,14 @@ pub enum ContextKind {
     Other,
 }
 
+impl ContextKind {
+    pub const ALL_KINDS: &'static [ContextKind] = &[
+        ContextKind::Memory,
+        ContextKind::Storage,
+        ContextKind::TransientStorage,
+        ContextKind::Other,
+    ];
+}
 impl Display for ContextKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {

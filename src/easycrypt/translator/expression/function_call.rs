@@ -4,15 +4,19 @@
 
 use anyhow::Error;
 
-use crate::easycrypt::syntax::statement::Statement;
-use crate::easycrypt::translator::definition_info::kind::YulSpecial;
-use crate::easycrypt::translator::expression::Transformed;
-use crate::Translator;
-
 use crate::easycrypt::syntax::expression::call::FunctionCall;
 use crate::easycrypt::syntax::expression::Expression;
+use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::statement::call::ProcCall;
-use crate::easycrypt::translator::identifier;
+use crate::easycrypt::syntax::statement::Statement;
+use crate::easycrypt::translator::definition_info::get_definition;
+use crate::easycrypt::translator::definition_info::kind::proc_kind::state_formal_parameters;
+use crate::easycrypt::translator::definition_info::kind::proc_kind::state_return_vars;
+use crate::easycrypt::translator::definition_info::kind::Kind;
+use crate::easycrypt::translator::definition_info::kind::YulSpecial;
+use crate::easycrypt::translator::expression::Transformed;
+use crate::easycrypt::translator::Translator;
+
 use crate::yul::parser::statement::expression::function_call::name::Name as YulName;
 use crate::yul::parser::statement::expression::Expression as YulExpression;
 
@@ -29,46 +33,105 @@ impl Translator {
         ectx: &ExprContext,
         is_root: bool,
     ) -> Result<Transformed, Error> {
-        match self.transpile_name(ctx, name)? {
-            identifier::Translated::Function(target) => {
+        let caller_full_name = self
+            .call_stack
+            .last()
+            .expect("Internal error: inside a function call but callstack is empty.");
+        let caller_definition = self
+            .definitions
+            .get(caller_full_name)
+            .expect("Internal error: caller not found in callstack.");
+        let callee_definition = &get_definition(&self.definitions, name, &self.here())?;
+        match &callee_definition.kind {
+            Kind::Function(target) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 Ok(Transformed::Expression(
-                    Expression::ECall(FunctionCall { target, arguments }),
+                    Expression::ECall(FunctionCall {
+                        target: target.clone(),
+                        arguments,
+                    }),
                     ectx,
                 ))
             }
+            Kind::Proc(proc_descr) => {
+                let callee_extra_state_arguments = state_formal_parameters(callee_definition);
+                let caller_extra_state_arguments = state_formal_parameters(caller_definition);
+                let append_arguments =
+                    caller_extra_state_arguments.iter().filter_map(|(def, t1)| {
+                        if callee_extra_state_arguments.iter().any(|(_, t2)| t1 == t2) {
+                            Some(Expression::Reference(def.reference()))
+                        } else {
+                            None
+                        }
+                    });
 
-            identifier::Translated::Proc(target) => {
-                let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                let (mut arguments, mut ectx) =
+                    self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                arguments.extend(append_arguments);
 
-                let definition = self.new_tmp_definition_here();
-                let mut new_ctx = ectx;
+                let returns_unit = matches!(&callee_definition.r#type, Type::Arrow(_, ret_type) if **ret_type == Type::Unit);
 
-                new_ctx.add_assignment(&definition, ProcCall { target, arguments });
-                Ok(Transformed::Expression(
-                    Expression::Reference(definition.reference()),
-                    new_ctx,
-                ))
+                let mut return_vars = {
+                    if returns_unit {
+                        vec![]
+                    } else {
+                        let tmp_def = self.new_tmp_definition_here();
+                        ectx.locals.push(tmp_def.clone());
+                        vec![tmp_def.reference()]
+                    }
+                };
+
+                let callee_extra_return_vars = state_return_vars(callee_definition);
+
+                let append_return_vars =
+                    caller_extra_state_arguments.iter().filter_map(|(def, t1)| {
+                        if callee_extra_return_vars.iter().any(|(_, t2)| t1 == t2) {
+                            Some(def.reference())
+                        } else {
+                            None
+                        }
+                    });
+                return_vars.extend(append_return_vars);
+
+                let mut new_ectx = ectx;
+
+                new_ectx.add_multiple_assignment(
+                    &return_vars,
+                    ProcCall {
+                        target: proc_descr.name.clone(),
+                        arguments,
+                    },
+                );
+
+                if return_vars.is_empty() && is_root {
+                    Ok(Transformed::Statements(vec![], new_ectx, ctx.clone()))
+                } else {
+                    Ok(Transformed::Expression(
+                        Expression::Reference(return_vars[0].clone()),
+                        new_ectx,
+                    ))
+                }
             }
-            identifier::Translated::BinOp(optype) => {
+            Kind::BinOp(optype) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 Ok(Transformed::Expression(
                     Expression::Binary(
-                        optype,
+                        optype.clone(),
                         Box::new(arguments[0].clone()),
                         Box::new(arguments[1].clone()),
                     ),
                     ectx,
                 ))
             }
-            identifier::Translated::UnOp(optype) => {
+            Kind::UnOp(optype) => {
                 let (arguments, ectx) = self.transpile_expression_list(yul_arguments, ctx, ectx)?;
                 Ok(Transformed::Expression(
-                    Expression::Unary(optype, Box::new(arguments[0].clone())),
+                    Expression::Unary(optype.clone(), Box::new(arguments[0].clone())),
                     ectx,
                 ))
             }
-            identifier::Translated::Special(special) if is_root => match special {
+
+            Kind::Special(special) if is_root => match special {
                 YulSpecial::Return => {
                     let (arguments, ectx) =
                         self.transpile_expression_list(yul_arguments, ctx, ectx)?;
@@ -83,6 +146,7 @@ impl Translator {
                 YulSpecial::Stop | YulSpecial::Invalid | YulSpecial::Revert => {
                     //assert!(yul_arguments.is_empty());
 
+                    // FIXME  translate as a boolean assignment
                     Ok(Transformed::Statements(
                         vec![Statement::Return(Expression::Tuple(vec![]))],
                         ectx.clone(),
@@ -90,13 +154,41 @@ impl Translator {
                     ))
                 }
             },
-            identifier::Translated::Special(_) => {
+            Kind::Special(_) => {
                 anyhow::bail!("Unsupported type of YUL function call.")
             }
-            identifier::Translated::Variable(_) => anyhow::bail!(
+
+            Kind::Variable => anyhow::bail!(
                 "Expected a name of function or procedure, got a name of variable instead. {:#?}",
                 name
             ),
         }
+
+        // match self.transpile_name(ctx, name)? {
+        //     identifier::Translated::Special(special) if is_root => match special {
+        //         YulSpecial::Return => {
+        //             let (arguments, ectx) =
+        //                 self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+        //             assert!(ectx.locals.is_empty());
+        //             assert!(ectx.assignments.is_empty());
+        //             Ok(Transformed::Statements(
+        //                 vec![Statement::Return(Expression::pack_tuple(&arguments))],
+        //                 ectx,
+        //                 ctx.clone(),
+        //             ))
+        //         }
+        //         YulSpecial::Stop | YulSpecial::Invalid | YulSpecial::Revert => {
+        //             //assert!(yul_arguments.is_empty());
+
+        //             Ok(Transformed::Statements(
+        //                 vec![Statement::Return(Expression::Tuple(vec![]))],
+        //                 ectx.clone(),
+        //                 ctx.clone(),
+        //             ))
+        //         }
+        //     },
+        //     identifier::Translated::Special(_) => {
+        //         anyhow::bail!("Unsupported type of YUL function call.")
+        //     }
     }
 }

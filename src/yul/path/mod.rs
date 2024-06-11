@@ -26,14 +26,14 @@ pub mod tracker;
 
 mod step;
 
-use self::step::LexicalBlock;
+use self::step::LexicalScope;
 use crate::util::iter::prefixes;
 
 /// Path from the root of YUL syntax tree to a specific lexical block in it,
 /// including all the blocks on the way from root.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
-    stack: Vec<LexicalBlock>,
+    stack: Vec<LexicalScope>,
 }
 
 impl Path {
@@ -43,7 +43,7 @@ impl Path {
         self.stack
             .iter()
             .fold(String::from(""), |acc, step| -> String {
-                let contribution = LexicalBlock::full_name_contribution(step);
+                let contribution = LexicalScope::full_name_contribution(step);
                 format!("{acc}_{contribution}")
             })
     }

@@ -3,6 +3,7 @@
 //!
 
 use crate::easycrypt::syntax::definition::Definition;
+use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::syntax::statement::Statement;
 
@@ -36,6 +37,13 @@ impl Context {
             rhs,
         ));
         self.locals.push(new_definition.clone())
+    }
+
+    ///FIXME document
+    pub fn add_multiple_assignment(&mut self, references: &[Reference], rhs: ProcCall) {
+        // FIXME and if references are empty, should be a call without assignment
+        self.assignments
+            .push(Statement::PAssignment(references.to_vec(), rhs));
     }
 }
 

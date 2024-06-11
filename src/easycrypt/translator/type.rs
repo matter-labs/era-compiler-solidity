@@ -4,10 +4,11 @@
 
 use anyhow::Error;
 
+use super::Translator;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::yul::parser::r#type::Type as YulType;
 
-impl crate::Translator {
+impl Translator {
     /// Default type to fall back when the type in YUL syntax tree is unknown.
     pub const DEFAULT_TYPE: Type = Type::UInt(256);
 

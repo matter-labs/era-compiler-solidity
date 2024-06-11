@@ -2,8 +2,8 @@
 //! Derive the effects for the procedures, propagating them until fixpoint.
 //!
 
+use crate::easycrypt::translator::definition_info::kind::proc_kind::ProcKind;
 use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::definition_info::kind::ProcKind;
 use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::yul_analyzers::common::round::Round;
 use crate::easycrypt::translator::yul_analyzers::common::state::State;

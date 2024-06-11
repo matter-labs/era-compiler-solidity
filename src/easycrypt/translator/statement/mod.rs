@@ -13,8 +13,9 @@ use std::iter;
 use anyhow::Error;
 
 use super::context::Context;
-use super::definition_info::kind;
+use super::definition_info::kind::proc_kind::ProcKind;
 use super::function;
+use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::function::Function;
 use crate::easycrypt::syntax::module::definition::TopDefinition;
@@ -59,6 +60,10 @@ impl Translator {
                 Ok((new_ctx, Transformed::Statements(statements)))
             }
             YulStatement::Expression(expr) => match self.transpile_expression_root(expr, ctx)? {
+                super::expression::Transformed::Expression(Expression::Reference(_), ectx) => Ok((
+                    ctx.add_locals(&ectx.locals),
+                    Transformed::Statements(ectx.assignments.iter().cloned().collect()),
+                )),
                 super::expression::Transformed::Expression(result, ectx) => Ok((
                     ctx.add_locals(&ectx.locals),
                     Transformed::Statements(
@@ -106,7 +111,7 @@ impl Translator {
                         self.tracker.add(
                             &ec_procedure.name,
                             &DefinitionInfo {
-                                kind: Kind::Proc(kind::ProcKind {
+                                kind: Kind::Proc(ProcKind {
                                     name: ProcName::UserDefined(ec_procedure.name.clone()),
                                     attributes: Default::default(),
                                 }),

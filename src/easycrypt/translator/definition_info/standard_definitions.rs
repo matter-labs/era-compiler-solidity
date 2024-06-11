@@ -10,8 +10,8 @@ use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::translator::definition_info::attributes::Attributes;
+use crate::easycrypt::translator::definition_info::kind::proc_kind::ProcKind;
 use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::definition_info::kind::ProcKind;
 use crate::easycrypt::translator::definition_info::kind::YulSpecial;
 use crate::easycrypt::translator::definition_info::usage::Usage;
 use crate::yul::parser::statement::expression::function_call::name::Name as YulName;
@@ -175,8 +175,8 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         YulName::SignExtend => fun(FunctionName::SignExtend, "SignExtend", 2),
         YulName::Keccak256 => proc_simple(ProcName::Keccak256, "Keccak256", 2, 1),
         YulName::MLoad => proc_mem(ProcName::MLoad, "MLoad", Usage::READ, 1, 1),
-        YulName::MStore => proc_mem(ProcName::MStore, "MStore", Usage::WRITE, 2, 1),
-        YulName::MStore8 => proc_mem(ProcName::MStore8, "MStore8", Usage::WRITE, 2, 1),
+        YulName::MStore => proc_mem(ProcName::MStore, "MStore", Usage::WRITE, 2, 0),
+        YulName::MStore8 => proc_mem(ProcName::MStore8, "MStore8", Usage::WRITE, 2, 0),
         YulName::MCopy => proc_mem(ProcName::MCopy, "MCopy", Usage::RW, 3, 1),
         YulName::SLoad => proc_storage(ProcName::SLoad, "SLoad", Usage::READ, 1, 1),
         YulName::SStore => proc_storage(ProcName::SStore, "SStore", Usage::WRITE, 2, 0),

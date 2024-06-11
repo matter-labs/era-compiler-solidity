@@ -4,6 +4,8 @@
 
 pub mod statements;
 
+use std::collections::BTreeSet;
+
 use crate::yul::parser::statement::assignment::Assignment;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::code::Code;
@@ -18,6 +20,18 @@ use crate::yul::parser::statement::object::Object;
 use crate::yul::parser::statement::switch::Switch;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 use crate::yul::parser::statement::Statement;
+
+pub const IMPLICIT_CODE_FUNCTION_NAME: &str = "BODY";
+pub fn implicit_code_function(code: &Code) -> FunctionDefinition {
+    FunctionDefinition {
+        location: code.location,
+        identifier: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
+        arguments: Vec::new(),
+        result: Vec::new(),
+        body: code.block.clone(),
+        attributes: BTreeSet::new(),
+    }
+}
 
 #[allow(unused_variables)]
 /// Visitor for YUL syntax tree.

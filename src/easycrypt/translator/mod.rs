@@ -8,7 +8,6 @@ pub mod context;
 pub mod definition_info;
 pub mod expression;
 pub mod function;
-pub mod identifier;
 pub mod object;
 pub mod statement;
 pub mod r#type;
@@ -27,7 +26,6 @@ use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
-use crate::yul::visitor::statements::Statements;
 use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
@@ -42,6 +40,7 @@ pub struct Translator {
     tracker: SymbolTracker<definition_info::DefinitionInfo>,
     tmp_counter: Counter,
     definitions: SymbolTable<DefinitionInfo>,
+    call_stack: Vec<FullName>,
 }
 
 impl Translator {
@@ -52,6 +51,7 @@ impl Translator {
             tracker: SymbolTracker::new(),
             tmp_counter: Counter::new(),
             definitions: SymbolTable::new(),
+            call_stack: Vec::new(),
         };
 
         result.init();
@@ -60,16 +60,13 @@ impl Translator {
 
     fn init(&mut self) {
         self.definitions = {
-            let mut stmts = Statements::new(CollectDefinitions::new(), Path::empty());
-            stmts.visit_object(&self.root);
-            stmts.action.all_symbols
+            let mut collector = CollectDefinitions::new();
+            collector.visit_object(&self.root);
+            collector.all_symbols
         };
 
         infer_function_types(&mut self.definitions, &self.root);
         infer_effects(&mut self.definitions, &self.root);
-
-        eprintln!("{:#?}", self.definitions)
-
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {

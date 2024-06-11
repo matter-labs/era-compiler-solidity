@@ -4,8 +4,8 @@
 
 use crate::easycrypt::translator::definition_info::attributes::Attributes;
 use crate::easycrypt::translator::definition_info::get_definition;
+use crate::easycrypt::translator::definition_info::kind::proc_kind::ProcKind;
 use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::definition_info::kind::ProcKind;
 use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::yul_analyzers::common::state::State;
 

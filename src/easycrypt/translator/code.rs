@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 use anyhow::Error;
 
+use crate::yul::visitor::IMPLICIT_CODE_FUNCTION_NAME;
 use crate::Translator;
 
 use crate::easycrypt::syntax::module::definition::TopDefinition;
@@ -24,13 +25,14 @@ impl Translator {
     /// Transpile the `code` block of an arbitrary YUL object.
     pub fn transpile_code(&mut self, code: &YulCode) -> Result<Module, Error> {
         self.tracker.enter_code();
+        self.call_stack
+            .push(self.create_full_name(IMPLICIT_CODE_FUNCTION_NAME));
 
         let (Context { module, locals }, TransformedBlock { statements }) =
             self.transpile_block(&code.block, &Context::new())?;
-        let default_code_proc_name = "BODY".to_string();
 
         let default_code_proc = Proc {
-            name: default_code_proc_name.clone(),
+            name: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
             signature: Signature::UNIT_TO_UNIT,
             body: Block { statements },
             locals,
@@ -44,7 +46,7 @@ impl Translator {
                 name: None,
                 definitions: HashMap::from([(
                     Reference {
-                        identifier: default_code_proc_name.clone(),
+                        identifier: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
                         location: Some(self.here()),
                     },
                     TopDefinition::Proc(default_code_proc),
@@ -53,7 +55,7 @@ impl Translator {
         }
 
         self.tracker.leave();
-
+        self.call_stack.pop();
         Ok(new_module)
     }
 }
