@@ -387,7 +387,7 @@ pub fn standard_json_eravm(
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
@@ -517,7 +517,7 @@ pub fn standard_json_evm(
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
 
-    let mut solc_input = SolcStandardJsonInput::try_from_reader(json_path.as_deref())?;
+    let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
