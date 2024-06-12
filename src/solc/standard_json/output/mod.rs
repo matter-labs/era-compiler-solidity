@@ -220,7 +220,7 @@ impl Output {
     ///
     /// Please do not push project-general errors without paths here.
     ///
-    pub fn push_error(&mut self, path: &str, error: anyhow::Error) {
+    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
         let message = error.to_string();
         self.errors
             .get_or_insert_with(Vec::new)
@@ -230,7 +230,7 @@ impl Output {
                 formatted_message: message.clone(),
                 message,
                 severity: "error".to_owned(),
-                source_location: Some(JsonOutputErrorSourceLocation::new(path.to_owned(), 0, 0)),
+                source_location: Some(JsonOutputErrorSourceLocation::new(path, 0, 0)),
                 r#type: "Error".to_owned(),
             });
     }

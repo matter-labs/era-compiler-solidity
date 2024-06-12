@@ -181,7 +181,7 @@ impl Project {
                 Ok(contract) => {
                     contracts.insert(path, contract);
                 }
-                Err(error) => solc_output.push_error(path.as_str(), error),
+                Err(error) => solc_output.push_error(path, error),
             }
         }
         Ok(Project::new(
@@ -218,7 +218,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -276,7 +276,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -312,7 +312,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -351,7 +351,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -388,7 +388,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -427,7 +427,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path.as_str(), error),
+                    Some(ref mut solc_output) => solc_output.push_error(path, error),
                     None => anyhow::bail!(error),
                 },
             }

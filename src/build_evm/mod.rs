@@ -9,8 +9,6 @@ use std::path::Path;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
-use crate::solc::standard_json::output::error::source_location::SourceLocation as StandardJsonOutputErrorSourceLocation;
-use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
 use crate::solc::standard_json::output::Output as StandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 
@@ -118,14 +116,8 @@ impl Build {
                 standard_json.contracts.as_mut().expect("Always exists")
             }
         };
-        let standard_json_errors = match standard_json.errors.as_mut() {
-            Some(errors) => errors,
-            None => {
-                standard_json.errors = Some(Vec::new());
-                standard_json.errors.as_mut().expect("Always exists")
-            }
-        };
 
+        let mut errors = Vec::with_capacity(self.contracts.len());
         for (full_path, build) in self.contracts.into_iter() {
             let mut full_path_split = full_path.split(':');
             let path = full_path_split.next().expect("Always exists");
@@ -148,25 +140,13 @@ impl Build {
                         contracts.insert(name.to_owned(), contract);
                     }
                 },
-                Err(error) => {
-                    let message = error.to_string();
-                    standard_json_errors.push(StandardJsonOutputError {
-                        component: "general".to_owned(),
-                        error_code: None,
-                        formatted_message: message.clone(),
-                        message,
-                        severity: "error".to_owned(),
-                        source_location: Some(StandardJsonOutputErrorSourceLocation::new(
-                            path.to_owned(),
-                            0,
-                            0,
-                        )),
-                        r#type: "Error".to_owned(),
-                    });
-                }
+                Err(error) => errors.push((path.to_owned(), error)),
             }
         }
 
+        for (path, error) in errors.into_iter() {
+            standard_json.push_error(path, error);
+        }
         if let Some(solc_version) = solc_version {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());
