@@ -45,7 +45,7 @@ pub trait Visitor {
     fn visit_function_call(&mut self, call: &FunctionCall);
 
     /// Visit an identifier corresponding to a name of a function in an EasyCrypt syntax tree.
-    fn visit_function_name(&mut self, proc_name: &FunctionName);
+    fn visit_function_name(&mut self, function_name: &FunctionName);
 
     /// Visit an integer literal in an EasyCrypt syntax tree.
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral);
