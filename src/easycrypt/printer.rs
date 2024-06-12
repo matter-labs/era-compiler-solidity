@@ -255,10 +255,10 @@ impl<T: IPrinter> Visitor for T {
             Statement::If(if_conditional) => self.visit_if_conditional(if_conditional),
             Statement::EAssignment(refs, rhs) => {
                 for (i, r) in (*refs).iter().enumerate() {
-                    self.visit_reference(r);
                     if i > 0 {
                         self.print(",")
                     }
+                    self.visit_reference(r);
                 }
                 self.print(" <- ");
                 self.visit_expression(rhs);
