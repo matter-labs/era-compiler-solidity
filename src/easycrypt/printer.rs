@@ -210,7 +210,10 @@ impl<T: IPrinter> Visitor for T {
             self.println(";");
         }
 
-        self.visit_block(&proc.body);
+        for statement in &proc.body.statements {
+            self.visit_statement(statement);
+            self.println(";");
+        }
         self.println("}");
         self.decrease_indent();
     }
