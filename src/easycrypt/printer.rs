@@ -166,7 +166,7 @@ impl<T: IPrinter> Visitor for T {
             }
         }
         self.println("");
-        self.println("}");
+        self.println("}.");
         self.decrease_indent();
         self.println(format!("(* End {} *)", module_name).as_str());
     }
