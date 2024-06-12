@@ -279,19 +279,6 @@ impl Compiler {
 
         solc_input.normalize_yul_validation();
         let solc_output = self.standard_json(solc_input, None, None, vec![], None)?;
-        if solc_output.contracts.is_none() {
-            anyhow::bail!(
-                "{}",
-                solc_output
-                    .errors
-                    .as_ref()
-                    .map(|errors| serde_json::to_string_pretty(errors).expect("Always valid"))
-                    .unwrap_or_else(|| {
-                        "Unknown Yul validation error: both `contracts` and `errors` are unset"
-                            .to_owned()
-                    })
-            );
-        }
         Ok(solc_output)
     }
 

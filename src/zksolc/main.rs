@@ -36,7 +36,6 @@ fn main() -> anyhow::Result<()> {
 fn main_inner() -> anyhow::Result<()> {
     let mut arguments = Arguments::new();
     arguments.validate()?;
-    dbg!("CRAP");
 
     if arguments.version {
         writeln!(

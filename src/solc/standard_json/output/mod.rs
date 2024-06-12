@@ -18,7 +18,8 @@ use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
-use self::error::Error as SolcStandardJsonOutputError;
+use self::error::source_location::SourceLocation as JsonOutputErrorSourceLocation;
+use self::error::Error as JsonOutputError;
 use self::source::Source;
 
 ///
@@ -34,7 +35,7 @@ pub struct Output {
     pub sources: Option<BTreeMap<String, Source>>,
     /// The compilation errors and warnings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<SolcStandardJsonOutputError>>,
+    pub errors: Option<Vec<JsonOutputError>>,
 
     /// The `solc` compiler version.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -77,34 +78,6 @@ impl Output {
             long_version: None,
             zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
         }
-    }
-
-    ///
-    /// Checks for errors, returning `Err` if there is at least one error.
-    ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        if self
-            .errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "error"))
-            .unwrap_or_default()
-        {
-            anyhow::bail!(
-                "{}",
-                self.errors
-                    .as_ref()
-                    .map(|errors| {
-                        errors
-                            .iter()
-                            .map(|error| error.message.clone())
-                            .collect::<Vec<String>>()
-                            .join("\n")
-                    })
-                    .unwrap_or_default()
-            );
-        }
-
-        Ok(())
     }
 
     ///
@@ -237,6 +210,54 @@ impl Output {
                 runtime_code_instructions,
                 &runtime_code_index_path_mapping,
             )?;
+        }
+
+        Ok(())
+    }
+
+    ///
+    /// Pushes an arbitrary error with path.
+    ///
+    /// Please do not push project-general errors without paths here.
+    ///
+    pub fn push_error(&mut self, path: &str, error: anyhow::Error) {
+        let message = error.to_string();
+        self.errors
+            .get_or_insert_with(Vec::new)
+            .push(JsonOutputError {
+                component: "general".to_owned(),
+                error_code: None,
+                formatted_message: message.clone(),
+                message,
+                severity: "error".to_owned(),
+                source_location: Some(JsonOutputErrorSourceLocation::new(path.to_owned(), 0, 0)),
+                r#type: "Error".to_owned(),
+            });
+    }
+
+    ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn check_errors(&self) -> anyhow::Result<()> {
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "error"))
+            .unwrap_or_default()
+        {
+            anyhow::bail!(
+                "{}",
+                self.errors
+                    .as_ref()
+                    .map(|errors| {
+                        errors
+                            .iter()
+                            .map(|error| error.message.clone())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    })
+                    .unwrap_or_default()
+            );
         }
 
         Ok(())

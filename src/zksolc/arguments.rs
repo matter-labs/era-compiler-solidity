@@ -369,17 +369,17 @@ impl Arguments {
 
             if self.enable_eravm_extensions {
                 eprintln!(
-                    "EraVM extensions CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
             if self.force_evmla {
                 eprintln!(
-                    "EVM legacy assembly pipeline CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
             if self.detect_missing_libraries {
                 eprintln!(
-                    "Missing deployable libraries detection mode CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
         }
