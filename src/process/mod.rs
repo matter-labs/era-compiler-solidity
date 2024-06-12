@@ -34,8 +34,8 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             if input.enable_test_encoding {
                 zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
             }
-            let result = input.contract.into_owned().compile_to_eravm(
-                input.project.into_owned(),
+            let result = input.contract.expect("Always exists").compile_to_eravm(
+                input.dependency_data,
                 input.optimizer_settings,
                 input.llvm_options.as_slice(),
                 input.enable_eravm_extensions,
@@ -66,8 +66,8 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
-            let result = input.contract.into_owned().compile_to_evm(
-                input.project.into_owned(),
+            let result = input.contract.expect("Always exists").compile_to_evm(
+                input.dependency_data,
                 input.optimizer_settings,
                 input.llvm_options.as_slice(),
                 input.include_metadata_hash,

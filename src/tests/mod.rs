@@ -69,6 +69,7 @@ pub fn build_solidity(
 
     let mut solc_output =
         solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
+    solc_output.check_errors()?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -78,6 +79,7 @@ pub fn build_solidity(
         &solc_compiler,
         None,
     )?;
+    solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,

@@ -2,10 +2,10 @@
 //! The contract source code.
 //!
 
+pub mod eravm_assembly;
 pub mod evmla;
 pub mod llvm_ir;
 pub mod yul;
-pub mod zkasm;
 
 use std::collections::HashSet;
 
@@ -16,10 +16,10 @@ use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::statement::object::Object;
 
+use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;
 use self::llvm_ir::LLVMIR;
 use self::yul::Yul;
-use self::zkasm::ZKASM;
 
 ///
 /// The contract source code.
@@ -33,7 +33,7 @@ pub enum IR {
     /// The LLVM IR source code.
     LLVMIR(LLVMIR),
     /// The EraVM assembly source code.
-    ZKASM(ZKASM),
+    EraVMAssembly(EraVMAssembly),
 }
 
 impl IR {
@@ -62,7 +62,7 @@ impl IR {
     /// A shortcut constructor.
     ///
     pub fn new_eravm_assembly(path: String, source: String) -> Self {
-        Self::ZKASM(ZKASM::new(path, source))
+        Self::EraVMAssembly(EraVMAssembly::new(path, source))
     }
 
     ///
@@ -73,14 +73,14 @@ impl IR {
             Self::Yul(inner) => inner.get_missing_libraries(),
             Self::EVMLA(inner) => inner.get_missing_libraries(),
             Self::LLVMIR(_inner) => HashSet::new(),
-            Self::ZKASM(_inner) => HashSet::new(),
+            Self::EraVMAssembly(_inner) => HashSet::new(),
         }
     }
 }
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IR
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn declare(
         &mut self,
@@ -90,7 +90,7 @@ where
             Self::Yul(inner) => inner.declare(context),
             Self::EVMLA(inner) => inner.declare(context),
             Self::LLVMIR(_inner) => Ok(()),
-            Self::ZKASM(_inner) => Ok(()),
+            Self::EraVMAssembly(_inner) => Ok(()),
         }
     }
 
@@ -102,14 +102,14 @@ where
             Self::Yul(inner) => inner.into_llvm(context),
             Self::EVMLA(inner) => inner.into_llvm(context),
             Self::LLVMIR(_inner) => Ok(()),
-            Self::ZKASM(_inner) => Ok(()),
+            Self::EraVMAssembly(_inner) => Ok(()),
         }
     }
 }
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IR
 where
-    D: era_compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn declare(
         &mut self,
@@ -119,7 +119,7 @@ where
             Self::Yul(inner) => inner.declare(context),
             Self::EVMLA(_inner) => todo!(),
             Self::LLVMIR(_inner) => Ok(()),
-            Self::ZKASM(_inner) => {
+            Self::EraVMAssembly(_inner) => {
                 anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
             }
         }
@@ -133,7 +133,7 @@ where
             Self::Yul(inner) => inner.into_llvm(context),
             Self::EVMLA(_inner) => todo!(),
             Self::LLVMIR(_inner) => Ok(()),
-            Self::ZKASM(_inner) => {
+            Self::EraVMAssembly(_inner) => {
                 anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
             }
         }

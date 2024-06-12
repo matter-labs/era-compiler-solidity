@@ -58,7 +58,7 @@ impl Element {
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let input_size = self.instruction.input_size(&context.evmla().version);
         let output_size = self.instruction.output_size();
@@ -87,7 +87,7 @@ impl Element {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::EVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let input_size = self.instruction.input_size(&context.evmla().version);
         let output_size = self.instruction.output_size();
@@ -109,7 +109,7 @@ impl Element {
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Element
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         mut self,
@@ -1403,7 +1403,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Element
 where
-    D: era_compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         mut self,

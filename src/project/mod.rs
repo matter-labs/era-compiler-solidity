@@ -1,10 +1,12 @@
 //!
-//! The processed input data.
+//! The project representation.
 //!
 
 pub mod contract;
+pub mod dependency_data;
+pub mod thread_pool_eravm;
+pub mod thread_pool_evm;
 
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -15,15 +17,11 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use sha3::Digest;
 
-use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_eravm::Build as EraVMBuild;
-use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::build_evm::Build as EVMBuild;
 use crate::missing_libraries::MissingLibraries;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::Input as EVMProcessInput;
-use crate::process::output_eravm::Output as EraVMProcessOutput;
-use crate::process::output_evm::Output as EVMProcessOutput;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
@@ -34,22 +32,21 @@ use crate::yul::parser::statement::object::Object;
 
 use self::contract::ir::IR as ContractIR;
 use self::contract::Contract;
+use self::dependency_data::DependencyData;
+use self::thread_pool_eravm::ThreadPool as EraVMThreadPool;
+use self::thread_pool_evm::ThreadPool as EVMThreadPool;
 
 ///
-/// The processes input data.
+/// The project representation.
 ///
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Project {
     /// The project language.
     pub language: SolcStandardJsonInputLanguage,
-    /// The `solc` compiler version.
-    pub solc_version: Option<SolcVersion>,
     /// The project build results.
     pub contracts: BTreeMap<String, Contract>,
-    /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
-    pub identifier_paths: BTreeMap<String, String>,
-    /// The library addresses.
-    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    /// The dependency data.
+    pub dependency_data: DependencyData,
 }
 
 impl Project {
@@ -66,13 +63,13 @@ impl Project {
         for (path, contract) in contracts.iter() {
             identifier_paths.insert(contract.identifier().to_owned(), path.to_owned());
         }
+        let dependency_data =
+            DependencyData::new(solc_version, identifier_paths.clone(), libraries);
 
         Self {
             language,
-            solc_version,
             contracts,
-            identifier_paths,
-            libraries,
+            dependency_data,
         }
     }
 
@@ -452,33 +449,21 @@ impl Project {
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let results: BTreeMap<String, anyhow::Result<EraVMContractBuild>> = self
-            .contracts
-            .par_iter()
-            .map(|(full_path, contract)| {
-                if let ContractIR::EVMLA(ref evmla) = contract.ir {
-                    dbg!(&full_path, &evmla.assembly.factory_dependencies);
-                }
-                let process_output: anyhow::Result<EraVMProcessOutput> = crate::process::call(
-                    EraVMProcessInput::new(
-                        Cow::Borrowed(contract),
-                        Cow::Borrowed(&self),
-                        enable_eravm_extensions,
-                        include_metadata_hash,
-                        bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
-                        optimizer_settings.clone(),
-                        llvm_options.clone(),
-                        debug_config.clone(),
-                    ),
-                    era_compiler_llvm_context::Target::EraVM,
-                );
+        let identifier_paths = self.dependency_data.identifier_paths.clone();
 
-                (
-                    full_path.to_owned(),
-                    process_output.map(|output| output.build),
-                )
-            })
-            .collect();
+        let input_template = EraVMProcessInput::new(
+            None,
+            self.dependency_data.clone(),
+            enable_eravm_extensions,
+            include_metadata_hash,
+            bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
+            optimizer_settings,
+            llvm_options,
+            debug_config,
+        );
+        let pool = EraVMThreadPool::new(self.contracts, input_template);
+        pool.start();
+        let results = pool.finish();
 
         let mut build = EraVMBuild::default();
         let mut hashes = HashMap::with_capacity(results.len());
@@ -492,8 +477,7 @@ impl Project {
             let result = match result {
                 Ok(mut contract) => {
                     for dependency in contract.factory_dependencies.drain() {
-                        let dependency_path = self
-                            .identifier_paths
+                        let dependency_path = identifier_paths
                             .get(dependency.as_str())
                             .cloned()
                             .ok_or_else(|| {
@@ -531,28 +515,17 @@ impl Project {
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
-        let results: BTreeMap<String, anyhow::Result<EVMContractBuild>> = self
-            .contracts
-            .par_iter()
-            .map(|(full_path, contract)| {
-                let process_output: anyhow::Result<EVMProcessOutput> = crate::process::call(
-                    EVMProcessInput::new(
-                        Cow::Borrowed(contract),
-                        Cow::Borrowed(&self),
-                        include_metadata_hash,
-                        optimizer_settings.clone(),
-                        llvm_options.clone(),
-                        debug_config.clone(),
-                    ),
-                    era_compiler_llvm_context::Target::EVM,
-                );
-
-                (
-                    full_path.to_owned(),
-                    process_output.map(|output| output.build),
-                )
-            })
-            .collect();
+        let input_template = EVMProcessInput::new(
+            None,
+            self.dependency_data.clone(),
+            include_metadata_hash,
+            optimizer_settings,
+            llvm_options,
+            debug_config,
+        );
+        let pool = EVMThreadPool::new(self.contracts, input_template);
+        pool.start();
+        let results = pool.finish();
 
         let mut build = EVMBuild::default();
         for (path, result) in results.into_iter() {
@@ -567,6 +540,7 @@ impl Project {
     ///
     pub fn get_missing_libraries(&self) -> MissingLibraries {
         let deployed_libraries = self
+            .dependency_data
             .libraries
             .iter()
             .flat_map(|(file, names)| {
@@ -587,84 +561,5 @@ impl Project {
             missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
         }
         MissingLibraries::new(missing_deployable_libraries)
-    }
-}
-
-impl era_compiler_llvm_context::EraVMDependency for Project {
-    fn compile(
-        project: Self,
-        identifier: &str,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[String],
-        enable_eravm_extensions: bool,
-        include_metadata_hash: bool,
-        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-    ) -> anyhow::Result<String> {
-        let contract_path = project.resolve_path(identifier)?;
-        let contract = project
-            .contracts
-            .get(contract_path.as_str())
-            .cloned()
-            .ok_or_else(|| {
-                anyhow::anyhow!("dependency `{contract_path}` not found in the project")
-            })?;
-
-        contract
-            .compile_to_eravm(
-                project,
-                optimizer_settings,
-                llvm_options,
-                enable_eravm_extensions,
-                include_metadata_hash,
-                debug_config,
-            )
-            .map_err(|error| anyhow::anyhow!("dependency `{identifier}`: {error}"))
-            .map(|contract| contract.build.bytecode_hash)
-    }
-
-    fn resolve_path(&self, identifier: &str) -> anyhow::Result<String> {
-        self.identifier_paths
-            .get(identifier.strip_suffix("_deployed").unwrap_or(identifier))
-            .cloned()
-            .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "dependency with identifier `{}` not found in the project",
-                    identifier
-                )
-            })
-    }
-
-    fn resolve_library(&self, path: &str) -> anyhow::Result<String> {
-        for (file_path, contracts) in self.libraries.iter() {
-            for (contract_name, address) in contracts.iter() {
-                let key = format!("{file_path}:{contract_name}");
-                if key.as_str() == path {
-                    return Ok(address["0x".len()..].to_owned());
-                }
-            }
-        }
-
-        anyhow::bail!("library `{path}` not found in the project");
-    }
-}
-
-impl era_compiler_llvm_context::EVMDependency for Project {
-    fn compile(
-        _project: Self,
-        _identifier: &str,
-        _optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        _llvm_options: &[String],
-        _include_metadata_hash: bool,
-        _debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-    ) -> anyhow::Result<String> {
-        todo!()
-    }
-
-    fn resolve_path(&self, _identifier: &str) -> anyhow::Result<String> {
-        todo!()
-    }
-
-    fn resolve_library(&self, _path: &str) -> anyhow::Result<String> {
-        todo!()
     }
 }

@@ -132,7 +132,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let location = self.location;
 
@@ -1524,7 +1524,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {
@@ -1543,7 +1543,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::EraVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {
@@ -1564,7 +1564,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::EVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let location = self.location;
 
@@ -2240,7 +2240,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::EVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {
@@ -2266,7 +2266,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::EVMDependency + Clone,
+        D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.arguments.drain(0..N).rev() {

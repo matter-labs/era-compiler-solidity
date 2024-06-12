@@ -2,29 +2,29 @@
 //! The contract data.
 //!
 
+pub mod factory_dependency;
 pub mod ir;
 pub mod metadata;
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
 use sha3::Digest;
 
 use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::project::Project;
+use crate::project::dependency_data::DependencyData;
 use crate::solc::version::Version as SolcVersion;
 
+use self::factory_dependency::FactoryDependency;
 use self::ir::IR;
 use self::metadata::Metadata;
 
 ///
 /// The contract data.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
     /// The absolute file path.
     pub path: String,
@@ -75,19 +75,7 @@ impl Contract {
             IR::Yul(ref yul) => yul.object.identifier.as_str(),
             IR::EVMLA(ref evm) => evm.assembly.full_path(),
             IR::LLVMIR(ref llvm_ir) => llvm_ir.path.as_str(),
-            IR::ZKASM(ref zkasm) => zkasm.path.as_str(),
-        }
-    }
-
-    ///
-    /// Extract factory dependencies.
-    ///
-    pub fn drain_factory_dependencies(&mut self) -> HashSet<String> {
-        match self.ir {
-            IR::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
-            IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
-            IR::LLVMIR(_) => HashSet::new(),
-            IR::ZKASM(_) => HashSet::new(),
+            IR::EraVMAssembly(ref eravm_assembly) => eravm_assembly.path.as_str(),
         }
     }
 
@@ -96,7 +84,7 @@ impl Contract {
     ///
     pub fn compile_to_eravm(
         mut self,
-        project: Project,
+        dependency_data: DependencyData,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
         enable_eravm_extensions: bool,
@@ -109,7 +97,7 @@ impl Contract {
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
         let identifier = self.identifier().to_owned();
-        let solc_version = project.solc_version.clone();
+        let solc_version = dependency_data.solc_version.clone();
 
         let metadata = Metadata::new(
             self.metadata_json.take(),
@@ -142,10 +130,10 @@ impl Contract {
                 llvm.create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
-            IR::ZKASM(ref zkasm) => {
+            IR::EraVMAssembly(ref eravm_assembly) => {
                 let build = era_compiler_llvm_context::eravm_build_assembly_text(
                     self.path.as_str(),
-                    zkasm.source.as_str(),
+                    eravm_assembly.source.as_str(),
                     metadata_hash,
                     debug_config.as_ref(),
                 )?;
@@ -164,8 +152,7 @@ impl Contract {
             module,
             llvm_options.to_owned(),
             optimizer,
-            Some(project),
-            include_metadata_hash,
+            Some(dependency_data),
             debug_config,
         );
         context.set_solidity_data(era_compiler_llvm_context::EraVMContextSolidityData::default());
@@ -217,7 +204,7 @@ impl Contract {
     ///
     pub fn compile_to_evm(
         mut self,
-        project: Project,
+        dependency_data: DependencyData,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
         include_metadata_hash: bool,
@@ -227,7 +214,7 @@ impl Contract {
 
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
-        let solc_version = project.solc_version.clone();
+        let solc_version = dependency_data.solc_version.clone();
 
         let metadata = Metadata::new(
             self.metadata_json.take(),
@@ -276,8 +263,7 @@ impl Contract {
                         llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
-                        Some(project.clone()),
-                        include_metadata_hash,
+                        Some(dependency_data.clone()),
                         debug_config.clone(),
                     );
                     code.declare(&mut context).map_err(|error| {
@@ -338,8 +324,7 @@ impl Contract {
                         llvm_options.to_owned(),
                         code_type,
                         optimizer.clone(),
-                        Some(project.clone()),
-                        include_metadata_hash,
+                        Some(dependency_data.clone()),
                         debug_config.clone(),
                     );
                     let evmla_data = era_compiler_llvm_context::EVMContextEVMLAData::new(
@@ -383,8 +368,7 @@ impl Contract {
                     llvm_options.to_owned(),
                     era_compiler_llvm_context::CodeType::Runtime,
                     optimizer,
-                    Some(project),
-                    include_metadata_hash,
+                    Some(dependency_data.clone()),
                     debug_config,
                 );
                 let build = context.build(self.path.as_str(), metadata_hash)?;
@@ -396,7 +380,9 @@ impl Contract {
                     metadata_json,
                 ))
             }
-            IR::ZKASM(_) => anyhow::bail!("EraVM assembly cannot be compiled to the EVM target"),
+            IR::EraVMAssembly(_) => {
+                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
+            }
         }
     }
 
@@ -405,5 +391,64 @@ impl Contract {
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
         self.ir.get_missing_libraries()
+    }
+}
+
+impl FactoryDependency for Contract {
+    fn get_factory_dependencies(&self) -> HashSet<&str> {
+        match self.ir {
+            IR::Yul(ref yul) => yul
+                .object
+                .factory_dependencies
+                .iter()
+                .map(|path| path.as_str())
+                .collect(),
+            IR::EVMLA(ref evm) => evm
+                .assembly
+                .factory_dependencies
+                .iter()
+                .map(|path| path.as_str())
+                .collect(),
+            IR::LLVMIR(_) => HashSet::new(),
+            IR::EraVMAssembly(_) => HashSet::new(),
+        }
+    }
+
+    fn drain_factory_dependencies(&mut self) -> HashSet<String> {
+        match self.ir {
+            IR::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
+            IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
+            IR::LLVMIR(_) => HashSet::new(),
+            IR::EraVMAssembly(_) => HashSet::new(),
+        }
+    }
+
+    fn are_factory_dependencies_satisfied<D>(
+        &self,
+        evaluated_dependencies: Vec<&String>,
+        resolver: &D,
+    ) -> bool
+    where
+        D: era_compiler_llvm_context::Dependency,
+    {
+        match self.ir {
+            IR::Yul(ref yul) => yul
+                .object
+                .factory_dependencies
+                .iter()
+                .map(|identifier| {
+                    resolver
+                        .resolve_path(identifier.as_str())
+                        .expect("Always valid")
+                })
+                .all(|path| evaluated_dependencies.contains(&&path)),
+            IR::EVMLA(ref evm) => evm
+                .assembly
+                .factory_dependencies
+                .iter()
+                .all(|path| evaluated_dependencies.contains(&path)),
+            IR::LLVMIR(_) => true,
+            IR::EraVMAssembly(_) => true,
+        }
     }
 }

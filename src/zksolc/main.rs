@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
 /// The auxiliary `main` function to facilitate the `?` error conversion operator.
 ///
 fn main_inner() -> anyhow::Result<()> {
-    let mut arguments = Arguments::new();
+    let arguments = Arguments::new();
     arguments.validate()?;
 
     if arguments.version {
@@ -72,7 +72,6 @@ fn main_inner() -> anyhow::Result<()> {
         anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
-    arguments.debug_output_directory = Some(PathBuf::from("./debug/"));
     let debug_config = match arguments.debug_output_directory {
         Some(ref debug_output_directory) => {
             std::fs::create_dir_all(debug_output_directory.as_path())?;
