@@ -28,6 +28,18 @@ use super::syntax::statement::while_loop::WhileLoop;
 use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
 
+fn sanitize_identifier(identifier: &str) -> String {
+    let mut result = identifier.replace('$', "_");
+    if identifier
+        .chars()
+        .next()
+        .map_or(false, |c| c.is_uppercase())
+    {
+        result.insert(0, '_');
+    }
+    result
+}
+
 impl<T: IPrinter> Visitor for T {
     fn visit_binary_op_type(&mut self, op: &BinaryOpType) {
         self.print(match op {
@@ -59,8 +71,7 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_definition(&mut self, definition: &Definition) {
-        //self.print(definition.location.full().as_str());
-        self.print(definition.identifier.as_str());
+        self.print(sanitize_identifier(&definition.identifier).as_str());
     }
 
     fn visit_expression(&mut self, expression: &Expression) {
@@ -95,8 +106,7 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_function(&mut self, function: &Function) {
         self.print("op ");
-        self.print(&function.name);
-        //self.visit_function_name(&function.name);
+        self.visit_function_name(&FunctionName::UserDefined(function.name.clone()));
         self.visit_signature(&function.signature);
         self.print(" = ");
         self.visit_expression(&function.body);
@@ -119,7 +129,8 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_function_name(&mut self, name: &FunctionName) {
-        self.print(name.to_string().as_str());
+        let sanitized_name = sanitize_identifier(&name.to_string());
+        self.print(&sanitized_name);
     }
 
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral) {
@@ -193,8 +204,7 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_proc(&mut self, proc: &Proc) {
         self.print("proc ");
-        self.print(&proc.name);
-        //self.visit_proc_name(&proc.name);
+        self.visit_proc_name(&ProcName::UserDefined(proc.name.clone()));
         self.visit_signature(&proc.signature);
         self.println(" = {");
         self.increase_indent();
@@ -219,12 +229,12 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_proc_name(&mut self, name: &ProcName) {
-        self.print(name.to_string().as_str());
+        let sanitized_name = sanitize_identifier(&name.to_string());
+        self.print(&sanitized_name);
     }
 
     fn visit_reference(&mut self, reference: &Reference) {
-        //self.print(reference.location.full().as_str());
-        self.print(reference.identifier.as_str());
+        self.print(sanitize_identifier(reference.identifier.as_str()).as_str())
     }
 
     fn visit_signature(&mut self, signature: &Signature) {
@@ -240,7 +250,8 @@ impl<T: IPrinter> Visitor for T {
                 if i > 0 {
                     self.print(", ")
                 }
-                self.print(format!("{} : {}", param.identifier, ty).as_str());
+                let name = sanitize_identifier(&param.identifier);
+                self.print(format!("{} : {}", name, ty).as_str());
             }
             self.print(")");
         }
