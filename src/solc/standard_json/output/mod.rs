@@ -8,8 +8,9 @@ pub mod source;
 
 use std::collections::BTreeMap;
 
-use serde::Deserialize;
-use serde::Serialize;
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
@@ -24,7 +25,7 @@ use self::source::Source;
 ///
 /// The `solc --standard-json` output.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// The file-contract hashmap.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -108,25 +109,23 @@ impl Output {
             None => return Ok(()),
         };
 
-        let mut messages = Vec::new();
-        for (path, source) in sources.iter() {
-            if let Some(ast) = source.ast.as_ref() {
-                let mut eravm_messages =
-                    Source::get_messages(ast, version, pipeline, suppressed_warnings);
-                for message in eravm_messages.iter_mut() {
-                    message.push_contract_path(path.as_str());
+        let messages: Vec<JsonOutputError> = sources
+            .par_iter()
+            .map(|(path, source)| {
+                if let Some(ast) = source.ast.as_ref() {
+                    let mut eravm_messages =
+                        Source::get_messages(ast, version, pipeline, suppressed_warnings);
+                    for message in eravm_messages.iter_mut() {
+                        message.push_contract_path(path.as_str());
+                    }
+                    eravm_messages
+                } else {
+                    vec![]
                 }
-                messages.extend(eravm_messages);
-            }
-        }
-
-        self.errors = match self.errors.take() {
-            Some(mut errors) => {
-                errors.extend(messages);
-                Some(errors)
-            }
-            None => Some(messages),
-        };
+            })
+            .flatten()
+            .collect();
+        self.errors.get_or_insert_with(Vec::new).extend(messages);
 
         Ok(())
     }
@@ -158,21 +157,23 @@ impl Output {
             }
         }
 
+        let mut assemblies = BTreeMap::new();
         for (path, contracts) in files.iter_mut() {
             for (name, contract) in contracts.iter_mut() {
+                let full_path = format!("{path}:{name}");
                 let assembly = match contract.evm.as_mut().and_then(|evm| evm.assembly.as_mut()) {
                     Some(assembly) => assembly,
                     None => continue,
                 };
-
-                let full_path = format!("{path}:{name}");
-                Self::preprocess_dependency_level(
-                    full_path.as_str(),
-                    assembly,
-                    &hash_path_mapping,
-                )?;
+                assemblies.insert(full_path, assembly);
             }
         }
+        assemblies
+            .into_par_iter()
+            .map(|(full_path, assembly)| {
+                Self::preprocess_dependency_level(full_path.as_str(), assembly, &hash_path_mapping)
+            })
+            .collect::<anyhow::Result<()>>()?;
 
         Ok(())
     }

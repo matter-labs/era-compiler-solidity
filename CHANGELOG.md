@@ -2,12 +2,19 @@
 
 ## [Unreleased]
 
-### Fixed
+### Added
+
+- Parallelization in AST and IR parsing
+
+### Changed
 
 - Lexer and parser errors are now written to JSON in standard JSON mode
+- AST and IRs are not emitted anymore if not explicitly requested
+
+### Fixed
+
 - Dependency graph inefficiency that caused excessive compilation time
 - Removed JSON stream readers which are much slower than strings and vectors
-- AST and IRs are not emitted anymore if not explicitly requested
 
 ## [1.5.0] - 2024-06-10
 

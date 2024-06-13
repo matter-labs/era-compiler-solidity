@@ -24,7 +24,9 @@ fn main() -> anyhow::Result<()> {
     std::process::exit(match main_inner() {
         Ok(()) => era_compiler_common::EXIT_CODE_SUCCESS,
         Err(error) => {
-            writeln!(std::io::stderr(), "{error}")?;
+            std::io::stderr()
+                .write_all(error.to_string().as_bytes())
+                .expect("Stderr writing error");
             era_compiler_common::EXIT_CODE_FAILURE
         }
     })
@@ -66,7 +68,7 @@ fn main_inner() -> anyhow::Result<()> {
     era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        return era_compiler_solidity::run_process(target);
+        return era_compiler_solidity::run_recursive(target);
     }
     if let era_compiler_llvm_context::Target::EVM = target {
         anyhow::bail!("The EVM target is under development and not available yet.")

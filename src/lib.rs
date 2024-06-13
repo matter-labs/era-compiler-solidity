@@ -27,7 +27,7 @@ pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
 pub use self::process::output_eravm::Output as EraVMProcessOutput;
 pub use self::process::output_evm::Output as EVMProcessOutput;
-pub use self::process::run as run_process;
+pub use self::process::run as run_recursive;
 pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
 pub use self::project::Project;

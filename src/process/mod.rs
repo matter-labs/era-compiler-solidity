@@ -30,35 +30,24 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
                 std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
-
             if input.enable_test_encoding {
                 zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
             }
-            let result = input.contract.expect("Always exists").compile_to_eravm(
+
+            let build = input.contract.expect("Always exists").compile_to_eravm(
                 input.dependency_data,
                 input.optimizer_settings,
                 input.llvm_options.as_slice(),
                 input.enable_eravm_extensions,
                 input.include_metadata_hash,
                 input.debug_config,
-            );
-
-            match result {
-                Ok(build) => {
-                    let output = EraVMOutput::new(build);
-                    let output_json = serde_json::to_vec(&output).expect("Always valid");
-                    std::io::stdout()
-                        .write_all(output_json.as_slice())
-                        .expect("Stdout writing error");
-                    Ok(())
-                }
-                Err(error) => {
-                    std::io::stderr()
-                        .write_all(error.to_string().as_bytes())
-                        .expect("Stderr writing error");
-                    Err(error)
-                }
-            }
+            )?;
+            let output = EraVMOutput::new(build);
+            let output_json = serde_json::to_vec(&output).expect("Always valid");
+            std::io::stdout()
+                .write_all(output_json.as_slice())
+                .expect("Stdout writing error");
+            Ok(())
         }
         era_compiler_llvm_context::Target::EVM => {
             let input_json =
@@ -66,30 +55,19 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
             let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
 
-            let result = input.contract.expect("Always exists").compile_to_evm(
+            let build = input.contract.expect("Always exists").compile_to_evm(
                 input.dependency_data,
                 input.optimizer_settings,
                 input.llvm_options.as_slice(),
                 input.include_metadata_hash,
                 input.debug_config,
-            );
-
-            match result {
-                Ok(build) => {
-                    let output = EVMOutput::new(build);
-                    let output_json = serde_json::to_vec(&output).expect("Always valid");
-                    std::io::stdout()
-                        .write_all(output_json.as_slice())
-                        .expect("Stdout writing error");
-                    Ok(())
-                }
-                Err(error) => {
-                    std::io::stderr()
-                        .write_all(error.to_string().as_bytes())
-                        .expect("Stderr writing error");
-                    Err(error)
-                }
-            }
+            )?;
+            let output = EVMOutput::new(build);
+            let output_json = serde_json::to_vec(&output).expect("Always valid");
+            std::io::stdout()
+                .write_all(output_json.as_slice())
+                .expect("Stdout writing error");
+            Ok(())
         }
     }
 }
