@@ -18,7 +18,6 @@ use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
-use self::error::source_location::SourceLocation as JsonOutputErrorSourceLocation;
 use self::error::Error as JsonOutputError;
 use self::source::Source;
 
@@ -221,18 +220,18 @@ impl Output {
     /// Please do not push project-general errors without paths here.
     ///
     pub fn push_error(&mut self, path: String, error: anyhow::Error) {
-        let message = error.to_string();
-        self.errors
-            .get_or_insert_with(Vec::new)
-            .push(JsonOutputError {
-                component: "general".to_owned(),
-                error_code: None,
-                formatted_message: message.clone(),
-                message,
-                severity: "error".to_owned(),
-                source_location: Some(JsonOutputErrorSourceLocation::new(path, 0, 0)),
-                r#type: "Error".to_owned(),
-            });
+        let mut error = JsonOutputError {
+            component: "general".to_owned(),
+            error_code: None,
+            formatted_message: error.to_string(),
+            message: "".to_owned(),
+            severity: "error".to_owned(),
+            source_location: None,
+            r#type: "Error".to_owned(),
+        };
+        error.push_contract_path(path.as_str());
+
+        self.errors.get_or_insert_with(Vec::new).push(error);
     }
 
     ///
@@ -252,7 +251,7 @@ impl Output {
                     .map(|errors| {
                         errors
                             .iter()
-                            .map(|error| error.message.clone())
+                            .map(|error| error.to_string())
                             .collect::<Vec<String>>()
                             .join("\n")
                     })

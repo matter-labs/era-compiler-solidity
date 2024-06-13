@@ -133,7 +133,7 @@ where
     })?;
     let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
     if !result.status.success() {
-        anyhow::bail!("{stderr_message}");
+        anyhow::bail!("{}", stderr_message.trim());
     }
     let output = match era_compiler_common::deserialize_from_slice::<O>(result.stdout.as_slice()) {
         Ok(output) => output,
