@@ -4,17 +4,17 @@
 
 pub mod file;
 
-use serde::Deserialize;
-use serde::Serialize;
+use std::collections::HashSet;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 
+use self::file::flag::Flag as SelectionFlag;
 use self::file::File as FileSelection;
 
 ///
 /// The `solc --standard-json` output selection.
 ///
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Selection {
     /// Only the 'all' wildcard is available for robustness reasons.
     #[serde(rename = "*", skip_serializing_if = "Option::is_none")]
@@ -58,5 +58,18 @@ impl Selection {
             .get_or_insert_with(FileSelection::new_yul_validation)
             .extend_with_yul_validation();
         self
+    }
+
+    ///
+    /// Returns flags that are going to be automatically added by the compiler,
+    /// but were not explicitly requested by the user.
+    ///
+    /// Afterwards, the flags are used to prune JSON output before returning it.
+    ///
+    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
+        self.all
+            .as_ref()
+            .map(|selection| selection.get_unset_required())
+            .unwrap_or_else(|| FileSelection::default().get_unset_required())
     }
 }

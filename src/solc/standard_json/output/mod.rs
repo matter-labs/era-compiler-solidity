@@ -7,6 +7,7 @@ pub mod error;
 pub mod source;
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -15,6 +16,7 @@ use rayon::iter::ParallelIterator;
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
@@ -81,6 +83,52 @@ impl Output {
     }
 
     ///
+    /// Prunes the output JSON and prints it to stdout.
+    ///
+    pub fn write_and_exit(mut self, prune_output: HashSet<SelectionFlag>) -> ! {
+        let sources = self
+            .sources
+            .as_mut()
+            .map(|sources| sources.values_mut().collect::<Vec<&mut Source>>())
+            .unwrap_or_default();
+        for source in sources.into_iter() {
+            if prune_output.contains(&SelectionFlag::AST) {
+                source.ast = None;
+            }
+        }
+
+        let contracts = self
+            .contracts
+            .as_mut()
+            .map(|contracts| {
+                contracts
+                    .values_mut()
+                    .flat_map(|contracts| contracts.values_mut())
+                    .collect::<Vec<&mut Contract>>()
+            })
+            .unwrap_or_default();
+        for contract in contracts.into_iter() {
+            if prune_output.contains(&SelectionFlag::Metadata) {
+                contract.metadata = None;
+            }
+            if let Some(ref mut evm) = contract.evm {
+                if prune_output.contains(&SelectionFlag::EVMLA) {
+                    evm.assembly = None;
+                }
+                if prune_output.contains(&SelectionFlag::MethodIdentifiers) {
+                    evm.method_identifiers = None;
+                }
+            }
+            if prune_output.contains(&SelectionFlag::Yul) {
+                contract.ir_optimized = None;
+            }
+        }
+
+        serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
+        std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+    }
+
+    ///
     /// Removes EVM artifacts to prevent their accidental usage.
     ///
     pub fn remove_evm(&mut self) {
@@ -93,6 +141,26 @@ impl Output {
                 }
             }
         }
+    }
+
+    ///
+    /// Pushes an arbitrary error with path.
+    ///
+    /// Please do not push project-general errors without paths here.
+    ///
+    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
+        let mut error = JsonOutputError {
+            component: "general".to_owned(),
+            error_code: None,
+            formatted_message: error.to_string(),
+            message: "".to_owned(),
+            severity: "error".to_owned(),
+            source_location: None,
+            r#type: "Error".to_owned(),
+        };
+        error.push_contract_path(path.as_str());
+
+        self.errors.get_or_insert_with(Vec::new).push(error);
     }
 
     ///
@@ -179,6 +247,34 @@ impl Output {
     }
 
     ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn check_errors(&self) -> anyhow::Result<()> {
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "error"))
+            .unwrap_or_default()
+        {
+            anyhow::bail!(
+                "{}",
+                self.errors
+                    .as_ref()
+                    .map(|errors| {
+                        errors
+                            .iter()
+                            .map(|error| error.to_string())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    })
+                    .unwrap_or_default()
+            );
+        }
+
+        Ok(())
+    }
+
+    ///
     /// Preprocesses an assembly JSON structure dependency data map.
     ///
     fn preprocess_dependency_level(
@@ -210,54 +306,6 @@ impl Output {
                 runtime_code_instructions,
                 &runtime_code_index_path_mapping,
             )?;
-        }
-
-        Ok(())
-    }
-
-    ///
-    /// Pushes an arbitrary error with path.
-    ///
-    /// Please do not push project-general errors without paths here.
-    ///
-    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
-        let mut error = JsonOutputError {
-            component: "general".to_owned(),
-            error_code: None,
-            formatted_message: error.to_string(),
-            message: "".to_owned(),
-            severity: "error".to_owned(),
-            source_location: None,
-            r#type: "Error".to_owned(),
-        };
-        error.push_contract_path(path.as_str());
-
-        self.errors.get_or_insert_with(Vec::new).push(error);
-    }
-
-    ///
-    /// Checks for errors, returning `Err` if there is at least one error.
-    ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        if self
-            .errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "error"))
-            .unwrap_or_default()
-        {
-            anyhow::bail!(
-                "{}",
-                self.errors
-                    .as_ref()
-                    .map(|errors| {
-                        errors
-                            .iter()
-                            .map(|error| error.to_string())
-                            .collect::<Vec<String>>()
-                            .join("\n")
-                    })
-                    .unwrap_or_default()
-            );
         }
 
         Ok(())
