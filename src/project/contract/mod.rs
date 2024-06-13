@@ -14,7 +14,8 @@ use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::project::dependency_data::DependencyData;
+use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
+use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::solc::version::Version as SolcVersion;
 
 use self::factory_dependency::FactoryDependency;
@@ -84,7 +85,7 @@ impl Contract {
     ///
     pub fn compile_to_eravm(
         mut self,
-        dependency_data: DependencyData,
+        dependency_data: EraVMProcessInputDependencyData,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
         enable_eravm_extensions: bool,
@@ -204,7 +205,7 @@ impl Contract {
     ///
     pub fn compile_to_evm(
         mut self,
-        dependency_data: DependencyData,
+        dependency_data: EVMProcessInputDependencyData,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &[String],
         include_metadata_hash: bool,

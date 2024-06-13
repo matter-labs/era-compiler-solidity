@@ -1,14 +1,17 @@
 //!
 //! Process for compiling a single compilation unit.
 //!
-//! The EraVM input data.
+//! The EVM input data.
 //!
 
+pub mod dependency_data;
+
 use crate::project::contract::Contract;
-use crate::project::dependency_data::DependencyData;
+
+use self::dependency_data::DependencyData;
 
 ///
-/// The EraVM input data.
+/// The EVM input data.
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Input {
@@ -16,12 +19,8 @@ pub struct Input {
     pub contract: Option<Contract>,
     /// The dependency data.
     pub dependency_data: DependencyData,
-    /// Whether to enable EraVM extensions.
-    pub enable_eravm_extensions: bool,
     /// Whether to append the metadata hash.
     pub include_metadata_hash: bool,
-    /// Enables the test bytecode encoding.
-    pub enable_test_encoding: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -37,9 +36,7 @@ impl Input {
     pub fn new(
         contract: Option<Contract>,
         dependency_data: DependencyData,
-        enable_eravm_extensions: bool,
         include_metadata_hash: bool,
-        enable_test_encoding: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -47,9 +44,7 @@ impl Input {
         Self {
             contract,
             dependency_data,
-            enable_eravm_extensions,
             include_metadata_hash,
-            enable_test_encoding,
             optimizer_settings,
             llvm_options,
             debug_config,

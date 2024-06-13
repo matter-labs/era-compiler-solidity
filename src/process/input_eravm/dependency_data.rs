@@ -1,5 +1,5 @@
 //!
-//! The project dependency manager.
+//! The EraVM dependency data.
 //!
 
 use std::collections::BTreeMap;
@@ -8,18 +8,18 @@ use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::solc::version::Version as SolcVersion;
 
 ///
-/// The project dependency manager.
+/// The EraVM dependency data.
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyData {
     /// The `solc` compiler version.
     pub solc_version: Option<SolcVersion>,
-    /// The dependencies required by specific contract.
-    pub dependencies: BTreeMap<String, EraVMContractBuild>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
     /// The library addresses.
     pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    /// The dependencies required by specific contract.
+    pub dependencies: BTreeMap<String, EraVMContractBuild>,
 }
 
 impl DependencyData {
@@ -33,9 +33,9 @@ impl DependencyData {
     ) -> Self {
         Self {
             solc_version,
-            dependencies: BTreeMap::new(),
             identifier_paths,
             libraries,
+            dependencies: BTreeMap::new(),
         }
     }
 }

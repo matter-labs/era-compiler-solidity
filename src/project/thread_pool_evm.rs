@@ -120,7 +120,7 @@ impl ThreadPool {
     ) {
         let mut input = self.input_template.to_owned();
         input.contract = Some(contract);
-        // input.dependency_data.dependencies.extend(dependencies);
+        input.dependency_data.dependencies.extend(dependencies);
 
         let results = self.results.clone();
         let pool = self.to_owned();

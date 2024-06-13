@@ -3,7 +3,6 @@
 //!
 
 pub mod contract;
-pub mod dependency_data;
 pub mod thread_pool_eravm;
 pub mod thread_pool_evm;
 
@@ -20,7 +19,9 @@ use sha3::Digest;
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
 use crate::missing_libraries::MissingLibraries;
+use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_eravm::Input as EraVMProcessInput;
+use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
@@ -32,7 +33,6 @@ use crate::yul::parser::statement::object::Object;
 
 use self::contract::ir::IR as ContractIR;
 use self::contract::Contract;
-use self::dependency_data::DependencyData;
 use self::thread_pool_eravm::ThreadPool as EraVMThreadPool;
 use self::thread_pool_evm::ThreadPool as EVMThreadPool;
 
@@ -43,10 +43,14 @@ use self::thread_pool_evm::ThreadPool as EVMThreadPool;
 pub struct Project {
     /// The project language.
     pub language: SolcStandardJsonInputLanguage,
+    /// The `solc` compiler version.
+    pub solc_version: Option<SolcVersion>,
     /// The project build results.
     pub contracts: BTreeMap<String, Contract>,
-    /// The dependency data.
-    pub dependency_data: DependencyData,
+    /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
+    pub identifier_paths: BTreeMap<String, String>,
+    /// The library addresses.
+    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
 }
 
 impl Project {
@@ -63,13 +67,13 @@ impl Project {
         for (path, contract) in contracts.iter() {
             identifier_paths.insert(contract.identifier().to_owned(), path.to_owned());
         }
-        let dependency_data =
-            DependencyData::new(solc_version, identifier_paths.clone(), libraries);
 
         Self {
             language,
+            solc_version,
             contracts,
-            dependency_data,
+            identifier_paths,
+            libraries,
         }
     }
 
@@ -449,11 +453,16 @@ impl Project {
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let identifier_paths = self.dependency_data.identifier_paths.clone();
+        let identifier_paths = self.identifier_paths.clone();
+        let dependency_data = EraVMProcessInputDependencyData::new(
+            self.solc_version,
+            self.identifier_paths.clone(),
+            self.libraries.clone(),
+        );
 
         let input_template = EraVMProcessInput::new(
             None,
-            self.dependency_data.clone(),
+            dependency_data,
             enable_eravm_extensions,
             include_metadata_hash,
             bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
@@ -515,9 +524,15 @@ impl Project {
         include_metadata_hash: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
+        let dependency_data = EVMProcessInputDependencyData::new(
+            self.solc_version,
+            self.identifier_paths,
+            self.libraries,
+        );
+
         let input_template = EVMProcessInput::new(
             None,
-            self.dependency_data.clone(),
+            dependency_data,
             include_metadata_hash,
             optimizer_settings,
             llvm_options,
@@ -540,7 +555,6 @@ impl Project {
     ///
     pub fn get_missing_libraries(&self) -> MissingLibraries {
         let deployed_libraries = self
-            .dependency_data
             .libraries
             .iter()
             .flat_map(|(file, names)| {
