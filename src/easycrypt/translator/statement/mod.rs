@@ -62,7 +62,7 @@ impl Translator {
             YulStatement::Expression(expr) => match self.transpile_expression_root(expr, ctx)? {
                 super::expression::Transformed::Expression(Expression::Reference(_), ectx) => Ok((
                     ctx.add_locals(&ectx.locals),
-                    Transformed::Statements(ectx.assignments.iter().cloned().collect()),
+                    Transformed::Statements(ectx.assignments.to_vec()),
                 )),
                 super::expression::Transformed::Expression(result, ectx) => Ok((
                     ctx.add_locals(&ectx.locals),

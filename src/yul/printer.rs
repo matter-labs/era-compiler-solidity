@@ -20,7 +20,10 @@ use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 use crate::yul::parser::statement::Statement;
 use crate::yul::visitor::Visitor;
 
-impl<T: IPrinter> Visitor for T {
+impl<T> Visitor for T
+where
+    T: IPrinter,
+{
     fn visit_object(&mut self, obj: &Object) {
         self.print("object \"");
         self.print(obj.identifier.as_str());
