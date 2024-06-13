@@ -290,7 +290,9 @@ impl<T: IPrinter> Visitor for T {
                     }
                     self.visit_reference(r);
                 }
-                self.print(" <- ");
+                if !refs.is_empty() {
+                    self.print(" <- ");
+                }
                 self.visit_expression(rhs);
             }
             Statement::PAssignment(refs, rhs) => {
@@ -300,7 +302,9 @@ impl<T: IPrinter> Visitor for T {
                     }
                     self.visit_reference(r);
                 }
-                self.print(" <@ ");
+                if !refs.is_empty() {
+                    self.print(" <@ ");
+                }
                 self.visit_proc_call(rhs);
             }
 
