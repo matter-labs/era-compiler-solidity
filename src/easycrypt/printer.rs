@@ -46,7 +46,7 @@ impl<T: IPrinter> Visitor for T {
             BinaryOpType::Add => "+",
             BinaryOpType::Sub => "-",
             BinaryOpType::Mul => "*",
-            BinaryOpType::Mod => "%",
+            BinaryOpType::Mod => "%%",
             BinaryOpType::And => "/\\",
             BinaryOpType::Or => "\\/",
             BinaryOpType::Xor => "^",
