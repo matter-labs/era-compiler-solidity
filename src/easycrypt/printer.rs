@@ -40,6 +40,19 @@ fn sanitize_identifier(identifier: &str) -> String {
     result
 }
 
+fn statement_followed_by_semicolon(statement: &Statement) -> bool {
+    match &statement {
+        Statement::Block(_) | Statement::If(_) => false,
+        Statement::VarDefinition(_, _)
+        | Statement::Expression(_)
+        | Statement::EAssignment(_, _)
+        | Statement::PAssignment(_, _) => true,
+        Statement::Return(_) => true,
+        Statement::WhileLoop(_) => false,
+        Statement::Pass => true,
+    }
+}
+
 impl<T: IPrinter> Visitor for T {
     fn visit_binary_op_type(&mut self, op: &BinaryOpType) {
         self.print(match op {
@@ -63,7 +76,10 @@ impl<T: IPrinter> Visitor for T {
         self.println("{");
         for statement in &block.statements {
             self.visit_statement(statement);
-            self.println(";");
+            if statement_followed_by_semicolon(statement) {
+                self.print(";");
+            }
+            self.println("");
         }
         self.println("");
         self.println("}");
@@ -222,7 +238,10 @@ impl<T: IPrinter> Visitor for T {
 
         for statement in &proc.body.statements {
             self.visit_statement(statement);
-            self.println(";");
+            if statement_followed_by_semicolon(statement) {
+                self.print(";");
+            }
+            self.println("");
         }
         self.println("}");
         self.decrease_indent();
