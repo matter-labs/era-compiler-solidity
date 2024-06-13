@@ -201,7 +201,7 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         YulName::Call => proc_simple(ProcName::Call, "Call", 7, 1),
         YulName::CallCode => proc_simple(ProcName::CallCode, "CallCode", 7, 1),
         YulName::DelegateCall => proc_simple(ProcName::DelegateCall, "DelegateCall", 6, 1),
-        YulName::StaticCall => proc_simple(ProcName::StaticCall, "StaticCall", 6, 1),
+        YulName::StaticCall => proc_mem(ProcName::StaticCall, "StaticCall", Usage::WRITE, 6, 1),
         YulName::Create => proc_simple(ProcName::Create, "Create", 3, 1),
         YulName::Create2 => proc_simple(ProcName::Create2, "Create2", 4, 1),
         YulName::DataSize => proc_simple(ProcName::DataSize, "DataSize", 1, 1),
