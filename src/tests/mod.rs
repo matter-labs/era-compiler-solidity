@@ -88,6 +88,7 @@ pub fn build_solidity(
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
+        None,
     )?;
     build.write_to_standard_json(
         &mut solc_output,
@@ -188,6 +189,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
+        None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
@@ -238,6 +240,7 @@ pub fn build_yul_standard_json(
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
+        None,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
 
@@ -273,6 +276,7 @@ pub fn build_llvm_ir_standard_json(
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
         None,
+        None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
@@ -307,6 +311,7 @@ pub fn build_eravm_assembly_standard_json(
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;

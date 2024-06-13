@@ -5,6 +5,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::sync::RwLock;
+use std::time::Duration;
 
 use era_compiler_llvm_context::Dependency;
 
@@ -37,9 +38,16 @@ impl ThreadPool {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(contracts: BTreeMap<String, Contract>, input_template: EraVMInput) -> Self {
+    pub fn new(
+        threads: Option<usize>,
+        contracts: BTreeMap<String, Contract>,
+        input_template: EraVMInput,
+    ) -> Self {
+        let threads = threads.unwrap_or_else(num_cpus::get);
+        let inner = rusty_pool::ThreadPool::new(threads, threads, Duration::from_secs(1));
+
         Self {
-            inner: rusty_pool::ThreadPool::default(),
+            inner,
             contracts: Arc::new(RwLock::new(contracts)),
             input_template,
             results: Arc::new(RwLock::new(BTreeMap::new())),

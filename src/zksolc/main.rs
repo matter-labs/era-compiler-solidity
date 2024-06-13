@@ -136,6 +136,7 @@ fn main_inner() -> anyhow::Result<()> {
                     llvm_options,
                     arguments.enable_eravm_extensions,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
@@ -144,6 +145,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
@@ -151,6 +153,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
@@ -167,6 +170,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -197,6 +201,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     suppressed_warnings,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -224,6 +229,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     suppressed_warnings,
+                    arguments.threads,
                     debug_config,
                 )
             }?;
@@ -260,6 +266,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
@@ -268,6 +275,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
@@ -282,6 +290,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -310,6 +319,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -335,6 +345,7 @@ fn main_inner() -> anyhow::Result<()> {
                     remappings,
                     optimizer_settings,
                     llvm_options,
+                    arguments.threads,
                     debug_config,
                 )
             }?;

@@ -451,6 +451,7 @@ impl Project {
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
+        threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
         let identifier_paths = self.identifier_paths.clone();
@@ -470,7 +471,7 @@ impl Project {
             llvm_options,
             debug_config,
         );
-        let pool = EraVMThreadPool::new(self.contracts, input_template);
+        let pool = EraVMThreadPool::new(threads, self.contracts, input_template);
         pool.start();
         let results = pool.finish();
 
@@ -522,6 +523,7 @@ impl Project {
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         include_metadata_hash: bool,
+        threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
         let dependency_data = EVMProcessInputDependencyData::new(
@@ -538,7 +540,7 @@ impl Project {
             llvm_options,
             debug_config,
         );
-        let pool = EVMThreadPool::new(self.contracts, input_template);
+        let pool = EVMThreadPool::new(threads, self.contracts, input_template);
         pool.start();
         let results = pool.finish();
 

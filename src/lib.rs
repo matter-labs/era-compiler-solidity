@@ -68,6 +68,7 @@ pub fn yul_to_eravm(
     llvm_options: Vec<String>,
     enable_eravm_extensions: bool,
     include_metadata_hash: bool,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
@@ -98,6 +99,7 @@ pub fn yul_to_eravm(
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -114,6 +116,7 @@ pub fn yul_to_evm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     include_metadata_hash: bool,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
@@ -139,6 +142,7 @@ pub fn yul_to_evm(
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -153,6 +157,7 @@ pub fn llvm_ir_to_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     include_metadata_hash: bool,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let project = Project::try_from_llvm_ir_paths(paths, None)?;
@@ -163,6 +168,7 @@ pub fn llvm_ir_to_eravm(
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -177,6 +183,7 @@ pub fn llvm_ir_to_evm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     include_metadata_hash: bool,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let project = Project::try_from_llvm_ir_paths(paths, None)?;
@@ -185,6 +192,7 @@ pub fn llvm_ir_to_evm(
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -198,6 +206,7 @@ pub fn eravm_assembly(
     paths: &[PathBuf],
     llvm_options: Vec<String>,
     include_metadata_hash: bool,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let project = Project::try_from_eravm_assembly_paths(paths, None)?;
@@ -209,6 +218,7 @@ pub fn eravm_assembly(
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -235,6 +245,7 @@ pub fn standard_output_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     suppressed_warnings: Option<Vec<Warning>>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -291,6 +302,7 @@ pub fn standard_output_eravm(
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -315,6 +327,7 @@ pub fn standard_output_evm(
     remappings: Option<BTreeSet<String>>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -369,6 +382,7 @@ pub fn standard_output_evm(
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
+        threads,
         debug_config,
     )?;
     build.check_errors()?;
@@ -387,6 +401,7 @@ pub fn standard_json_eravm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -538,6 +553,7 @@ pub fn standard_json_eravm(
             enable_eravm_extensions,
             include_metadata_hash,
             zkevm_assembly::RunningVmEncodingMode::Production,
+            threads,
             debug_config,
         )?;
         build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
@@ -556,6 +572,7 @@ pub fn standard_json_evm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -672,6 +689,7 @@ pub fn standard_json_evm(
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
+        threads,
         debug_config,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
@@ -702,6 +720,7 @@ pub fn combined_json_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     suppressed_warnings: Option<Vec<Warning>>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -723,6 +742,7 @@ pub fn combined_json_eravm(
         optimizer_settings,
         llvm_options,
         suppressed_warnings,
+        threads,
         debug_config,
     )?;
 
@@ -762,6 +782,7 @@ pub fn combined_json_evm(
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
+    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -781,6 +802,7 @@ pub fn combined_json_evm(
         remappings,
         optimizer_settings,
         llvm_options,
+        threads,
         debug_config,
     )?;
 

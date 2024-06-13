@@ -347,6 +347,7 @@ dependencies = [
  "md5",
  "mimalloc",
  "num",
+ "num_cpus",
  "path-slash",
  "rand",
  "rayon",
