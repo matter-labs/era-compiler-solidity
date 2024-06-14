@@ -119,7 +119,7 @@ impl Assignment {
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         mut self,
@@ -188,7 +188,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Assignment
 where
-    D: era_compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         mut self,

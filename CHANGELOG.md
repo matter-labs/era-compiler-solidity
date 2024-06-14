@@ -1,5 +1,21 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- Parallelization in AST and IR parsing
+
+### Changed
+
+- Lexer and parser errors are now written to JSON in standard JSON mode
+- AST and IRs are not emitted anymore if not explicitly requested
+
+### Fixed
+
+- Dependency graph inefficiency that caused excessive compilation time
+- Removed JSON stream readers which are much slower than strings and vectors
+
 ## [1.5.0] - 2024-06-10
 
 ### Added
@@ -29,7 +45,7 @@
 ### Fixed
 
 - The bytes-to-cells LLVM misoptimization
-- All errors are now written to JSON in standard JSON mode
+- LLVM IR generator errors are now written to JSON in standard JSON mode
 - Removed `:` from output filenames, as it is not allowed on Windows
 - Excessive RAM usage and compilation time with some projects
 - Redundancy in error printing

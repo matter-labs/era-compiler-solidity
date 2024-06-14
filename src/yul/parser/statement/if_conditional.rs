@@ -60,7 +60,7 @@ impl IfConditional {
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         self,
@@ -97,7 +97,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
 where
-    D: era_compiler_llvm_context::EVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     fn into_llvm(
         self,

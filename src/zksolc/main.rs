@@ -24,7 +24,9 @@ fn main() -> anyhow::Result<()> {
     std::process::exit(match main_inner() {
         Ok(()) => era_compiler_common::EXIT_CODE_SUCCESS,
         Err(error) => {
-            writeln!(std::io::stderr(), "{error}")?;
+            std::io::stderr()
+                .write_all(error.to_string().as_bytes())
+                .expect("Stderr writing error");
             era_compiler_common::EXIT_CODE_FAILURE
         }
     })
@@ -66,7 +68,7 @@ fn main_inner() -> anyhow::Result<()> {
     era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        return era_compiler_solidity::run_process(target);
+        return era_compiler_solidity::run_recursive(target);
     }
     if let era_compiler_llvm_context::Target::EVM = target {
         anyhow::bail!("The EVM target is under development and not available yet.")
@@ -134,6 +136,7 @@ fn main_inner() -> anyhow::Result<()> {
                     llvm_options,
                     arguments.enable_eravm_extensions,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
@@ -142,6 +145,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
@@ -149,6 +153,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
@@ -165,6 +170,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -195,6 +201,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     suppressed_warnings,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -222,6 +229,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     suppressed_warnings,
+                    arguments.threads,
                     debug_config,
                 )
             }?;
@@ -258,6 +266,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
@@ -266,6 +275,7 @@ fn main_inner() -> anyhow::Result<()> {
                     optimizer_settings,
                     llvm_options,
                     include_metadata_hash,
+                    arguments.threads,
                     debug_config,
                 )
             } else if let Some(standard_json) = arguments.standard_json {
@@ -280,6 +290,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -308,6 +319,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
+                    arguments.threads,
                     debug_config,
                 )?;
                 return Ok(());
@@ -333,6 +345,7 @@ fn main_inner() -> anyhow::Result<()> {
                     remappings,
                     optimizer_settings,
                     llvm_options,
+                    arguments.threads,
                     debug_config,
                 )
             }?;

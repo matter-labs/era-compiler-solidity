@@ -1,11 +1,11 @@
 //!
-//! The Solidity contract metadata.
+//! The contract metadata.
 //!
 
 use serde::Serialize;
 
 ///
-/// The Solidity contract metadata.
+/// The contract metadata.
 ///
 /// Is used to append the metadata hash to the contract bytecode.
 ///

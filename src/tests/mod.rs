@@ -69,15 +69,17 @@ pub fn build_solidity(
 
     let mut solc_output =
         solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
+    solc_output.check_errors()?;
 
     let project = Project::try_from_solidity_sources(
-        &mut solc_output,
         sources,
         libraries,
         pipeline,
+        &mut solc_output,
         &solc_compiler,
         None,
     )?;
+    solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
         optimizer_settings,
@@ -85,6 +87,7 @@ pub fn build_solidity(
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(
@@ -138,10 +141,10 @@ pub fn build_solidity_and_detect_missing_libraries(
         solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
 
     let project = Project::try_from_solidity_sources(
-        &mut solc_output,
         sources,
         libraries,
         pipeline,
+        &mut solc_output,
         &solc_compiler,
         None,
     )?;
@@ -172,13 +175,20 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     let mut solc_output = SolcStandardJsonOutput::new(&sources);
 
-    let project = Project::try_from_yul_sources(sources, BTreeMap::new(), None, None)?;
+    let project = Project::try_from_yul_sources(
+        sources,
+        BTreeMap::new(),
+        Some(&mut solc_output),
+        None,
+        None,
+    )?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         vec![],
         false,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
@@ -216,13 +226,20 @@ pub fn build_yul_standard_json(
         None => (None, SolcStandardJsonOutput::new(&sources)),
     };
 
-    let project = Project::try_from_yul_sources(sources, BTreeMap::new(), solc_version, None)?;
+    let project = Project::try_from_yul_sources(
+        sources,
+        BTreeMap::new(),
+        Some(&mut solc_output),
+        solc_version,
+        None,
+    )?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         vec![],
         solc_compiler.is_none(),
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
@@ -251,13 +268,14 @@ pub fn build_llvm_ir_standard_json(
     let sources = solc_input.sources()?;
     let mut solc_output = SolcStandardJsonOutput::new(&sources);
 
-    let project = Project::try_from_llvm_ir_sources(sources)?;
+    let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         vec![],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
@@ -286,13 +304,14 @@ pub fn build_eravm_assembly_standard_json(
     let sources = solc_input.sources()?;
     let mut solc_output = SolcStandardJsonOutput::new(&sources);
 
-    let project = Project::try_from_eravm_assembly_sources(sources)?;
+    let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
         optimizer_settings,
         vec![],
         true,
         false,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;

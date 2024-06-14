@@ -50,18 +50,32 @@ impl Input {
     ///
     /// If the `path` is `None`, the input is read from the stdin.
     ///
-    pub fn try_from_reader(path: Option<&Path>) -> anyhow::Result<Self> {
+    pub fn try_from(path: Option<&Path>) -> anyhow::Result<Self> {
         match path {
-            Some(path) => serde_json::from_reader(
-                std::fs::File::open(path)
-                    .map(std::io::BufReader::new)
+            Some(path) => {
+                let file = std::fs::File::open(path).map_err(|error| {
+                    anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
+                })?;
+                let input_json = std::io::read_to_string(file).map_err(|error| {
+                    anyhow::anyhow!("Standard JSON file {path:?} reading: {error}")
+                })?;
+                let input: Self = era_compiler_common::deserialize_from_str(input_json.as_str())
                     .map_err(|error| {
-                        anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
-                    })?,
-            ),
-            None => serde_json::from_reader(std::io::BufReader::new(std::io::stdin())),
+                        anyhow::anyhow!("Standard JSON file {path:?} parsing: {error}")
+                    })?;
+                Ok(input)
+            }
+            None => {
+                let input_json = std::io::read_to_string(std::io::stdin()).map_err(|error| {
+                    anyhow::anyhow!("Standard JSON reading from stdin: {error}")
+                })?;
+                let input: Self = era_compiler_common::deserialize_from_str(input_json.as_str())
+                    .map_err(|error| {
+                        anyhow::anyhow!("Standard JSON parsing from stdin: {error}")
+                    })?;
+                Ok(input)
+            }
         }
-        .map_err(|error| anyhow::anyhow!("Standard JSON reading: {error}"))
     }
 
     ///

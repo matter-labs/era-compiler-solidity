@@ -7,9 +7,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
@@ -17,7 +14,7 @@ use crate::solc::standard_json::output::contract::Contract as StandardJsonOutput
 ///
 /// The Solidity contract build.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
     /// The contract path.
     pub path: String,

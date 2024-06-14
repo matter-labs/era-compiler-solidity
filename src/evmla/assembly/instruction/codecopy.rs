@@ -13,7 +13,7 @@ pub fn contract_hash<'ctx, D>(
     value: inkwell::values::IntValue<'ctx>,
 ) -> anyhow::Result<()>
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     let offset = context.builder().build_int_add(
         offset,
@@ -37,7 +37,7 @@ pub fn library_marker<D>(
     value: u64,
 ) -> anyhow::Result<()>
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     era_compiler_llvm_context::eravm_evm_memory::store_byte(
         context,
@@ -57,7 +57,7 @@ pub fn static_data<'ctx, D>(
     source: &str,
 ) -> anyhow::Result<()>
 where
-    D: era_compiler_llvm_context::EraVMDependency + Clone,
+    D: era_compiler_llvm_context::Dependency,
 {
     let mut offset = 0;
     for (index, chunk) in source

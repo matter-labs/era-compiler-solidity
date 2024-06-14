@@ -214,13 +214,15 @@ impl Arguments {
     ///
     pub fn validate(&self) -> anyhow::Result<()> {
         if self.version && std::env::args().count() > 2 {
-            anyhow::bail!("No other options are allowed while getting the compiler version.");
+            anyhow::bail!(
+                "Error: No other options are allowed while getting the compiler version."
+            );
         }
 
         if self.recursive_process
             && std::env::args().count() > 2 + (self.target.is_some() as usize) * 2
         {
-            anyhow::bail!("No other options are allowed in recursive mode.");
+            anyhow::bail!("Error: No other options are allowed in recursive mode.");
         }
 
         let modes_count = [
@@ -234,152 +236,162 @@ impl Arguments {
         .filter(|&&x| x)
         .count();
         if modes_count > 1 {
-            anyhow::bail!("Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
+            anyhow::bail!("Error: Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly {
             if self.base_path.is_some() {
-                anyhow::bail!("`base-path` is not used in Yul, LLVM IR and EraVM assembly modes.");
+                anyhow::bail!(
+                    "Error: `base-path` is not used in Yul, LLVM IR and EraVM assembly modes."
+                );
             }
             if !self.include_paths.is_empty() {
                 anyhow::bail!(
-                    "`include-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
+                    "Error: `include-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
                 );
             }
             if self.allow_paths.is_some() {
                 anyhow::bail!(
-                    "`allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
+                    "Error: `allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
                 );
             }
 
             if self.evm_version.is_some() {
                 anyhow::bail!(
-                    "`evm-version` is not used in Yul, LLVM IR and EraVM assembly modes."
+                    "Error: `evm-version` is not used in Yul, LLVM IR and EraVM assembly modes."
                 );
             }
 
             if self.force_evmla {
-                anyhow::bail!("EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                anyhow::bail!("Error: EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
 
             if self.disable_solc_optimizer {
-                anyhow::bail!("Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                anyhow::bail!("Error: Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.");
             }
         }
 
         if self.llvm_ir || self.eravm_assembly {
             if !self.libraries.is_empty() {
-                anyhow::bail!("Libraries are not supported in LLVM IR and EraVM assembly modes.");
+                anyhow::bail!(
+                    "Error: Libraries are not supported in LLVM IR and EraVM assembly modes."
+                );
             }
 
             if self.solc.is_some() {
-                anyhow::bail!("`solc` is not used in LLVM IR and EraVM assembly modes.");
+                anyhow::bail!("Error: `solc` is not used in LLVM IR and EraVM assembly modes.");
             }
 
             if self.enable_eravm_extensions {
                 anyhow::bail!(
-                    "EraVM extensions are not supported in LLVM IR and EraVM assembly modes."
+                    "Error: EraVM extensions are not supported in LLVM IR and EraVM assembly modes."
                 );
             }
             if self.detect_missing_libraries {
                 anyhow::bail!(
-                    "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes."
+                    "Error: Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes."
                 );
             }
         }
 
         if self.eravm_assembly {
             if Some(era_compiler_llvm_context::Target::EVM.to_string()) == self.target {
-                anyhow::bail!("EraVM assembly cannot be compiled to EVM bytecode.");
+                anyhow::bail!("Error: EraVM assembly cannot be compiled to EVM bytecode.");
             }
             if self.optimization.is_some() {
-                anyhow::bail!("LLVM optimizations are not supported in EraVM assembly mode.");
+                anyhow::bail!(
+                    "Error: LLVM optimizations are not supported in EraVM assembly mode."
+                );
             }
             if self.fallback_to_optimizing_for_size {
-                anyhow::bail!("Falling back to -Oz is not supported in EraVM assembly mode.");
+                anyhow::bail!(
+                    "Error: Falling back to -Oz is not supported in EraVM assembly mode."
+                );
             }
             if self.llvm_options.is_some() {
-                anyhow::bail!("LLVM options are not supported in EraVM assembly mode.");
+                anyhow::bail!("Error: LLVM options are not supported in EraVM assembly mode.");
             }
         }
 
         if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
             anyhow::bail!(
-                "Cannot output assembly or binary outside of JSON in combined JSON mode."
+                "Error: Cannot output assembly or binary outside of JSON in combined JSON mode."
             );
         }
 
         if self.standard_json.is_none() && self.detect_missing_libraries {
             anyhow::bail!(
-                "Missing deployable libraries detection mode is only supported in standard JSON mode."
+                "Error: Missing deployable libraries detection mode is only supported in standard JSON mode."
             );
         }
 
         if self.standard_json.is_some() {
             if self.output_assembly || self.output_binary {
                 anyhow::bail!(
-                    "Cannot output assembly or binary outside of JSON in standard JSON mode."
+                    "Error: Cannot output assembly or binary outside of JSON in standard JSON mode."
                 );
             }
 
             if !self.inputs.is_empty() {
-                anyhow::bail!("Input files must be passed via standard JSON input.");
+                anyhow::bail!("Error: Input files must be passed via standard JSON input.");
             }
             if !self.libraries.is_empty() {
-                anyhow::bail!("Libraries must be passed via standard JSON input.");
+                anyhow::bail!("Error: Libraries must be passed via standard JSON input.");
             }
             if self.evm_version.is_some() {
-                anyhow::bail!("EVM version must be passed via standard JSON input.");
+                anyhow::bail!("Error: EVM version must be passed via standard JSON input.");
             }
 
             if self.output_directory.is_some() {
-                anyhow::bail!("Output directory cannot be used in standard JSON mode.");
+                anyhow::bail!("Error: Output directory cannot be used in standard JSON mode.");
             }
             if self.overwrite {
-                anyhow::bail!("Overwriting flag cannot be used in standard JSON mode.");
+                anyhow::bail!("Error: Overwriting flag cannot be used in standard JSON mode.");
             }
             if self.disable_solc_optimizer {
                 anyhow::bail!(
-                    "Disabling the solc optimizer must be specified in standard JSON input settings."
+                    "Error: Disabling the solc optimizer must be specified in standard JSON input settings."
                 );
             }
             if self.optimization.is_some() {
                 anyhow::bail!(
-                    "LLVM optimizations must be specified in standard JSON input settings."
+                    "Error: LLVM optimizations must be specified in standard JSON input settings."
                 );
             }
             if self.fallback_to_optimizing_for_size {
                 anyhow::bail!(
-                    "Falling back to -Oz must be specified in standard JSON input settings."
+                    "Error: Falling back to -Oz must be specified in standard JSON input settings."
                 );
             }
             if self.llvm_options.is_some() {
-                anyhow::bail!("LLVM options must be specified in standard JSON input settings.");
+                anyhow::bail!(
+                    "Error: LLVM options must be specified in standard JSON input settings."
+                );
             }
             if self.metadata_hash.is_some() {
                 anyhow::bail!(
-                    "Metadata hash mode must be specified in standard JSON input settings."
+                    "Error: Metadata hash mode must be specified in standard JSON input settings."
                 );
             }
             if self.metadata_literal {
                 anyhow::bail!(
-                    "Metadata literal content must be specified in standard JSON input settings."
+                    "Error: Metadata literal content must be specified in standard JSON input settings."
                 );
             }
 
             if self.enable_eravm_extensions {
                 eprintln!(
-                    "EraVM extensions CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "Warning: EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
             if self.force_evmla {
                 eprintln!(
-                    "EVM legacy assembly pipeline CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "Warning: EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
             if self.detect_missing_libraries {
                 eprintln!(
-                    "Missing deployable libraries detection mode CLI flag is deprecated in standard JSON mode and must be passed in JSON."
+                    "Warning: Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON."
                 );
             }
         }
@@ -409,7 +421,7 @@ impl Arguments {
                 }
                 if parts.len() != 2 {
                     anyhow::bail!(
-                        "Invalid remapping `{}`: expected two parts separated by '='",
+                        "Error: Invalid remapping `{}`: expected two parts separated by '='",
                         input
                     );
                 }
@@ -436,7 +448,7 @@ impl Arguments {
     fn path_to_posix(path: &Path) -> anyhow::Result<PathBuf> {
         let path = path
             .to_slash()
-            .ok_or_else(|| anyhow::anyhow!("Input path {:?} POSIX conversion error", path))?
+            .ok_or_else(|| anyhow::anyhow!("Error: Input path {:?} POSIX conversion error", path))?
             .to_string();
         let path = PathBuf::from(path.as_str());
         Ok(path)

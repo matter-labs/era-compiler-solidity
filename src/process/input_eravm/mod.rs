@@ -4,23 +4,21 @@
 //! The EraVM input data.
 //!
 
-use std::borrow::Cow;
-
-use serde::Deserialize;
-use serde::Serialize;
+pub mod dependency_data;
 
 use crate::project::contract::Contract;
-use crate::project::Project;
+
+use self::dependency_data::DependencyData;
 
 ///
 /// The EraVM input data.
 ///
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Input<'a> {
-    /// The contract representation.
-    pub contract: Cow<'a, Contract>,
-    /// The project representation.
-    pub project: Cow<'a, Project>,
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Input {
+    /// The input contract.
+    pub contract: Option<Contract>,
+    /// The dependency data.
+    pub dependency_data: DependencyData,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
     /// Whether to append the metadata hash.
@@ -35,13 +33,13 @@ pub struct Input<'a> {
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
 
-impl<'a> Input<'a> {
+impl Input {
     ///
     /// A shortcut constructor.
     ///
     pub fn new(
-        contract: Cow<'a, Contract>,
-        project: Cow<'a, Project>,
+        contract: Option<Contract>,
+        dependency_data: DependencyData,
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         enable_test_encoding: bool,
@@ -51,7 +49,7 @@ impl<'a> Input<'a> {
     ) -> Self {
         Self {
             contract,
-            project,
+            dependency_data,
             enable_eravm_extensions,
             include_metadata_hash,
             enable_test_encoding,

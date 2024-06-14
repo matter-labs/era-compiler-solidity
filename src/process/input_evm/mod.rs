@@ -4,23 +4,21 @@
 //! The EVM input data.
 //!
 
-use std::borrow::Cow;
-
-use serde::Deserialize;
-use serde::Serialize;
+pub mod dependency_data;
 
 use crate::project::contract::Contract;
-use crate::project::Project;
+
+use self::dependency_data::DependencyData;
 
 ///
 /// The EVM input data.
 ///
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Input<'a> {
-    /// The contract representation.
-    pub contract: Cow<'a, Contract>,
-    /// The project representation.
-    pub project: Cow<'a, Project>,
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Input {
+    /// The input contract.
+    pub contract: Option<Contract>,
+    /// The dependency data.
+    pub dependency_data: DependencyData,
     /// Whether to append the metadata hash.
     pub include_metadata_hash: bool,
     /// The optimizer settings.
@@ -31,13 +29,13 @@ pub struct Input<'a> {
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
 
-impl<'a> Input<'a> {
+impl Input {
     ///
     /// A shortcut constructor.
     ///
     pub fn new(
-        contract: Cow<'a, Contract>,
-        project: Cow<'a, Project>,
+        contract: Option<Contract>,
+        dependency_data: DependencyData,
         include_metadata_hash: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -45,7 +43,7 @@ impl<'a> Input<'a> {
     ) -> Self {
         Self {
             contract,
-            project,
+            dependency_data,
             include_metadata_hash,
             optimizer_settings,
             llvm_options,

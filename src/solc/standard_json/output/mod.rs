@@ -7,24 +7,27 @@ pub mod error;
 pub mod source;
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
-use self::error::Error as SolcStandardJsonOutputError;
+use self::error::Error as JsonOutputError;
 use self::source::Source;
 
 ///
 /// The `solc --standard-json` output.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// The file-contract hashmap.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -34,7 +37,7 @@ pub struct Output {
     pub sources: Option<BTreeMap<String, Source>>,
     /// The compilation errors and warnings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<SolcStandardJsonOutputError>>,
+    pub errors: Option<Vec<JsonOutputError>>,
 
     /// The `solc` compiler version.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -80,31 +83,49 @@ impl Output {
     }
 
     ///
-    /// Checks for errors, returning `Err` if there is at least one error.
+    /// Prunes the output JSON and prints it to stdout.
     ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        if self
-            .errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "error"))
-            .unwrap_or_default()
-        {
-            anyhow::bail!(
-                "{}",
-                self.errors
-                    .as_ref()
-                    .map(|errors| {
-                        errors
-                            .iter()
-                            .map(|error| error.message.clone())
-                            .collect::<Vec<String>>()
-                            .join("\n")
-                    })
-                    .unwrap_or_default()
-            );
+    pub fn write_and_exit(mut self, prune_output: HashSet<SelectionFlag>) -> ! {
+        let sources = self
+            .sources
+            .as_mut()
+            .map(|sources| sources.values_mut().collect::<Vec<&mut Source>>())
+            .unwrap_or_default();
+        for source in sources.into_iter() {
+            if prune_output.contains(&SelectionFlag::AST) {
+                source.ast = None;
+            }
         }
 
-        Ok(())
+        let contracts = self
+            .contracts
+            .as_mut()
+            .map(|contracts| {
+                contracts
+                    .values_mut()
+                    .flat_map(|contracts| contracts.values_mut())
+                    .collect::<Vec<&mut Contract>>()
+            })
+            .unwrap_or_default();
+        for contract in contracts.into_iter() {
+            if prune_output.contains(&SelectionFlag::Metadata) {
+                contract.metadata = None;
+            }
+            if let Some(ref mut evm) = contract.evm {
+                if prune_output.contains(&SelectionFlag::EVMLA) {
+                    evm.assembly = None;
+                }
+                if prune_output.contains(&SelectionFlag::MethodIdentifiers) {
+                    evm.method_identifiers = None;
+                }
+            }
+            if prune_output.contains(&SelectionFlag::Yul) {
+                contract.ir_optimized = None;
+            }
+        }
+
+        serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
+        std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
     }
 
     ///
@@ -123,6 +144,26 @@ impl Output {
     }
 
     ///
+    /// Pushes an arbitrary error with path.
+    ///
+    /// Please do not push project-general errors without paths here.
+    ///
+    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
+        let mut error = JsonOutputError {
+            component: "general".to_owned(),
+            error_code: None,
+            formatted_message: error.to_string(),
+            message: "".to_owned(),
+            severity: "error".to_owned(),
+            source_location: None,
+            r#type: "Error".to_owned(),
+        };
+        error.push_contract_path(path.as_str());
+
+        self.errors.get_or_insert_with(Vec::new).push(error);
+    }
+
+    ///
     /// Traverses the AST and returns the list of additional errors and warnings.
     ///
     pub fn preprocess_ast(
@@ -136,25 +177,23 @@ impl Output {
             None => return Ok(()),
         };
 
-        let mut messages = Vec::new();
-        for (path, source) in sources.iter() {
-            if let Some(ast) = source.ast.as_ref() {
-                let mut eravm_messages =
-                    Source::get_messages(ast, version, pipeline, suppressed_warnings);
-                for message in eravm_messages.iter_mut() {
-                    message.push_contract_path(path.as_str());
+        let messages: Vec<JsonOutputError> = sources
+            .par_iter()
+            .map(|(path, source)| {
+                if let Some(ast) = source.ast.as_ref() {
+                    let mut eravm_messages =
+                        Source::get_messages(ast, version, pipeline, suppressed_warnings);
+                    for message in eravm_messages.iter_mut() {
+                        message.push_contract_path(path.as_str());
+                    }
+                    eravm_messages
+                } else {
+                    vec![]
                 }
-                messages.extend(eravm_messages);
-            }
-        }
-
-        self.errors = match self.errors.take() {
-            Some(mut errors) => {
-                errors.extend(messages);
-                Some(errors)
-            }
-            None => Some(messages),
-        };
+            })
+            .flatten()
+            .collect();
+        self.errors.get_or_insert_with(Vec::new).extend(messages);
 
         Ok(())
     }
@@ -186,20 +225,50 @@ impl Output {
             }
         }
 
+        let mut assemblies = BTreeMap::new();
         for (path, contracts) in files.iter_mut() {
             for (name, contract) in contracts.iter_mut() {
+                let full_path = format!("{path}:{name}");
                 let assembly = match contract.evm.as_mut().and_then(|evm| evm.assembly.as_mut()) {
                     Some(assembly) => assembly,
                     None => continue,
                 };
-
-                let full_path = format!("{path}:{name}");
-                Self::preprocess_dependency_level(
-                    full_path.as_str(),
-                    assembly,
-                    &hash_path_mapping,
-                )?;
+                assemblies.insert(full_path, assembly);
             }
+        }
+        assemblies
+            .into_par_iter()
+            .map(|(full_path, assembly)| {
+                Self::preprocess_dependency_level(full_path.as_str(), assembly, &hash_path_mapping)
+            })
+            .collect::<anyhow::Result<()>>()?;
+
+        Ok(())
+    }
+
+    ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn check_errors(&self) -> anyhow::Result<()> {
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "error"))
+            .unwrap_or_default()
+        {
+            anyhow::bail!(
+                "{}",
+                self.errors
+                    .as_ref()
+                    .map(|errors| {
+                        errors
+                            .iter()
+                            .map(|error| error.to_string())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    })
+                    .unwrap_or_default()
+            );
         }
 
         Ok(())

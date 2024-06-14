@@ -9,14 +9,14 @@ use serde::Serialize;
 /// The contract EraVM assembly source code.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ZKASM {
+pub struct EraVMAssembly {
     /// The EraVM assembly file path.
     pub path: String,
     /// The EraVM assembly source code.
     pub source: String,
 }
 
-impl ZKASM {
+impl EraVMAssembly {
     ///
     /// A shortcut constructor.
     ///
