@@ -134,6 +134,12 @@ impl Output {
                 contract.evm = None;
             }
         }
+        if let Some(ref mut files) = self.contracts {
+            files.retain(|_, contracts| {
+                contracts.retain(|_, contract| !contract.is_empty());
+                !contracts.is_empty()
+            });
+        }
 
         serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
         std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);

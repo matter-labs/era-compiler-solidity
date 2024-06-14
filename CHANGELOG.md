@@ -10,6 +10,7 @@
 
 - Lexer and parser errors are now written to JSON in standard JSON mode
 - AST and IRs are not emitted anymore if not explicitly requested
+- Empty files and contracts are pruned from standard JSON output
 
 ### Fixed
 

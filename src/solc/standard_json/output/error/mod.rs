@@ -41,16 +41,10 @@ impl Error {
     where
         S: std::fmt::Display,
     {
-        let location = source_location.as_ref().map(SourceLocation::resolve);
-        let formatted_message = match location {
-            Some(location) => format!("{message}\n--> {location}\n"),
-            None => message.to_string(),
-        };
-
         Self {
             component: "general".to_owned(),
             error_code: None,
-            formatted_message,
+            formatted_message: message.to_string(),
             message: "".to_owned(),
             severity: "error".to_owned(),
             source_location,
@@ -65,16 +59,10 @@ impl Error {
     where
         S: std::fmt::Display,
     {
-        let location = source_location.as_ref().map(SourceLocation::resolve);
-        let formatted_message = match location {
-            Some(location) => format!("{message}\n--> {location}\n"),
-            None => message.to_string(),
-        };
-
         Self {
             component: "general".to_owned(),
             error_code: None,
-            formatted_message,
+            formatted_message: message.to_string(),
             message: "".to_owned(),
             severity: "warning".to_owned(),
             source_location,
