@@ -86,10 +86,11 @@ impl Contract {
     pub fn compile_to_eravm(
         mut self,
         dependency_data: EraVMProcessInputDependencyData,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[String],
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
+        output_assembly: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMContractBuild> {
         use era_compiler_llvm_context::EraVMWriteLLVM;
@@ -110,7 +111,7 @@ impl Contract {
                 .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
-            llvm_options,
+            llvm_options.as_slice(),
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
@@ -132,10 +133,11 @@ impl Contract {
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
             IR::EraVMAssembly(ref eravm_assembly) => {
-                let build = era_compiler_llvm_context::eravm_build_assembly_text(
+                let build = era_compiler_llvm_context::from_eravm_assembly(
                     self.path.as_str(),
-                    eravm_assembly.source.as_str(),
+                    eravm_assembly.source.to_owned(),
                     metadata_hash,
+                    output_assembly,
                     debug_config.as_ref(),
                 )?;
                 return Ok(EraVMContractBuild::new(
@@ -151,7 +153,7 @@ impl Contract {
         let mut context = era_compiler_llvm_context::EraVMContext::new(
             &llvm,
             module,
-            llvm_options.to_owned(),
+            llvm_options,
             optimizer,
             Some(dependency_data),
             debug_config,
@@ -189,7 +191,7 @@ impl Contract {
             .into_llvm(&mut context)
             .map_err(|error| anyhow::anyhow!("LLVM IR generator definition pass: {error}"))?;
 
-        let build = context.build(self.path.as_str(), metadata_hash)?;
+        let build = context.build(self.path.as_str(), metadata_hash, output_assembly)?;
 
         Ok(EraVMContractBuild::new(
             self.path,
@@ -206,9 +208,9 @@ impl Contract {
     pub fn compile_to_evm(
         mut self,
         dependency_data: EVMProcessInputDependencyData,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: &[String],
         include_metadata_hash: bool,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMContractBuild> {
         use era_compiler_llvm_context::EVMWriteLLVM;
@@ -227,7 +229,7 @@ impl Contract {
                 .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
             optimizer.settings().to_owned(),
-            llvm_options,
+            llvm_options.as_slice(),
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
@@ -261,7 +263,7 @@ impl Contract {
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
-                        llvm_options.to_owned(),
+                        llvm_options.clone(),
                         code_type,
                         optimizer.clone(),
                         Some(dependency_data.clone()),
@@ -322,7 +324,7 @@ impl Contract {
                     let mut context = era_compiler_llvm_context::EVMContext::new(
                         &llvm,
                         module,
-                        llvm_options.to_owned(),
+                        llvm_options.clone(),
                         code_type,
                         optimizer.clone(),
                         Some(dependency_data.clone()),
@@ -366,7 +368,7 @@ impl Contract {
                 let context = era_compiler_llvm_context::EVMContext::new(
                     &llvm,
                     module,
-                    llvm_options.to_owned(),
+                    llvm_options,
                     era_compiler_llvm_context::CodeType::Runtime,
                     optimizer,
                     Some(dependency_data.clone()),

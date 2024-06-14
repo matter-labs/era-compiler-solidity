@@ -7,6 +7,7 @@ use std::io::Write;
 use std::path::Path;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
+use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
 
 ///
@@ -170,13 +171,14 @@ impl Contract {
         self,
         standard_json_contract: &mut StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
-        standard_json_contract.metadata = Some(self.metadata_json);
-
         let deploy_bytecode = hex::encode(self.deploy_build.bytecode.as_slice());
         let runtime_bytecode = hex::encode(self.runtime_build.bytecode.as_slice());
-        if let Some(evm) = standard_json_contract.evm.as_mut() {
-            evm.modify_evm(deploy_bytecode, runtime_bytecode);
-        }
+
+        standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract
+            .evm
+            .get_or_insert_with(StandardJsonOutputContractEVM::default)
+            .modify_evm(deploy_bytecode, runtime_bytecode);
 
         Ok(())
     }

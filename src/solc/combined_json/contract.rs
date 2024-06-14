@@ -44,6 +44,10 @@ pub struct Contract {
     /// The `solc` hexadecimal binary runtime part output.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bin_runtime: Option<String>,
+
+    /// The EraVM assembly.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub assembly: Option<serde_json::Value>,
     /// The factory dependencies.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub factory_deps: Option<BTreeMap<String, String>>,

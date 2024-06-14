@@ -82,11 +82,12 @@ pub fn build_solidity(
     solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
         false,
-        false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
@@ -183,11 +184,12 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
         None,
     )?;
     let build = project.compile_to_eravm(
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
         false,
-        false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
@@ -234,11 +236,12 @@ pub fn build_yul_standard_json(
         None,
     )?;
     let build = project.compile_to_eravm(
+        solc_compiler.is_none(),
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        solc_compiler.is_none(),
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
@@ -270,11 +273,12 @@ pub fn build_llvm_ir_standard_json(
 
     let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        true,
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
@@ -306,11 +310,12 @@ pub fn build_eravm_assembly_standard_json(
 
     let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        true,
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;

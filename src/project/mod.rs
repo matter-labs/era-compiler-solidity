@@ -143,7 +143,8 @@ impl Project {
                         }
                         SolcPipeline::EVMLA => {
                             let evm = contract.evm.as_ref();
-                            let assembly = match evm.and_then(|evm| evm.assembly.to_owned()) {
+                            let assembly = match evm.and_then(|evm| evm.legacy_assembly.to_owned())
+                            {
                                 Some(assembly) => assembly.to_owned(),
                                 None => return None,
                             };
@@ -446,11 +447,12 @@ impl Project {
     ///
     pub fn compile_to_eravm(
         self,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: Vec<String>,
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
+        output_assembly: bool,
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
@@ -469,6 +471,7 @@ impl Project {
             bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
             optimizer_settings,
             llvm_options,
+            output_assembly,
             debug_config,
         );
         let pool = EraVMThreadPool::new(threads, self.contracts, input_template);

@@ -36,10 +36,11 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
 
             let build = input.contract.expect("Always exists").compile_to_eravm(
                 input.dependency_data,
-                input.optimizer_settings,
-                input.llvm_options.as_slice(),
                 input.enable_eravm_extensions,
                 input.include_metadata_hash,
+                input.optimizer_settings,
+                input.llvm_options,
+                input.output_assembly,
                 input.debug_config,
             )?;
             let output = EraVMOutput::new(build);
@@ -57,9 +58,9 @@ pub fn run(target: era_compiler_llvm_context::Target) -> anyhow::Result<()> {
 
             let build = input.contract.expect("Always exists").compile_to_evm(
                 input.dependency_data,
-                input.optimizer_settings,
-                input.llvm_options.as_slice(),
                 input.include_metadata_hash,
+                input.optimizer_settings,
+                input.llvm_options,
                 input.debug_config,
             )?;
             let output = EVMOutput::new(build);

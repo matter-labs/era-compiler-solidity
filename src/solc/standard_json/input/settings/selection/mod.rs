@@ -72,4 +72,15 @@ impl Selection {
             .map(|selection| selection.get_unset_required())
             .unwrap_or_else(|| FileSelection::default().get_unset_required())
     }
+
+    ///
+    /// Whether EraVM assembly is requested.
+    ///
+    pub fn contains_eravm_assembly(&self) -> bool {
+        self.all
+            .as_ref()
+            .and_then(|file| file.per_contract.as_ref())
+            .map(|contract| contract.contains(&SelectionFlag::EraVMAssembly))
+            .unwrap_or_default()
+    }
 }

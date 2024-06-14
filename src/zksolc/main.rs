@@ -74,30 +74,22 @@ fn main_inner() -> anyhow::Result<()> {
         anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
-    let debug_config = match arguments.debug_output_directory {
-        Some(ref debug_output_directory) => {
-            std::fs::create_dir_all(debug_output_directory.as_path())?;
-            Some(era_compiler_llvm_context::DebugConfig::new(
-                debug_output_directory.to_owned(),
-            ))
-        }
-        None => None,
-    };
-
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
-
-    let suppressed_warnings = match arguments.suppress_warnings {
-        Some(warnings) => Some(era_compiler_solidity::Warning::try_from_strings(
-            warnings.as_slice(),
-        )?),
-        None => None,
-    };
 
     let evm_version = match arguments.evm_version {
         Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
             evm_version.as_str(),
         )?),
         None => None,
+    };
+
+    let include_metadata_hash = match arguments.metadata_hash {
+        Some(metadata_hash) => {
+            let metadata =
+                era_compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
+            metadata != era_compiler_llvm_context::EraVMMetadataHash::None
+        }
+        None => true,
     };
 
     let mut optimizer_settings = match arguments.optimization {
@@ -116,13 +108,21 @@ fn main_inner() -> anyhow::Result<()> {
         .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
         .unwrap_or_default();
 
-    let include_metadata_hash = match arguments.metadata_hash {
-        Some(metadata_hash) => {
-            let metadata =
-                era_compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
-            metadata != era_compiler_llvm_context::EraVMMetadataHash::None
+    let suppressed_warnings = match arguments.suppress_warnings {
+        Some(warnings) => Some(era_compiler_solidity::Warning::try_from_strings(
+            warnings.as_slice(),
+        )?),
+        None => None,
+    };
+
+    let debug_config = match arguments.debug_output_directory {
+        Some(ref debug_output_directory) => {
+            std::fs::create_dir_all(debug_output_directory.as_path())?;
+            Some(era_compiler_llvm_context::DebugConfig::new(
+                debug_output_directory.to_owned(),
+            ))
         }
-        None => true,
+        None => None,
     };
 
     match target {
@@ -132,27 +132,30 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     arguments.solc,
-                    optimizer_settings,
-                    llvm_options,
                     arguments.enable_eravm_extensions,
                     include_metadata_hash,
+                    optimizer_settings,
+                    llvm_options,
+                    arguments.output_assembly,
                     arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
+                    include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
-                    include_metadata_hash,
+                    arguments.output_assembly,
                     arguments.threads,
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
-                    llvm_options,
                     include_metadata_hash,
+                    llvm_options,
+                    arguments.output_assembly,
                     arguments.threads,
                     debug_config,
                 )
@@ -200,6 +203,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
+                    arguments.output_assembly,
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
@@ -228,6 +232,7 @@ fn main_inner() -> anyhow::Result<()> {
                     remappings,
                     optimizer_settings,
                     llvm_options,
+                    arguments.output_assembly,
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
@@ -239,7 +244,6 @@ fn main_inner() -> anyhow::Result<()> {
 
                 build.write_to_directory(
                     &output_directory,
-                    arguments.output_assembly,
                     arguments.output_binary,
                     arguments.overwrite,
                 )?;
@@ -249,7 +253,7 @@ fn main_inner() -> anyhow::Result<()> {
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
             } else if arguments.output_assembly || arguments.output_binary {
-                build.write_to_terminal(arguments.output_assembly, arguments.output_binary)?;
+                build.write_to_terminal(arguments.output_binary)?;
             } else {
                 writeln!(
                     std::io::stderr(),
@@ -263,18 +267,18 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     arguments.solc,
+                    include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
-                    include_metadata_hash,
                     arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
+                    include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
-                    include_metadata_hash,
                     arguments.threads,
                     debug_config,
                 )

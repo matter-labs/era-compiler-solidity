@@ -21,9 +21,6 @@ pub enum Flag {
     /// The user documentation.
     #[serde(rename = "userdoc")]
     Userdoc,
-    /// The function signature hashes JSON.
-    #[serde(rename = "evm.methodIdentifiers")]
-    MethodIdentifiers,
     /// The storage layout.
     #[serde(rename = "storageLayout")]
     StorageLayout,
@@ -33,12 +30,18 @@ pub enum Flag {
     /// The Yul IR.
     #[serde(rename = "irOptimized")]
     Yul,
-    /// The EVM legacy assembly JSON.
-    #[serde(rename = "evm.legacyAssembly")]
-    EVMLA,
     /// The EVM bytecode.
     #[serde(rename = "evm")]
     EVM,
+    /// The EVM legacy assembly JSON.
+    #[serde(rename = "evm.legacyAssembly")]
+    EVMLA,
+    /// The function signature hashes JSON.
+    #[serde(rename = "evm.methodIdentifiers")]
+    MethodIdentifiers,
+    /// The EraVM assembly.
+    #[serde(rename = "eravm.assembly")]
+    EraVMAssembly,
 }
 
 impl From<SolcPipeline> for Flag {
@@ -57,12 +60,13 @@ impl std::fmt::Display for Flag {
             Self::Metadata => write!(f, "metadata"),
             Self::Devdoc => write!(f, "devdoc"),
             Self::Userdoc => write!(f, "userdoc"),
-            Self::MethodIdentifiers => write!(f, "evm.methodIdentifiers"),
             Self::StorageLayout => write!(f, "storageLayout"),
             Self::AST => write!(f, "ast"),
             Self::Yul => write!(f, "irOptimized"),
-            Self::EVMLA => write!(f, "evm.legacyAssembly"),
             Self::EVM => write!(f, "evm"),
+            Self::EVMLA => write!(f, "evm.legacyAssembly"),
+            Self::MethodIdentifiers => write!(f, "evm.methodIdentifiers"),
+            Self::EraVMAssembly => write!(f, "eravm.assembly"),
         }
     }
 }

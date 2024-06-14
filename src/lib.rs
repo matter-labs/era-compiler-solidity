@@ -64,10 +64,11 @@ pub fn yul_to_eravm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_path: Option<String>,
-    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-    llvm_options: Vec<String>,
     enable_eravm_extensions: bool,
     include_metadata_hash: bool,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+    llvm_options: Vec<String>,
+    output_assembly: bool,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -94,11 +95,12 @@ pub fn yul_to_eravm(
     )?;
 
     let build = project.compile_to_eravm(
-        optimizer_settings,
-        llvm_options,
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
         threads,
         debug_config,
     )?;
@@ -113,9 +115,9 @@ pub fn yul_to_evm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_path: Option<String>,
+    include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    include_metadata_hash: bool,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -154,20 +156,22 @@ pub fn yul_to_evm(
 ///
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
+    include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    include_metadata_hash: bool,
+    output_assembly: bool,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let project = Project::try_from_llvm_ir_paths(paths, None)?;
 
     let build = project.compile_to_eravm(
-        optimizer_settings,
-        llvm_options,
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
         threads,
         debug_config,
     )?;
@@ -180,9 +184,9 @@ pub fn llvm_ir_to_eravm(
 ///
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
+    include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    include_metadata_hash: bool,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -204,8 +208,9 @@ pub fn llvm_ir_to_evm(
 ///
 pub fn eravm_assembly(
     paths: &[PathBuf],
-    llvm_options: Vec<String>,
     include_metadata_hash: bool,
+    llvm_options: Vec<String>,
+    output_assembly: bool,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -213,11 +218,12 @@ pub fn eravm_assembly(
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
     let build = project.compile_to_eravm(
-        optimizer_settings,
-        llvm_options,
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
         threads,
         debug_config,
     )?;
@@ -244,6 +250,7 @@ pub fn standard_output_eravm(
     remappings: Option<BTreeSet<String>>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
+    output_assembly: bool,
     suppressed_warnings: Option<Vec<Warning>>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -297,11 +304,12 @@ pub fn standard_output_eravm(
     solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
-        optimizer_settings,
-        llvm_options,
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
         threads,
         debug_config,
     )?;
@@ -433,6 +441,12 @@ pub fn standard_json_eravm(
         }
         None => true,
     };
+    let output_assembly = solc_input
+        .settings
+        .output_selection
+        .as_ref()
+        .map(|selection| selection.contains_eravm_assembly())
+        .unwrap_or_default();
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
@@ -540,11 +554,12 @@ pub fn standard_json_eravm(
         )?;
     } else {
         let build = project.compile_to_eravm(
-            optimizer_settings,
-            llvm_options,
             enable_eravm_extensions,
             include_metadata_hash,
             zkevm_assembly::RunningVmEncodingMode::Production,
+            optimizer_settings,
+            llvm_options,
+            output_assembly,
             threads,
             debug_config,
         )?;
@@ -704,6 +719,7 @@ pub fn combined_json_eravm(
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
+    output_assembly: bool,
     suppressed_warnings: Option<Vec<Warning>>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -726,6 +742,7 @@ pub fn combined_json_eravm(
         remappings,
         optimizer_settings,
         llvm_options,
+        output_assembly,
         suppressed_warnings,
         threads,
         debug_config,

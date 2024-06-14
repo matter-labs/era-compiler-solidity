@@ -60,9 +60,9 @@ contract Test {
             .evm
             .as_ref()
             .expect("EVM object is missing")
-            .assembly
+            .legacy_assembly
             .is_none(),
-        "EVMLA IR is present although not requested"
+        "EVM assembly IR is present although not requested"
     );
 }
 
@@ -102,9 +102,9 @@ contract Test {
             .evm
             .as_ref()
             .expect("EVM object is missing")
-            .assembly
+            .legacy_assembly
             .is_some(),
-        "EVMLA IR is missing",
+        "EVM assembly IR is missing",
     );
     assert!(
         build

@@ -27,17 +27,13 @@ impl Build {
     ///
     /// Writes all contracts to the terminal.
     ///
-    pub fn write_to_terminal(
-        self,
-        output_assembly: bool,
-        output_binary: bool,
-    ) -> anyhow::Result<()> {
+    pub fn write_to_terminal(self, output_binary: bool) -> anyhow::Result<()> {
         self.check_errors()?;
 
         for (path, build) in self.contracts.into_iter() {
             build
                 .expect("Always valid")
-                .write_to_terminal(path, output_assembly, output_binary)?;
+                .write_to_terminal(path, output_binary)?;
         }
 
         Ok(())
@@ -49,7 +45,6 @@ impl Build {
     pub fn write_to_directory(
         self,
         output_directory: &Path,
-        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -58,7 +53,6 @@ impl Build {
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
                 output_directory,
-                output_assembly,
                 output_binary,
                 overwrite,
             )?;

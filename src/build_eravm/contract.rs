@@ -51,17 +51,11 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to terminal.
     ///
-    pub fn write_to_terminal(
-        self,
-        path: String,
-        output_assembly: bool,
-        output_binary: bool,
-    ) -> anyhow::Result<()> {
-        if output_assembly {
+    pub fn write_to_terminal(self, path: String, output_binary: bool) -> anyhow::Result<()> {
+        if let Some(assembly) = self.build.assembly {
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` assembly:\n\n{}",
-                self.build.assembly_text
+                "Contract `{path}` assembly:\n\n{assembly}",
             )?;
         }
         if output_binary {
@@ -81,13 +75,12 @@ impl Contract {
     pub fn write_to_directory(
         self,
         path: &Path,
-        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
         let (file_name, contract_name) = Self::split_path(self.path.as_str());
 
-        if output_assembly {
+        if let Some(assembly) = self.build.assembly {
             let output_name = format!(
                 "{}.{}",
                 contract_name,
@@ -107,7 +100,7 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("File {:?} creating error: {}", file_path, error)
                     })?
-                    .write_all(self.build.assembly_text.as_bytes())
+                    .write_all(assembly.as_bytes())
                     .map_err(|error| {
                         anyhow::anyhow!("File {:?} writing error: {}", file_path, error)
                     })?;
@@ -153,19 +146,17 @@ impl Contract {
         self,
         combined_json_contract: &mut CombinedJsonContract,
     ) -> anyhow::Result<()> {
+        let hexadecimal_bytecode = hex::encode(self.build.bytecode);
+
         if let Some(metadata) = combined_json_contract.metadata.as_mut() {
             *metadata = self.metadata_json.to_string();
         }
-
-        if let Some(asm) = combined_json_contract.asm.as_mut() {
-            *asm = serde_json::Value::String(self.build.assembly_text);
-        }
-        let hexadecimal_bytecode = hex::encode(self.build.bytecode);
         combined_json_contract.bin = Some(hexadecimal_bytecode);
         combined_json_contract
             .bin_runtime
             .clone_from(&combined_json_contract.bin);
 
+        combined_json_contract.assembly = self.build.assembly.map(serde_json::Value::String);
         combined_json_contract.factory_deps = Some(self.build.factory_dependencies);
 
         Ok(())
@@ -178,20 +169,14 @@ impl Contract {
         self,
         standard_json_contract: &mut StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
-        standard_json_contract.metadata = Some(self.metadata_json);
-
-        let assembly_text = self.build.assembly_text;
         let bytecode = hex::encode(self.build.bytecode.as_slice());
-        match standard_json_contract.evm.as_mut() {
-            Some(evm) => evm.modify_eravm(assembly_text, bytecode),
-            None => {
-                standard_json_contract.evm = Some(StandardJsonOutputContractEVM::new_eravm(
-                    assembly_text,
-                    bytecode,
-                ))
-            }
-        }
+        let assembly = self.build.assembly;
 
+        standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract
+            .evm
+            .get_or_insert_with(StandardJsonOutputContractEVM::default)
+            .modify_eravm(bytecode, assembly);
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
         standard_json_contract.hash = Some(self.build.bytecode_hash);
 

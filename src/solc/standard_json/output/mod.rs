@@ -17,6 +17,7 @@ use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
@@ -112,16 +113,25 @@ impl Output {
             if prune_output.contains(&SelectionFlag::Metadata) {
                 contract.metadata = None;
             }
+            if prune_output.contains(&SelectionFlag::Yul) {
+                contract.ir_optimized = None;
+            }
             if let Some(ref mut evm) = contract.evm {
                 if prune_output.contains(&SelectionFlag::EVMLA) {
-                    evm.assembly = None;
+                    evm.legacy_assembly = None;
                 }
                 if prune_output.contains(&SelectionFlag::MethodIdentifiers) {
                     evm.method_identifiers = None;
                 }
+                evm.extra_metadata = None;
             }
-            if prune_output.contains(&SelectionFlag::Yul) {
-                contract.ir_optimized = None;
+            if contract
+                .evm
+                .as_ref()
+                .map(StandardJSONOutputContractEVM::is_empty)
+                .unwrap_or_default()
+            {
+                contract.evm = None;
             }
         }
 
@@ -204,7 +214,7 @@ impl Output {
                 let hash = match contract
                     .evm
                     .as_ref()
-                    .and_then(|evm| evm.assembly.as_ref())
+                    .and_then(|evm| evm.legacy_assembly.as_ref())
                     .map(|assembly| assembly.keccak256())
                 {
                     Some(hash) => hash,
@@ -219,7 +229,11 @@ impl Output {
         for (path, contracts) in files.iter_mut() {
             for (name, contract) in contracts.iter_mut() {
                 let full_path = format!("{path}:{name}");
-                let assembly = match contract.evm.as_mut().and_then(|evm| evm.assembly.as_mut()) {
+                let assembly = match contract
+                    .evm
+                    .as_mut()
+                    .and_then(|evm| evm.legacy_assembly.as_mut())
+                {
                     Some(assembly) => assembly,
                     None => continue,
                 };
