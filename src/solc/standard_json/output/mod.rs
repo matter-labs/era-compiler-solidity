@@ -21,6 +21,7 @@ use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
+use self::error::source_location::SourceLocation as JsonOutputErrorSourceLocation;
 use self::error::Error as JsonOutputError;
 use self::source::Source;
 
@@ -149,18 +150,12 @@ impl Output {
     /// Please do not push project-general errors without paths here.
     ///
     pub fn push_error(&mut self, path: String, error: anyhow::Error) {
-        let mut error = JsonOutputError {
-            component: "general".to_owned(),
-            error_code: None,
-            formatted_message: error.to_string(),
-            message: "".to_owned(),
-            severity: "error".to_owned(),
-            source_location: None,
-            r#type: "Error".to_owned(),
-        };
-        error.push_contract_path(path.as_str());
-
-        self.errors.get_or_insert_with(Vec::new).push(error);
+        self.errors
+            .get_or_insert_with(Vec::new)
+            .push(JsonOutputError::new_error(
+                error,
+                Some(JsonOutputErrorSourceLocation::new(path)),
+            ));
     }
 
     ///
@@ -179,17 +174,12 @@ impl Output {
 
         let messages: Vec<JsonOutputError> = sources
             .par_iter()
-            .map(|(path, source)| {
-                if let Some(ast) = source.ast.as_ref() {
-                    let mut eravm_messages =
-                        Source::get_messages(ast, version, pipeline, suppressed_warnings);
-                    for message in eravm_messages.iter_mut() {
-                        message.push_contract_path(path.as_str());
-                    }
-                    eravm_messages
-                } else {
-                    vec![]
-                }
+            .map(|(_path, source)| {
+                source
+                    .ast
+                    .as_ref()
+                    .map(|ast| Source::get_messages(ast, version, pipeline, suppressed_warnings))
+                    .unwrap_or_default()
             })
             .flatten()
             .collect();

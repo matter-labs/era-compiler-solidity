@@ -25,8 +25,26 @@ impl SourceLocation {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(file: String, start: isize, end: isize) -> Self {
+    pub fn new(file: String) -> Self {
+        Self {
+            file,
+            start: -1,
+            end: -1,
+        }
+    }
+
+    ///
+    /// A shortcut constructor.
+    ///
+    pub fn new_with_location(file: String, start: isize, end: isize) -> Self {
         Self { file, start, end }
+    }
+
+    ///
+    /// Resolves the location, converting absolute offsets to line and column.
+    ///
+    pub fn resolve(&self) -> String {
+        self.file.to_owned()
     }
 }
 
@@ -47,10 +65,6 @@ impl FromStr for SourceLocation {
             .unwrap_or_default();
         let file = parts.next().unwrap_or_default().to_owned();
 
-        Ok(Self {
-            file,
-            start,
-            end: start + length,
-        })
+        Ok(Self::new_with_location(file, start, start + length))
     }
 }

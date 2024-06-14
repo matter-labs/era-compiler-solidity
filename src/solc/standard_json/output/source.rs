@@ -50,7 +50,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_ecrecover(
+        Some(SolcStandardJsonOutputError::warning_ecrecover(
             ast.get("src")?.as_str(),
         ))
     }
@@ -74,7 +74,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_send_and_transfer(
+        Some(SolcStandardJsonOutputError::warning_send_and_transfer(
             ast.get("src")?.as_str(),
         ))
     }
@@ -100,7 +100,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_extcodesize(
+        Some(SolcStandardJsonOutputError::warning_extcodesize(
             ast.get("src")?.as_str(),
         ))
     }
@@ -124,7 +124,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_tx_origin(
+        Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
         ))
     }
@@ -150,7 +150,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::message_tx_origin(
+        Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
         ))
     }
@@ -176,11 +176,7 @@ impl Source {
             return None;
         }
 
-        Some(
-            SolcStandardJsonOutputError::message_internal_function_pointer(
-                ast.get("src")?.as_str(),
-            ),
-        )
+        Some(SolcStandardJsonOutputError::error_internal_function_pointer(ast.get("src")?.as_str()))
     }
 
     ///
