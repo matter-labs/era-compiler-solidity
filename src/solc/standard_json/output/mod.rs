@@ -187,6 +187,10 @@ impl Output {
             Some(sources) => sources,
             None => return Ok(()),
         };
+        let id_paths: BTreeMap<usize, &String> = sources
+            .iter()
+            .map(|(path, source)| (source.id, path))
+            .collect();
 
         let messages: Vec<JsonOutputError> = sources
             .par_iter()
@@ -194,7 +198,9 @@ impl Output {
                 source
                     .ast
                     .as_ref()
-                    .map(|ast| Source::get_messages(ast, version, pipeline, suppressed_warnings))
+                    .map(|ast| {
+                        Source::get_messages(ast, &id_paths, version, pipeline, suppressed_warnings)
+                    })
                     .unwrap_or_default()
             })
             .flatten()

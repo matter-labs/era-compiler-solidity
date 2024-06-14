@@ -16,6 +16,7 @@
 
 - Dependency graph inefficiency that caused excessive compilation time
 - Removed JSON stream readers which are much slower than strings and vectors
+- File path resolution for EraVM-specific warnings in standard JSON output
 
 ## [1.5.0] - 2024-06-10
 

@@ -2,15 +2,12 @@
 //! The `solc --standard-json` output error source location.
 //!
 
-use std::str::FromStr;
-
-use serde::Deserialize;
-use serde::Serialize;
+use std::collections::BTreeMap;
 
 ///
 /// The `solc --standard-json` output error source location.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceLocation {
     /// The source file path.
@@ -39,13 +36,12 @@ impl SourceLocation {
     pub fn new_with_location(file: String, start: isize, end: isize) -> Self {
         Self { file, start, end }
     }
-}
 
-impl FromStr for SourceLocation {
-    type Err = anyhow::Error;
-
-    fn from_str(string: &str) -> Result<Self, Self::Err> {
-        let mut parts = string.split(':');
+    ///
+    /// A shortcut constructor.
+    ///
+    pub fn try_from_ast(source: &str, id_paths: &BTreeMap<usize, &String>) -> Option<Self> {
+        let mut parts = source.split(':');
         let start = parts
             .next()
             .map(|string| string.parse::<isize>())
@@ -56,8 +52,15 @@ impl FromStr for SourceLocation {
             .map(|string| string.parse::<isize>())
             .and_then(Result::ok)
             .unwrap_or_default();
-        let file = parts.next().unwrap_or_default().to_owned();
+        let path = parts
+            .next()
+            .and_then(|string| string.parse::<usize>().ok())
+            .and_then(|file_id| id_paths.get(&file_id))?;
 
-        Ok(Self::new_with_location(file, start, start + length))
+        Some(Self::new_with_location(
+            (*path).to_owned(),
+            start,
+            start + length,
+        ))
     }
 }

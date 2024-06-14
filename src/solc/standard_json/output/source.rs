@@ -2,8 +2,7 @@
 //! The `solc --standard-json` output source.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
+use std::collections::BTreeMap;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
@@ -13,7 +12,7 @@ use crate::warning::Warning;
 ///
 /// The `solc --standard-json` output source.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     /// The source code ID.
@@ -35,7 +34,10 @@ impl Source {
     ///
     /// Checks the AST node for the `ecrecover` function usage.
     ///
-    pub fn check_ecrecover(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {
+    pub fn check_ecrecover(
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         if ast.get("nodeType")?.as_str()? != "FunctionCall" {
@@ -52,13 +54,17 @@ impl Source {
 
         Some(SolcStandardJsonOutputError::warning_ecrecover(
             ast.get("src")?.as_str(),
+            id_paths,
         ))
     }
 
     ///
     /// Checks the AST node for the `<address payable>`'s `send` and `transfer` methods usage.
     ///
-    pub fn check_send_and_transfer(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {
+    pub fn check_send_and_transfer(
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         if ast.get("nodeType")?.as_str()? != "FunctionCall" {
@@ -76,6 +82,7 @@ impl Source {
 
         Some(SolcStandardJsonOutputError::warning_send_and_transfer(
             ast.get("src")?.as_str(),
+            id_paths,
         ))
     }
 
@@ -84,6 +91,7 @@ impl Source {
     ///
     pub fn check_assembly_extcodesize(
         ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -102,13 +110,17 @@ impl Source {
 
         Some(SolcStandardJsonOutputError::warning_extcodesize(
             ast.get("src")?.as_str(),
+            id_paths,
         ))
     }
 
     ///
     /// Checks the AST node for the `origin` assembly instruction usage.
     ///
-    pub fn check_assembly_origin(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {
+    pub fn check_assembly_origin(
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         if ast.get("nodeType")?.as_str()? != "YulFunctionCall" {
@@ -126,13 +138,17 @@ impl Source {
 
         Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
+            id_paths,
         ))
     }
 
     ///
     /// Checks the AST node for the `tx.origin` value usage.
     ///
-    pub fn check_tx_origin(ast: &serde_json::Value) -> Option<SolcStandardJsonOutputError> {
+    pub fn check_tx_origin(
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         if ast.get("nodeType")?.as_str()? != "MemberAccess" {
@@ -152,6 +168,7 @@ impl Source {
 
         Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
+            id_paths,
         ))
     }
 
@@ -160,6 +177,7 @@ impl Source {
     ///
     pub fn check_internal_function_pointer(
         ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -176,7 +194,12 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::error_internal_function_pointer(ast.get("src")?.as_str()))
+        Some(
+            SolcStandardJsonOutputError::error_internal_function_pointer(
+                ast.get("src")?.as_str(),
+                id_paths,
+            ),
+        )
     }
 
     ///
@@ -184,36 +207,37 @@ impl Source {
     ///
     pub fn get_messages(
         ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
         suppressed_warnings: &[Warning],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
         if !suppressed_warnings.contains(&Warning::EcRecover) {
-            if let Some(message) = Self::check_ecrecover(ast) {
+            if let Some(message) = Self::check_ecrecover(ast, id_paths) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::SendTransfer) {
-            if let Some(message) = Self::check_send_and_transfer(ast) {
+            if let Some(message) = Self::check_send_and_transfer(ast, id_paths) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::ExtCodeSize) {
-            if let Some(message) = Self::check_assembly_extcodesize(ast) {
+            if let Some(message) = Self::check_assembly_extcodesize(ast, id_paths) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::TxOrigin) {
-            if let Some(message) = Self::check_assembly_origin(ast) {
+            if let Some(message) = Self::check_assembly_origin(ast, id_paths) {
                 messages.push(message);
             }
-            if let Some(message) = Self::check_tx_origin(ast) {
+            if let Some(message) = Self::check_tx_origin(ast, id_paths) {
                 messages.push(message);
             }
         }
         if SolcPipeline::EVMLA == pipeline && version.l2_revision.is_none() {
-            if let Some(message) = Self::check_internal_function_pointer(ast) {
+            if let Some(message) = Self::check_internal_function_pointer(ast, id_paths) {
                 messages.push(message);
             }
         }
@@ -223,6 +247,7 @@ impl Source {
                 for element in array.iter() {
                     messages.extend(Self::get_messages(
                         element,
+                        id_paths,
                         version,
                         pipeline,
                         suppressed_warnings,
@@ -233,6 +258,7 @@ impl Source {
                 for (_key, value) in object.iter() {
                     messages.extend(Self::get_messages(
                         value,
+                        id_paths,
                         version,
                         pipeline,
                         suppressed_warnings,

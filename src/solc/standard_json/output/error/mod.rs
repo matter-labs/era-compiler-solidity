@@ -4,17 +4,14 @@
 
 pub mod source_location;
 
-use std::str::FromStr;
-
-use serde::Deserialize;
-use serde::Serialize;
+use std::collections::BTreeMap;
 
 use self::source_location::SourceLocation;
 
 ///
 /// The `solc --standard-json` output error.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Error {
     /// The component type.
@@ -73,7 +70,7 @@ impl Error {
     ///
     /// Returns the `ecrecover` function usage warning.
     ///
-    pub fn warning_ecrecover(src: Option<&str>) -> Self {
+    pub fn warning_ecrecover(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ It looks like you are using 'ecrecover' to validate a signature of a user account.               │
@@ -85,14 +82,17 @@ impl Error {
 
         Self::new_warning(
             message,
-            src.map(SourceLocation::from_str).and_then(Result::ok),
+            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
         )
     }
 
     ///
     /// Returns the `<address payable>`'s `send` and `transfer` methods usage error.
     ///
-    pub fn warning_send_and_transfer(src: Option<&str>) -> Self {
+    pub fn warning_send_and_transfer(
+        source: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ It looks like you are using '<address payable>.send/transfer(<X>)' without providing the gas     │
@@ -107,14 +107,14 @@ impl Error {
 
         Self::new_warning(
             message,
-            src.map(SourceLocation::from_str).and_then(Result::ok),
+            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
         )
     }
 
     ///
     /// Returns the `extcodesize` instruction usage warning.
     ///
-    pub fn warning_extcodesize(src: Option<&str>) -> Self {
+    pub fn warning_extcodesize(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed │
@@ -128,14 +128,14 @@ impl Error {
 
         Self::new_warning(
             message,
-            src.map(SourceLocation::from_str).and_then(Result::ok),
+            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
         )
     }
 
     ///
     /// Returns the `origin` instruction usage warning.
     ///
-    pub fn warning_tx_origin(src: Option<&str>) -> Self {
+    pub fn warning_tx_origin(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.          │
@@ -147,14 +147,17 @@ impl Error {
 
         Self::new_warning(
             message,
-            src.map(SourceLocation::from_str).and_then(Result::ok),
+            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
         )
     }
 
     ///
     /// Returns the internal function pointer usage error.
     ///
-    pub fn error_internal_function_pointer(src: Option<&str>) -> Self {
+    pub fn error_internal_function_pointer(
+        source: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+    ) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Internal function pointers are not supported in EVM legacy assembly pipeline.                    │
@@ -163,7 +166,7 @@ impl Error {
 
         Self::new_error(
             message,
-            src.map(SourceLocation::from_str).and_then(Result::ok),
+            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
         )
     }
 }
