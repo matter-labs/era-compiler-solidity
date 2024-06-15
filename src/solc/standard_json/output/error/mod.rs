@@ -34,7 +34,7 @@ pub struct Error {
 
 impl Error {
     /// The list of ignored `solc` warnings, which are strictly EVM-related.
-    pub const IGNORED_WARNING_CODES: [&'static str; 4] = ["1699", "3860", "5574", "6417"];
+    pub const IGNORED_WARNING_CODES: [&'static str; 5] = ["1699", "3860", "5159", "5574", "6417"];
 
     ///
     /// A shortcut constructor.

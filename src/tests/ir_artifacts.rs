@@ -17,7 +17,7 @@ fn yul() {
 pragma solidity ^0.8.0;
 
 contract Test {
-    function main() public view returns (uint) {
+    function main() public pure returns (uint) {
         return 42;
     }
 }
@@ -73,7 +73,7 @@ fn evmla() {
 pragma solidity ^0.8.0;
 
 contract Test {
-    function main() public view returns (uint) {
+    function main() public pure returns (uint) {
         return 42;
     }
 }

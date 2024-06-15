@@ -143,15 +143,6 @@ impl Output {
             });
         }
 
-        if let Some(ref mut errors) = self.errors {
-            errors.retain(|error| {
-                JsonOutputError::IGNORED_WARNING_CODES
-                    .into_iter()
-                    .map(Some)
-                    .all(|code| code != error.error_code.as_deref())
-            });
-        }
-
         serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
         std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
     }
@@ -292,7 +283,7 @@ impl Output {
                     .collect::<Vec<String>>()
                     .join("\n")
             );
-        } else {
+        } else if !errors.is_empty() {
             writeln!(
                 std::io::stderr(),
                 "{}",

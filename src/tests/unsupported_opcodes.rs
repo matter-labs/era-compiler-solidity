@@ -16,7 +16,7 @@ fn codecopy_yul_runtime() {
 pragma solidity ^0.8.0;
 
 contract FixedCodeCopy {
-    function copyCode() public view returns (bytes memory) {
+    function copyCode() public pure returns (bytes memory) {
         uint256 fixedCodeSize = 64;
         bytes memory code = new bytes(fixedCodeSize);
 

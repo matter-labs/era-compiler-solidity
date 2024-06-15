@@ -29,7 +29,7 @@ pragma solidity >=0.4.16;
 import "libraries/default/callable.sol";
 
 contract Main {
-    function main(Callable callable) public returns(uint) {
+    function main(Callable callable) public pure returns(uint) {
         return callable.f(5);
     }
 }

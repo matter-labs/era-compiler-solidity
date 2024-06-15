@@ -157,10 +157,13 @@ impl Compiler {
             anyhow::bail!("{} error: {stderr_message}", self.executable);
         }
 
-        solc_output
-            .errors
-            .get_or_insert_with(Vec::new)
-            .extend(messages);
+        let errors = solc_output.errors.get_or_insert_with(Vec::new);
+        errors.retain(|error| match error.error_code.as_deref() {
+            Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
+            None => true,
+        });
+        errors.extend(messages);
+
         if let Some(pipeline) = pipeline {
             solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
         }
