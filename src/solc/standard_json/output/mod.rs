@@ -134,10 +134,20 @@ impl Output {
                 contract.evm = None;
             }
         }
+
         if let Some(ref mut files) = self.contracts {
             files.retain(|_, contracts| {
                 contracts.retain(|_, contract| !contract.is_empty());
                 !contracts.is_empty()
+            });
+        }
+
+        if let Some(ref mut errors) = self.errors {
+            errors.retain(|error| {
+                ["5574"]
+                    .into_iter()
+                    .map(Some)
+                    .all(|code| code != error.error_code.as_deref())
             });
         }
 

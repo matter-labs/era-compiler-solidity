@@ -431,17 +431,17 @@ impl Arguments {
 
             if self.enable_eravm_extensions {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON.", None
+                "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None
                 ));
             }
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON.", None
+                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON as `settings.forceEVMLA`.", None
                 ));
             }
             if self.detect_missing_libraries {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON.", None
+                "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON as `settings.detectMissingLibraries`.", None
                 ));
             }
         }
