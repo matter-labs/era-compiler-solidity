@@ -8,6 +8,7 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::HashSet;
+use std::io::Write;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -144,7 +145,7 @@ impl Output {
 
         if let Some(ref mut errors) = self.errors {
             errors.retain(|error| {
-                ["5574"]
+                JsonOutputError::IGNORED_WARNING_CODES
                     .into_iter()
                     .map(Some)
                     .all(|code| code != error.error_code.as_deref())
@@ -275,26 +276,33 @@ impl Output {
     ///
     /// Checks for errors, returning `Err` if there is at least one error.
     ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        if self
-            .errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "error"))
-            .unwrap_or_default()
-        {
+    /// Removes warnings from the list of errors and prints them to stderr.
+    ///
+    pub fn handle_errors(&mut self) -> anyhow::Result<()> {
+        let errors = match self.errors.as_mut() {
+            Some(errors) => errors,
+            None => return Ok(()),
+        };
+        if errors.iter().any(|error| error.severity == "error") {
             anyhow::bail!(
                 "{}",
-                self.errors
-                    .as_ref()
-                    .map(|errors| {
-                        errors
-                            .iter()
-                            .map(|error| error.to_string())
-                            .collect::<Vec<String>>()
-                            .join("\n")
-                    })
-                    .unwrap_or_default()
+                errors
+                    .iter()
+                    .map(|error| error.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n")
             );
+        } else {
+            writeln!(
+                std::io::stderr(),
+                "{}",
+                errors
+                    .drain(..)
+                    .map(|error| error.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            )
+            .expect("Stderr writing error");
         }
 
         Ok(())

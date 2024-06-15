@@ -12,6 +12,7 @@
 - CLI argument validation errors are now written to JSON in standard JSON mode
 - AST and IRs are not emitted anymore if not explicitly requested
 - Empty files and contracts are pruned from standard JSON output
+- Updated to Rust v1.79.0
 
 ### Fixed
 
@@ -19,6 +20,7 @@
 - Removed JSON stream readers which are much slower than strings and vectors
 - Filtered out several EVM-specific warnings from standard JSON output
 - File path resolution for EraVM-specific warnings in standard JSON output
+- Missing output with non-canonical input paths in combined JSON output
 
 ## [1.5.0] - 2024-06-10
 
@@ -39,6 +41,7 @@
 - Renamed the `system-mode` flag to `enable-eravm-extensions`
 - Renamed the `zkasm` flag to `eravm`
 - Added all missing CLI flags to standard JSON input
+- Updated to Rust v1.78.0
 
 ### Deprecated
 

@@ -6,6 +6,7 @@ pub mod contract;
 
 use std::collections::BTreeMap;
 use std::path::Path;
+use std::path::PathBuf;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
@@ -28,7 +29,7 @@ impl Build {
     /// Writes all contracts to the terminal.
     ///
     pub fn write_to_terminal(self, output_binary: bool) -> anyhow::Result<()> {
-        self.check_errors()?;
+        self.handle_errors()?;
 
         for (path, build) in self.contracts.into_iter() {
             build
@@ -48,7 +49,7 @@ impl Build {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        self.check_errors()?;
+        self.handle_errors()?;
 
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
@@ -57,39 +58,6 @@ impl Build {
                 overwrite,
             )?;
         }
-
-        Ok(())
-    }
-
-    ///
-    /// Writes all contracts assembly and bytecode to the combined JSON.
-    ///
-    pub fn write_to_combined_json(
-        self,
-        combined_json: &mut CombinedJson,
-        zksolc_version: &semver::Version,
-    ) -> anyhow::Result<()> {
-        self.check_errors()?;
-
-        for (path, build) in self.contracts.into_iter() {
-            let combined_json_contract = combined_json
-                .contracts
-                .iter_mut()
-                .find_map(|(json_path, contract)| {
-                    if path.ends_with(json_path) {
-                        Some(contract)
-                    } else {
-                        None
-                    }
-                })
-                .ok_or_else(|| anyhow::anyhow!("Contract `{}` not found in the project", path))?;
-
-            build
-                .expect("Always valid")
-                .write_to_combined_json(combined_json_contract)?;
-        }
-
-        combined_json.zk_version = Some(zksolc_version.to_string());
 
         Ok(())
     }
@@ -151,15 +119,55 @@ impl Build {
     }
 
     ///
+    /// Writes all contracts assembly and bytecode to the combined JSON.
+    ///
+    pub fn write_to_combined_json(
+        self,
+        combined_json: &mut CombinedJson,
+        zksolc_version: &semver::Version,
+    ) -> anyhow::Result<()> {
+        self.handle_errors()?;
+
+        for (path, build) in self.contracts.into_iter() {
+            let combined_json_contract = combined_json
+                .contracts
+                .iter_mut()
+                .find_map(|(json_path, contract)| {
+                    let path = PathBuf::from(path.split(':').next().expect("Always exists"))
+                        .canonicalize()
+                        .expect("Path canonicalization error");
+                    let json_path =
+                        PathBuf::from(json_path.split(':').next().expect("Always exists"))
+                            .canonicalize()
+                            .expect("Path canonicalization error");
+
+                    if path.ends_with(json_path) {
+                        Some(contract)
+                    } else {
+                        None
+                    }
+                })
+                .ok_or_else(|| anyhow::anyhow!("Contract `{path}` not found in the project"))?;
+
+            build
+                .expect("Always valid")
+                .write_to_combined_json(combined_json_contract)?;
+        }
+
+        combined_json.zk_version = Some(zksolc_version.to_string());
+
+        Ok(())
+    }
+
+    ///
     /// Checks for errors, returning `Err` if there is at least one error.
     ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        let mut errors = Vec::new();
-        for (path, contract) in self.contracts.iter() {
-            if let Err(ref error) = contract {
-                errors.push((path.to_owned(), error.to_string()));
-            }
-        }
+    pub fn handle_errors(&self) -> anyhow::Result<()> {
+        let errors: Vec<(&String, &anyhow::Error)> = self
+            .contracts
+            .iter()
+            .filter_map(|(path, contract)| contract.as_ref().err().map(|error| (path, error)))
+            .collect();
         if !errors.is_empty() {
             anyhow::bail!(
                 "{}",

@@ -81,6 +81,13 @@ impl Source {
             return None;
         }
 
+        let expression = expression.get("expression")?.as_object()?;
+        let type_descriptions = expression.get("typeDescriptions")?.as_object()?;
+        let type_identifier = type_descriptions.get("typeIdentifier")?.as_str()?;
+        if type_identifier != "t_address" && type_identifier != "t_address_payable" {
+            return None;
+        }
+
         Some(SolcStandardJsonOutputError::warning_send_and_transfer(
             ast.get("src")?.as_str(),
             id_paths,
