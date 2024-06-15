@@ -17,6 +17,7 @@ pub struct Error {
     /// The component type.
     pub component: String,
     /// The error code.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_code: Option<String>,
     /// The formatted error message.
     pub formatted_message: String,
@@ -25,6 +26,7 @@ pub struct Error {
     /// The error severity.
     pub severity: String,
     /// The error location data.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub source_location: Option<SourceLocation>,
     /// The error type.
     pub r#type: String,
@@ -42,7 +44,7 @@ impl Error {
             component: "general".to_owned(),
             error_code: None,
             formatted_message: message.to_string(),
-            message: "".to_owned(),
+            message: message.to_string(),
             severity: "error".to_owned(),
             source_location,
             r#type: "Error".to_owned(),
@@ -60,7 +62,7 @@ impl Error {
             component: "general".to_owned(),
             error_code: None,
             formatted_message: message.to_string(),
-            message: "".to_owned(),
+            message: message.to_string(),
             severity: "warning".to_owned(),
             source_location,
             r#type: "Warning".to_owned(),
@@ -70,7 +72,7 @@ impl Error {
     ///
     /// Returns the `ecrecover` function usage warning.
     ///
-    pub fn warning_ecrecover(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_ecrecover(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ It looks like you are using 'ecrecover' to validate a signature of a user account.               │
@@ -82,7 +84,7 @@ impl Error {
 
         Self::new_warning(
             message,
-            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
         )
     }
 
@@ -90,7 +92,7 @@ impl Error {
     /// Returns the `<address payable>`'s `send` and `transfer` methods usage error.
     ///
     pub fn warning_send_and_transfer(
-        source: Option<&str>,
+        node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
     ) -> Self {
         let message = r#"
@@ -107,14 +109,14 @@ impl Error {
 
         Self::new_warning(
             message,
-            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
         )
     }
 
     ///
     /// Returns the `extcodesize` instruction usage warning.
     ///
-    pub fn warning_extcodesize(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_extcodesize(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed │
@@ -128,14 +130,14 @@ impl Error {
 
         Self::new_warning(
             message,
-            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
         )
     }
 
     ///
     /// Returns the `origin` instruction usage warning.
     ///
-    pub fn warning_tx_origin(source: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_tx_origin(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
         let message = r#"
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.          │
@@ -147,7 +149,7 @@ impl Error {
 
         Self::new_warning(
             message,
-            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
         )
     }
 
@@ -155,7 +157,7 @@ impl Error {
     /// Returns the internal function pointer usage error.
     ///
     pub fn error_internal_function_pointer(
-        source: Option<&str>,
+        node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
     ) -> Self {
         let message = r#"
@@ -166,7 +168,7 @@ impl Error {
 
         Self::new_error(
             message,
-            source.and_then(|source| SourceLocation::try_from_ast(source, id_paths)),
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
         )
     }
 }

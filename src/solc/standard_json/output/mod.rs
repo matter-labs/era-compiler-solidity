@@ -58,7 +58,7 @@ impl Output {
     ///
     /// Is used for projects compiled without `solc`.
     ///
-    pub fn new(sources: &BTreeMap<String, String>) -> Self {
+    pub fn new(sources: &BTreeMap<String, String>, messages: Vec<JsonOutputError>) -> Self {
         let contracts = sources
             .keys()
             .map(|path| {
@@ -77,7 +77,7 @@ impl Output {
         Self {
             contracts: Some(contracts),
             sources: Some(sources),
-            errors: None,
+            errors: Some(messages),
             version: None,
             long_version: None,
             zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),

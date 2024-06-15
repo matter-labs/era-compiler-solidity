@@ -9,6 +9,8 @@ use std::path::PathBuf;
 use path_slash::PathExt;
 use structopt::StructOpt;
 
+use era_compiler_solidity::SolcStandardJsonOutputError;
+
 ///
 /// Compiles the provided Solidity input files (or use the standard input if no files
 /// are given or "-" is specified as a file name). Outputs the components based on the
@@ -212,17 +214,23 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
-    pub fn validate(&self) -> anyhow::Result<()> {
+    pub fn validate(&self) -> anyhow::Result<Vec<SolcStandardJsonOutputError>> {
+        let mut messages = vec![];
+
         if self.version && std::env::args().count() > 2 {
-            anyhow::bail!(
-                "Error: No other options are allowed while getting the compiler version."
-            );
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "No other options are allowed while getting the compiler version.",
+                None,
+            ));
         }
 
         if self.recursive_process
             && std::env::args().count() > 2 + (self.target.is_some() as usize) * 2
         {
-            anyhow::bail!("Error: No other options are allowed in recursive mode.");
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "No other options are allowed in recursive mode.",
+                None,
+            ));
         }
 
         let modes_count = [
@@ -236,167 +244,221 @@ impl Arguments {
         .filter(|&&x| x)
         .count();
         if modes_count > 1 {
-            anyhow::bail!("Error: Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.");
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.", None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly {
             if self.base_path.is_some() {
-                anyhow::bail!(
-                    "Error: `base-path` is not used in Yul, LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "`base-path` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
             if !self.include_paths.is_empty() {
-                anyhow::bail!(
-                    "Error: `include-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "`include-paths` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
             if self.allow_paths.is_some() {
-                anyhow::bail!(
-                    "Error: `allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "`allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
 
             if self.evm_version.is_some() {
-                anyhow::bail!(
-                    "Error: `evm-version` is not used in Yul, LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "`evm-version` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
 
             if self.force_evmla {
-                anyhow::bail!("Error: EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                "EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.", None));
             }
 
             if self.disable_solc_optimizer {
-                anyhow::bail!("Error: Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                "Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.", None));
             }
         }
 
         if self.llvm_ir || self.eravm_assembly {
             if !self.libraries.is_empty() {
-                anyhow::bail!(
-                    "Error: Libraries are not supported in LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Libraries are not supported in LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
 
             if self.solc.is_some() {
-                anyhow::bail!("Error: `solc` is not used in LLVM IR and EraVM assembly modes.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "`solc` is not used in LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
 
             if self.enable_eravm_extensions {
-                anyhow::bail!(
-                    "Error: EraVM extensions are not supported in LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "EraVM extensions are not supported in LLVM IR and EraVM assembly modes.",
+                    None,
+                ));
             }
             if self.detect_missing_libraries {
-                anyhow::bail!(
-                    "Error: Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes.", None
+                ));
             }
         }
 
         if self.eravm_assembly {
             if Some(era_compiler_llvm_context::Target::EVM.to_string()) == self.target {
-                anyhow::bail!("Error: EraVM assembly cannot be compiled to EVM bytecode.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "EraVM assembly cannot be compiled to EVM bytecode.",
+                    None,
+                ));
             }
             if self.optimization.is_some() {
-                anyhow::bail!(
-                    "Error: LLVM optimizations are not supported in EraVM assembly mode."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "LLVM optimizations are not supported in EraVM assembly mode.",
+                    None,
+                ));
             }
             if self.fallback_to_optimizing_for_size {
-                anyhow::bail!(
-                    "Error: Falling back to -Oz is not supported in EraVM assembly mode."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Falling back to -Oz is not supported in EraVM assembly mode.",
+                    None,
+                ));
             }
             if self.llvm_options.is_some() {
-                anyhow::bail!("Error: LLVM options are not supported in EraVM assembly mode.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "LLVM options are not supported in EraVM assembly mode.",
+                    None,
+                ));
             }
         }
 
         if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
-            anyhow::bail!(
-                "Error: Cannot output assembly or binary outside of JSON in combined JSON mode."
-            );
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "Cannot output assembly or binary outside of JSON in combined JSON mode.",
+                None,
+            ));
         }
 
         if self.standard_json.is_none() && self.detect_missing_libraries {
-            anyhow::bail!(
-                "Error: Missing deployable libraries detection mode is only supported in standard JSON mode."
-            );
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "Missing deployable libraries detection mode is only supported in standard JSON mode.", None
+            ));
         }
 
         if self.standard_json.is_some() {
             if self.output_assembly || self.output_binary {
-                anyhow::bail!(
-                    "Error: Cannot output assembly or binary outside of JSON in standard JSON mode."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Cannot output assembly or binary outside of JSON in standard JSON mode.",
+                    None,
+                ));
             }
 
             if !self.inputs.is_empty() {
-                anyhow::bail!("Error: Input files must be passed via standard JSON input.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Input files must be passed via standard JSON input.",
+                    None,
+                ));
             }
             if !self.libraries.is_empty() {
-                anyhow::bail!("Error: Libraries must be passed via standard JSON input.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Libraries must be passed via standard JSON input.",
+                    None,
+                ));
             }
             if self.evm_version.is_some() {
-                anyhow::bail!("Error: EVM version must be passed via standard JSON input.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "EVM version must be passed via standard JSON input.",
+                    None,
+                ));
             }
 
             if self.output_directory.is_some() {
-                anyhow::bail!("Error: Output directory cannot be used in standard JSON mode.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Output directory cannot be used in standard JSON mode.",
+                    None,
+                ));
             }
             if self.overwrite {
-                anyhow::bail!("Error: Overwriting flag cannot be used in standard JSON mode.");
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Overwriting flag cannot be used in standard JSON mode.",
+                    None,
+                ));
             }
             if self.disable_solc_optimizer {
-                anyhow::bail!(
-                    "Error: Disabling the solc optimizer must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                "Disabling the solc optimizer must be specified in standard JSON input settings.", None
+                ));
             }
             if self.optimization.is_some() {
-                anyhow::bail!(
-                    "Error: LLVM optimizations must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "LLVM optimizations must be specified in standard JSON input settings.",
+                    None,
+                ));
             }
             if self.fallback_to_optimizing_for_size {
-                anyhow::bail!(
-                    "Error: Falling back to -Oz must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Falling back to -Oz must be specified in standard JSON input settings.",
+                    None,
+                ));
             }
             if self.llvm_options.is_some() {
-                anyhow::bail!(
-                    "Error: LLVM options must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "LLVM options must be specified in standard JSON input settings.",
+                    None,
+                ));
             }
             if self.metadata_hash.is_some() {
-                anyhow::bail!(
-                    "Error: Metadata hash mode must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Metadata hash mode must be specified in standard JSON input settings.",
+                    None,
+                ));
             }
             if self.metadata_literal {
-                anyhow::bail!(
-                    "Error: Metadata literal content must be specified in standard JSON input settings."
-                );
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Metadata literal content must be specified in standard JSON input settings.",
+                    None,
+                ));
             }
 
             if self.enable_eravm_extensions {
-                eprintln!(
-                    "Warning: EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON."
-                );
+                messages.push(SolcStandardJsonOutputError::new_warning(
+                "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON.", None
+                ));
             }
             if self.force_evmla {
-                eprintln!(
-                    "Warning: EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON."
-                );
+                messages.push(SolcStandardJsonOutputError::new_warning(
+                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON.", None
+                ));
             }
             if self.detect_missing_libraries {
-                eprintln!(
-                    "Warning: Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON."
-                );
+                messages.push(SolcStandardJsonOutputError::new_warning(
+                "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON.", None
+                ));
             }
         }
 
-        Ok(())
+        if self.standard_json.is_none()
+            && messages.iter().any(|messages| messages.severity == "error")
+        {
+            anyhow::bail!(
+                "{}",
+                messages
+                    .into_iter()
+                    .map(|message| format!("{}: {}", message.r#type, message.message))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
+        }
+        Ok(messages)
     }
 
     ///

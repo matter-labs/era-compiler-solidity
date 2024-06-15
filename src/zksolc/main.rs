@@ -37,7 +37,7 @@ fn main() -> anyhow::Result<()> {
 ///
 fn main_inner() -> anyhow::Result<()> {
     let arguments = Arguments::new();
-    arguments.validate()?;
+    let messages = arguments.validate()?;
 
     if arguments.version {
         writeln!(
@@ -170,6 +170,7 @@ fn main_inner() -> anyhow::Result<()> {
                     arguments.enable_eravm_extensions,
                     arguments.detect_missing_libraries,
                     standard_json.map(PathBuf::from),
+                    messages,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,
@@ -291,6 +292,7 @@ fn main_inner() -> anyhow::Result<()> {
                     solc_compiler.as_ref(),
                     arguments.force_evmla,
                     standard_json.map(PathBuf::from),
+                    messages,
                     arguments.base_path,
                     arguments.include_paths,
                     arguments.allow_paths,

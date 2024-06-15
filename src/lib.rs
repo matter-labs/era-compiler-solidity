@@ -47,6 +47,8 @@ pub use self::solc::standard_json::input::Input as SolcStandardJsonInput;
 pub use self::solc::standard_json::output::contract::evm::bytecode::Bytecode as SolcStandardJsonOutputContractEVMBytecode;
 pub use self::solc::standard_json::output::contract::evm::EVM as SolcStandardJsonOutputContractEVM;
 pub use self::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
+pub use self::solc::standard_json::output::error::source_location::SourceLocation as SolcStandardJsonOutputErrorSourceLocation;
+pub use self::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
@@ -80,7 +82,7 @@ pub fn yul_to_eravm(
                 anyhow::bail!("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`.")
             }
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone())?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone(), vec![])?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -126,7 +128,7 @@ pub fn yul_to_evm(
     let solc_version = match solc_path {
         Some(solc_path) => {
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone())?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone(), vec![])?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -287,6 +289,7 @@ pub fn standard_output_eravm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
+        vec![],
         base_path,
         include_paths,
         allow_paths,
@@ -370,6 +373,7 @@ pub fn standard_output_evm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
+        vec![],
         base_path,
         include_paths,
         allow_paths,
@@ -406,6 +410,7 @@ pub fn standard_json_eravm(
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
     json_path: Option<PathBuf>,
+    messages: Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -456,6 +461,7 @@ pub fn standard_json_eravm(
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
                 Some(solc_pipeline),
+                messages,
                 base_path,
                 include_paths,
                 allow_paths,
@@ -482,7 +488,7 @@ pub fn standard_json_eravm(
             anyhow::bail!("Compiling Solidity without `solc` is not supported")
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
+            let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input, messages)?;
             if solc_output.check_errors().is_err() {
                 solc_output.write_and_exit(prune_output);
             }
@@ -501,7 +507,7 @@ pub fn standard_json_eravm(
             (solc_output, Some(&solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
-            let mut solc_output = SolcStandardJsonOutput::new(&sources);
+            let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_yul_sources(
                 sources,
@@ -520,7 +526,7 @@ pub fn standard_json_eravm(
             anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
         }
         (SolcStandardJsonInputLanguage::LLVMIR, None) => {
-            let mut solc_output = SolcStandardJsonOutput::new(&sources);
+            let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
             if solc_output.check_errors().is_err() {
@@ -533,7 +539,7 @@ pub fn standard_json_eravm(
             anyhow::bail!("EraVM assembly projects cannot be compiled with `solc`")
         }
         (SolcStandardJsonInputLanguage::EraVMAssembly, None) => {
-            let mut solc_output = SolcStandardJsonOutput::new(&sources);
+            let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project =
                 Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
@@ -575,6 +581,7 @@ pub fn standard_json_evm(
     solc_compiler: Option<&SolcCompiler>,
     force_evmla: bool,
     json_path: Option<PathBuf>,
+    messages: Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -608,6 +615,7 @@ pub fn standard_json_evm(
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
                 Some(solc_pipeline),
+                messages,
                 base_path,
                 include_paths,
                 allow_paths,
@@ -634,7 +642,7 @@ pub fn standard_json_evm(
             anyhow::bail!("Compiling Solidity without `solc` is not supported")
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
+            let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input, messages)?;
             if solc_output.check_errors().is_err() {
                 solc_output.write_and_exit(prune_output);
             }
@@ -653,7 +661,7 @@ pub fn standard_json_evm(
             (solc_output, Some(&solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
-            let mut solc_output = SolcStandardJsonOutput::new(&sources);
+            let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_yul_sources(
                 sources,
@@ -672,7 +680,7 @@ pub fn standard_json_evm(
             anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
         }
         (SolcStandardJsonInputLanguage::LLVMIR, None) => {
-            let mut solc_output = SolcStandardJsonOutput::new(&sources);
+            let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
             if solc_output.check_errors().is_err() {

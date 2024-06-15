@@ -18,6 +18,7 @@ use self::combined_json::CombinedJson;
 use self::pipeline::Pipeline;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
+use self::standard_json::output::error::Error as StandardJsonOutputError;
 use self::standard_json::output::Output as StandardJsonOutput;
 use self::version::Version;
 
@@ -88,6 +89,7 @@ impl Compiler {
         &self,
         mut input: StandardJsonInput,
         pipeline: Option<Pipeline>,
+        messages: Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
@@ -155,6 +157,10 @@ impl Compiler {
             anyhow::bail!("{} error: {stderr_message}", self.executable);
         }
 
+        solc_output
+            .errors
+            .get_or_insert_with(Vec::new)
+            .extend(messages);
         if let Some(pipeline) = pipeline {
             solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
         }
@@ -246,6 +252,7 @@ impl Compiler {
         &self,
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
+        messages: Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
@@ -260,7 +267,7 @@ impl Compiler {
             StandardJsonInputSettingsOptimizer::new_yul_validation(),
             vec![],
         );
-        self.validate_yul_standard_json(solc_input)
+        self.validate_yul_standard_json(solc_input, messages)
     }
 
     ///
@@ -269,6 +276,7 @@ impl Compiler {
     pub fn validate_yul_standard_json(
         &self,
         mut solc_input: StandardJsonInput,
+        messages: Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
@@ -278,7 +286,7 @@ impl Compiler {
         }
 
         solc_input.normalize_yul_validation();
-        let solc_output = self.standard_json(solc_input, None, None, vec![], None)?;
+        let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
         Ok(solc_output)
     }
 
