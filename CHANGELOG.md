@@ -12,6 +12,7 @@
 - CLI argument validation errors are now written to JSON in standard JSON mode
 - AST and IRs are not emitted anymore if not explicitly requested
 - Empty files and contracts are pruned from standard JSON output
+- ASCII boxes are made more compatible with original messages of solc
 - Updated to Rust v1.79.0
 
 ### Fixed

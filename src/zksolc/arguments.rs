@@ -245,7 +245,7 @@ impl Arguments {
         .count();
         if modes_count > 1 {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.", None));
+                "Only one mode is allowed at the same time:\nYul, LLVM IR, EraVM assembly, combined JSON, standard JSON.", None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly {
@@ -277,12 +277,12 @@ impl Arguments {
 
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                "EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.", None));
+                "EVM legacy assembly codegen is not supported in\nYul, LLVM IR and EraVM assembly modes.", None));
             }
 
             if self.disable_solc_optimizer {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                "Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.", None));
+                "Disabling the solc optimizer is not supported in\nYul, LLVM IR and EraVM assembly modes.", None));
             }
         }
 
@@ -309,7 +309,7 @@ impl Arguments {
             }
             if self.detect_missing_libraries {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes.", None
+                "Missing deployable libraries detection mode is not supported in\nLLVM IR and EraVM assembly modes.", None
                 ));
             }
         }
@@ -431,17 +431,17 @@ impl Arguments {
 
             if self.enable_eravm_extensions {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None
+                "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in\nstandard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None
                 ));
             }
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON as `settings.forceEVMLA`.", None
+                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and\nmust be passed in JSON as `settings.forceEVMLA`.", None
                 ));
             }
             if self.detect_missing_libraries {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON as `settings.detectMissingLibraries`.", None
+                "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated\nin standard JSON mode and must be passed in JSON as `settings.detectMissingLibraries`.", None
                 ));
             }
         }

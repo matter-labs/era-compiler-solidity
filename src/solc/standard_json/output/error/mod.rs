@@ -39,29 +39,52 @@ impl Error {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_error<S>(message: S, source_location: Option<SourceLocation>) -> Self
+    pub fn new<S>(r#type: &str, message: S, source_location: Option<SourceLocation>) -> Self
     where
         S: std::fmt::Display,
     {
-        let r#type = "Error";
         let message = message.to_string();
 
-        let mut formatted_message = format!("┌─┤ {type} ├{}┐", "─".repeat(93 - r#type.len()));
-        formatted_message.push_str(message.as_str());
-        formatted_message.push_str(format!("└{}┘", "─".repeat(98)).as_str());
+        let mut formatted_message = format!("{type}: ╠{}╗", "═".repeat(96 - r#type.len()));
+        formatted_message.push('\n');
+        formatted_message.push_str(
+            message
+                .trim()
+                .lines()
+                .enumerate()
+                .map(|(index, line)| format!("{} {line:096} ║", if index == 0 { '╦' } else { '║' }))
+                .collect::<Vec<String>>()
+                .join("\n")
+                .as_str(),
+        );
+        formatted_message.push('\n');
+        formatted_message.push_str(format!("╚{}╝", "═".repeat(98)).as_str());
+        formatted_message.push('\n');
         if let Some(ref source_location) = source_location {
-            formatted_message.push_str(format!("--> {source_location}\n").as_str());
+            formatted_message.push_str("--> ");
+            formatted_message.push_str(source_location.to_string().as_str());
+            formatted_message.push('\n');
         }
 
         Self {
             component: "general".to_owned(),
             error_code: None,
-            formatted_message: message.to_string(),
-            message: message.to_string(),
-            severity: "error".to_owned(),
+            formatted_message,
+            message: message.trim().replace('\n', " "),
+            severity: r#type.to_lowercase(),
             source_location,
             r#type: r#type.to_owned(),
         }
+    }
+
+    ///
+    /// A shortcut constructor.
+    ///
+    pub fn new_error<S>(message: S, source_location: Option<SourceLocation>) -> Self
+    where
+        S: std::fmt::Display,
+    {
+        Self::new("Error", message, source_location)
     }
 
     ///
@@ -71,40 +94,20 @@ impl Error {
     where
         S: std::fmt::Display,
     {
-        let r#type = "Warning";
-        let message = message.to_string();
-
-        let mut formatted_message = format!("┌─┤ {type} ├{}┐", "─".repeat(93 - r#type.len()));
-        formatted_message.push('\n');
-        formatted_message.push_str(message.as_str());
-        formatted_message.push('\n');
-        formatted_message.push_str(format!("└{}┘", "─".repeat(98)).as_str());
-        formatted_message.push('\n');
-        if let Some(ref source_location) = source_location {
-            formatted_message.push_str(format!("--> {source_location}").as_str());
-            formatted_message.push('\n');
-        }
-
-        Self {
-            component: "general".to_owned(),
-            error_code: None,
-            formatted_message,
-            message,
-            severity: "warning".to_owned(),
-            source_location,
-            r#type: r#type.to_owned(),
-        }
+        Self::new("Warning", message, source_location)
     }
 
     ///
     /// Returns the `ecrecover` function usage warning.
     ///
     pub fn warning_ecrecover(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
-        let message = r#"│ It looks like you are using 'ecrecover' to validate a signature of a user account.               │
-│ ZKsync Era comes with native account abstraction support, therefore it is highly recommended NOT │
-│ to rely on the fact that the account has an ECDSA private key attached to it since accounts      │
-│ might implement other signature schemes.                                                         │
-│ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │"#;
+        let message = r#"
+It looks like you are using 'ecrecover' to validate a signature of a user account.
+ZKsync Era comes with native account abstraction support, therefore it is highly recommended NOT
+to rely on the fact that the account has an ECDSA private key attached to it since accounts
+might implement other signature schemes.
+Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html
+"#;
 
         Self::new_warning(
             message,
@@ -119,12 +122,14 @@ impl Error {
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
     ) -> Self {
-        let message = r#"│ It looks like you are using '<address payable>.send/transfer(<X>)' without providing the gas     │
-│ amount. Such calls will fail depending on the pubdata costs.                                     │
-│ Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the reentrancy │
-│ attack. `send` and `transfer` send limited amount of gas that prevents reentrancy, whereas       │
-│ `<address>.call{value: <X>}` sends all gas to the callee.                                        │
-│ Learn more on https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy    │"#;
+        let message = r#"
+It looks like you are using '<address payable>.send/transfer(<X>)' without providing the gas
+amount. Such calls will fail depending on the pubdata costs.
+Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the reentrancy
+attack. `send` and `transfer` send limited amount of gas that prevents reentrancy, whereas
+`<address>.call{value: <X>}` sends all gas to the callee.
+Learn more on https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
+"#;
 
         Self::new_warning(
             message,
@@ -136,13 +141,15 @@ impl Error {
     /// Returns the `extcodesize` instruction usage warning.
     ///
     pub fn warning_extcodesize(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
-        let message = r#"│ Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed │
-│ in the following cases:                                                                          │
-│   1. To detect whether an address belongs to a smart contract.                                   │
-│   2. To detect whether the deploy code execution has finished.                                   │
-│ ZKsync Era comes with native account abstraction support (so accounts are smart contracts,       │
-│ including private-key controlled EOAs), and you should avoid differentiating between contracts   │
-│ and non-contract addresses.                                                                      │"#;
+        let message = r#"
+Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed
+in the following cases:
+  1. To detect whether an address belongs to a smart contract.
+  2. To detect whether the deploy code execution has finished.
+ZKsync Era comes with native account abstraction support (so accounts are smart contracts,
+including private-key controlled EOAs), and you should avoid differentiating between contracts
+and non-contract addresses.
+"#;
 
         Self::new_warning(
             message,
@@ -154,11 +161,13 @@ impl Error {
     /// Returns the `origin` instruction usage warning.
     ///
     pub fn warning_tx_origin(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
-        let message = r#"│ You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.          │
-│ ZKsync Era comes with native account abstraction support, and therefore the initiator of a       │
-│ transaction might be different from the contract calling your code. It is highly recommended NOT │
-│ to rely on tx.origin, but use msg.sender instead.                                                │
-│ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html    │"#;
+        let message = r#"
+You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.
+ZKsync Era comes with native account abstraction support, and therefore the initiator of a
+transaction might be different from the contract calling your code. It is highly recommended NOT
+to rely on tx.origin, but use msg.sender instead.
+Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html
+"#;
 
         Self::new_warning(
             message,
@@ -173,8 +182,10 @@ impl Error {
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
     ) -> Self {
-        let message = r#"│ Internal function pointers are not supported in EVM legacy assembly pipeline.                    │
-│ Please use the latest solc with Yul codegen instead.                                             │"#;
+        let message = r#"
+Internal function pointers are not supported in EVM legacy assembly pipeline.
+Please use the latest solc with Yul codegen instead.
+"#;
 
         Self::new_error(
             message,
