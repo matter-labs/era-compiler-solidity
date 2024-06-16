@@ -2,13 +2,10 @@
 //! The `solc --standard-json` input settings metadata.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The `solc --standard-json` input settings metadata.
 ///
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// The bytecode hash mode.

@@ -30,7 +30,7 @@ use self::source::Source;
 ///
 /// The `solc --standard-json` output.
 ///
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// The file-contract hashmap.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -59,7 +59,7 @@ impl Output {
     ///
     /// Is used for projects compiled without `solc`.
     ///
-    pub fn new(sources: &BTreeMap<String, String>, messages: Vec<JsonOutputError>) -> Self {
+    pub fn new(sources: &BTreeMap<String, String>, messages: &mut Vec<JsonOutputError>) -> Self {
         let contracts = sources
             .keys()
             .map(|path| {
@@ -78,6 +78,22 @@ impl Output {
         Self {
             contracts: Some(contracts),
             sources: Some(sources),
+            errors: Some(std::mem::take(messages)),
+            version: None,
+            long_version: None,
+            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+        }
+    }
+
+    ///
+    /// Initializes a standard JSON output with errors.
+    ///
+    /// Is used to emit errors in standard JSON mode.
+    ///
+    pub fn new_with_errors(messages: Vec<JsonOutputError>) -> Self {
+        Self {
+            contracts: None,
+            sources: None,
             errors: Some(messages),
             version: None,
             long_version: None,
@@ -143,6 +159,31 @@ impl Output {
             });
         }
 
+        if self
+            .contracts
+            .as_ref()
+            .map(|contracts| contracts.is_empty())
+            .unwrap_or_default()
+        {
+            self.contracts = None;
+        }
+        if self
+            .sources
+            .as_ref()
+            .map(|sources| sources.is_empty())
+            .unwrap_or_default()
+        {
+            self.sources = None;
+        }
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.is_empty())
+            .unwrap_or_default()
+        {
+            self.errors = None;
+        }
+
         serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
         std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
     }
@@ -167,12 +208,12 @@ impl Output {
     ///
     /// Please do not push project-general errors without paths here.
     ///
-    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
+    pub fn push_error(&mut self, path: Option<String>, error: anyhow::Error) {
         self.errors
             .get_or_insert_with(Vec::new)
             .push(JsonOutputError::new_error(
                 error,
-                Some(JsonOutputErrorSourceLocation::new(path)),
+                path.map(JsonOutputErrorSourceLocation::new),
             ));
     }
 

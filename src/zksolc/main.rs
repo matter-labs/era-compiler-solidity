@@ -21,24 +21,47 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// The application entry point.
 ///
 fn main() -> anyhow::Result<()> {
-    std::process::exit(match main_inner() {
-        Ok(()) => era_compiler_common::EXIT_CODE_SUCCESS,
-        Err(error) => {
-            std::io::stderr()
-                .write_all(error.to_string().as_bytes())
-                .expect("Stderr writing error");
-            era_compiler_common::EXIT_CODE_FAILURE
+    let arguments = Arguments::new();
+    let is_standard_json = arguments.standard_json.is_some();
+    let mut messages = arguments.validate();
+    if messages.iter().all(|error| error.severity != "error") {
+        if let Err(error) = main_inner(arguments, &mut messages) {
+            messages
+                .push(era_compiler_solidity::SolcStandardJsonOutputError::new_error(error, None));
         }
-    })
+    }
+
+    if is_standard_json {
+        let output = era_compiler_solidity::SolcStandardJsonOutput::new_with_errors(messages);
+        serde_json::to_writer(std::io::stdout(), &output).expect("Stdout writing error");
+        std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+    }
+
+    let exit_code = if messages.iter().any(|error| error.severity == "error") {
+        era_compiler_common::EXIT_CODE_FAILURE
+    } else {
+        era_compiler_common::EXIT_CODE_SUCCESS
+    };
+    std::io::stderr()
+        .write_all(
+            messages
+                .into_iter()
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+                .as_bytes(),
+        )
+        .expect("Stderr writing error");
+    std::process::exit(exit_code);
 }
 
 ///
 /// The auxiliary `main` function to facilitate the `?` error conversion operator.
 ///
-fn main_inner() -> anyhow::Result<()> {
-    let arguments = Arguments::new();
-    let messages = arguments.validate()?;
-
+fn main_inner(
+    arguments: Arguments,
+    messages: &mut Vec<era_compiler_solidity::SolcStandardJsonOutputError>,
+) -> anyhow::Result<()> {
     if arguments.version {
         writeln!(
             std::io::stdout(),
@@ -134,6 +157,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     arguments.solc,
+                    messages,
                     enable_eravm_extensions,
                     include_metadata_hash,
                     optimizer_settings,
@@ -145,6 +169,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else if arguments.llvm_ir {
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
+                    messages,
                     include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
@@ -155,6 +180,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else if arguments.eravm_assembly {
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
+                    messages,
                     include_metadata_hash,
                     llvm_options,
                     arguments.output_assembly,
@@ -192,6 +218,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &solc_compiler,
+                    messages,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
@@ -223,6 +250,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &solc_compiler,
+                    messages,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
@@ -270,6 +298,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     arguments.solc,
+                    messages,
                     include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
@@ -279,6 +308,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else if arguments.llvm_ir {
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
+                    messages,
                     include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
@@ -314,6 +344,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &solc_compiler,
+                    messages,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
@@ -342,6 +373,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     &solc,
+                    messages,
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,

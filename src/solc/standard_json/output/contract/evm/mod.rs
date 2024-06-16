@@ -17,7 +17,7 @@ use self::extra_metadata::ExtraMetadata;
 ///
 /// It is replaced by EraVM data after compiling.
 ///
-#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EVM {
     /// The contract bytecode.

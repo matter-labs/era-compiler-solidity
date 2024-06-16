@@ -89,7 +89,7 @@ impl Compiler {
         &self,
         mut input: StandardJsonInput,
         pipeline: Option<Pipeline>,
-        messages: Vec<StandardJsonOutputError>,
+        messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
@@ -162,7 +162,7 @@ impl Compiler {
             Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
             None => true,
         });
-        errors.extend(messages);
+        errors.append(messages);
 
         if let Some(pipeline) = pipeline {
             solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
@@ -255,7 +255,7 @@ impl Compiler {
         &self,
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        messages: Vec<StandardJsonOutputError>,
+        messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
@@ -279,7 +279,7 @@ impl Compiler {
     pub fn validate_yul_standard_json(
         &self,
         mut solc_input: StandardJsonInput,
-        messages: Vec<StandardJsonOutputError>,
+        messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(

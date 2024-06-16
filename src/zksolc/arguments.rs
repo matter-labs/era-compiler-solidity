@@ -219,7 +219,7 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
-    pub fn validate(&self) -> anyhow::Result<Vec<SolcStandardJsonOutputError>> {
+    pub fn validate(&self) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = vec![];
 
         if self.system_mode {
@@ -458,19 +458,7 @@ impl Arguments {
             }
         }
 
-        if self.standard_json.is_none()
-            && messages.iter().any(|messages| messages.severity == "error")
-        {
-            anyhow::bail!(
-                "{}",
-                messages
-                    .into_iter()
-                    .map(|message| format!("{}: {}", message.r#type, message.message))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        }
-        Ok(messages)
+        messages
     }
 
     ///
@@ -495,7 +483,7 @@ impl Arguments {
                 }
                 if parts.len() != 2 {
                     anyhow::bail!(
-                        "Error: Invalid remapping `{}`: expected two parts separated by '='",
+                        "invalid remapping `{}`: expected two parts separated by '='",
                         input
                     );
                 }
@@ -522,7 +510,7 @@ impl Arguments {
     fn path_to_posix(path: &Path) -> anyhow::Result<PathBuf> {
         let path = path
             .to_slash()
-            .ok_or_else(|| anyhow::anyhow!("Error: Input path {:?} POSIX conversion error", path))?
+            .ok_or_else(|| anyhow::anyhow!("input path {:?} POSIX conversion error", path))?
             .to_string();
         let path = PathBuf::from(path.as_str());
         Ok(path)

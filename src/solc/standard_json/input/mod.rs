@@ -13,8 +13,6 @@ use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
-use serde::Deserialize;
-use serde::Serialize;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
@@ -29,7 +27,7 @@ use self::source::Source;
 ///
 /// The `solc --standard-json` input.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Input {
     /// The input language.
@@ -272,7 +270,6 @@ impl Input {
             .iter()
             .map(|(path, source)| {
                 let source: String = source
-                    .to_owned()
                     .try_into()
                     .map_err(|error| anyhow::anyhow!("Source `{path}`: {error}"))?;
                 Ok((path.to_owned(), source))

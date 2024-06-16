@@ -66,6 +66,7 @@ pub fn yul_to_eravm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_path: Option<String>,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     enable_eravm_extensions: bool,
     include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -82,7 +83,7 @@ pub fn yul_to_eravm(
                 anyhow::bail!("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`.")
             }
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone(), vec![])?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -97,6 +98,7 @@ pub fn yul_to_eravm(
     )?;
 
     let build = project.compile_to_eravm(
+        messages,
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -106,7 +108,6 @@ pub fn yul_to_eravm(
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -117,6 +118,7 @@ pub fn yul_to_evm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_path: Option<String>,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
@@ -128,7 +130,7 @@ pub fn yul_to_evm(
     let solc_version = match solc_path {
         Some(solc_path) => {
             let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone(), vec![])?;
+            solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -143,13 +145,13 @@ pub fn yul_to_evm(
     )?;
 
     let build = project.compile_to_evm(
+        messages,
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -158,6 +160,7 @@ pub fn yul_to_evm(
 ///
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
@@ -168,6 +171,7 @@ pub fn llvm_ir_to_eravm(
     let project = Project::try_from_llvm_ir_paths(paths, None)?;
 
     let build = project.compile_to_eravm(
+        messages,
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -177,7 +181,6 @@ pub fn llvm_ir_to_eravm(
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -186,6 +189,7 @@ pub fn llvm_ir_to_eravm(
 ///
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     include_metadata_hash: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
@@ -195,13 +199,13 @@ pub fn llvm_ir_to_evm(
     let project = Project::try_from_llvm_ir_paths(paths, None)?;
 
     let build = project.compile_to_evm(
+        messages,
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -210,6 +214,7 @@ pub fn llvm_ir_to_evm(
 ///
 pub fn eravm_assembly(
     paths: &[PathBuf],
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     include_metadata_hash: bool,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -220,6 +225,7 @@ pub fn eravm_assembly(
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
     let build = project.compile_to_eravm(
+        messages,
         false,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -229,7 +235,6 @@ pub fn eravm_assembly(
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -240,6 +245,7 @@ pub fn standard_output_eravm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
@@ -289,7 +295,7 @@ pub fn standard_output_eravm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
-        vec![],
+        messages,
         base_path,
         include_paths,
         allow_paths,
@@ -309,6 +315,7 @@ pub fn standard_output_eravm(
     solc_output.collect_errors()?;
 
     let build = project.compile_to_eravm(
+        messages,
         enable_eravm_extensions,
         include_metadata_hash,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -318,7 +325,6 @@ pub fn standard_output_eravm(
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -329,6 +335,7 @@ pub fn standard_output_evm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
@@ -375,7 +382,7 @@ pub fn standard_output_evm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
-        vec![],
+        messages,
         base_path,
         include_paths,
         allow_paths,
@@ -395,13 +402,13 @@ pub fn standard_output_evm(
     solc_output.collect_errors()?;
 
     let build = project.compile_to_evm(
+        messages,
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
         threads,
         debug_config,
     )?;
-    build.handle_errors()?;
     Ok(build)
 }
 
@@ -414,7 +421,7 @@ pub fn standard_json_eravm(
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
     json_path: Option<PathBuf>,
-    messages: Vec<SolcStandardJsonOutputError>,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -564,6 +571,7 @@ pub fn standard_json_eravm(
         )?;
     } else {
         let build = project.compile_to_eravm(
+            messages,
             enable_eravm_extensions,
             include_metadata_hash,
             zkevm_assembly::RunningVmEncodingMode::Production,
@@ -585,7 +593,7 @@ pub fn standard_json_evm(
     solc_compiler: Option<&SolcCompiler>,
     force_evmla: bool,
     json_path: Option<PathBuf>,
-    messages: Vec<SolcStandardJsonOutputError>,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -699,6 +707,7 @@ pub fn standard_json_evm(
     };
 
     let build = project.compile_to_evm(
+        messages,
         optimizer_settings,
         llvm_options,
         include_metadata_hash,
@@ -717,6 +726,7 @@ pub fn combined_json_eravm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
@@ -742,6 +752,7 @@ pub fn combined_json_eravm(
         paths,
         libraries,
         solc_compiler,
+        messages,
         evm_version,
         solc_optimizer_enabled,
         force_evmla,
@@ -783,6 +794,7 @@ pub fn combined_json_evm(
     paths: &[PathBuf],
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
+    messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
@@ -805,6 +817,7 @@ pub fn combined_json_evm(
         paths,
         libraries,
         solc_compiler,
+        messages,
         evm_version,
         solc_optimizer_enabled,
         force_evmla,

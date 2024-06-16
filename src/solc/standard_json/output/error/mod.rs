@@ -11,7 +11,7 @@ use self::source_location::SourceLocation;
 ///
 /// The `solc --standard-json` output error.
 ///
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Error {
     /// The component type.
@@ -47,16 +47,20 @@ impl Error {
 
         let mut formatted_message = format!("{type}: ╠{}╗", "═".repeat(96 - r#type.len()));
         formatted_message.push('\n');
+        formatted_message.push_str(format!("║{}║", " ".repeat(98)).as_str());
+        formatted_message.push('\n');
         formatted_message.push_str(
             message
                 .trim()
+                .replace(": ", ":\n")
                 .lines()
-                .enumerate()
-                .map(|(index, line)| format!("{} {line:096} ║", if index == 0 { '╦' } else { '║' }))
+                .map(|line| format!("║ {line:096} ║"))
                 .collect::<Vec<String>>()
                 .join("\n")
                 .as_str(),
         );
+        formatted_message.push('\n');
+        formatted_message.push_str(format!("║{}║", " ".repeat(98)).as_str());
         formatted_message.push('\n');
         formatted_message.push_str(format!("╚{}╝", "═".repeat(98)).as_str());
         formatted_message.push('\n');

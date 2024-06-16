@@ -5,11 +5,13 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
+use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
 use crate::solc::standard_json::output::Output as StandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 
@@ -18,18 +20,34 @@ use self::contract::Contract;
 ///
 /// The Solidity project build.
 ///
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Build {
     /// The contract data,
-    pub contracts: BTreeMap<String, anyhow::Result<Contract>>,
+    pub contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
+    /// The additional message to output.
+    pub messages: Vec<StandardJsonOutputError>,
 }
 
 impl Build {
     ///
+    /// A shortcut constructor.
+    ///
+    pub fn new(
+        contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
+        messages: &mut Vec<StandardJsonOutputError>,
+    ) -> Self {
+        Self {
+            contracts,
+            messages: std::mem::take(messages),
+        }
+    }
+
+    ///
     /// Writes all contracts to the terminal.
     ///
-    pub fn write_to_terminal(self, output_binary: bool) -> anyhow::Result<()> {
-        self.handle_errors()?;
+    pub fn write_to_terminal(mut self, output_binary: bool) -> anyhow::Result<()> {
+        self.take_and_write_warnings();
+        self.collect_errors()?;
 
         for (path, build) in self.contracts.into_iter() {
             build
@@ -44,12 +62,13 @@ impl Build {
     /// Writes all contracts to the specified directory.
     ///
     pub fn write_to_directory(
-        self,
+        mut self,
         output_directory: &Path,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        self.handle_errors()?;
+        self.take_and_write_warnings();
+        self.collect_errors()?;
 
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
@@ -102,13 +121,14 @@ impl Build {
                         contracts.insert(name.to_owned(), contract);
                     }
                 },
-                Err(error) => errors.push((path.to_owned(), error)),
+                Err(error) => errors.push(error),
             }
         }
 
-        for (path, error) in errors.into_iter() {
-            standard_json.push_error(path, error);
-        }
+        standard_json
+            .errors
+            .get_or_insert_with(Vec::new)
+            .extend(errors);
         if let Some(solc_version) = solc_version {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());
@@ -122,11 +142,12 @@ impl Build {
     /// Writes all contracts assembly and bytecode to the combined JSON.
     ///
     pub fn write_to_combined_json(
-        self,
+        mut self,
         combined_json: &mut CombinedJson,
         zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
-        self.handle_errors()?;
+        self.take_and_write_warnings();
+        self.collect_errors()?;
 
         for (path, build) in self.contracts.into_iter() {
             let combined_json_contract = combined_json
@@ -147,7 +168,7 @@ impl Build {
                         None
                     }
                 })
-                .ok_or_else(|| anyhow::anyhow!("Contract `{path}` not found in the project"))?;
+                .ok_or_else(|| anyhow::anyhow!("contract `{path}` not found in the project"))?;
 
             build
                 .expect("Always valid")
@@ -160,25 +181,66 @@ impl Build {
     }
 
     ///
+    /// Checks if there is at least one error.
+    ///
+    pub fn has_errors(&self) -> bool {
+        self.contracts.values().any(|result| result.is_err())
+            && self
+                .messages
+                .iter()
+                .any(|message| message.severity == "error")
+    }
+
+    ///
+    /// Checks if there is at least one warning.
+    ///
+    pub fn has_warnings(&self) -> bool {
+        self.messages
+            .iter()
+            .any(|message| message.severity == "warning")
+    }
+
+    ///
     /// Checks for errors, returning `Err` if there is at least one error.
     ///
-    pub fn handle_errors(&self) -> anyhow::Result<()> {
-        let errors: Vec<(&String, &anyhow::Error)> = self
-            .contracts
-            .iter()
-            .filter_map(|(path, contract)| contract.as_ref().err().map(|error| (path, error)))
-            .collect();
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
+    pub fn collect_errors(&self) -> anyhow::Result<()> {
+        if !self.has_errors() {
+            return Ok(());
         }
+        let errors: Vec<&StandardJsonOutputError> = self
+            .contracts
+            .values()
+            .filter_map(|result| result.as_ref().err())
+            .collect();
+        anyhow::bail!(
+            "{}",
+            errors
+                .iter()
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
+    }
 
-        Ok(())
+    ///
+    /// Removes warnings from the list of messages and prints them to stderr.
+    ///
+    pub fn take_and_write_warnings(&mut self) {
+        if !self.has_warnings() {
+            return;
+        }
+        writeln!(
+            std::io::stderr(),
+            "{}",
+            self.messages
+                .iter()
+                .filter(|error| error.severity == "warning")
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        )
+        .expect("Stderr writing error");
+        self.messages
+            .retain(|message| message.severity != "warning");
     }
 }

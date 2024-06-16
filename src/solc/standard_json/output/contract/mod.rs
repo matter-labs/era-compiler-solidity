@@ -7,15 +7,12 @@ pub mod evm;
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::evm::EVM;
 
 ///
 /// The `solc --standard-json` output contract.
 ///
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Contract {
     /// The contract ABI.

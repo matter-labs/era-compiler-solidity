@@ -4,15 +4,12 @@
 
 pub mod recursive_function;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::recursive_function::RecursiveFunction;
 
 ///
 /// The `solc --standard-json` output contract EVM extra metadata.
 ///
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtraMetadata {
     /// The list of recursive functions.

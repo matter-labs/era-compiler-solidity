@@ -245,7 +245,7 @@ impl Contract {
         match self.ir {
             IR::Yul(mut yul) => {
                 let runtime_code = yul.take_runtime_code().ok_or_else(|| {
-                    anyhow::anyhow!("Contract `{identifier}` has no runtime code")
+                    anyhow::anyhow!("contract `{identifier}` has no runtime code")
                 })?;
                 let deploy_code = yul.object;
 

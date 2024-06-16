@@ -68,7 +68,7 @@ pub fn build_solidity(
     )?;
 
     let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), vec![], None, vec![], None)?;
+        solc_compiler.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
@@ -84,6 +84,7 @@ pub fn build_solidity(
     solc_output.collect_errors()?;
 
     let build = project.compile_to_eravm(
+        &mut vec![],
         true,
         true,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -142,7 +143,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     )?;
 
     let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), vec![], None, vec![], None)?;
+        solc_compiler.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -178,7 +179,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, vec![]);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_yul_sources(
         sources,
@@ -188,6 +189,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
         None,
     )?;
     let build = project.compile_to_eravm(
+        &mut vec![],
         true,
         true,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -227,10 +229,10 @@ pub fn build_yul_standard_json(
     let sources = solc_input.sources()?;
     let (solc_version, mut solc_output) = match solc_compiler {
         Some(solc_compiler) => {
-            let solc_output = solc_compiler.validate_yul_standard_json(solc_input, vec![])?;
+            let solc_output = solc_compiler.validate_yul_standard_json(solc_input, &mut vec![])?;
             (Some(&solc_compiler.version), solc_output)
         }
-        None => (None, SolcStandardJsonOutput::new(&sources, vec![])),
+        None => (None, SolcStandardJsonOutput::new(&sources, &mut vec![])),
     };
 
     let project = Project::try_from_yul_sources(
@@ -241,6 +243,7 @@ pub fn build_yul_standard_json(
         None,
     )?;
     let build = project.compile_to_eravm(
+        &mut vec![],
         solc_compiler.is_none(),
         true,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -275,10 +278,11 @@ pub fn build_llvm_ir_standard_json(
     )?;
 
     let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, vec![]);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        &mut vec![],
         true,
         true,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -313,10 +317,11 @@ pub fn build_eravm_assembly_standard_json(
     )?;
 
     let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, vec![]);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        &mut vec![],
         true,
         true,
         zkevm_assembly::RunningVmEncodingMode::Production,
@@ -370,7 +375,8 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let solc_output = solc.standard_json(solc_input, Some(pipeline), vec![], None, vec![], None)?;
+    let solc_output =
+        solc.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
     let contains_warning = solc_output
         .errors
         .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?

@@ -10,9 +10,6 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 
 use self::metadata::Metadata;
@@ -23,7 +20,7 @@ use self::selection::Selection;
 ///
 /// The `solc --standard-json` input settings.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
     /// The target EVM version.
