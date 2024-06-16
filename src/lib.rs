@@ -294,7 +294,8 @@ pub fn standard_output_eravm(
         include_paths,
         allow_paths,
     )?;
-    solc_output.handle_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -304,7 +305,8 @@ pub fn standard_output_eravm(
         solc_compiler,
         debug_config.as_ref(),
     )?;
-    solc_output.handle_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let build = project.compile_to_eravm(
         enable_eravm_extensions,
@@ -378,7 +380,8 @@ pub fn standard_output_evm(
         include_paths,
         allow_paths,
     )?;
-    solc_output.handle_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -388,7 +391,8 @@ pub fn standard_output_evm(
         solc_compiler,
         debug_config.as_ref(),
     )?;
-    solc_output.handle_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let build = project.compile_to_evm(
         optimizer_settings,
@@ -466,7 +470,7 @@ pub fn standard_json_eravm(
                 include_paths,
                 allow_paths,
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -478,7 +482,7 @@ pub fn standard_json_eravm(
                 solc_compiler,
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -489,7 +493,7 @@ pub fn standard_json_eravm(
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
             let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input, messages)?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -500,7 +504,7 @@ pub fn standard_json_eravm(
                 Some(&solc_compiler.version),
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -516,7 +520,7 @@ pub fn standard_json_eravm(
                 None,
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -529,7 +533,7 @@ pub fn standard_json_eravm(
             let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -543,7 +547,7 @@ pub fn standard_json_eravm(
 
             let project =
                 Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -620,7 +624,7 @@ pub fn standard_json_evm(
                 include_paths,
                 allow_paths,
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -632,7 +636,7 @@ pub fn standard_json_evm(
                 solc_compiler,
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -643,7 +647,7 @@ pub fn standard_json_evm(
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
             let mut solc_output = solc_compiler.validate_yul_standard_json(solc_input, messages)?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -654,7 +658,7 @@ pub fn standard_json_evm(
                 Some(&solc_compiler.version),
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -670,7 +674,7 @@ pub fn standard_json_evm(
                 None,
                 debug_config.as_ref(),
             )?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
@@ -683,7 +687,7 @@ pub fn standard_json_evm(
             let mut solc_output = SolcStandardJsonOutput::new(&sources, messages);
 
             let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
-            if solc_output.handle_errors().is_err() {
+            if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 

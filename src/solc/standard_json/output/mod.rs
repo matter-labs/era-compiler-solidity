@@ -265,38 +265,69 @@ impl Output {
     }
 
     ///
+    /// Checks if there is at least one error.
+    ///
+    pub fn has_errors(&self) -> bool {
+        self.errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "error"))
+            .unwrap_or_default()
+    }
+
+    ///
+    /// Checks if there is at least one warning.
+    ///
+    pub fn has_warnings(&self) -> bool {
+        self.errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "warning"))
+            .unwrap_or_default()
+    }
+
+    ///
     /// Checks for errors, returning `Err` if there is at least one error.
     ///
-    /// Removes warnings from the list of errors and prints them to stderr.
-    ///
-    pub fn handle_errors(&mut self) -> anyhow::Result<()> {
-        let errors = match self.errors.as_mut() {
+    pub fn collect_errors(&self) -> anyhow::Result<()> {
+        if !self.has_errors() {
+            return Ok(());
+        }
+        let errors = match self.errors.as_ref() {
             Some(errors) => errors,
             None => return Ok(()),
         };
-        if errors.iter().any(|error| error.severity == "error") {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .iter()
-                    .map(|error| error.to_string())
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        } else if !errors.is_empty() {
-            writeln!(
-                std::io::stderr(),
-                "{}",
-                errors
-                    .drain(..)
-                    .map(|error| error.to_string())
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            )
-            .expect("Stderr writing error");
-        }
+        anyhow::bail!(
+            "{}",
+            errors
+                .iter()
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
+    }
 
-        Ok(())
+    ///
+    /// Removes warnings from the list of errors and prints them to stderr.
+    ///
+    pub fn take_and_write_warnings(&mut self) {
+        if !self.has_warnings() {
+            return;
+        }
+        let errors = match self.errors.as_mut() {
+            Some(errors) => errors,
+            None => return,
+        };
+        writeln!(
+            std::io::stderr(),
+            "{}",
+            errors
+                .iter()
+                .filter(|error| error.severity == "warning")
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        )
+        .expect("Stderr writing error");
+        errors.retain(|error| error.severity != "warning");
     }
 
     ///
