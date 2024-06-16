@@ -125,6 +125,8 @@ fn main_inner() -> anyhow::Result<()> {
         None => None,
     };
 
+    let enable_eravm_extensions = arguments.enable_eravm_extensions || arguments.system_mode;
+
     match target {
         era_compiler_llvm_context::Target::EraVM => {
             let build = if arguments.yul {
@@ -132,7 +134,7 @@ fn main_inner() -> anyhow::Result<()> {
                     input_files.as_slice(),
                     arguments.libraries,
                     arguments.solc,
-                    arguments.enable_eravm_extensions,
+                    enable_eravm_extensions,
                     include_metadata_hash,
                     optimizer_settings,
                     llvm_options,
@@ -167,7 +169,7 @@ fn main_inner() -> anyhow::Result<()> {
                 era_compiler_solidity::standard_json_eravm(
                     solc_compiler.as_ref(),
                     arguments.force_evmla,
-                    arguments.enable_eravm_extensions,
+                    enable_eravm_extensions,
                     arguments.detect_missing_libraries,
                     standard_json.map(PathBuf::from),
                     messages,
@@ -193,7 +195,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    arguments.enable_eravm_extensions,
+                    enable_eravm_extensions,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,
@@ -224,7 +226,7 @@ fn main_inner() -> anyhow::Result<()> {
                     evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    arguments.enable_eravm_extensions,
+                    enable_eravm_extensions,
                     include_metadata_hash,
                     arguments.metadata_literal,
                     arguments.base_path,

@@ -137,7 +137,7 @@ pub struct Arguments {
     /// Only one input EraVM assembly file is allowed.
     /// Cannot be used with combined JSON modes.
     /// Use this mode at your own risk, as EraVM assembly input validation is not implemented.
-    #[structopt(long = "eravm", alias = "zkasm")]
+    #[structopt(long = "eravm-assembly")]
     pub eravm_assembly: bool,
 
     /// Forcibly switch to EVM legacy assembly pipeline.
@@ -146,10 +146,15 @@ pub struct Arguments {
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
 
+    /// Deprecated.
+    /// Use `--enable-eravm-extensions` instead.
+    #[structopt(long = "system-mode")]
+    pub system_mode: bool,
+
     /// Enable EraVM extensions.
     /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
     /// In the Yul mode, the `verbatim_*` instruction family becomes available.
-    #[structopt(long = "enable-eravm-extensions", alias = "system-mode")]
+    #[structopt(long = "enable-eravm-extensions")]
     pub enable_eravm_extensions: bool,
 
     /// Set metadata hash mode.
@@ -216,6 +221,13 @@ impl Arguments {
     ///
     pub fn validate(&self) -> anyhow::Result<Vec<SolcStandardJsonOutputError>> {
         let mut messages = vec![];
+
+        if self.system_mode {
+            messages.push(SolcStandardJsonOutputError::new_warning(
+                "The `--system-mode` flag is deprecated. Please use `--enable-eravm-extensions` instead.",
+                None,
+            ));
+        }
 
         if self.version && std::env::args().count() > 2 {
             messages.push(SolcStandardJsonOutputError::new_error(
@@ -301,7 +313,7 @@ impl Arguments {
                 ));
             }
 
-            if self.enable_eravm_extensions {
+            if self.enable_eravm_extensions || self.system_mode {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EraVM extensions are not supported in LLVM IR and EraVM assembly modes.",
                     None,
@@ -429,7 +441,7 @@ impl Arguments {
                 ));
             }
 
-            if self.enable_eravm_extensions {
+            if self.enable_eravm_extensions || self.system_mode {
                 messages.push(SolcStandardJsonOutputError::new_warning(
                 "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in\nstandard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None
                 ));

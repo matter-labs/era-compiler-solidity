@@ -40,7 +40,7 @@
 
 - Updated to EraVM v1.5.0
 - Renamed the `system-mode` flag to `enable-eravm-extensions`
-- Renamed the `zkasm` flag to `eravm`
+- Renamed the `zkasm` flag to `eravm-assembly`
 - Added all missing CLI flags to standard JSON input
 - Updated to Rust v1.78.0
 
