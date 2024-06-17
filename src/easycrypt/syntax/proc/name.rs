@@ -367,6 +367,7 @@ impl Display for ProcName {
                 ProcName::ZkGlobalLoad => "zkGlobalLoad",
                 ProcName::ZkGlobalExtraAbiData => "zkGlobalExtraAbiData",
                 ProcName::ZkGlobalStore => "zkGlobalStore",
+                ProcName::UserDefined { .. } => unreachable!(),
             };
             f.write_str(str)
         }

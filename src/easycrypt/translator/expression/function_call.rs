@@ -6,6 +6,7 @@ use anyhow::Error;
 
 use crate::easycrypt::syntax::expression::call::FunctionCall;
 use crate::easycrypt::syntax::expression::Expression;
+use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::syntax::statement::Statement;
@@ -143,16 +144,26 @@ impl Translator {
                         ctx.clone(),
                     ))
                 }
-                YulSpecial::Stop | YulSpecial::Invalid | YulSpecial::Revert => {
-                    //assert!(yul_arguments.is_empty());
-
-                    // FIXME  translate as a boolean assignment
+                YulSpecial::Revert => {
+                    let (arguments, ectx) =
+                        self.transpile_expression_list(yul_arguments, ctx, ectx)?;
+                    let passignment = Statement::PAssignment(
+                        vec![],
+                        ProcCall {
+                            target: ProcName::UserDefined {
+                                name: String::from("revert"),
+                                module: Some(String::from("Revert")),
+                            },
+                            arguments,
+                        },
+                    );
                     Ok(Transformed::Statements(
-                        vec![Statement::Return(Expression::Tuple(vec![]))],
-                        ectx.clone(),
+                        vec![passignment],
+                        ectx,
                         ctx.clone(),
                     ))
                 }
+                YulSpecial::Stop | YulSpecial::Invalid => todo!(),
             },
             Kind::Special(_) => {
                 anyhow::bail!("Unsupported type of YUL function call.")
