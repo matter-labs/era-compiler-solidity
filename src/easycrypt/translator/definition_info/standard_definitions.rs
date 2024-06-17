@@ -145,6 +145,12 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         proc(name, name_str, input_args, output_args, attributes)
     }
 
+    fn primops(name: &str) -> ProcName {
+        ProcName::UserDefined {
+            name: name.to_string(),
+            module: Some("Primops".to_string()),
+        }
+    }
     match yul_name {
         YulName::Add => binop(BinaryOpType::Add, "add"),
         YulName::Sub => binop(BinaryOpType::Sub, "sub"),
@@ -177,10 +183,10 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         YulName::MulMod => fun(FunctionName::MulMod, "mulmod", 3),
         YulName::SignExtend => fun(FunctionName::SignExtend, "signextend", 2),
         YulName::Keccak256 => proc_simple(ProcName::Keccak256, "keccak256", 2, 1),
-        YulName::MLoad => proc_mem(ProcName::MLoad, "mload", Usage::READ, 1, 1),
-        YulName::MStore => proc_mem(ProcName::MStore, "mstore", Usage::WRITE, 2, 0),
-        YulName::MStore8 => proc_mem(ProcName::MStore8, "mstore8", Usage::WRITE, 2, 0),
-        YulName::MCopy => proc_mem(ProcName::MCopy, "mcopy", Usage::RW, 3, 1),
+        YulName::MLoad => proc_mem(primops("mload"), "mload", Usage::READ, 1, 1),
+        YulName::MStore => proc_mem(primops("mstore"), "mstore", Usage::WRITE, 2, 0),
+        YulName::MStore8 => proc_mem(primops("mstore8"), "mstore8", Usage::WRITE, 2, 0),
+        YulName::MCopy => proc_mem(primops("mcopy"), "mcopy", Usage::RW, 3, 1),
         YulName::SLoad => proc_storage(ProcName::SLoad, "sload", Usage::READ, 1, 1),
         YulName::SStore => proc_storage(ProcName::SStore, "sstore", Usage::WRITE, 2, 0),
         YulName::TLoad => proc_transient(ProcName::TLoad, "tload", Usage::READ, 1, 1),
@@ -215,7 +221,7 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         YulName::Address => proc_simple(ProcName::Address, "address", 0, 1),
         YulName::Caller => proc_simple(ProcName::Caller, "caller", 0, 1),
         YulName::CallValue => proc_simple(ProcName::CallValue, "callvalue", 0, 1),
-        YulName::Gas => proc_simple(ProcName::Gas, "gas", 0, 1),
+        YulName::Gas => proc_simple(primops("gas"), "gas", 0, 1),
         YulName::Balance => proc_other(ProcName::Balance, "balance", Usage::READ, 1, 0),
         YulName::SelfBalance => proc_simple(ProcName::SelfBalance, "selfbalance", 0, 1),
         YulName::GasLimit => proc_simple(ProcName::GasLimit, "gaslimit", 0, 1),
