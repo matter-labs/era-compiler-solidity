@@ -107,7 +107,10 @@ pub fn standard_function_definition(yul_name: &YulName) -> Result<DefinitionInfo
         input_args: usize,
         output_args: usize,
     ) -> Result<DefinitionInfo, Error> {
-        let attributes = Attributes::heap(usage);
+        // Currently the memory parameter propagation is disabled.
+        //let attributes = Attributes::heap(usage);
+        let _ = usage;
+        let attributes = Attributes::default();
         proc(name, name_str, input_args, output_args, attributes)
     }
     fn proc_storage(

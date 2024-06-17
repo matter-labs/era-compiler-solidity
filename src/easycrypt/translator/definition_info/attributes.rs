@@ -19,6 +19,7 @@ pub struct Attributes {
 }
 
 impl Attributes {
+    #[allow(dead_code)]
     pub fn heap(usage: Usage) -> Self {
         Self {
             heap_user: usage,
