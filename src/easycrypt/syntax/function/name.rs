@@ -24,6 +24,10 @@ pub enum FunctionName {
     Sdiv,
     /// `x % y`, for signed numbers in two’s complement, `0` if `y == 0`.
     Smod,
+    /// Arithmetic left shift.
+    Shl,
+    /// Arithmetic right shift.
+    Shr,
     /// `1` if `x == 0`, `0` otherwise
     IsZero,
     /// `n`th byte of `x`, where the most significant byte is the `0`th byte
@@ -57,6 +61,8 @@ impl Display for FunctionName {
                 FunctionName::AddMod => "addmod",
                 FunctionName::MulMod => "mulmod",
                 FunctionName::SignExtend => "signext",
+                FunctionName::Shl => "shl",
+                FunctionName::Shr => "shr",
             };
             f.write_str(str)
         }

@@ -25,10 +25,6 @@ pub enum BinaryOpType {
     Xor,
     /// bitwise "and" of `x` and `y`.
     And,
-    /// logical shift left `y` by `x` bits
-    Shl,
-    /// logical shift right `y` by `x` bits
-    Shr,
     /// `x` to the power of `y`
     Exp,
 }

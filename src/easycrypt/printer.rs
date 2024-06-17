@@ -65,8 +65,6 @@ impl<T: IPrinter> Visitor for T {
             BinaryOpType::Xor => "^",
             BinaryOpType::Div => "/",
             BinaryOpType::Eq => "=",
-            BinaryOpType::Shl => "<<",
-            BinaryOpType::Shr => ">>",
             BinaryOpType::Exp => "**",
         });
     }
