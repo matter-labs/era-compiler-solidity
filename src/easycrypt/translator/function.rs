@@ -110,7 +110,7 @@ impl Translator {
             },
             Kind::Proc(_) => {
                 self.translate_to_procedure(
-                    formal_parameters,
+                    &formal_parameters,
                     return_type,
                     result_vars,
                     ec_block,
@@ -124,7 +124,7 @@ impl Translator {
 
     fn translate_to_procedure(
         &mut self,
-        formal_parameters: Vec<(Definition, Type)>,
+        formal_parameters: &[(Definition, Type)],
         return_type: Type,
         result_vars: Vec<Definition>,
         ec_block: TransformedBlock,
@@ -132,7 +132,7 @@ impl Translator {
         identifier: &str,
     ) -> Result<(Context, Translated), Error> {
         let signature = Signature {
-            formal_parameters,
+            formal_parameters: formal_parameters.to_vec(),
             return_type,
             kind: SignatureKind::Proc,
         };
@@ -154,6 +154,7 @@ impl Translator {
         };
         let locals = result_vars
             .iter()
+            .filter(|def| !formal_parameters.iter().any(|param| param.0 == **def))
             .chain(ctx.locals.iter())
             .cloned()
             .collect();
