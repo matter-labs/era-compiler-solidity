@@ -22,10 +22,10 @@ pub struct ProcKind {
 
 pub fn formal_state_parameter_name(kind: &ContextKind) -> &'static str {
     match kind {
-        ContextKind::Memory => "param_state_memory",
-        ContextKind::Storage => "param_state_storage",
-        ContextKind::TransientStorage => "param_state_transient",
-        ContextKind::Other => "param_state_other",
+        ContextKind::Memory => "state_memory",
+        ContextKind::Storage => "state_storage",
+        ContextKind::TransientStorage => "state_transient",
+        ContextKind::Other => "state_other",
     }
 }
 
