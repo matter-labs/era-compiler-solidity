@@ -156,9 +156,9 @@ impl<T: IPrinter> Visitor for T {
     fn visit_literal(&mut self, literal: &Literal) {
         match literal {
             Literal::String(s) => {
-                self.print("\"");
+                self.print("STRING (*");
                 self.print(s.as_str());
-                self.print("\"")
+                self.print("*)")
             }
             Literal::Int(int_literal) => self.visit_integer_literal(int_literal),
             Literal::Bool(value) => self.print(format!("{value}").as_str()),
