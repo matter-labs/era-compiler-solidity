@@ -31,7 +31,6 @@ pub fn formal_state_parameter_name(kind: &ContextKind) -> &'static str {
 
 impl ProcKind {
     pub fn get_state_param_definition(&self, kind: ContextKind, path: &Path) -> Option<Definition> {
-        //if let ProcName::UserDefined(_) = &self.name {
         let definition = Some(Definition {
             identifier: formal_state_parameter_name(&kind).to_string(),
             location: Some(path.clone()),
@@ -46,9 +45,6 @@ impl ProcKind {
             ContextKind::Other if self.attributes.transient_user.needs_read_access() => definition,
             _ => None,
         }
-        // } else {
-        // None
-        // }
     }
     pub fn get_state_return_var_definition(
         &self,

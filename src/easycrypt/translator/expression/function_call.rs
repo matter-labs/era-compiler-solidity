@@ -163,32 +163,5 @@ impl Translator {
                 name
             ),
         }
-
-        // match self.transpile_name(ctx, name)? {
-        //     identifier::Translated::Special(special) if is_root => match special {
-        //         YulSpecial::Return => {
-        //             let (arguments, ectx) =
-        //                 self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-        //             assert!(ectx.locals.is_empty());
-        //             assert!(ectx.assignments.is_empty());
-        //             Ok(Transformed::Statements(
-        //                 vec![Statement::Return(Expression::pack_tuple(&arguments))],
-        //                 ectx,
-        //                 ctx.clone(),
-        //             ))
-        //         }
-        //         YulSpecial::Stop | YulSpecial::Invalid | YulSpecial::Revert => {
-        //             //assert!(yul_arguments.is_empty());
-
-        //             Ok(Transformed::Statements(
-        //                 vec![Statement::Return(Expression::Tuple(vec![]))],
-        //                 ectx.clone(),
-        //                 ctx.clone(),
-        //             ))
-        //         }
-        //     },
-        //     identifier::Translated::Special(_) => {
-        //         anyhow::bail!("Unsupported type of YUL function call.")
-        //     }
     }
 }
