@@ -278,30 +278,42 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_statement(&mut self, statement: &Statement) {
+        fn print_lhs_references<T>(s: &mut T, references: &[Reference])
+        where
+            T: IPrinter + Visitor,
+        {
+            match references.len() {
+                0 => (),
+                1 => {
+                    s.visit_reference(&references[0]);
+                }
+                _ => {
+                    s.print("(");
+                    for (i, r) in references.iter().enumerate() {
+                        if i > 0 {
+                            s.print(",")
+                        }
+                        s.visit_reference(r);
+                    }
+                    s.print(")");
+                }
+            }
+        }
+
         match statement {
             Statement::VarDefinition(_, _) => todo!(),
             Statement::Expression(expression) => self.visit_expression(expression),
             Statement::Block(block) => self.visit_block(block),
             Statement::If(if_conditional) => self.visit_if_conditional(if_conditional),
             Statement::EAssignment(refs, rhs) => {
-                for (i, r) in (*refs).iter().enumerate() {
-                    if i > 0 {
-                        self.print(",")
-                    }
-                    self.visit_reference(r);
-                }
+                print_lhs_references(self, refs);
                 if !refs.is_empty() {
                     self.print(" <- ");
                 }
                 self.visit_expression(rhs);
             }
             Statement::PAssignment(refs, rhs) => {
-                for (i, r) in (*refs).iter().enumerate() {
-                    if i > 0 {
-                        self.print(",")
-                    }
-                    self.visit_reference(r);
-                }
+                print_lhs_references(self, refs);
                 if !refs.is_empty() {
                     self.print(" <@ ");
                 }
