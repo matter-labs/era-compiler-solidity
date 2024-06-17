@@ -40,6 +40,12 @@ pub enum FunctionName {
     MulMod,
     /// sign extend from `(i*8+7)`th bit counting from least significant.
     SignExtend,
+    /// Bitwise and.
+    BitwiseAnd,
+    /// Bitwise or.
+    BitwiseOr,
+    /// Bitwise xor.
+    BitwiseXor,
 }
 
 impl Display for FunctionName {
@@ -67,6 +73,9 @@ impl Display for FunctionName {
                 FunctionName::SignExtend => "signext",
                 FunctionName::Shl => "shl",
                 FunctionName::Shr => "shr",
+                FunctionName::BitwiseAnd => "bit_and",
+                FunctionName::BitwiseOr => "bit_or",
+                FunctionName::BitwiseXor => "bit_xor",
             };
             f.write_str(str)
         }
