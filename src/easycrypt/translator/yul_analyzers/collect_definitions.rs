@@ -98,7 +98,10 @@ impl CollectDefinitions {
         };
         let definition = DefinitionInfo {
             kind: Kind::Proc(ProcKind {
-                name: ProcName::UserDefined(name.to_string()),
+                name: ProcName::UserDefined {
+                    name: name.to_string(),
+                    module: None,
+                },
                 attributes: Default::default(),
             }),
             r#type,

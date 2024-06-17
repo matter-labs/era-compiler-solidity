@@ -16,10 +16,8 @@ use super::context::Context;
 use super::definition_info::kind::proc_kind::ProcKind;
 use super::function;
 use crate::easycrypt::syntax::expression::Expression;
-use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::function::Function;
 use crate::easycrypt::syntax::module::definition::TopDefinition;
-use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::block;
@@ -92,12 +90,10 @@ impl Translator {
                 match translation_result {
                     function::Translated::Function(ec_function) => {
                         self.tracker.add(
-                            &ec_function.name,
+                            &ec_function.name.to_string(),
                             &DefinitionInfo {
-                                kind: Kind::Function(FunctionName::UserDefined(
-                                    ec_function.name.clone(),
-                                )),
-                                full_name: self.create_full_name(ec_function.name.as_str()),
+                                kind: Kind::Function(ec_function.name.clone()),
+                                full_name: self.create_full_name(&ec_function.name.to_string()),
                                 r#type: ec_function.signature.get_type(),
                             },
                         );
@@ -109,13 +105,13 @@ impl Translator {
                     }
                     function::Translated::Proc(ec_procedure) => {
                         self.tracker.add(
-                            &ec_procedure.name,
+                            &ec_procedure.name.to_string(),
                             &DefinitionInfo {
                                 kind: Kind::Proc(ProcKind {
-                                    name: ProcName::UserDefined(ec_procedure.name.clone()),
+                                    name: ec_procedure.name.clone(),
                                     attributes: Default::default(),
                                 }),
-                                full_name: self.create_full_name(ec_procedure.name.as_str()),
+                                full_name: self.create_full_name(&ec_procedure.name.to_string()),
                                 r#type: ec_procedure.signature.get_type(),
                             },
                         );

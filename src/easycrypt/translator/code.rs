@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 use anyhow::Error;
 
+use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::yul::visitor::IMPLICIT_CODE_FUNCTION_NAME;
 use crate::Translator;
 
@@ -32,7 +33,10 @@ impl Translator {
             self.transpile_block(&code.block, &Context::new())?;
 
         let default_code_proc = Proc {
-            name: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
+            name: ProcName::UserDefined {
+                name: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
+                module: None,
+            },
             signature: Signature::UNIT_TO_UNIT,
             body: Block { statements },
             locals,

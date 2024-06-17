@@ -120,7 +120,7 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_function(&mut self, function: &Function) {
         self.print("op ");
-        self.visit_function_name(&FunctionName::UserDefined(function.name.clone()));
+        self.visit_function_name(&function.name.clone());
         self.visit_signature(&function.signature);
         self.print(" = ");
         self.visit_expression(&function.body);
@@ -143,8 +143,25 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_function_name(&mut self, name: &FunctionName) {
-        let sanitized_name = sanitize_identifier(&name.to_string());
-        self.print(&sanitized_name);
+        match name {
+            FunctionName::UserDefined {
+                name,
+                module: Some(module),
+            } => {
+                self.print(module);
+                self.print(".");
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+            FunctionName::UserDefined { name, module: None } => {
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+            _ => {
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+        }
     }
 
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral) {
@@ -218,7 +235,7 @@ impl<T: IPrinter> Visitor for T {
 
     fn visit_proc(&mut self, proc: &Proc) {
         self.print("proc ");
-        self.visit_proc_name(&ProcName::UserDefined(proc.name.clone()));
+        self.visit_proc_name(&proc.name.clone());
         self.visit_signature(&proc.signature);
         self.println(" = {");
         self.increase_indent();
@@ -246,8 +263,25 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_proc_name(&mut self, name: &ProcName) {
-        let sanitized_name = sanitize_identifier(&name.to_string());
-        self.print(&sanitized_name);
+        match name {
+            ProcName::UserDefined {
+                name,
+                module: Some(module),
+            } => {
+                self.print(module);
+                self.print(".");
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+            ProcName::UserDefined { name, module: None } => {
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+            _ => {
+                let sanitized_name = sanitize_identifier(&name.to_string());
+                self.print(&sanitized_name);
+            }
+        }
     }
 
     fn visit_reference(&mut self, reference: &Reference) {

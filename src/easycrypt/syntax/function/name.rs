@@ -11,7 +11,7 @@ use crate::easycrypt::syntax::Name;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FunctionName {
     /// The user-defined function.
-    UserDefined(Name),
+    UserDefined { name: Name, module: Option<Name> },
     /// `1` if `x < y`, `0` otherwise.
     Lt,
     /// `1` if `x > y`, `0` otherwise.
@@ -44,11 +44,15 @@ pub enum FunctionName {
 
 impl Display for FunctionName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let FunctionName::UserDefined(s) = self {
-            f.write_str(s)
+        if let FunctionName::UserDefined { name, module } = self {
+            if let Some(module) = module {
+                f.write_fmt(format_args!("{}.{}", module, name))
+            } else {
+                f.write_str(name.as_str())
+            }
         } else {
             let str = match self {
-                FunctionName::UserDefined(_) => unreachable!(),
+                FunctionName::UserDefined { .. } => unreachable!(),
                 FunctionName::Lt => "lt",
                 FunctionName::Gt => "gt",
                 FunctionName::Slt => "slt",

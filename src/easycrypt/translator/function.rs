@@ -7,7 +7,9 @@ use std::iter;
 
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::expression::Expression;
+use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::easycrypt::syntax::function::Function;
+use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::signature::Signature;
@@ -163,7 +165,10 @@ impl Translator {
         Ok((
             ctx.clone(),
             Translated::Proc(Proc {
-                name: identifier.to_string(),
+                name: ProcName::UserDefined {
+                    name: identifier.to_string(),
+                    module: None,
+                },
                 signature,
                 locals,
                 body: Block { statements },
@@ -190,7 +195,10 @@ impl Translator {
         Ok((
             ctx.clone(),
             Translated::Function(Function {
-                name: identifier.to_string(),
+                name: FunctionName::UserDefined {
+                    name: identifier.to_string(),
+                    module: None,
+                },
                 signature,
                 body: body_expr.clone(),
                 location: Some(self.here()),

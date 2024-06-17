@@ -10,7 +10,7 @@ use crate::easycrypt::syntax::Name;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ProcName {
     /// The user-defined procedure.
-    UserDefined(Name),
+    UserDefined { name: Name, module: Option<Name> },
     /// discard value x
     Pop,
     /// `keccak(mem[p…(p+n)))`
@@ -264,9 +264,14 @@ impl Display for ProcName {
         } = self
         {
             f.write_fmt(format_args!("verbatim_i{}_o{}", input_size, output_size))
+        } else if let ProcName::UserDefined { name, module } = self {
+            if let Some(module) = module {
+                f.write_fmt(format_args!("{}.{}", module, name))
+            } else {
+                f.write_str(name.as_str())
+            }
         } else {
             let str: &str = match self {
-                ProcName::UserDefined(s) => s,
                 ProcName::Pop => "pop",
                 ProcName::Keccak256 => "keccak256",
                 ProcName::MLoad => "mload",

@@ -4,7 +4,8 @@
 
 pub mod name;
 
-use super::Name;
+use self::name::ProcName;
+
 use crate::easycrypt::syntax::definition::Definition;
 use crate::easycrypt::syntax::signature::Signature;
 use crate::easycrypt::syntax::statement::block::Block;
@@ -14,7 +15,7 @@ use crate::yul::path::Path;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proc {
     /// Name of the procedure.
-    pub name: Name,
+    pub name: ProcName,
     /// Optionally, a location of the original function in the YUL source code.
     pub location: Option<Path>,
     /// Signature of the procedure.

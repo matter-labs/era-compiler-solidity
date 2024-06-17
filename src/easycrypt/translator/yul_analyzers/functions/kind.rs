@@ -56,10 +56,13 @@ impl<'a> StatementAction for FunctionKindRound<'a> {
 fn promote_to_function(round: &mut Round, definition: &mut DefinitionInfo) {
     match &definition.kind {
         Kind::Proc(ProcKind {
-            name: ProcName::UserDefined(name),
+            name: ProcName::UserDefined { name, module },
             ..
         }) => {
-            definition.kind = Kind::Function(FunctionName::UserDefined(name.clone()));
+            definition.kind = Kind::Function(FunctionName::UserDefined {
+                name: name.clone(),
+                module: module.clone(),
+            });
             round.register_effect()
         }
         Kind::Function(_) => (),
