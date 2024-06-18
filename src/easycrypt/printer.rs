@@ -91,16 +91,20 @@ impl<T: IPrinter> Visitor for T {
     fn visit_expression(&mut self, expression: &Expression) {
         match expression {
             Expression::Unary(op, expr) => {
+                self.print("(");
                 self.visit_unary_op_type(op);
                 self.print(" ");
                 self.visit_expression(expr);
+                self.print(")");
             }
             Expression::Binary(op, lhs, rhs) => {
+                self.print("(");
                 self.visit_expression(lhs);
                 self.print(" ");
                 self.visit_binary_op_type(op);
                 self.print(" ");
                 self.visit_expression(rhs);
+                self.print(")");
             }
             Expression::ECall(ecall) => self.visit_function_call(ecall),
             Expression::Literal(literal) => self.visit_literal(literal),
