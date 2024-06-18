@@ -7,6 +7,7 @@
 #![allow(clippy::enum_variant_names)]
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::should_implement_trait)]
+#![allow(clippy::result_large_err)]
 
 pub(crate) mod build_eravm;
 pub(crate) mod build_evm;
@@ -58,6 +59,9 @@ mod tests;
 
 use std::collections::BTreeSet;
 use std::path::PathBuf;
+
+/// The default error compatible with `solc` standard JSON output.
+pub type Result<T> = std::result::Result<T, SolcStandardJsonOutputError>;
 
 ///
 /// Runs the Yul mode for the EraVM target.

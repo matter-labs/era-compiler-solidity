@@ -91,7 +91,8 @@ fn main_inner(
     era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        return era_compiler_solidity::run_recursive(target);
+        era_compiler_solidity::run_recursive(target);
+        return Ok(());
     }
     if let era_compiler_llvm_context::Target::EVM = target {
         anyhow::bail!("The EVM target is under development and not available yet.")

@@ -29,7 +29,7 @@ pub struct ThreadPool {
     /// The child process input template.
     pub input_template: EVMInput,
     /// The thread-safe storage of evaluation results.
-    pub results: Arc<RwLock<BTreeMap<String, anyhow::Result<EVMContractBuild>>>>,
+    pub results: Arc<RwLock<BTreeMap<String, crate::Result<EVMContractBuild>>>>,
 }
 
 impl ThreadPool {
@@ -107,7 +107,7 @@ impl ThreadPool {
     ///
     /// Joins the thread pool and returns the extracted collection of evaluated results.
     ///
-    pub fn finish(self) -> BTreeMap<String, anyhow::Result<EVMContractBuild>> {
+    pub fn finish(self) -> BTreeMap<String, crate::Result<EVMContractBuild>> {
         self.inner.join();
         Arc::try_unwrap(self.results)
             .expect("Sync")
@@ -133,7 +133,7 @@ impl ThreadPool {
         let results = self.results.clone();
         let pool = self.to_owned();
         self.inner.evaluate(move || {
-            let result: anyhow::Result<EVMOutput> =
+            let result: crate::Result<EVMOutput> =
                 crate::process::call(input, era_compiler_llvm_context::Target::EVM);
             results
                 .write()
