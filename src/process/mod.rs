@@ -39,7 +39,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
 
             let contract = input.contract.expect("Always exists");
             let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
-            let result: crate::Result<EraVMOutput> = contract
+            let result = contract
                 .compile_to_eravm(
                     input.dependency_data,
                     input.enable_eravm_extensions,
@@ -51,7 +51,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
                 )
                 .map(EraVMOutput::new)
                 .map_err(|error| {
-                    SolcStandardJsonOutputError::new_error(error, Some(source_location))
+                    SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
             serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
         }
@@ -63,7 +63,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
 
             let contract = input.contract.expect("Always exists");
             let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
-            let result: crate::Result<EVMOutput> = contract
+            let result = contract
                 .compile_to_evm(
                     input.dependency_data,
                     input.include_metadata_hash,
@@ -73,7 +73,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
                 )
                 .map(EVMOutput::new)
                 .map_err(|error| {
-                    SolcStandardJsonOutputError::new_error(error, Some(source_location))
+                    SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
             serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
         }
@@ -90,7 +90,8 @@ where
 {
     let executable = EXECUTABLE
         .get()
-        .unwrap_or_else(|| panic!("Current executable path getting error"));
+        .cloned()
+        .unwrap_or_else(|| std::env::current_exe().expect("Current executable path getting error"));
 
     let mut command = Command::new(executable.as_path());
     command.stdin(std::process::Stdio::piped());

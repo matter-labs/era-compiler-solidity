@@ -33,12 +33,15 @@ impl SourceLocation {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_with_location(file: String, start: isize, end: isize) -> Self {
+    /// Please note that `start` and `end` are not line and column,
+    /// but absolute char offsets in the source code file.
+    ///
+    pub fn new_with_offsets(file: String, start: isize, end: isize) -> Self {
         Self { file, start, end }
     }
 
     ///
-    /// A shortcut constructor.
+    /// A shortcut constructor from a `solc` AST node.
     ///
     pub fn try_from_ast(source: &str, id_paths: &BTreeMap<usize, &String>) -> Option<Self> {
         let mut parts = source.split(':');
@@ -57,7 +60,7 @@ impl SourceLocation {
             .and_then(|string| string.parse::<usize>().ok())
             .and_then(|file_id| id_paths.get(&file_id))?;
 
-        Some(Self::new_with_location(
+        Some(Self::new_with_offsets(
             (*path).to_owned(),
             start,
             start + length,

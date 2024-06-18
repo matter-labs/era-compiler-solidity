@@ -25,7 +25,6 @@ use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInpu
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
-use crate::solc::standard_json::output::error::source_location::SourceLocation as SolcStandardJsonOutputErrorSourceLocation;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
@@ -488,39 +487,33 @@ impl Project {
             }
         }
 
-        let mut contracts = BTreeMap::new();
-        for (path, result) in results.into_iter() {
-            let result = match result {
-                Ok(mut contract) => {
+        let results = results
+            .into_iter()
+            .map(|(path, mut result)| {
+                if let Ok(ref mut contract) = result {
                     for dependency in contract.factory_dependencies.drain() {
                         let dependency_path = identifier_paths
                             .get(dependency.as_str())
                             .cloned()
-                            .ok_or_else(|| {
-                                anyhow::anyhow!("dependency `{dependency}` full path not found")
-                            })?;
-                        let hash = match hashes.get(dependency_path.as_str()) {
-                            Some(hash) => hash.to_owned(),
-                            None => anyhow::bail!(
-                                "dependency `{dependency_path}` not found in the project"
-                            ),
-                        };
+                            .unwrap_or_else(|| {
+                                panic!("dependency `{dependency}` full path not found")
+                            });
+                        let hash = hashes
+                            .get(dependency_path.as_str())
+                            .cloned()
+                            .unwrap_or_else(|| {
+                                panic!("dependency `{dependency_path}` not found in the project")
+                            });
                         contract
                             .build
                             .factory_dependencies
                             .insert(hash, dependency_path);
                     }
-
-                    Ok(contract)
                 }
-                Err(error) => Err(SolcStandardJsonOutputError::new_error(
-                    error,
-                    Some(SolcStandardJsonOutputErrorSourceLocation::new(path.clone())),
-                )),
-            };
-            contracts.insert(path, result);
-        }
-        Ok(EraVMBuild::new(contracts, messages))
+                (path, result)
+            })
+            .collect();
+        Ok(EraVMBuild::new(results, messages))
     }
 
     ///
@@ -552,22 +545,7 @@ impl Project {
         let pool = EVMThreadPool::new(threads, self.contracts, input_template);
         pool.start();
         let results = pool.finish();
-
-        let contracts = results
-            .into_iter()
-            .map(|(path, result)| {
-                (
-                    path.clone(),
-                    result.map_err(|error| {
-                        SolcStandardJsonOutputError::new_error(
-                            error,
-                            Some(SolcStandardJsonOutputErrorSourceLocation::new(path.clone())),
-                        )
-                    }),
-                )
-            })
-            .collect();
-        Ok(EVMBuild::new(contracts, messages))
+        Ok(EVMBuild::new(results, messages))
     }
 
     ///

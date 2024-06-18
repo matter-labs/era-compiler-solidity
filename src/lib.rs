@@ -299,6 +299,7 @@ pub fn standard_output_eravm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
+        Some(&sources),
         messages,
         base_path,
         include_paths,
@@ -386,6 +387,7 @@ pub fn standard_output_evm(
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
         Some(solc_pipeline),
+        Some(&sources),
         messages,
         base_path,
         include_paths,
@@ -476,6 +478,7 @@ pub fn standard_json_eravm(
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
                 Some(solc_pipeline),
+                Some(&sources),
                 messages,
                 base_path,
                 include_paths,
@@ -631,6 +634,7 @@ pub fn standard_json_evm(
             let mut solc_output = solc_compiler.standard_json(
                 solc_input,
                 Some(solc_pipeline),
+                Some(&sources),
                 messages,
                 base_path,
                 include_paths,

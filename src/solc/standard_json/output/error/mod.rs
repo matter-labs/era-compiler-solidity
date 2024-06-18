@@ -2,10 +2,12 @@
 //! The `solc --standard-json` output error.
 //!
 
+pub mod mapped_location;
 pub mod source_location;
 
 use std::collections::BTreeMap;
 
+use self::mapped_location::MappedLocation;
 use self::source_location::SourceLocation;
 
 ///
@@ -36,37 +38,59 @@ impl Error {
     /// The list of ignored `solc` warnings, which are strictly EVM-related.
     pub const IGNORED_WARNING_CODES: [&'static str; 5] = ["1699", "3860", "5159", "5574", "6417"];
 
+    /// The default size of an error line.
+    pub const DEFAULT_ERROR_LINE_LENGTH: usize = 96;
+
     ///
     /// A shortcut constructor.
     ///
-    pub fn new<S>(r#type: &str, message: S, source_location: Option<SourceLocation>) -> Self
+    pub fn new<S>(
+        r#type: &str,
+        message: S,
+        source_location: Option<SourceLocation>,
+        sources: Option<&BTreeMap<String, String>>,
+    ) -> Self
     where
         S: std::fmt::Display,
     {
         let message = message.to_string();
+        let mut message_line_length = message
+            .lines()
+            .max_by_key(|line| line.len())
+            .map(|line| line.len())
+            .unwrap_or_else(|| message.len());
+        message_line_length = std::cmp::max(message_line_length, Self::DEFAULT_ERROR_LINE_LENGTH);
 
-        let mut formatted_message = format!("{type}: ╠{}╗", "═".repeat(96 - r#type.len()));
+        let mut formatted_message = format!(
+            "{type}: ╠{}╗",
+            "═".repeat(message_line_length - r#type.len())
+        );
         formatted_message.push('\n');
-        formatted_message.push_str(format!("║{}║", " ".repeat(98)).as_str());
+        formatted_message.push_str(format!("║ {} ║", " ".repeat(message_line_length)).as_str());
         formatted_message.push('\n');
         formatted_message.push_str(
             message
                 .trim()
-                .replace(": ", ":\n")
                 .lines()
-                .map(|line| format!("║ {line:096} ║"))
+                .map(|line| format!("║ {line}{} ║", " ".repeat(message_line_length - line.len())))
                 .collect::<Vec<String>>()
                 .join("\n")
                 .as_str(),
         );
         formatted_message.push('\n');
-        formatted_message.push_str(format!("║{}║", " ".repeat(98)).as_str());
+        formatted_message.push_str(format!("║ {} ║", " ".repeat(message_line_length)).as_str());
         formatted_message.push('\n');
-        formatted_message.push_str(format!("╚{}╝", "═".repeat(98)).as_str());
+        formatted_message.push_str(format!("╚═{}═╝", "═".repeat(message_line_length)).as_str());
         formatted_message.push('\n');
         if let Some(ref source_location) = source_location {
-            formatted_message.push_str("--> ");
-            formatted_message.push_str(source_location.to_string().as_str());
+            let source_code = sources.and_then(|sources| {
+                sources
+                    .get(source_location.file.as_str())
+                    .map(|source_code| source_code.as_str())
+            });
+            let mapped_location =
+                MappedLocation::try_from_source_location(source_location, source_code);
+            formatted_message.push_str(mapped_location.to_string().as_str());
             formatted_message.push('\n');
         }
 
@@ -74,7 +98,7 @@ impl Error {
             component: "general".to_owned(),
             error_code: None,
             formatted_message,
-            message: message.trim().replace('\n', " "),
+            message,
             severity: r#type.to_lowercase(),
             source_location,
             r#type: r#type.to_owned(),
@@ -84,27 +108,46 @@ impl Error {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_error<S>(message: S, source_location: Option<SourceLocation>) -> Self
+    /// TODO: convert the replace below and use proper error contexts
+    ///
+    pub fn new_error<S>(
+        message: S,
+        source_location: Option<SourceLocation>,
+        sources: Option<&BTreeMap<String, String>>,
+    ) -> Self
     where
         S: std::fmt::Display,
     {
-        Self::new("Error", message, source_location)
+        Self::new(
+            "Error",
+            message.to_string().replace(": ", ":\n"),
+            source_location,
+            sources,
+        )
     }
 
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_warning<S>(message: S, source_location: Option<SourceLocation>) -> Self
+    pub fn new_warning<S>(
+        message: S,
+        source_location: Option<SourceLocation>,
+        sources: Option<&BTreeMap<String, String>>,
+    ) -> Self
     where
         S: std::fmt::Display,
     {
-        Self::new("Warning", message, source_location)
+        Self::new("Warning", message, source_location, sources)
     }
 
     ///
     /// Returns the `ecrecover` function usage warning.
     ///
-    pub fn warning_ecrecover(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_ecrecover(
+        node: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
+    ) -> Self {
         let message = r#"
 It looks like you are using 'ecrecover' to validate a signature of a user account.
 ZKsync Era comes with native account abstraction support, therefore it is highly recommended NOT
@@ -116,6 +159,7 @@ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-g
         Self::new_warning(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
         )
     }
 
@@ -125,6 +169,7 @@ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-g
     pub fn warning_send_and_transfer(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Self {
         let message = r#"
 It looks like you are using '<address payable>.send/transfer(<X>)' without providing the gas
@@ -138,13 +183,18 @@ Learn more on https://docs.soliditylang.org/en/latest/security-considerations.ht
         Self::new_warning(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
         )
     }
 
     ///
     /// Returns the `extcodesize` instruction usage warning.
     ///
-    pub fn warning_extcodesize(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_extcodesize(
+        node: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
+    ) -> Self {
         let message = r#"
 Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed
 in the following cases:
@@ -158,13 +208,18 @@ and non-contract addresses.
         Self::new_warning(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
         )
     }
 
     ///
     /// Returns the `origin` instruction usage warning.
     ///
-    pub fn warning_tx_origin(node: Option<&str>, id_paths: &BTreeMap<usize, &String>) -> Self {
+    pub fn warning_tx_origin(
+        node: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
+    ) -> Self {
         let message = r#"
 You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.
 ZKsync Era comes with native account abstraction support, and therefore the initiator of a
@@ -176,6 +231,7 @@ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-g
         Self::new_warning(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
         )
     }
 
@@ -185,6 +241,7 @@ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-g
     pub fn error_internal_function_pointer(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Self {
         let message = r#"
 Internal function pointers are not supported in EVM legacy assembly pipeline.
@@ -194,6 +251,7 @@ Please use the latest solc with Yul codegen instead.
         Self::new_error(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
         )
     }
 }

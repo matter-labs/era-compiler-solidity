@@ -67,8 +67,15 @@ pub fn build_solidity(
         None,
     )?;
 
-    let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
+    let mut solc_output = solc_compiler.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
@@ -142,8 +149,15 @@ pub fn build_solidity_and_detect_missing_libraries(
         None,
     )?;
 
-    let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
+    let mut solc_output = solc_compiler.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -375,8 +389,15 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let solc_output =
-        solc.standard_json(solc_input, Some(pipeline), &mut vec![], None, vec![], None)?;
+    let solc_output = solc.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
     let contains_warning = solc_output
         .errors
         .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?

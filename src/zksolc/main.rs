@@ -4,6 +4,7 @@
 
 pub mod arguments;
 
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -26,15 +27,15 @@ fn main() -> anyhow::Result<()> {
     let mut messages = arguments.validate();
     if messages.iter().all(|error| error.severity != "error") {
         if let Err(error) = main_inner(arguments, &mut messages) {
-            messages
-                .push(era_compiler_solidity::SolcStandardJsonOutputError::new_error(error, None));
+            messages.push(
+                era_compiler_solidity::SolcStandardJsonOutputError::new_error(error, None, None),
+            );
         }
     }
 
     if is_standard_json {
         let output = era_compiler_solidity::SolcStandardJsonOutput::new_with_errors(messages);
-        serde_json::to_writer(std::io::stdout(), &output).expect("Stdout writing error");
-        std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+        output.write_and_exit(HashSet::new());
     }
 
     let exit_code = if messages.iter().any(|error| error.severity == "error") {

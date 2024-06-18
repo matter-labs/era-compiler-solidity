@@ -89,6 +89,7 @@ impl Compiler {
         &self,
         mut input: StandardJsonInput,
         pipeline: Option<Pipeline>,
+        sources: Option<&BTreeMap<String, String>>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
@@ -164,8 +165,13 @@ impl Compiler {
         });
         errors.append(messages);
 
-        if let Some(pipeline) = pipeline {
-            solc_output.preprocess_ast(&self.version, pipeline, suppressed_warnings.as_slice())?;
+        if let (Some(sources), Some(pipeline)) = (sources, pipeline) {
+            solc_output.preprocess_ast(
+                sources,
+                &self.version,
+                pipeline,
+                suppressed_warnings.as_slice(),
+            )?;
         }
         solc_output.remove_evm();
 
@@ -289,7 +295,8 @@ impl Compiler {
         }
 
         solc_input.normalize_yul_validation();
-        let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
+        let solc_output =
+            self.standard_json(solc_input, None, None, messages, None, vec![], None)?;
         Ok(solc_output)
     }
 

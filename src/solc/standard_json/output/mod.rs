@@ -214,6 +214,7 @@ impl Output {
             .push(JsonOutputError::new_error(
                 error,
                 path.map(JsonOutputErrorSourceLocation::new),
+                None,
             ));
     }
 
@@ -222,27 +223,35 @@ impl Output {
     ///
     pub fn preprocess_ast(
         &mut self,
+        sources: &BTreeMap<String, String>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
         suppressed_warnings: &[Warning],
     ) -> anyhow::Result<()> {
-        let sources = match self.sources.as_ref() {
+        let source_asts = match self.sources.as_ref() {
             Some(sources) => sources,
             None => return Ok(()),
         };
-        let id_paths: BTreeMap<usize, &String> = sources
+        let id_paths: BTreeMap<usize, &String> = source_asts
             .iter()
             .map(|(path, source)| (source.id, path))
             .collect();
 
-        let messages: Vec<JsonOutputError> = sources
+        let messages: Vec<JsonOutputError> = source_asts
             .par_iter()
             .map(|(_path, source)| {
                 source
                     .ast
                     .as_ref()
                     .map(|ast| {
-                        Source::get_messages(ast, &id_paths, version, pipeline, suppressed_warnings)
+                        Source::get_messages(
+                            ast,
+                            &id_paths,
+                            sources,
+                            version,
+                            pipeline,
+                            suppressed_warnings,
+                        )
                     })
                     .unwrap_or_default()
             })

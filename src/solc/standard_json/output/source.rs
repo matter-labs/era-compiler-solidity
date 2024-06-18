@@ -38,6 +38,7 @@ impl Source {
     pub fn check_ecrecover(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -56,6 +57,7 @@ impl Source {
         Some(SolcStandardJsonOutputError::warning_ecrecover(
             ast.get("src")?.as_str(),
             id_paths,
+            sources,
         ))
     }
 
@@ -65,6 +67,7 @@ impl Source {
     pub fn check_send_and_transfer(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -91,6 +94,7 @@ impl Source {
         Some(SolcStandardJsonOutputError::warning_send_and_transfer(
             ast.get("src")?.as_str(),
             id_paths,
+            sources,
         ))
     }
 
@@ -100,6 +104,7 @@ impl Source {
     pub fn check_assembly_extcodesize(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -119,6 +124,7 @@ impl Source {
         Some(SolcStandardJsonOutputError::warning_extcodesize(
             ast.get("src")?.as_str(),
             id_paths,
+            sources,
         ))
     }
 
@@ -128,6 +134,7 @@ impl Source {
     pub fn check_assembly_origin(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -147,6 +154,7 @@ impl Source {
         Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
             id_paths,
+            sources,
         ))
     }
 
@@ -156,6 +164,7 @@ impl Source {
     pub fn check_tx_origin(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -177,6 +186,7 @@ impl Source {
         Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
             id_paths,
+            sources,
         ))
     }
 
@@ -186,6 +196,7 @@ impl Source {
     pub fn check_internal_function_pointer(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -206,6 +217,7 @@ impl Source {
             SolcStandardJsonOutputError::error_internal_function_pointer(
                 ast.get("src")?.as_str(),
                 id_paths,
+                sources,
             ),
         )
     }
@@ -216,36 +228,37 @@ impl Source {
     pub fn get_messages(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
         suppressed_warnings: &[Warning],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
         if !suppressed_warnings.contains(&Warning::EcRecover) {
-            if let Some(message) = Self::check_ecrecover(ast, id_paths) {
+            if let Some(message) = Self::check_ecrecover(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::SendTransfer) {
-            if let Some(message) = Self::check_send_and_transfer(ast, id_paths) {
+            if let Some(message) = Self::check_send_and_transfer(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::ExtCodeSize) {
-            if let Some(message) = Self::check_assembly_extcodesize(ast, id_paths) {
+            if let Some(message) = Self::check_assembly_extcodesize(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
         if !suppressed_warnings.contains(&Warning::TxOrigin) {
-            if let Some(message) = Self::check_assembly_origin(ast, id_paths) {
+            if let Some(message) = Self::check_assembly_origin(ast, id_paths, sources) {
                 messages.push(message);
             }
-            if let Some(message) = Self::check_tx_origin(ast, id_paths) {
+            if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
         if SolcPipeline::EVMLA == pipeline && version.l2_revision.is_none() {
-            if let Some(message) = Self::check_internal_function_pointer(ast, id_paths) {
+            if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
@@ -256,6 +269,7 @@ impl Source {
                     messages.extend(Self::get_messages(
                         element,
                         id_paths,
+                        sources,
                         version,
                         pipeline,
                         suppressed_warnings,
@@ -267,6 +281,7 @@ impl Source {
                     messages.extend(Self::get_messages(
                         value,
                         id_paths,
+                        sources,
                         version,
                         pipeline,
                         suppressed_warnings,
