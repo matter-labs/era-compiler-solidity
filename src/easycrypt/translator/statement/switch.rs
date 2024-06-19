@@ -50,6 +50,7 @@ impl Translator {
         let mut ctx = ctx.add_locals(locals.iter());
 
         let tmp_def = self.new_tmp_definition_here();
+        ctx = ctx.add_local(tmp_def.clone());
         let tmp_ref = tmp_def.reference();
         let initial_assignment =
             Statement::EAssignment(vec![tmp_ref.clone()], Box::from(transpiled_expression));
