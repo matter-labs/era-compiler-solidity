@@ -169,9 +169,14 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_integer_literal(&mut self, int_literal: &IntegerLiteral) {
-        match int_literal {
-            IntegerLiteral::Decimal { inner } => self.print(inner),
-        }
+        let inner = match int_literal {
+            IntegerLiteral::Decimal { inner } => inner,
+        };
+
+        // FIXME: temporary solution
+        self.print("(W256.of_int ");
+        self.print(inner);
+        self.print(")");
     }
 
     fn visit_literal(&mut self, literal: &Literal) {
