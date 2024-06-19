@@ -41,6 +41,15 @@ impl Selection {
     }
 
     ///
+    /// Creates the selection for EraVM assembly.
+    ///
+    pub fn new_eravm_assembly() -> Self {
+        Self {
+            all: Some(FileSelection::new_eravm_assembly()),
+        }
+    }
+
+    ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
     pub fn extend_with_required(&mut self, pipeline: Option<SolcPipeline>) -> &mut Self {
@@ -57,6 +66,16 @@ impl Selection {
         self.all
             .get_or_insert_with(FileSelection::new_yul_validation)
             .extend_with_yul_validation();
+        self
+    }
+
+    ///
+    /// Extends the output selection with EraVM assembly.
+    ///
+    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
+        self.all
+            .get_or_insert_with(FileSelection::new_eravm_assembly)
+            .extend_with_eravm_assembly();
         self
     }
 

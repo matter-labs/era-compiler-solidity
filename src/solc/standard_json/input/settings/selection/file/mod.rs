@@ -56,6 +56,16 @@ impl File {
     }
 
     ///
+    /// Creates the selection for EraVM assembly.
+    ///
+    pub fn new_eravm_assembly() -> Self {
+        Self {
+            per_file: Some(HashSet::new()),
+            per_contract: Some(HashSet::from_iter([SelectionFlag::EraVMAssembly])),
+        }
+    }
+
+    ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
     pub fn extend_with_required(&mut self, pipeline: Option<SolcPipeline>) -> &mut Self {
@@ -80,6 +90,20 @@ impl File {
         self.per_contract
             .get_or_insert_with(HashSet::default)
             .extend(yul_validation.per_contract.unwrap_or_default());
+        self
+    }
+
+    ///
+    /// Extends the output selection with EraVM assembly flag.
+    ///
+    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
+        let eravm_assembly = Self::new_eravm_assembly();
+        self.per_file
+            .get_or_insert_with(HashSet::default)
+            .extend(eravm_assembly.per_file.unwrap_or_default());
+        self.per_contract
+            .get_or_insert_with(HashSet::default)
+            .extend(eravm_assembly.per_contract.unwrap_or_default());
         self
     }
 

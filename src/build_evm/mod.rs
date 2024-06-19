@@ -200,6 +200,25 @@ impl Build {
     }
 
     ///
+    /// Collects errors into one message and bails, if there is at least one error.
+    ///
+    pub fn collect_errors(&self) -> anyhow::Result<()> {
+        if !self.has_errors() {
+            return Ok(());
+        }
+
+        anyhow::bail!(
+            "{}",
+            self.contracts
+                .values()
+                .filter_map(|result| result.as_ref().err())
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
+    }
+
+    ///
     /// Checks for errors, exiting the application if there is at least one error.
     ///
     pub fn exit_on_error(&self) {
