@@ -152,7 +152,7 @@ impl Translator {
                         ProcCall {
                             target: ProcName::UserDefined {
                                 name: String::from("revert"),
-                                module: Some(String::from("Revert")),
+                                module: Some(String::from("Primops")),
                             },
                             arguments,
                         },
