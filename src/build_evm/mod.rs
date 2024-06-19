@@ -153,13 +153,13 @@ impl Build {
                 .contracts
                 .iter_mut()
                 .find_map(|(json_path, contract)| {
-                    let path = PathBuf::from(path.split(':').next().expect("Always exists"))
+                    let path = PathBuf::from(&path[..path.rfind(':').expect("Always exists")])
                         .normalize()
-                        .expect("Path canonicalization error");
+                        .expect("Path normalization error");
                     let json_path =
-                        PathBuf::from(json_path.split(':').next().expect("Always exists"))
+                        PathBuf::from(&json_path[..json_path.rfind(':').expect("Always exists")])
                             .normalize()
-                            .expect("Path canonicalization error");
+                            .expect("Path normalization error");
 
                     if path.ends_with(json_path) {
                         Some(contract)
