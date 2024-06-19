@@ -5,10 +5,15 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
+
+use normpath::PathExt;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
+use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
 use crate::solc::standard_json::output::Output as StandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 
@@ -17,22 +22,38 @@ use self::contract::Contract;
 ///
 /// The Solidity project build.
 ///
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Build {
     /// The contract data,
-    pub contracts: BTreeMap<String, anyhow::Result<Contract>>,
+    pub contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
+    /// The additional message to output.
+    pub messages: Vec<StandardJsonOutputError>,
 }
 
 impl Build {
     ///
+    /// A shortcut constructor.
+    ///
+    pub fn new(
+        contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
+        messages: &mut Vec<StandardJsonOutputError>,
+    ) -> Self {
+        Self {
+            contracts,
+            messages: std::mem::take(messages),
+        }
+    }
+
+    ///
     /// Writes all contracts to the terminal.
     ///
     pub fn write_to_terminal(
-        self,
+        mut self,
         output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
-        self.check_errors()?;
+        self.take_and_write_warnings();
+        self.exit_on_error();
 
         for (path, build) in self.contracts.into_iter() {
             build
@@ -47,13 +68,14 @@ impl Build {
     /// Writes all contracts to the specified directory.
     ///
     pub fn write_to_directory(
-        self,
+        mut self,
         output_directory: &Path,
         output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        self.check_errors()?;
+        self.take_and_write_warnings();
+        self.exit_on_error();
 
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
@@ -68,39 +90,6 @@ impl Build {
     }
 
     ///
-    /// Writes all contracts assembly and bytecode to the combined JSON.
-    ///
-    pub fn write_to_combined_json(
-        self,
-        combined_json: &mut CombinedJson,
-        zksolc_version: &semver::Version,
-    ) -> anyhow::Result<()> {
-        self.check_errors()?;
-
-        for (path, build) in self.contracts.into_iter() {
-            let combined_json_contract = combined_json
-                .contracts
-                .iter_mut()
-                .find_map(|(json_path, contract)| {
-                    if path.ends_with(json_path) {
-                        Some(contract)
-                    } else {
-                        None
-                    }
-                })
-                .ok_or_else(|| anyhow::anyhow!("Contract `{}` not found in the project", path))?;
-
-            build
-                .expect("Always valid")
-                .write_to_combined_json(combined_json_contract)?;
-        }
-
-        combined_json.zk_version = Some(zksolc_version.to_string());
-
-        Ok(())
-    }
-
-    ///
     /// Writes all contracts assembly and bytecode to the standard JSON.
     ///
     pub fn write_to_standard_json(
@@ -109,14 +98,7 @@ impl Build {
         solc_version: Option<&SolcVersion>,
         zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
-        let standard_json_contracts = match standard_json.contracts.as_mut() {
-            Some(contracts) => contracts,
-            None => {
-                standard_json.contracts = Some(BTreeMap::new());
-                standard_json.contracts.as_mut().expect("Always exists")
-            }
-        };
-
+        let standard_json_contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
         let mut errors = Vec::with_capacity(self.contracts.len());
         for (full_path, build) in self.contracts.into_iter() {
             let mut full_path_split = full_path.split(':');
@@ -132,21 +114,20 @@ impl Build {
                         build.write_to_standard_json(contract)?;
                     }
                     None => {
-                        let contracts = standard_json_contracts
-                            .entry(path.to_owned())
-                            .or_insert_with(BTreeMap::new);
+                        let contracts = standard_json_contracts.entry(path.to_owned()).or_default();
                         let mut contract = StandardJsonOutputContract::default();
                         build.write_to_standard_json(&mut contract)?;
                         contracts.insert(name.to_owned(), contract);
                     }
                 },
-                Err(error) => errors.push((path.to_owned(), error)),
+                Err(error) => errors.push(error),
             }
         }
 
-        for (path, error) in errors.into_iter() {
-            standard_json.push_error(path, error);
-        }
+        standard_json
+            .errors
+            .get_or_insert_with(Vec::new)
+            .extend(errors);
         if let Some(solc_version) = solc_version {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());
@@ -157,26 +138,108 @@ impl Build {
     }
 
     ///
-    /// Checks for errors, returning `Err` if there is at least one error.
+    /// Writes all contracts assembly and bytecode to the combined JSON.
     ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        let mut errors = Vec::new();
-        for (path, contract) in self.contracts.iter() {
-            if let Err(ref error) = contract {
-                errors.push((path.to_owned(), error.to_string()));
-            }
-        }
-        if !errors.is_empty() {
-            anyhow::bail!(
-                "{}",
-                errors
-                    .iter()
-                    .map(|(path, error)| format!("Contract `{path}` error: {error}"))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
+    pub fn write_to_combined_json(
+        mut self,
+        combined_json: &mut CombinedJson,
+        zksolc_version: &semver::Version,
+    ) -> anyhow::Result<()> {
+        self.take_and_write_warnings();
+        self.exit_on_error();
+
+        for (path, build) in self.contracts.into_iter() {
+            let combined_json_contract = combined_json
+                .contracts
+                .iter_mut()
+                .find_map(|(json_path, contract)| {
+                    let path = PathBuf::from(&path[..path.rfind(':').expect("Always exists")])
+                        .normalize()
+                        .expect("Path normalization error");
+                    let json_path =
+                        PathBuf::from(&json_path[..json_path.rfind(':').expect("Always exists")])
+                            .normalize()
+                            .expect("Path normalization error");
+
+                    if path.ends_with(json_path) {
+                        Some(contract)
+                    } else {
+                        None
+                    }
+                })
+                .ok_or_else(|| anyhow::anyhow!("Contract `{path}` not found in the project"))?;
+
+            build
+                .expect("Always valid")
+                .write_to_combined_json(combined_json_contract)?;
         }
 
+        combined_json.zk_version = Some(zksolc_version.to_string());
+
         Ok(())
+    }
+
+    ///
+    /// Checks if there is at least one error.
+    ///
+    pub fn has_errors(&self) -> bool {
+        self.contracts.values().any(|result| result.is_err())
+            || self
+                .messages
+                .iter()
+                .any(|message| message.severity == "error")
+    }
+
+    ///
+    /// Checks if there is at least one warning.
+    ///
+    pub fn has_warnings(&self) -> bool {
+        self.messages
+            .iter()
+            .any(|message| message.severity == "warning")
+    }
+
+    ///
+    /// Checks for errors, exiting the application if there is at least one error.
+    ///
+    pub fn exit_on_error(&self) {
+        if !self.has_errors() {
+            return;
+        }
+
+        std::io::stderr()
+            .write_all(
+                self.contracts
+                    .values()
+                    .filter_map(|result| result.as_ref().err())
+                    .map(|error| error.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+                    .as_bytes(),
+            )
+            .expect("Stderr writing error");
+        std::process::exit(era_compiler_common::EXIT_CODE_FAILURE);
+    }
+
+    ///
+    /// Removes warnings from the list of messages and prints them to stderr.
+    ///
+    pub fn take_and_write_warnings(&mut self) {
+        if !self.has_warnings() {
+            return;
+        }
+        writeln!(
+            std::io::stderr(),
+            "{}",
+            self.messages
+                .iter()
+                .filter(|error| error.severity == "warning")
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        )
+        .expect("Stderr writing error");
+        self.messages
+            .retain(|message| message.severity != "warning");
     }
 }

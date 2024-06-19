@@ -5,16 +5,22 @@
 ### Added
 
 - Parallelization in AST and IR parsing
+- Location resolution for EraVM-specific messages in standard JSON output
 
 ### Changed
 
-- Lexer and parser errors are now written to JSON in standard JSON mode
+- All messages are now written to JSON output in standard JSON mode
 - AST and IRs are not emitted anymore if not explicitly requested
+- Empty files and contracts are pruned from standard JSON output
+- ASCII boxes are made more compatible with original messages of solc
+- Updated to Rust v1.79.0
 
 ### Fixed
 
 - Dependency graph inefficiency that caused excessive compilation time
 - Removed JSON stream readers which are much slower than strings and vectors
+- Filtered out several EVM-specific warnings from standard JSON output
+- Missing output with non-canonical input paths in combined JSON output
 
 ## [1.5.0] - 2024-06-10
 
@@ -33,8 +39,9 @@
 
 - Updated to EraVM v1.5.0
 - Renamed the `system-mode` flag to `enable-eravm-extensions`
-- Renamed the `zkasm` flag to `eravm`
+- Renamed the `zkasm` flag to `eravm-assembly`
 - Added all missing CLI flags to standard JSON input
+- Updated to Rust v1.78.0
 
 ### Deprecated
 

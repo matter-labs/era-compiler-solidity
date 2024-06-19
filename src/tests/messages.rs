@@ -27,30 +27,28 @@ contract ECRecoverExample {
 
 #[test]
 fn ecrecover() {
-    assert!(
-        super::check_solidity_warning(
-            ECRECOVER_TEST_SOURCE,
-            "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            None,
-        ).expect("Test failure")
-    );
+    assert!(super::check_solidity_warning(
+        ECRECOVER_TEST_SOURCE,
+        "It looks like you are using 'ecrecover' to validate a signature of a user account.",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        None,
+    )
+    .expect("Test failure"));
 }
 
 #[test]
 fn ecrecover_suppressed() {
-    assert!(
-        !super::check_solidity_warning(
-            ECRECOVER_TEST_SOURCE,
-            "Warning: It looks like you are using 'ecrecover' to validate a signature of a user account.",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            Some(vec![Warning::EcRecover]),
-        ).expect("Test failure")
-    );
+    assert!(!super::check_solidity_warning(
+        ECRECOVER_TEST_SOURCE,
+        "It looks like you are using 'ecrecover' to validate a signature of a user account.",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        Some(vec![Warning::EcRecover]),
+    )
+    .expect("Test failure"));
 }
 
 pub const SEND_TEST_SOURCE: &str = r#"
@@ -73,30 +71,28 @@ contract SendExample {
 
 #[test]
 fn send() {
-    assert!(
-        super::check_solidity_warning(
-            SEND_TEST_SOURCE,
-            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            None,
-        ).expect("Test failure")
-    );
+    assert!(super::check_solidity_warning(
+        SEND_TEST_SOURCE,
+        "It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        None,
+    )
+    .expect("Test failure"));
 }
 
 #[test]
 fn send_suppressed() {
-    assert!(
-        !super::check_solidity_warning(
-            SEND_TEST_SOURCE,
-            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            Some(vec![Warning::SendTransfer]),
-        ).expect("Test failure")
-    );
+    assert!(!super::check_solidity_warning(
+        SEND_TEST_SOURCE,
+        "It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        Some(vec![Warning::SendTransfer]),
+    )
+    .expect("Test failure"));
 }
 
 pub const TRANSFER_TEST_SOURCE: &str = r#"
@@ -118,30 +114,28 @@ contract TransferExample {
 
 #[test]
 fn transfer() {
-    assert!(
-        super::check_solidity_warning(
-            TRANSFER_TEST_SOURCE,
-            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            None,
-        ).expect("Test failure")
-    );
+    assert!(super::check_solidity_warning(
+        TRANSFER_TEST_SOURCE,
+        "It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        None,
+    )
+    .expect("Test failure"));
 }
 
 #[test]
 fn transfer_suppressed() {
-    assert!(
-        !super::check_solidity_warning(
-            TRANSFER_TEST_SOURCE,
-            "Warning: It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
-            BTreeMap::new(),
-            SolcPipeline::Yul,
-            false,
-            Some(vec![Warning::SendTransfer]),
-        ).expect("Test failure")
-    );
+    assert!(!super::check_solidity_warning(
+        TRANSFER_TEST_SOURCE,
+        "It looks like you are using '<address payable>.send/transfer(<X>)' without providing",
+        BTreeMap::new(),
+        SolcPipeline::Yul,
+        false,
+        Some(vec![Warning::SendTransfer]),
+    )
+    .expect("Test failure"));
 }
 
 pub const EXTCODESIZE_TEST_SOURCE: &str = r#"
@@ -163,7 +157,7 @@ contract ExternalCodeSize {
 fn extcodesize() {
     assert!(super::check_solidity_warning(
         EXTCODESIZE_TEST_SOURCE,
-        "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
+        "Your code or one of its dependencies uses the 'extcodesize' instruction,",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -176,7 +170,7 @@ fn extcodesize() {
 fn extcodesize_suppressed() {
     assert!(!super::check_solidity_warning(
         EXTCODESIZE_TEST_SOURCE,
-        "Warning: Your code or one of its dependencies uses the 'extcodesize' instruction,",
+        "Your code or one of its dependencies uses the 'extcodesize' instruction,",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -200,7 +194,7 @@ contract TxOriginExample {
 fn tx_origin() {
     assert!(super::check_solidity_warning(
         TX_ORIGIN_TEST_SOURCE,
-        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        "You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -213,7 +207,7 @@ fn tx_origin() {
 fn tx_origin_suppressed() {
     assert!(!super::check_solidity_warning(
         TX_ORIGIN_TEST_SOURCE,
-        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        "You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -244,7 +238,7 @@ contract TxOriginExample {
 fn tx_origin_assembly() {
     assert!(super::check_solidity_warning(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
-        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        "You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -257,7 +251,7 @@ fn tx_origin_assembly() {
 fn tx_origin_assembly_suppressed() {
     assert!(!super::check_solidity_warning(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
-        "Warning: You are checking for 'tx.origin' in your code, which might lead to",
+        "You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         SolcPipeline::Yul,
         false,
@@ -301,7 +295,7 @@ contract InternalFunctionPointerExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
         true,
@@ -339,7 +333,7 @@ contract StackFunctionPointerExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
         true,
@@ -384,7 +378,7 @@ contract StorageFunctionPointerExample {
 
     assert!(super::check_solidity_warning(
         source_code,
-        "Error: Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
         BTreeMap::new(),
         SolcPipeline::EVMLA,
         true,

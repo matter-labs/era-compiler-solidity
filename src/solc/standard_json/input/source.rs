@@ -6,13 +6,10 @@ use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The `solc --standard-json` input source.
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     /// The source code file content.
@@ -46,23 +43,20 @@ impl Source {
     }
 }
 
-impl TryInto<String> for Source {
+impl TryInto<String> for &Source {
     type Error = anyhow::Error;
 
     fn try_into(self) -> anyhow::Result<String> {
-        match (self.content, self.urls) {
-            (Some(content), None) => Ok(content),
-            (None, Some(mut urls)) => {
-                let url = match urls.pop() {
+        match (self.content.as_ref(), self.urls.as_ref()) {
+            (Some(content), None) => Ok(content.to_owned()),
+            (None, Some(urls)) => {
+                let url = match urls.first() {
                     Some(url) => url,
                     None => anyhow::bail!("The URL list is empty"),
                 };
-                if !urls.is_empty() {
-                    anyhow::bail!("Only one source code URL is allowed");
-                }
 
                 let url_path = PathBuf::from(url);
-                let source_with_content = Self::try_read(url_path.as_path())?;
+                let source_with_content = Source::try_read(url_path.as_path())?;
                 Ok(source_with_content.content.expect("Always exists"))
             }
             (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),

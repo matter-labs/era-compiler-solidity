@@ -65,7 +65,7 @@ describe("Set of --output-dir tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("Compiler warning/error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/No input sources specified/i);
       tmpDirZkSolc.removeCallback();
     });

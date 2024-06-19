@@ -21,8 +21,6 @@ use self::stack::Stack;
 ///
 #[derive(Debug, Clone)]
 pub struct Element {
-    /// The Solidity compiler version.
-    pub solc_version: semver::Version,
     /// The instruction.
     pub instruction: Instruction,
     /// The stack data.
@@ -42,7 +40,6 @@ impl Element {
         let output_size = instruction.output_size();
 
         Self {
-            solc_version,
             instruction,
             stack: Stack::new(),
             stack_input: Stack::with_capacity(input_size),

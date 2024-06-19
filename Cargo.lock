@@ -318,7 +318,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#2e60dd413e8d9224049e8b038596284681b00a3d"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#833bb45635e113b5346457c63b68c3b5c69b2869"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -346,6 +346,7 @@ dependencies = [
  "inkwell",
  "md5",
  "mimalloc",
+ "normpath",
  "num",
  "num_cpus",
  "path-slash",
@@ -772,6 +773,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "normpath"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5831952a9476f2fed74b77d74182fa5ddc4d21c72ec45a333b250e3ed0272804"
+dependencies = [
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "num"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1104,9 +1114,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "469052894dcb553421e483e4209ee581a45100d31b4018de03e5a7ad86374a7e"
+checksum = "c82cf8cff14456045f55ec4241383baeff27af886adb72ffb2162f99911de0fd"
 dependencies = [
  "bitflags 2.5.0",
 ]

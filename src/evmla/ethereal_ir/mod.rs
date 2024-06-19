@@ -32,10 +32,6 @@ use self::function::Function;
 ///
 #[derive(Debug)]
 pub struct EtherealIR {
-    /// The Solidity compiler version.
-    pub solc_version: semver::Version,
-    /// The EVMLA extra metadata.
-    pub extra_metadata: ExtraMetadata,
     /// The all-inlined function.
     pub entry_function: Function,
     /// The recursive functions.
@@ -59,7 +55,7 @@ impl EtherealIR {
         blocks: HashMap<era_compiler_llvm_context::BlockKey, Block>,
     ) -> anyhow::Result<Self> {
         let mut entry_function =
-            Function::new(solc_version.clone(), code_type, FunctionType::new_initial());
+            Function::new(solc_version, code_type, FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
         let mut visited_functions = BTreeSet::new();
         entry_function.traverse(
@@ -70,8 +66,6 @@ impl EtherealIR {
         )?;
 
         Ok(Self {
-            solc_version,
-            extra_metadata,
             entry_function,
             recursive_functions,
         })

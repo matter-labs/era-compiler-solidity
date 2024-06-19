@@ -8,6 +8,7 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::HashSet;
+use std::io::Write;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -17,10 +18,12 @@ use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
+use self::error::source_location::SourceLocation as JsonOutputErrorSourceLocation;
 use self::error::Error as JsonOutputError;
 use self::source::Source;
 
@@ -56,7 +59,7 @@ impl Output {
     ///
     /// Is used for projects compiled without `solc`.
     ///
-    pub fn new(sources: &BTreeMap<String, String>) -> Self {
+    pub fn new(sources: &BTreeMap<String, String>, messages: &mut Vec<JsonOutputError>) -> Self {
         let contracts = sources
             .keys()
             .map(|path| {
@@ -75,7 +78,23 @@ impl Output {
         Self {
             contracts: Some(contracts),
             sources: Some(sources),
-            errors: None,
+            errors: Some(std::mem::take(messages)),
+            version: None,
+            long_version: None,
+            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+        }
+    }
+
+    ///
+    /// Initializes a standard JSON output with errors.
+    ///
+    /// Is used to emit errors in standard JSON mode.
+    ///
+    pub fn new_with_errors(messages: Vec<JsonOutputError>) -> Self {
+        Self {
+            contracts: None,
+            sources: None,
+            errors: Some(messages),
             version: None,
             long_version: None,
             zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
@@ -111,17 +130,58 @@ impl Output {
             if prune_output.contains(&SelectionFlag::Metadata) {
                 contract.metadata = None;
             }
+            if prune_output.contains(&SelectionFlag::Yul) {
+                contract.ir_optimized = None;
+            }
             if let Some(ref mut evm) = contract.evm {
                 if prune_output.contains(&SelectionFlag::EVMLA) {
-                    evm.assembly = None;
+                    evm.legacy_assembly = None;
                 }
                 if prune_output.contains(&SelectionFlag::MethodIdentifiers) {
                     evm.method_identifiers = None;
                 }
+                evm.extra_metadata = None;
             }
-            if prune_output.contains(&SelectionFlag::Yul) {
-                contract.ir_optimized = None;
+            if contract
+                .evm
+                .as_ref()
+                .map(StandardJSONOutputContractEVM::is_empty)
+                .unwrap_or_default()
+            {
+                contract.evm = None;
             }
+        }
+
+        if let Some(ref mut files) = self.contracts {
+            files.retain(|_, contracts| {
+                contracts.retain(|_, contract| !contract.is_empty());
+                !contracts.is_empty()
+            });
+        }
+
+        if self
+            .contracts
+            .as_ref()
+            .map(|contracts| contracts.is_empty())
+            .unwrap_or_default()
+        {
+            self.contracts = None;
+        }
+        if self
+            .sources
+            .as_ref()
+            .map(|sources| sources.is_empty())
+            .unwrap_or_default()
+        {
+            self.sources = None;
+        }
+        if self
+            .errors
+            .as_ref()
+            .map(|errors| errors.is_empty())
+            .unwrap_or_default()
+        {
+            self.errors = None;
         }
 
         serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
@@ -148,19 +208,14 @@ impl Output {
     ///
     /// Please do not push project-general errors without paths here.
     ///
-    pub fn push_error(&mut self, path: String, error: anyhow::Error) {
-        let mut error = JsonOutputError {
-            component: "general".to_owned(),
-            error_code: None,
-            formatted_message: error.to_string(),
-            message: "".to_owned(),
-            severity: "error".to_owned(),
-            source_location: None,
-            r#type: "Error".to_owned(),
-        };
-        error.push_contract_path(path.as_str());
-
-        self.errors.get_or_insert_with(Vec::new).push(error);
+    pub fn push_error(&mut self, path: Option<String>, error: anyhow::Error) {
+        self.errors
+            .get_or_insert_with(Vec::new)
+            .push(JsonOutputError::new_error(
+                error,
+                path.map(JsonOutputErrorSourceLocation::new),
+                None,
+            ));
     }
 
     ///
@@ -168,28 +223,37 @@ impl Output {
     ///
     pub fn preprocess_ast(
         &mut self,
+        sources: &BTreeMap<String, String>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
         suppressed_warnings: &[Warning],
     ) -> anyhow::Result<()> {
-        let sources = match self.sources.as_ref() {
+        let source_asts = match self.sources.as_ref() {
             Some(sources) => sources,
             None => return Ok(()),
         };
+        let id_paths: BTreeMap<usize, &String> = source_asts
+            .iter()
+            .map(|(path, source)| (source.id, path))
+            .collect();
 
-        let messages: Vec<JsonOutputError> = sources
+        let messages: Vec<JsonOutputError> = source_asts
             .par_iter()
-            .map(|(path, source)| {
-                if let Some(ast) = source.ast.as_ref() {
-                    let mut eravm_messages =
-                        Source::get_messages(ast, version, pipeline, suppressed_warnings);
-                    for message in eravm_messages.iter_mut() {
-                        message.push_contract_path(path.as_str());
-                    }
-                    eravm_messages
-                } else {
-                    vec![]
-                }
+            .map(|(_path, source)| {
+                source
+                    .ast
+                    .as_ref()
+                    .map(|ast| {
+                        Source::get_messages(
+                            ast,
+                            &id_paths,
+                            sources,
+                            version,
+                            pipeline,
+                            suppressed_warnings,
+                        )
+                    })
+                    .unwrap_or_default()
             })
             .flatten()
             .collect();
@@ -214,7 +278,7 @@ impl Output {
                 let hash = match contract
                     .evm
                     .as_ref()
-                    .and_then(|evm| evm.assembly.as_ref())
+                    .and_then(|evm| evm.legacy_assembly.as_ref())
                     .map(|assembly| assembly.keccak256())
                 {
                     Some(hash) => hash,
@@ -229,7 +293,11 @@ impl Output {
         for (path, contracts) in files.iter_mut() {
             for (name, contract) in contracts.iter_mut() {
                 let full_path = format!("{path}:{name}");
-                let assembly = match contract.evm.as_mut().and_then(|evm| evm.assembly.as_mut()) {
+                let assembly = match contract
+                    .evm
+                    .as_mut()
+                    .and_then(|evm| evm.legacy_assembly.as_mut())
+                {
                     Some(assembly) => assembly,
                     None => continue,
                 };
@@ -247,31 +315,69 @@ impl Output {
     }
 
     ///
-    /// Checks for errors, returning `Err` if there is at least one error.
+    /// Checks if there is at least one error.
     ///
-    pub fn check_errors(&self) -> anyhow::Result<()> {
-        if self
-            .errors
+    pub fn has_errors(&self) -> bool {
+        self.errors
             .as_ref()
             .map(|errors| errors.iter().any(|error| error.severity == "error"))
             .unwrap_or_default()
-        {
-            anyhow::bail!(
-                "{}",
-                self.errors
-                    .as_ref()
-                    .map(|errors| {
-                        errors
-                            .iter()
-                            .map(|error| error.to_string())
-                            .collect::<Vec<String>>()
-                            .join("\n")
-                    })
-                    .unwrap_or_default()
-            );
-        }
+    }
 
-        Ok(())
+    ///
+    /// Checks if there is at least one warning.
+    ///
+    pub fn has_warnings(&self) -> bool {
+        self.errors
+            .as_ref()
+            .map(|errors| errors.iter().any(|error| error.severity == "warning"))
+            .unwrap_or_default()
+    }
+
+    ///
+    /// Checks for errors, returning `Err` if there is at least one error.
+    ///
+    pub fn collect_errors(&self) -> anyhow::Result<()> {
+        if !self.has_errors() {
+            return Ok(());
+        }
+        let errors = match self.errors.as_ref() {
+            Some(errors) => errors,
+            None => return Ok(()),
+        };
+        anyhow::bail!(
+            "{}",
+            errors
+                .iter()
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
+    }
+
+    ///
+    /// Removes warnings from the list of errors and prints them to stderr.
+    ///
+    pub fn take_and_write_warnings(&mut self) {
+        if !self.has_warnings() {
+            return;
+        }
+        let errors = match self.errors.as_mut() {
+            Some(errors) => errors,
+            None => return,
+        };
+        writeln!(
+            std::io::stderr(),
+            "{}",
+            errors
+                .iter()
+                .filter(|error| error.severity == "warning")
+                .map(|error| error.to_string())
+                .collect::<Vec<String>>()
+                .join("\n")
+        )
+        .expect("Stderr writing error");
+        errors.retain(|error| error.severity != "warning");
     }
 
     ///

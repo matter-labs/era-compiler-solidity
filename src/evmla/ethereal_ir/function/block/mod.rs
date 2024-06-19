@@ -21,8 +21,6 @@ use self::element::Element;
 ///
 #[derive(Debug, Clone)]
 pub struct Block {
-    /// The Solidity compiler version.
-    pub solc_version: semver::Version,
     /// The block key.
     pub key: era_compiler_llvm_context::BlockKey,
     /// The block instance.
@@ -70,7 +68,6 @@ impl Block {
         };
 
         let mut block = Self {
-            solc_version: solc_version.clone(),
             key: era_compiler_llvm_context::BlockKey::new(code_type, tag),
             instance: None,
             elements: Vec::with_capacity(Self::ELEMENTS_VECTOR_DEFAULT_CAPACITY),

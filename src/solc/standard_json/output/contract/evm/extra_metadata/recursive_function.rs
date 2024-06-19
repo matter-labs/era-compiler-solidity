@@ -2,13 +2,10 @@
 //! The `solc --standard-json` output contract EVM recursive function.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The `solc --standard-json` output contract EVM recursive function.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecursiveFunction {
     /// The function name.

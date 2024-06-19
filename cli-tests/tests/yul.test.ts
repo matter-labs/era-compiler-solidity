@@ -46,7 +46,7 @@ describe("Set of --yul tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--yul error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(The argument '--yul' was provided more than once,)/i);
     });
 
@@ -65,7 +65,7 @@ describe("Set of --yul tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--yul error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(Yul parsing)/i);
     });
 
@@ -84,7 +84,7 @@ describe("Set of --yul tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--yul error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
     });
 
@@ -99,17 +99,12 @@ describe("Set of --yul tests", () => {
     const args = [`${paths.pathToBasicYulContract}`, `--yul`, `--standard-json`];
     const result = executeCommand(zksolcCommand, args);
 
-    it("Valid command exit code = 1", () => {
-      expect(result.exitCode).toBe(1);
+    it("Valid command exit code = 0", () => {
+      expect(result.exitCode).toBe(0);
     });
 
-    it("--yul error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(Only one mode is allowed at the same time:)/i);
-    });
-
-    it("solc exit code == zksolc exit code", () => {
-      const solcResult = executeCommand(solcCommand, args);
-      expect(solcResult.exitCode).toBe(result.exitCode);
     });
   });
 });

@@ -17,7 +17,7 @@ fn yul() {
 pragma solidity ^0.8.0;
 
 contract Test {
-    function main() public view returns (uint) {
+    function main() public pure returns (uint) {
         return 42;
     }
 }
@@ -60,9 +60,9 @@ contract Test {
             .evm
             .as_ref()
             .expect("EVM object is missing")
-            .assembly
+            .legacy_assembly
             .is_none(),
-        "EVMLA IR is present although not requested"
+        "EVM assembly IR is present although not requested"
     );
 }
 
@@ -73,7 +73,7 @@ fn evmla() {
 pragma solidity ^0.8.0;
 
 contract Test {
-    function main() public view returns (uint) {
+    function main() public pure returns (uint) {
         return 42;
     }
 }
@@ -102,9 +102,9 @@ contract Test {
             .evm
             .as_ref()
             .expect("EVM object is missing")
-            .assembly
+            .legacy_assembly
             .is_some(),
-        "EVMLA IR is missing",
+        "EVM assembly IR is missing",
     );
     assert!(
         build

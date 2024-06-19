@@ -33,7 +33,7 @@ describe("Set of --metadata-hash tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--metadata-hash error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(requires a value but none was supplied)/i);
     });
 
@@ -52,7 +52,7 @@ describe("Set of --metadata-hash tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--metadata-hash error is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/(No input sources specified)/i);
     });
 

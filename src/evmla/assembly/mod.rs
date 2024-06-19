@@ -252,7 +252,7 @@ where
     }
 
     fn into_llvm(
-        mut self,
+        self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
@@ -293,12 +293,11 @@ where
             runtime_code_instructions.as_slice(),
         )?;
 
-        let extra_metadata = self.extra_metadata.take().unwrap_or_default();
         let mut blocks = deploy_code_blocks;
         blocks.extend(runtime_code_blocks);
         let mut ethereal_ir = EtherealIR::new(
             context.evmla().version.to_owned(),
-            extra_metadata,
+            self.extra_metadata.unwrap_or_default(),
             None,
             blocks,
         )?;
@@ -333,7 +332,7 @@ where
     }
 
     fn into_llvm(
-        mut self,
+        self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
@@ -381,10 +380,9 @@ where
             (era_compiler_llvm_context::CodeType::Runtime, blocks)
         };
 
-        let extra_metadata = self.extra_metadata.take().unwrap_or_default();
         let mut ethereal_ir = EtherealIR::new(
             context.evmla().version.to_owned(),
-            extra_metadata,
+            self.extra_metadata.unwrap_or_default(),
             Some(code_type),
             blocks,
         )?;

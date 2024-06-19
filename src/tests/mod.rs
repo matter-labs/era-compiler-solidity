@@ -67,9 +67,17 @@ pub fn build_solidity(
         None,
     )?;
 
-    let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
-    solc_output.check_errors()?;
+    let mut solc_output = solc_compiler.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -79,14 +87,17 @@ pub fn build_solidity(
         &solc_compiler,
         None,
     )?;
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
 
     let build = project.compile_to_eravm(
+        &mut vec![],
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
         false,
-        false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
@@ -96,7 +107,8 @@ pub fn build_solidity(
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -137,8 +149,15 @@ pub fn build_solidity_and_detect_missing_libraries(
         None,
     )?;
 
-    let mut solc_output =
-        solc_compiler.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
+    let mut solc_output = solc_compiler.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
 
     let project = Project::try_from_solidity_sources(
         sources,
@@ -156,7 +175,8 @@ pub fn build_solidity_and_detect_missing_libraries(
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
     )?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -173,7 +193,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
-    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_yul_sources(
         sources,
@@ -183,17 +203,20 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
         None,
     )?;
     let build = project.compile_to_eravm(
+        &mut vec![],
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
         false,
-        false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -220,10 +243,10 @@ pub fn build_yul_standard_json(
     let sources = solc_input.sources()?;
     let (solc_version, mut solc_output) = match solc_compiler {
         Some(solc_compiler) => {
-            let solc_output = solc_compiler.validate_yul_standard_json(solc_input)?;
+            let solc_output = solc_compiler.validate_yul_standard_json(solc_input, &mut vec![])?;
             (Some(&solc_compiler.version), solc_output)
         }
-        None => (None, SolcStandardJsonOutput::new(&sources)),
+        None => (None, SolcStandardJsonOutput::new(&sources, &mut vec![])),
     };
 
     let project = Project::try_from_yul_sources(
@@ -234,17 +257,20 @@ pub fn build_yul_standard_json(
         None,
     )?;
     let build = project.compile_to_eravm(
+        &mut vec![],
+        solc_compiler.is_none(),
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        solc_compiler.is_none(),
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -266,21 +292,24 @@ pub fn build_llvm_ir_standard_json(
     )?;
 
     let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        &mut vec![],
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        true,
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -302,21 +331,24 @@ pub fn build_eravm_assembly_standard_json(
     )?;
 
     let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources);
+    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
     let build = project.compile_to_eravm(
+        &mut vec![],
+        true,
+        true,
+        zkevm_assembly::RunningVmEncodingMode::Production,
         optimizer_settings,
         vec![],
-        true,
         false,
-        zkevm_assembly::RunningVmEncodingMode::Production,
         None,
         None,
     )?;
     build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
 
-    solc_output.check_errors()?;
+    solc_output.take_and_write_warnings();
+    solc_output.collect_errors()?;
     Ok(solc_output)
 }
 
@@ -357,7 +389,15 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let solc_output = solc.standard_json(solc_input, Some(pipeline), None, vec![], None)?;
+    let solc_output = solc.standard_json(
+        solc_input,
+        Some(pipeline),
+        Some(&sources),
+        &mut vec![],
+        None,
+        vec![],
+        None,
+    )?;
     let contains_warning = solc_output
         .errors
         .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?

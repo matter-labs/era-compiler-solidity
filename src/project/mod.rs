@@ -25,6 +25,7 @@ use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInpu
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
@@ -143,7 +144,8 @@ impl Project {
                         }
                         SolcPipeline::EVMLA => {
                             let evm = contract.evm.as_ref();
-                            let assembly = match evm.and_then(|evm| evm.assembly.to_owned()) {
+                            let assembly = match evm.and_then(|evm| evm.legacy_assembly.to_owned())
+                            {
                                 Some(assembly) => assembly.to_owned(),
                                 None => return None,
                             };
@@ -182,7 +184,7 @@ impl Project {
                 Ok(contract) => {
                     contracts.insert(path, contract);
                 }
-                Err(error) => solc_output.push_error(path, error),
+                Err(error) => solc_output.push_error(Some(path), error),
             }
         }
         Ok(Project::new(
@@ -219,7 +221,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -277,7 +279,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -313,7 +315,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -352,7 +354,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -389,7 +391,7 @@ impl Project {
                     sources.insert(path, source_code);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -428,7 +430,7 @@ impl Project {
                     contracts.insert(path, contract);
                 }
                 Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(path, error),
+                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
                     None => anyhow::bail!(error),
                 },
             }
@@ -446,11 +448,13 @@ impl Project {
     ///
     pub fn compile_to_eravm(
         self,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: Vec<String>,
+        messages: &mut Vec<SolcStandardJsonOutputError>,
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
         bytecode_encoding: zkevm_assembly::RunningVmEncodingMode,
+        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+        llvm_options: Vec<String>,
+        output_assembly: bool,
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
@@ -469,13 +473,13 @@ impl Project {
             bytecode_encoding == zkevm_assembly::RunningVmEncodingMode::Testing,
             optimizer_settings,
             llvm_options,
+            output_assembly,
             debug_config,
         );
         let pool = EraVMThreadPool::new(threads, self.contracts, input_template);
         pool.start();
         let results = pool.finish();
 
-        let mut build = EraVMBuild::default();
         let mut hashes = HashMap::with_capacity(results.len());
         for (path, result) in results.iter() {
             if let Ok(ref contract) = result {
@@ -483,36 +487,33 @@ impl Project {
             }
         }
 
-        for (path, result) in results.into_iter() {
-            let result = match result {
-                Ok(mut contract) => {
+        let results = results
+            .into_iter()
+            .map(|(path, mut result)| {
+                if let Ok(ref mut contract) = result {
                     for dependency in contract.factory_dependencies.drain() {
                         let dependency_path = identifier_paths
                             .get(dependency.as_str())
                             .cloned()
-                            .ok_or_else(|| {
-                                anyhow::anyhow!("dependency `{dependency}` full path not found")
-                            })?;
-                        let hash = match hashes.get(dependency_path.as_str()) {
-                            Some(hash) => hash.to_owned(),
-                            None => anyhow::bail!(
-                                "dependency `{dependency_path}` not found in the project"
-                            ),
-                        };
+                            .unwrap_or_else(|| {
+                                panic!("dependency `{dependency}` full path not found")
+                            });
+                        let hash = hashes
+                            .get(dependency_path.as_str())
+                            .cloned()
+                            .unwrap_or_else(|| {
+                                panic!("dependency `{dependency_path}` not found in the project")
+                            });
                         contract
                             .build
                             .factory_dependencies
                             .insert(hash, dependency_path);
                     }
-
-                    Ok(contract)
                 }
-                Err(error) => Err(error),
-            };
-            build.contracts.insert(path, result);
-        }
-
-        Ok(build)
+                (path, result)
+            })
+            .collect();
+        Ok(EraVMBuild::new(results, messages))
     }
 
     ///
@@ -520,6 +521,7 @@ impl Project {
     ///
     pub fn compile_to_evm(
         self,
+        messages: &mut Vec<SolcStandardJsonOutputError>,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         include_metadata_hash: bool,
@@ -543,13 +545,7 @@ impl Project {
         let pool = EVMThreadPool::new(threads, self.contracts, input_template);
         pool.start();
         let results = pool.finish();
-
-        let mut build = EVMBuild::default();
-        for (path, result) in results.into_iter() {
-            build.contracts.insert(path, result);
-        }
-
-        Ok(build)
+        Ok(EVMBuild::new(results, messages))
     }
 
     ///

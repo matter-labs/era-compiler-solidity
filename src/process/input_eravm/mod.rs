@@ -29,6 +29,8 @@ pub struct Input {
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
     pub llvm_options: Vec<String>,
+    /// Whether to output EraVM assembly.
+    pub output_assembly: bool,
     /// The debug output config.
     pub debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 }
@@ -45,6 +47,7 @@ impl Input {
         enable_test_encoding: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
+        output_assembly: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> Self {
         Self {
@@ -55,6 +58,7 @@ impl Input {
             enable_test_encoding,
             optimizer_settings,
             llvm_options,
+            output_assembly,
             debug_config,
         }
     }

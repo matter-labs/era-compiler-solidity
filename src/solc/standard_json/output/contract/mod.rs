@@ -7,15 +7,12 @@ pub mod evm;
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::evm::EVM;
 
 ///
 /// The `solc --standard-json` output contract.
 ///
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Contract {
     /// The contract ABI.
@@ -49,4 +46,22 @@ pub struct Contract {
     /// The contract missing libraries.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub missing_libraries: Option<HashSet<String>>,
+}
+
+impl Contract {
+    ///
+    /// Checks if all fields are `None`.
+    ///
+    pub fn is_empty(&self) -> bool {
+        self.abi.is_none()
+            && self.metadata.is_none()
+            && self.devdoc.is_none()
+            && self.userdoc.is_none()
+            && self.storage_layout.is_none()
+            && self.evm.is_none()
+            && self.ir_optimized.is_none()
+            && self.hash.is_none()
+            && self.factory_dependencies.is_none()
+            && self.missing_libraries.is_none()
+    }
 }
