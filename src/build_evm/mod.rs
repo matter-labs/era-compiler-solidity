@@ -51,7 +51,7 @@ impl Build {
         output_binary: bool,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
-        self.collect_errors()?;
+        self.exit_on_error();
 
         for (path, build) in self.contracts.into_iter() {
             build
@@ -73,7 +73,7 @@ impl Build {
         overwrite: bool,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
-        self.collect_errors()?;
+        self.exit_on_error();
 
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
@@ -96,14 +96,7 @@ impl Build {
         solc_version: Option<&SolcVersion>,
         zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
-        let standard_json_contracts = match standard_json.contracts.as_mut() {
-            Some(contracts) => contracts,
-            None => {
-                standard_json.contracts = Some(BTreeMap::new());
-                standard_json.contracts.as_mut().expect("Always exists")
-            }
-        };
-
+        let standard_json_contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
         let mut errors = Vec::with_capacity(self.contracts.len());
         for (full_path, build) in self.contracts.into_iter() {
             let mut full_path_split = full_path.split(':');
@@ -119,9 +112,7 @@ impl Build {
                         build.write_to_standard_json(contract)?;
                     }
                     None => {
-                        let contracts = standard_json_contracts
-                            .entry(path.to_owned())
-                            .or_insert_with(BTreeMap::new);
+                        let contracts = standard_json_contracts.entry(path.to_owned()).or_default();
                         let mut contract = StandardJsonOutputContract::default();
                         build.write_to_standard_json(&mut contract)?;
                         contracts.insert(name.to_owned(), contract);
@@ -153,7 +144,7 @@ impl Build {
         zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
-        self.collect_errors()?;
+        self.exit_on_error();
 
         for (path, build) in self.contracts.into_iter() {
             let combined_json_contract = combined_json
@@ -191,7 +182,7 @@ impl Build {
     ///
     pub fn has_errors(&self) -> bool {
         self.contracts.values().any(|result| result.is_err())
-            && self
+            || self
                 .messages
                 .iter()
                 .any(|message| message.severity == "error")
@@ -207,25 +198,25 @@ impl Build {
     }
 
     ///
-    /// Checks for errors, returning `Err` if there is at least one error.
+    /// Checks for errors, exiting the application if there is at least one error.
     ///
-    pub fn collect_errors(&self) -> anyhow::Result<()> {
+    pub fn exit_on_error(&self) {
         if !self.has_errors() {
-            return Ok(());
+            return;
         }
-        let errors: Vec<&StandardJsonOutputError> = self
-            .contracts
-            .values()
-            .filter_map(|result| result.as_ref().err())
-            .collect();
-        anyhow::bail!(
-            "{}",
-            errors
-                .iter()
-                .map(|error| error.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
+
+        std::io::stderr()
+            .write_all(
+                self.contracts
+                    .values()
+                    .filter_map(|result| result.as_ref().err())
+                    .map(|error| error.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+                    .as_bytes(),
+            )
+            .expect("Stderr writing error");
+        std::process::exit(era_compiler_common::EXIT_CODE_FAILURE);
     }
 
     ///

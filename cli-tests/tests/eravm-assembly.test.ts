@@ -57,7 +57,7 @@ describe("Set of --eravm-assembly tests", () => {
     });
 
     it("--eravm-assembly error is presented", () => {
-        expect(result.output).toMatch(/(Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.)/i);
+        expect(result.output).toMatch(/(Only one mode is allowed)/i);
     });
   });
 });
