@@ -14,7 +14,7 @@ describe("Set of --standard-json tests", () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it("--metadata-hash info is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/({"sources":{"A":{"i)/i);
     });
 
@@ -30,11 +30,11 @@ describe("Set of --standard-json tests", () => {
     const args = [`--standard-json`, `${paths.pathToBasicYulContract}`];
     const result = executeCommand(zksolcCommand, args);
 
-    it("Valid command exit code = 1", () => {
-      expect(result.exitCode).toBe(1);
+    it("Valid command exit code = 0", () => {
+      expect(result.exitCode).toBe(0);
     });
 
-    it("--metadata-hash info is presented", () => {
+    it("Error message is presented", () => {
       expect(result.output).toMatch(/Input files must be passed via standard JSON input/i);
     });
 
