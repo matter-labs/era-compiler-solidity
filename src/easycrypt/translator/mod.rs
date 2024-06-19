@@ -9,6 +9,7 @@ pub mod definition_info;
 pub mod expression;
 pub mod function;
 pub mod object;
+pub mod standard_definitions;
 pub mod statement;
 pub mod r#type;
 pub mod yul_analyzers;
@@ -26,9 +27,11 @@ use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
+use crate::yul::printer::name_identifier;
 use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
+use self::standard_definitions::standard_definitions;
 use self::yul_analyzers::collect_definitions::CollectDefinitions;
 use self::yul_analyzers::functions::effects::derive::infer_effects;
 use self::yul_analyzers::functions::kind::infer_function_types;
@@ -36,8 +39,8 @@ use self::yul_analyzers::functions::kind::infer_function_types;
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
-    root: YulObject,
-    tracker: SymbolTracker<definition_info::DefinitionInfo>,
+    //root: YulObject,
+    tracker: SymbolTracker<DefinitionInfo>,
     tmp_counter: Counter,
     definitions: SymbolTable<DefinitionInfo>,
     call_stack: Vec<FullName>,
@@ -46,27 +49,30 @@ pub struct Translator {
 impl Translator {
     /// Transpile an object
     pub fn transpile(yul_object: &YulObject) -> Result<Module, Error> {
-        let mut result = Self {
-            root: yul_object.clone(),
+        let mut definitions = {
+            let mut table = SymbolTable::new();
+            for (name, info) in standard_definitions() {
+                let full_name = FullName {
+                    name: name_identifier(name),
+                    path: Path::empty(),
+                };
+                table.insert(&full_name, info)
+            }
+            let mut collector = CollectDefinitions::new(table);
+            collector.visit_object(yul_object);
+            collector.all_symbols
+        };
+        infer_function_types(&mut definitions, yul_object);
+        infer_effects(&mut definitions, yul_object);
+        let mut transpiler = Self {
+            //root: yul_object,
             tracker: SymbolTracker::new(),
             tmp_counter: Counter::new(),
-            definitions: SymbolTable::new(),
+            definitions,
             call_stack: Vec::new(),
         };
 
-        result.init();
-        result.transpile_object(yul_object, true)
-    }
-
-    fn init(&mut self) {
-        self.definitions = {
-            let mut collector = CollectDefinitions::new();
-            collector.visit_object(&self.root);
-            collector.all_symbols
-        };
-
-        infer_function_types(&mut self.definitions, &self.root);
-        infer_effects(&mut self.definitions, &self.root);
+        transpiler.transpile_object(yul_object, true)
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {

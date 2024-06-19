@@ -37,10 +37,10 @@ pub struct CollectDefinitions {
 }
 
 impl CollectDefinitions {
-    pub fn new() -> Self {
+    pub fn new(initial_symbol_table: SymbolTable<DefinitionInfo>) -> Self {
         Self {
             tracker: SymbolTracker::new(),
-            all_symbols: SymbolTable::new(),
+            all_symbols: initial_symbol_table,
         }
     }
 
