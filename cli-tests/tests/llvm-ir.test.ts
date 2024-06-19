@@ -71,8 +71,8 @@ describe("Set of --llvm-ir tests", () => {
     const args = [`${paths.pathToBasicYulContract}`, `--llvm-ir`, `--standard-json`];
     const result = executeCommand(zksolcCommand, args);
 
-    it("Valid command exit code = 1", () => {
-      expect(result.exitCode).toBe(1);
+    it("Valid command exit code = 0", () => {
+      expect(result.exitCode).toBe(0);
     });
 
     it("Error message is presented", () => {

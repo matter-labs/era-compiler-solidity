@@ -48,7 +48,7 @@ describe("Set of --asm tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--asm error is presented", () => {
+    it("Error message is presented", () => {
         expect(result.output).toMatch(/(The argument '--asm' was provided more than once)/i);
     });
 
@@ -67,7 +67,7 @@ describe("Set of --asm tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--asm error is presented", () => {
+    it("Error message is presented", () => {
         expect(result.output).toMatch(/(Expected identifier but got 'StringLiteral')/i);
     });
 

@@ -15,7 +15,7 @@ describe("Set of --combined-json tests", () => {
             expect(result.exitCode).toBe(1);
         });
 
-        it("--combined-json error is presented", () => {
+        it("Error message is presented", () => {
             expect(result.output).toMatch(/(requires a value but none was supplied)/i);
         });
 
@@ -34,7 +34,7 @@ describe("Set of --combined-json tests", () => {
             expect(result.exitCode).toBe(1);
         });
 
-        it("--combined-json error is presented", () => {
+        it("Error message is presented", () => {
             expect(result.output).toMatch(/(requires a value but none was supplied)/i);
         });
 
@@ -54,7 +54,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.exitCode).toBe(0);
             });
 
-            it("--combined-json error is presented", () => {
+            it("Error message is presented", () => {
                 expect(result.output).toMatch(/(contracts)/i);
             });
 
@@ -75,7 +75,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.exitCode).toBe(1);
             });
 
-            it("--combined-json error is presented", () => {
+            it("Error message is presented", () => {
                 expect(result.output).toMatch(/(Invalid option|error)/i);
             });
 
@@ -96,7 +96,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.exitCode).toBe(1);
             });
 
-            it("--combined-json error is presented", () => {
+            it("Error message is presented", () => {
                 expect(result.output).toMatch(/(No such file or directory|cannot find the file specified)/i); // Hopefully we should have more precise message here!
             });
 
@@ -117,7 +117,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.exitCode).toBe(1);
             });
 
-            it("--combined-json error is presented", () => {
+            it("Error message is presented", () => {
                 expect(result.output).toMatch(/(cannot be used multiple times)/i); 
             });
 
@@ -138,7 +138,7 @@ describe("Set of --combined-json tests", () => {
                 expect(result.exitCode).toBe(1);
             });
 
-            it("--combined-json error is presented", () => {
+            it("Error message is presented", () => {
                 expect(result.output).toMatch(/(Expected identifier)/i); 
             });
 

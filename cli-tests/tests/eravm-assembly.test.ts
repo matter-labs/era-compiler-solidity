@@ -28,7 +28,7 @@ describe("Set of --eravm-assembly tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--eravm-assembly error is presented", () => {
+    it("Error message is presented", () => {
         expect(result.output).toMatch(/(The argument '--eravm-assembly' was provided more than once)/i);
     });
   });
@@ -42,7 +42,7 @@ describe("Set of --eravm-assembly tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--eravm-assembly error is presented", () => {
+    it("Error message is presented", () => {
         expect(result.output).toMatch(/(Error: Expected keyword "object")/i);
     });
   });
@@ -56,7 +56,7 @@ describe("Set of --eravm-assembly tests", () => {
       expect(result.exitCode).toBe(1);
     });
 
-    it("--eravm-assembly error is presented", () => {
+    it("Error message is presented", () => {
         expect(result.output).toMatch(/(Only one mode is allowed)/i);
     });
   });

@@ -9,6 +9,8 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
+use normpath::PathExt;
+
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
 use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
@@ -146,11 +148,11 @@ impl Build {
                 .iter_mut()
                 .find_map(|(json_path, contract)| {
                     let path = PathBuf::from(path.split(':').next().expect("Always exists"))
-                        .canonicalize()
+                        .normalize()
                         .expect("Path canonicalization error");
                     let json_path =
                         PathBuf::from(json_path.split(':').next().expect("Always exists"))
-                            .canonicalize()
+                            .normalize()
                             .expect("Path canonicalization error");
 
                     if path.ends_with(json_path) {
