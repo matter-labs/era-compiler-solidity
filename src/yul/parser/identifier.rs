@@ -16,7 +16,7 @@ use crate::yul::parser::r#type::Type;
 ///
 /// The YUL source code identifier.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub struct Identifier {
     /// The location.
     pub location: Location,
