@@ -136,10 +136,18 @@ impl Translator {
                 YulSpecial::Return => {
                     let (arguments, ectx) =
                         self.transpile_expression_list(yul_arguments, ctx, ectx)?;
-                    assert!(ectx.locals.is_empty());
-                    assert!(ectx.assignments.is_empty());
+                    let passignment = Statement::PAssignment(
+                        vec![],
+                        ProcCall {
+                            target: ProcName::UserDefined {
+                                name: String::from("evm_return"),
+                                module: Some(String::from("Primops")),
+                            },
+                            arguments,
+                        },
+                    );
                     Ok(Transformed::Statements(
-                        vec![Statement::Return(Expression::pack_tuple(&arguments))],
+                        vec![passignment],
                         ectx,
                         ctx.clone(),
                     ))
