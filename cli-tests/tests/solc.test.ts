@@ -3,7 +3,9 @@ import { paths } from '../src/entities';
 
 describe("Set of --solc tests", () => {
     const zksolcCommand = 'zksolc';
-    
+
+    var os = require('os');
+
     let pathToCustomSolc = executeCommand('which', ['solc']).output;
     if ( os.platform() === 'win32' ) {
         pathToCustomSolc = executeCommand('where', ['solc']).output;
