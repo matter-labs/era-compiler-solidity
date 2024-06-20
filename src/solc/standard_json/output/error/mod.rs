@@ -2,6 +2,7 @@
 //! The `solc --standard-json` output error.
 //!
 
+pub mod collectable;
 pub mod mapped_location;
 pub mod source_location;
 

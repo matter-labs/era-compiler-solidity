@@ -5,7 +5,6 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
-use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -13,6 +12,7 @@ use normpath::PathExt;
 
 use crate::solc::combined_json::CombinedJson;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
+use crate::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
 use crate::solc::standard_json::output::Output as StandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
@@ -178,87 +178,21 @@ impl Build {
 
         Ok(())
     }
+}
 
-    ///
-    /// Checks if there is at least one error.
-    ///
-    pub fn has_errors(&self) -> bool {
-        self.contracts.values().any(|result| result.is_err())
-            || self
-                .messages
-                .iter()
-                .any(|message| message.severity == "error")
+impl CollectableError for Build {
+    fn errors(&self) -> Vec<&StandardJsonOutputError> {
+        self.contracts
+            .values()
+            .filter_map(|build| build.as_ref().err())
+            .collect()
     }
 
-    ///
-    /// Checks if there is at least one warning.
-    ///
-    pub fn has_warnings(&self) -> bool {
-        self.messages
-            .iter()
-            .any(|message| message.severity == "warning")
+    fn warnings(&self) -> Vec<&StandardJsonOutputError> {
+        self.messages.iter().collect()
     }
 
-    ///
-    /// Collects errors into one message and bails, if there is at least one error.
-    ///
-    pub fn collect_errors(&self) -> anyhow::Result<()> {
-        if !self.has_errors() {
-            return Ok(());
-        }
-
-        anyhow::bail!(
-            "{}",
-            self.contracts
-                .values()
-                .filter_map(|result| result.as_ref().err())
-                .map(|error| error.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
-    }
-
-    ///
-    /// Checks for errors, exiting the application if there is at least one error.
-    ///
-    pub fn exit_on_error(&self) {
-        if !self.has_errors() {
-            return;
-        }
-
-        std::io::stderr()
-            .write_all(
-                self.contracts
-                    .values()
-                    .filter_map(|result| result.as_ref().err())
-                    .map(|error| error.to_string())
-                    .collect::<Vec<String>>()
-                    .join("\n")
-                    .as_bytes(),
-            )
-            .expect("Stderr writing error");
-        std::process::exit(era_compiler_common::EXIT_CODE_FAILURE);
-    }
-
-    ///
-    /// Removes warnings from the list of messages and prints them to stderr.
-    ///
-    pub fn take_and_write_warnings(&mut self) {
-        if !self.has_warnings() {
-            return;
-        }
-        writeln!(
-            std::io::stderr(),
-            "{}",
-            self.messages
-                .iter()
-                .filter(|error| error.severity == "warning")
-                .map(|error| error.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-        )
-        .expect("Stderr writing error");
-        self.messages
-            .retain(|message| message.severity != "warning");
+    fn remove_warnings(&mut self) {
+        self.messages.clear();
     }
 }

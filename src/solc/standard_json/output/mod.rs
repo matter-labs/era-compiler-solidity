@@ -8,7 +8,6 @@ pub mod source;
 
 use std::collections::BTreeMap;
 use std::collections::HashSet;
-use std::io::Write;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -23,6 +22,7 @@ use crate::solc::version::Version as SolcVersion;
 use crate::warning::Warning;
 
 use self::contract::Contract;
+use self::error::collectable::Collectable as CollectableError;
 use self::error::source_location::SourceLocation as JsonOutputErrorSourceLocation;
 use self::error::Error as JsonOutputError;
 use self::source::Source;
@@ -315,72 +315,6 @@ impl Output {
     }
 
     ///
-    /// Checks if there is at least one error.
-    ///
-    pub fn has_errors(&self) -> bool {
-        self.errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "error"))
-            .unwrap_or_default()
-    }
-
-    ///
-    /// Checks if there is at least one warning.
-    ///
-    pub fn has_warnings(&self) -> bool {
-        self.errors
-            .as_ref()
-            .map(|errors| errors.iter().any(|error| error.severity == "warning"))
-            .unwrap_or_default()
-    }
-
-    ///
-    /// Checks for errors, returning `Err` if there is at least one error.
-    ///
-    pub fn collect_errors(&self) -> anyhow::Result<()> {
-        if !self.has_errors() {
-            return Ok(());
-        }
-        let errors = match self.errors.as_ref() {
-            Some(errors) => errors,
-            None => return Ok(()),
-        };
-        anyhow::bail!(
-            "{}",
-            errors
-                .iter()
-                .map(|error| error.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
-    }
-
-    ///
-    /// Removes warnings from the list of errors and prints them to stderr.
-    ///
-    pub fn take_and_write_warnings(&mut self) {
-        if !self.has_warnings() {
-            return;
-        }
-        let errors = match self.errors.as_mut() {
-            Some(errors) => errors,
-            None => return,
-        };
-        writeln!(
-            std::io::stderr(),
-            "{}",
-            errors
-                .iter()
-                .filter(|error| error.severity == "warning")
-                .map(|error| error.to_string())
-                .collect::<Vec<String>>()
-                .join("\n")
-        )
-        .expect("Stderr writing error");
-        errors.retain(|error| error.severity != "warning");
-    }
-
-    ///
     /// Preprocesses an assembly JSON structure dependency data map.
     ///
     fn preprocess_dependency_level(
@@ -415,5 +349,33 @@ impl Output {
         }
 
         Ok(())
+    }
+}
+
+impl CollectableError for Output {
+    fn errors(&self) -> Vec<&JsonOutputError> {
+        match self.errors {
+            Some(ref errors) => errors
+                .iter()
+                .filter(|error| error.severity == "error")
+                .collect(),
+            None => vec![],
+        }
+    }
+
+    fn warnings(&self) -> Vec<&JsonOutputError> {
+        match self.errors {
+            Some(ref errors) => errors
+                .iter()
+                .filter(|error| error.severity == "warning")
+                .collect(),
+            None => vec![],
+        }
+    }
+
+    fn remove_warnings(&mut self) {
+        if let Some(ref mut errors) = self.errors {
+            errors.retain(|error| error.severity == "warning");
+        }
     }
 }
