@@ -48,6 +48,7 @@ pub use self::solc::standard_json::input::Input as SolcStandardJsonInput;
 pub use self::solc::standard_json::output::contract::evm::bytecode::Bytecode as SolcStandardJsonOutputContractEVMBytecode;
 pub use self::solc::standard_json::output::contract::evm::EVM as SolcStandardJsonOutputContractEVM;
 pub use self::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
+pub use self::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 pub use self::solc::standard_json::output::error::source_location::SourceLocation as SolcStandardJsonOutputErrorSourceLocation;
 pub use self::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
