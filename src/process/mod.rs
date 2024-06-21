@@ -102,7 +102,7 @@ where
 
     let mut process = command
         .spawn()
-        .unwrap_or_else(|error| panic!("{executable:?} subprocess spawning error: {error:?}"));
+        .unwrap_or_else(|error| panic!("{executable:?} subprocess spawning: {error:?}"));
 
     let stdin = process
         .stdin
@@ -111,13 +111,11 @@ where
     let stdin_input = serde_json::to_vec(&input).expect("Always valid");
     stdin
         .write_all(stdin_input.as_slice())
-        .unwrap_or_else(
-            |error| panic!("{executable:?} subprocess stdin writing error: {error:?}",),
-        );
+        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdin writing: {error:?}",));
 
-    let result = process.wait_with_output().unwrap_or_else(|error| {
-        panic!("{executable:?} subprocess output reading error: {error:?}")
-    });
+    let result = process
+        .wait_with_output()
+        .unwrap_or_else(|error| panic!("{executable:?} subprocess output reading: {error:?}"));
     era_compiler_common::deserialize_from_slice(result.stdout.as_slice())
-        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdout parsing error: {error:?}"))
+        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdout parsing: {error:?}"))
 }

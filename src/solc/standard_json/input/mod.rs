@@ -108,11 +108,10 @@ impl Input {
         let sources = paths
             .into_par_iter()
             .map(|path| {
-                let source = Source::try_read(path.as_path())
-                    .unwrap_or_else(|error| panic!("Source code file {path:?} reading: {error}"));
-                (path.to_string_lossy().to_string(), source)
+                let source = Source::try_read(path.as_path())?;
+                Ok((path.to_string_lossy().to_string(), source))
             })
-            .collect();
+            .collect::<anyhow::Result<BTreeMap<String, Source>>>()?;
 
         Ok(Self {
             language,

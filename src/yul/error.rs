@@ -11,9 +11,9 @@ use crate::yul::parser::error::Error as ParserError;
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum Error {
     /// The lexer error.
-    #[error("Lexical error: {0}")]
+    #[error("Lexical: {0}")]
     Lexer(#[from] LexerError),
     /// The parser error.
-    #[error("Syntax error: {0}")]
+    #[error("Syntax: {0}")]
     Parser(#[from] ParserError),
 }

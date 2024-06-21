@@ -118,7 +118,7 @@ impl Compiler {
         }
 
         let mut process = command.spawn().map_err(|error| {
-            anyhow::anyhow!("{} subprocess spawning error: {:?}", self.executable, error)
+            anyhow::anyhow!("{} subprocess spawning: {:?}", self.executable, error)
         })?;
         let stdin = process
             .stdin
@@ -126,22 +126,16 @@ impl Compiler {
             .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
         let stdin_input = serde_json::to_vec(&input).map_err(|error| {
             anyhow::anyhow!(
-                "{} subprocess standard JSON input serialization error: {error:?}",
+                "{} subprocess standard JSON input serialization: {error:?}",
                 self.executable
             )
         })?;
         stdin.write_all(stdin_input.as_slice()).map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess stdin writing error: {error:?}",
-                self.executable
-            )
+            anyhow::anyhow!("{} subprocess stdin writing: {error:?}", self.executable)
         })?;
 
         let result = process.wait_with_output().map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess output reading error: {error:?}",
-                self.executable
-            )
+            anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
         let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
         let mut solc_output = match era_compiler_common::deserialize_from_slice::<StandardJsonOutput>(
@@ -150,13 +144,13 @@ impl Compiler {
             Ok(solc_output) => solc_output,
             Err(error) => {
                 anyhow::bail!(
-                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    "{} subprocess stdout parsing: {error:?} (stderr: {stderr_message})",
                     self.executable
                 );
             }
         };
         if !result.status.success() {
-            anyhow::bail!("{} error: {stderr_message}", self.executable);
+            anyhow::bail!("{} subprocess: {stderr_message}", self.executable);
         }
 
         let errors = solc_output.errors.get_or_insert_with(Vec::new);
@@ -210,15 +204,12 @@ impl Compiler {
         command.arg("--combined-json");
         command.arg(combined_json_flags.join(","));
 
-        let process = command.spawn().map_err(|error| {
-            anyhow::anyhow!("{} subprocess spawning error: {:?}", executable, error)
-        })?;
+        let process = command
+            .spawn()
+            .map_err(|error| anyhow::anyhow!("{} subprocess spawning: {:?}", executable, error))?;
 
         let result = process.wait_with_output().map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess output reading error: {error:?}",
-                self.executable
-            )
+            anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
         let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
         let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
@@ -227,13 +218,13 @@ impl Compiler {
             Ok(combined_json) => combined_json,
             Err(error) => {
                 anyhow::bail!(
-                    "{} subprocess stdout parsing error: {error:?} (stderr: {stderr_message})",
+                    "{} subprocess stdout parsing: {error:?} (stderr: {stderr_message})",
                     self.executable
                 );
             }
         };
         if !result.status.success() {
-            anyhow::bail!("{} error: {stderr_message}", self.executable);
+            anyhow::bail!("{} subprocess: {stderr_message}", self.executable);
         }
 
         for filtered_flag in filtered_flags.into_iter() {
@@ -317,10 +308,10 @@ impl Compiler {
         command.arg("--version");
         let output = command
             .output()
-            .map_err(|error| anyhow::anyhow!("{} subprocess error: {:?}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("{} subprocess: {:?}", executable, error))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} version getting error: {}",
+                "{} version getting: {}",
                 executable,
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
