@@ -19,6 +19,7 @@ use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use crate::message_type::MessageType;
 use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
@@ -27,7 +28,6 @@ use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
 use crate::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::Compiler as SolcCompiler;
-use crate::warning::Warning;
 
 ///
 /// Builds the Solidity project and returns the standard JSON output.
@@ -65,7 +65,8 @@ pub fn build_solidity(
         true,
         false,
         vec![],
-        None,
+        vec![],
+        vec![],
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
@@ -147,7 +148,8 @@ pub fn build_solidity_and_detect_missing_libraries(
         false,
         false,
         vec![],
-        None,
+        vec![],
+        vec![],
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
@@ -362,7 +364,7 @@ pub fn check_solidity_warning(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     pipeline: SolcPipeline,
     skip_for_zkvm_edition: bool,
-    suppressed_warnings: Option<Vec<Warning>>,
+    suppressed_warnings: Vec<MessageType>,
 ) -> anyhow::Result<bool> {
     check_dependencies();
 
@@ -386,6 +388,7 @@ pub fn check_solidity_warning(
         false,
         false,
         false,
+        vec![],
         vec![],
         suppressed_warnings,
     )?;

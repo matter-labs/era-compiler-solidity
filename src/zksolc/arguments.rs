@@ -176,10 +176,15 @@ pub struct Arguments {
     #[structopt(long = "bin")]
     pub output_binary: bool,
 
+    /// Suppress specified errors.
+    /// Available arguments: `sendtransfer`.
+    #[structopt(long = "suppress-errors")]
+    pub suppressed_errors: Option<Vec<String>>,
+
     /// Suppress specified warnings.
-    /// Available arguments: `ecrecover`, `sendtransfer`, `extcodesize`, `txorigin`, `blocktimestamp`, `blocknumber`, `blockhash`.
+    /// Available arguments: `txorigin`.
     #[structopt(long = "suppress-warnings")]
-    pub suppress_warnings: Option<Vec<String>>,
+    pub suppressed_warnings: Option<Vec<String>>,
 
     /// Dump all IRs to files in the specified directory.
     /// Only for testing and debugging.

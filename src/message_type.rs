@@ -1,5 +1,5 @@
 //!
-//! The compiler warning.
+//! The compiler message type.
 //!
 
 use std::str::FromStr;
@@ -8,23 +8,20 @@ use serde::Deserialize;
 use serde::Serialize;
 
 ///
-/// The compiler warning.
+/// The compiler message type.
 ///
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Warning {
-    /// The warning for eponymous feature.
-    EcRecover,
-    /// The warning for eponymous feature.
+pub enum MessageType {
+    /// The error for eponymous feature.
     SendTransfer,
-    /// The warning for eponymous feature.
-    ExtCodeSize,
+
     /// The warning for eponymous feature.
     TxOrigin,
 }
 
-impl Warning {
+impl MessageType {
     ///
-    /// Converts string arguments into an array of warnings.
+    /// Converts string arguments into an array of messages.
     ///
     pub fn try_from_strings(strings: &[String]) -> Result<Vec<Self>, anyhow::Error> {
         strings
@@ -34,16 +31,14 @@ impl Warning {
     }
 }
 
-impl FromStr for Warning {
+impl FromStr for MessageType {
     type Err = anyhow::Error;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
-            "ecrecover" => Ok(Self::EcRecover),
             "sendtransfer" => Ok(Self::SendTransfer),
-            "extcodesize" => Ok(Self::ExtCodeSize),
             "txorigin" => Ok(Self::TxOrigin),
-            _ => Err(anyhow::anyhow!("Invalid warning: {}", string)),
+            r#type => Err(anyhow::anyhow!("Invalid message type: {type}")),
         }
     }
 }

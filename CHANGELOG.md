@@ -6,6 +6,7 @@
 
 - Parallelization in AST and IR parsing
 - Location resolution for EraVM-specific messages in standard JSON output
+- The `suppress-errors` parameter to disable some compilation errors
 
 ### Changed
 
@@ -13,7 +14,12 @@
 - AST and IRs are not emitted anymore if not explicitly requested
 - Empty files and contracts are pruned from standard JSON output
 - ASCII boxes are made more compatible with original messages of solc
+- `<address payable>.send/transfer(<X>)` now triggers a compilation error
 - Updated to Rust v1.79.0
+
+### Removed
+
+- Obsolete warnings for `extcodesize` and `ecrecover`
 
 ### Fixed
 

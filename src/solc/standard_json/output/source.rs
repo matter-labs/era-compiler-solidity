@@ -4,10 +4,10 @@
 
 use std::collections::BTreeMap;
 
+use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
-use crate::warning::Warning;
 
 ///
 /// The `solc --standard-json` output source.
@@ -30,35 +30,6 @@ impl Source {
     ///
     pub fn new(id: usize) -> Self {
         Self { id, ast: None }
-    }
-
-    ///
-    /// Checks the AST node for the `ecrecover` function usage.
-    ///
-    pub fn check_ecrecover(
-        ast: &serde_json::Value,
-        id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
-    ) -> Option<SolcStandardJsonOutputError> {
-        let ast = ast.as_object()?;
-
-        if ast.get("nodeType")?.as_str()? != "FunctionCall" {
-            return None;
-        }
-
-        let expression = ast.get("expression")?.as_object()?;
-        if expression.get("nodeType")?.as_str()? != "Identifier" {
-            return None;
-        }
-        if expression.get("name")?.as_str()? != "ecrecover" {
-            return None;
-        }
-
-        Some(SolcStandardJsonOutputError::warning_ecrecover(
-            ast.get("src")?.as_str(),
-            id_paths,
-            sources,
-        ))
     }
 
     ///
@@ -91,37 +62,7 @@ impl Source {
             return None;
         }
 
-        Some(SolcStandardJsonOutputError::warning_send_and_transfer(
-            ast.get("src")?.as_str(),
-            id_paths,
-            sources,
-        ))
-    }
-
-    ///
-    /// Checks the AST node for the `extcodesize` assembly instruction usage.
-    ///
-    pub fn check_assembly_extcodesize(
-        ast: &serde_json::Value,
-        id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
-    ) -> Option<SolcStandardJsonOutputError> {
-        let ast = ast.as_object()?;
-
-        if ast.get("nodeType")?.as_str()? != "YulFunctionCall" {
-            return None;
-        }
-        if ast
-            .get("functionName")?
-            .as_object()?
-            .get("name")?
-            .as_str()?
-            != "extcodesize"
-        {
-            return None;
-        }
-
-        Some(SolcStandardJsonOutputError::warning_extcodesize(
+        Some(SolcStandardJsonOutputError::error_send_and_transfer(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -231,25 +172,15 @@ impl Source {
         sources: &BTreeMap<String, String>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
-        suppressed_warnings: &[Warning],
+        suppressed_messages: &[MessageType],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
-        if !suppressed_warnings.contains(&Warning::EcRecover) {
-            if let Some(message) = Self::check_ecrecover(ast, id_paths, sources) {
-                messages.push(message);
-            }
-        }
-        if !suppressed_warnings.contains(&Warning::SendTransfer) {
+        if !suppressed_messages.contains(&MessageType::SendTransfer) {
             if let Some(message) = Self::check_send_and_transfer(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
-        if !suppressed_warnings.contains(&Warning::ExtCodeSize) {
-            if let Some(message) = Self::check_assembly_extcodesize(ast, id_paths, sources) {
-                messages.push(message);
-            }
-        }
-        if !suppressed_warnings.contains(&Warning::TxOrigin) {
+        if !suppressed_messages.contains(&MessageType::TxOrigin) {
             if let Some(message) = Self::check_assembly_origin(ast, id_paths, sources) {
                 messages.push(message);
             }
@@ -272,7 +203,7 @@ impl Source {
                         sources,
                         version,
                         pipeline,
-                        suppressed_warnings,
+                        suppressed_messages,
                     ));
                 }
             }
@@ -284,7 +215,7 @@ impl Source {
                         sources,
                         version,
                         pipeline,
-                        suppressed_warnings,
+                        suppressed_messages,
                     ));
                 }
             }

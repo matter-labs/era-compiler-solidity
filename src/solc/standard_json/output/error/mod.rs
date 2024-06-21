@@ -36,7 +36,7 @@ pub struct Error {
 }
 
 impl Error {
-    /// The list of ignored `solc` warnings, which are strictly EVM-related.
+    /// The list of ignored `solc` warnings that are strictly EVM-related.
     pub const IGNORED_WARNING_CODES: [&'static str; 5] = ["1699", "3860", "5159", "5574", "6417"];
 
     /// The default size of an error line.
@@ -109,8 +109,6 @@ impl Error {
     ///
     /// A shortcut constructor.
     ///
-    /// TODO: convert the replace below and use proper error contexts
-    ///
     pub fn new_error<S>(
         message: S,
         source_location: Option<SourceLocation>,
@@ -119,12 +117,7 @@ impl Error {
     where
         S: std::fmt::Display,
     {
-        Self::new(
-            "Error",
-            message.to_string().replace(": ", ":\n"),
-            source_location,
-            sources,
-        )
+        Self::new("Error", message, source_location, sources)
     }
 
     ///
@@ -142,19 +135,20 @@ impl Error {
     }
 
     ///
-    /// Returns the `ecrecover` function usage warning.
+    /// Returns the `origin` instruction usage warning.
     ///
-    pub fn warning_ecrecover(
+    pub fn warning_tx_origin(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, String>,
     ) -> Self {
         let message = r#"
-It looks like you are using 'ecrecover' to validate a signature of a user account.
-ZKsync Era comes with native account abstraction support, therefore it is highly recommended NOT
-to rely on the fact that the account has an ECDSA private key attached to it since accounts
-might implement other signature schemes.
-Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html
+You are checking for 'tx.origin', which might lead to unexpected behavior.
+ZKsync Era comes with native account abstraction support, and therefore the initiator of a
+transaction might be different from the contract calling your code. It is highly recommended NOT
+to rely on tx.origin, but use msg.sender instead.
+Learn more about Account Abstraction at
+    https://docs.zksync.io/build/developer-reference/account-abstraction/
 "#;
 
         Self::new_warning(
@@ -167,69 +161,22 @@ Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-g
     ///
     /// Returns the `<address payable>`'s `send` and `transfer` methods usage error.
     ///
-    pub fn warning_send_and_transfer(
+    pub fn error_send_and_transfer(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, String>,
     ) -> Self {
         let message = r#"
-It looks like you are using '<address payable>.send/transfer(<X>)' without providing the gas
-amount. Such calls will fail depending on the pubdata costs.
-Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the reentrancy
-attack. `send` and `transfer` send limited amount of gas that prevents reentrancy, whereas
-`<address>.call{value: <X>}` sends all gas to the callee.
-Learn more on https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
+You are using '<address payable>.send/transfer(<X>)' without providing the gas amount.
+Such calls will fail depending on the pubdata costs.
+Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the
+reentrancy attack. `send` and `transfer` send limited amount of gas that prevents reentrancy,
+whereas `<address>.call{value: <X>}` sends all gas to the callee.
+Learn more about reentrancy at
+    https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
 "#;
 
-        Self::new_warning(
-            message,
-            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
-            Some(sources),
-        )
-    }
-
-    ///
-    /// Returns the `extcodesize` instruction usage warning.
-    ///
-    pub fn warning_extcodesize(
-        node: Option<&str>,
-        id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
-    ) -> Self {
-        let message = r#"
-Your code or one of its dependencies uses the 'extcodesize' instruction, which is usually needed
-in the following cases:
-  1. To detect whether an address belongs to a smart contract.
-  2. To detect whether the deploy code execution has finished.
-ZKsync Era comes with native account abstraction support (so accounts are smart contracts,
-including private-key controlled EOAs), and you should avoid differentiating between contracts
-and non-contract addresses.
-"#;
-
-        Self::new_warning(
-            message,
-            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
-            Some(sources),
-        )
-    }
-
-    ///
-    /// Returns the `origin` instruction usage warning.
-    ///
-    pub fn warning_tx_origin(
-        node: Option<&str>,
-        id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
-    ) -> Self {
-        let message = r#"
-You are checking for 'tx.origin' in your code, which might lead to unexpected behavior.
-ZKsync Era comes with native account abstraction support, and therefore the initiator of a
-transaction might be different from the contract calling your code. It is highly recommended NOT
-to rely on tx.origin, but use msg.sender instead.
-Read more about Account Abstraction at https://v2-docs.zksync.io/dev/developer-guides/aa.html
-"#;
-
-        Self::new_warning(
+        Self::new_error(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
             Some(sources),

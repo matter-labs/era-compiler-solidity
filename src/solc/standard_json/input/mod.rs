@@ -14,11 +14,11 @@ use std::path::PathBuf;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
-use crate::warning::Warning;
 
 use self::language::Language;
 use self::settings::Settings;
@@ -37,9 +37,12 @@ pub struct Input {
     /// The compiler settings.
     pub settings: Settings,
 
+    /// The suppressed errors.
+    #[serde(skip_serializing)]
+    pub suppressed_errors: Option<Vec<MessageType>>,
     /// The suppressed warnings.
     #[serde(skip_serializing)]
-    pub suppressed_warnings: Option<Vec<Warning>>,
+    pub suppressed_warnings: Option<Vec<MessageType>>,
 }
 
 impl Input {
@@ -93,7 +96,8 @@ impl Input {
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         llvm_options: Vec<String>,
-        suppressed_warnings: Option<Vec<Warning>>,
+        suppressed_errors: Vec<MessageType>,
+        suppressed_warnings: Vec<MessageType>,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
         let libraries = Settings::parse_libraries(library_map)?;
@@ -126,7 +130,8 @@ impl Input {
                 llvm_options,
                 metadata,
             ),
-            suppressed_warnings,
+            suppressed_errors: Some(suppressed_errors),
+            suppressed_warnings: Some(suppressed_warnings),
         })
     }
 
@@ -146,7 +151,8 @@ impl Input {
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         llvm_options: Vec<String>,
-        suppressed_warnings: Option<Vec<Warning>>,
+        suppressed_errors: Vec<MessageType>,
+        suppressed_warnings: Vec<MessageType>,
     ) -> anyhow::Result<Self> {
         let sources = sources
             .into_iter()
@@ -169,7 +175,8 @@ impl Input {
                 llvm_options,
                 metadata,
             ),
-            suppressed_warnings,
+            suppressed_errors: Some(suppressed_errors),
+            suppressed_warnings: Some(suppressed_warnings),
         })
     }
 
@@ -204,6 +211,7 @@ impl Input {
                 llvm_options,
                 None,
             ),
+            suppressed_errors: None,
             suppressed_warnings: None,
         }
     }
@@ -244,6 +252,7 @@ impl Input {
                 llvm_options,
                 None,
             ),
+            suppressed_errors: None,
             suppressed_warnings: None,
         }
     }

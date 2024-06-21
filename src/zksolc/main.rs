@@ -133,12 +133,12 @@ fn main_inner(
         .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
         .unwrap_or_default();
 
-    let suppressed_warnings = match arguments.suppress_warnings {
-        Some(warnings) => Some(era_compiler_solidity::Warning::try_from_strings(
-            warnings.as_slice(),
-        )?),
-        None => None,
-    };
+    let suppressed_errors = era_compiler_solidity::MessageType::try_from_strings(
+        arguments.suppressed_errors.unwrap_or_default().as_slice(),
+    )?;
+    let suppressed_warnings = era_compiler_solidity::MessageType::try_from_strings(
+        arguments.suppressed_warnings.unwrap_or_default().as_slice(),
+    )?;
 
     let debug_config = match arguments.debug_output_directory {
         Some(ref debug_output_directory) => {
@@ -236,6 +236,7 @@ fn main_inner(
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
+                    suppressed_errors,
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
@@ -266,6 +267,7 @@ fn main_inner(
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
+                    suppressed_errors,
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
