@@ -13,17 +13,18 @@ pub(crate) mod build_eravm;
 pub(crate) mod build_evm;
 pub(crate) mod r#const;
 pub(crate) mod evmla;
+pub(crate) mod message_type;
 pub(crate) mod missing_libraries;
 pub(crate) mod process;
 pub(crate) mod project;
 pub(crate) mod solc;
-pub(crate) mod warning;
 pub(crate) mod yul;
 
 pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
+pub use self::message_type::MessageType;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
 pub use self::process::output_eravm::Output as EraVMProcessOutput;
@@ -54,7 +55,6 @@ pub use self::solc::standard_json::output::error::Error as SolcStandardJsonOutpu
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
-pub use self::warning::Warning;
 
 mod tests;
 
@@ -264,7 +264,8 @@ pub fn standard_output_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    suppressed_warnings: Option<Vec<Warning>>,
+    suppressed_errors: Vec<MessageType>,
+    suppressed_warnings: Vec<MessageType>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -293,6 +294,7 @@ pub fn standard_output_eravm(
         enable_eravm_extensions,
         false,
         llvm_options.clone(),
+        suppressed_errors,
         suppressed_warnings,
     )?;
     let sources = solc_input.sources()?;
@@ -381,7 +383,8 @@ pub fn standard_output_evm(
         false,
         false,
         llvm_options.clone(),
-        None,
+        vec![],
+        vec![],
     )?;
     let sources = solc_input.sources()?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
@@ -751,7 +754,8 @@ pub fn combined_json_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    suppressed_warnings: Option<Vec<Warning>>,
+    suppressed_errors: Vec<MessageType>,
+    suppressed_warnings: Vec<MessageType>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
@@ -775,6 +779,7 @@ pub fn combined_json_eravm(
         optimizer_settings,
         llvm_options,
         output_assembly,
+        suppressed_errors,
         suppressed_warnings,
         threads,
         debug_config,

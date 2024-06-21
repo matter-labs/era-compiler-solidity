@@ -95,7 +95,8 @@ impl Compiler {
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        let suppressed_warnings = input.suppressed_warnings.take().unwrap_or_default();
+        let mut suppressed_messages = input.suppressed_errors.take().unwrap_or_default();
+        suppressed_messages.extend(input.suppressed_warnings.take().unwrap_or_default());
 
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
@@ -170,7 +171,7 @@ impl Compiler {
                 sources,
                 &self.version,
                 pipeline,
-                suppressed_warnings.as_slice(),
+                suppressed_messages.as_slice(),
             )?;
         }
         solc_output.remove_evm();
