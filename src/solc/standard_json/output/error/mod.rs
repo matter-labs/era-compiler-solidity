@@ -55,33 +55,9 @@ impl Error {
         S: std::fmt::Display,
     {
         let message = message.to_string();
-        let mut message_line_length = message
-            .lines()
-            .max_by_key(|line| line.len())
-            .map(|line| line.len())
-            .unwrap_or_else(|| message.len());
-        message_line_length = std::cmp::max(message_line_length, Self::DEFAULT_ERROR_LINE_LENGTH);
 
-        let mut formatted_message = format!(
-            "{type}: ╠{}╗",
-            "═".repeat(message_line_length - r#type.len())
-        );
-        formatted_message.push('\n');
-        formatted_message.push_str(format!("║ {} ║", " ".repeat(message_line_length)).as_str());
-        formatted_message.push('\n');
-        formatted_message.push_str(
-            message
-                .trim()
-                .lines()
-                .map(|line| format!("║ {line}{} ║", " ".repeat(message_line_length - line.len())))
-                .collect::<Vec<String>>()
-                .join("\n")
-                .as_str(),
-        );
-        formatted_message.push('\n');
-        formatted_message.push_str(format!("║ {} ║", " ".repeat(message_line_length)).as_str());
-        formatted_message.push('\n');
-        formatted_message.push_str(format!("╚═{}═╝", "═".repeat(message_line_length)).as_str());
+        let mut formatted_message = format!("{type}: ");
+        formatted_message.push_str(message.trim());
         formatted_message.push('\n');
         if let Some(ref source_location) = source_location {
             let source_code = sources.and_then(|sources| {
@@ -147,8 +123,7 @@ You are checking for 'tx.origin', which might lead to unexpected behavior.
 ZKsync Era comes with native account abstraction support, and therefore the initiator of a
 transaction might be different from the contract calling your code. It is highly recommended NOT
 to rely on tx.origin, but use msg.sender instead.
-Learn more about Account Abstraction at
-    https://docs.zksync.io/build/developer-reference/account-abstraction/
+Learn more about Account Abstraction at https://docs.zksync.io/build/developer-reference/account-abstraction/
 "#;
 
         Self::new_warning(
@@ -172,8 +147,7 @@ Such calls will fail depending on the pubdata costs.
 Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the
 reentrancy attack. `send` and `transfer` send limited amount of gas that prevents reentrancy,
 whereas `<address>.call{value: <X>}` sends all gas to the callee.
-Learn more about reentrancy at
-    https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
+Learn more about reentrancy at https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
 "#;
 
         Self::new_error(
@@ -192,8 +166,10 @@ Learn more about reentrancy at
         sources: &BTreeMap<String, String>,
     ) -> Self {
         let message = r#"
-Internal function pointers are not supported in EVM legacy assembly pipeline.
-Please use the latest solc with Yul codegen instead.
+Internal function pointers are not supported in the EVM assembly pipeline.
+Please do one of the following:
+    1. Use the ZKsync fork of the Solidity compiler: https://github.com/matter-labs/era-solidity/releases
+    2. Switch to the latest solc with Yul assembly pipeline: https://docs.soliditylang.org/en/latest/yul.html
 "#;
 
         Self::new_error(

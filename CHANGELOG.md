@@ -13,20 +13,22 @@
 - All messages are now written to JSON output in standard JSON mode
 - AST and IRs are not emitted anymore if not explicitly requested
 - Empty files and contracts are pruned from standard JSON output
-- ASCII boxes are made more compatible with original messages of solc
+- Message formats are made more compatible with original messages of solc
 - `<address payable>.send/transfer(<X>)` now triggers a compilation error
 - Updated to Rust v1.79.0
 
 ### Removed
 
 - Obsolete warnings for `extcodesize` and `ecrecover`
+- EVM-specific warnings which solc has been emitting unconditionally
 
 ### Fixed
 
 - Dependency graph inefficiency that caused excessive compilation time
 - Removed JSON stream readers which are much slower than strings and vectors
-- Filtered out several EVM-specific warnings from standard JSON output
 - Missing output with non-canonical input paths in combined JSON output
+- Missing warnings with solc v0.4.x and v0.5.x due to differences in AST
+- The unknown `bytecodeHash` error in standard JSON mode with solc v0.5.x
 
 ## [1.5.0] - 2024-06-10
 

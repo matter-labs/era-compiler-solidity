@@ -109,12 +109,12 @@ impl<'a> std::fmt::Display for MappedLocation<'a> {
                 if let (Some(source_code_line), Some(length)) = (self.source_code_line, self.length)
                 {
                     let line_number_length = line.to_string().len();
-                    writeln!(f, "{} ═╦> {path}", " ".repeat(line_number_length))?;
-                    writeln!(f, " {} ║", " ".repeat(line_number_length))?;
-                    writeln!(f, " {line} ║ {source_code_line}")?;
+                    writeln!(f, "{} --> {path}", " ".repeat(line_number_length))?;
+                    writeln!(f, " {} |", " ".repeat(line_number_length))?;
+                    writeln!(f, " {line} | {source_code_line}")?;
                     writeln!(
                         f,
-                        " {} ║ {} {}",
+                        " {} | {} {}",
                         " ".repeat(line_number_length),
                         " ".repeat(column),
                         "^".repeat(std::cmp::min(length, source_code_line.len() - column))

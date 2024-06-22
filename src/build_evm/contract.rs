@@ -114,11 +114,11 @@ impl Contract {
                 } else {
                     File::create(&file_path)
                         .map_err(|error| {
-                            anyhow::anyhow!("File {:?} creating error: {}", file_path, error)
+                            anyhow::anyhow!("File {:?} creating: {}", file_path, error)
                         })?
                         .write_all(format!("0x{}", hex::encode(bytecode.as_slice())).as_bytes())
                         .map_err(|error| {
-                            anyhow::anyhow!("File {:?} writing error: {}", file_path, error)
+                            anyhow::anyhow!("File {:?} writing: {}", file_path, error)
                         })?;
                 }
             }

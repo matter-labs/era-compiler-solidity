@@ -375,7 +375,7 @@ impl CollectableError for Output {
 
     fn remove_warnings(&mut self) {
         if let Some(ref mut errors) = self.errors {
-            errors.retain(|error| error.severity == "warning");
+            errors.retain(|error| error.severity != "warning");
         }
     }
 }

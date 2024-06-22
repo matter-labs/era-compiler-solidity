@@ -9,6 +9,14 @@ use std::collections::BTreeMap;
 use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 
+pub const TX_ORIGIN_TEST_SOURCE: &str = r#"
+contract TxOriginExample {
+    function main() private {
+        address txOrigin = tx.origin;
+    }
+}
+"#;
+
 #[test]
 fn tx_origin() {
     assert!(super::check_solidity_warning(
@@ -36,22 +44,14 @@ fn tx_origin_suppressed() {
 }
 
 pub const TX_ORIGIN_ASSEMBLY_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
 contract TxOriginExample {
-    function isOriginSender() public view returns (bool) {
-        address txOrigin;
-        address sender = msg.sender;
-
+    function main() private {
         assembly {
-            txOrigin := origin() // Get the transaction origin using the 'origin' instruction
+            let txOrigin := origin()
         }
-
-        return txOrigin == sender;
     }
 }
-    "#;
+"#;
 
 #[test]
 fn tx_origin_assembly() {
@@ -80,22 +80,13 @@ fn tx_origin_assembly_suppressed() {
 }
 
 pub const SEND_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
 contract SendExample {
-    address payable public recipient;
-
-    constructor(address payable _recipient) {
-        recipient = _recipient;
-    }
-
-    function forwardEther() external payable {
-        bool success = recipient.send(msg.value);
-        require(success, "Failed to send Ether");
+    function s() public payable returns (bool) {
+        address r = address(0);
+        return payable(r).send(msg.value);
     }
 }
-    "#;
+"#;
 
 #[test]
 fn send() {
@@ -124,21 +115,13 @@ fn send_suppressed() {
 }
 
 pub const TRANSFER_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
 contract TransferExample {
-    address payable public recipient;
-
-    constructor(address payable _recipient) {
-        recipient = _recipient;
-    }
-
-    function forwardEther() external payable {
-        recipient.transfer(msg.value);
+    function s() public payable {
+        address r = address(0);
+        payable(r).transfer(msg.value);
     }
 }
-    "#;
+"#;
 
 #[test]
 fn transfer() {
@@ -165,17 +148,6 @@ fn transfer_suppressed() {
     )
     .expect("Test failure"));
 }
-
-pub const TX_ORIGIN_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-contract TxOriginExample {
-    function isOriginSender() public view returns (bool) {
-        return tx.origin == msg.sender;
-    }
-}
-    "#;
 
 #[test]
 fn internal_function_pointer_argument() {

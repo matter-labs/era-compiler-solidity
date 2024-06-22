@@ -38,7 +38,7 @@ impl FromStr for MessageType {
         match string {
             "sendtransfer" => Ok(Self::SendTransfer),
             "txorigin" => Ok(Self::TxOrigin),
-            r#type => Err(anyhow::anyhow!("Invalid message type: {type}")),
+            r#type => Err(anyhow::anyhow!("Invalid suppressed message type: {type}")),
         }
     }
 }

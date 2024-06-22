@@ -51,14 +51,14 @@ impl Source {
             return None;
         }
         let member_name = expression.get("memberName")?.as_str()?;
-        if member_name != "send" && member_name != "transfer" {
+        if !["send", "transfer"].contains(&member_name) {
             return None;
         }
 
         let expression = expression.get("expression")?.as_object()?;
         let type_descriptions = expression.get("typeDescriptions")?.as_object()?;
         let type_identifier = type_descriptions.get("typeIdentifier")?.as_str()?;
-        if type_identifier != "t_address" && type_identifier != "t_address_payable" {
+        if type_identifier != "t_address_payable" {
             return None;
         }
 
@@ -79,17 +79,24 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "YulFunctionCall" {
-            return None;
-        }
-        if ast
-            .get("functionName")?
-            .as_object()?
-            .get("name")?
-            .as_str()?
-            != "origin"
-        {
-            return None;
+        match ast.get("nodeType")?.as_str()? {
+            "InlineAssembly" => {
+                if !ast.get("operations")?.as_str()?.contains("origin()") {
+                    return None;
+                }
+            }
+            "YulFunctionCall" => {
+                if ast
+                    .get("functionName")?
+                    .as_object()?
+                    .get("name")?
+                    .as_str()?
+                    != "origin"
+                {
+                    return None;
+                }
+            }
+            _ => return None,
         }
 
         Some(SolcStandardJsonOutputError::warning_tx_origin(
