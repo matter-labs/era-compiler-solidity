@@ -20,13 +20,15 @@
 ### Removed
 
 - Obsolete warnings for `extcodesize` and `ecrecover`
+- EVM-specific warnings which solc has been emitting unconditionally
 
 ### Fixed
 
 - Dependency graph inefficiency that caused excessive compilation time
 - Removed JSON stream readers which are much slower than strings and vectors
-- Filtered out several EVM-specific warnings from standard JSON output
 - Missing output with non-canonical input paths in combined JSON output
+- Missing warnings with solc v0.4.x and v0.5.x due to differences in AST
+- The unknown `bytecodeHash` error in standard JSON mode with solc v0.5.x
 
 ## [1.5.0] - 2024-06-10
 

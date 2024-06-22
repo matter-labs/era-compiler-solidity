@@ -79,17 +79,24 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "YulFunctionCall" {
-            return None;
-        }
-        if ast
-            .get("functionName")?
-            .as_object()?
-            .get("name")?
-            .as_str()?
-            != "origin"
-        {
-            return None;
+        match ast.get("nodeType")?.as_str()? {
+            "InlineAssembly" => {
+                if !ast.get("operations")?.as_str()?.contains("origin()") {
+                    return None;
+                }
+            }
+            "YulFunctionCall" => {
+                if ast
+                    .get("functionName")?
+                    .as_object()?
+                    .get("name")?
+                    .as_str()?
+                    != "origin"
+                {
+                    return None;
+                }
+            }
+            _ => return None,
         }
 
         Some(SolcStandardJsonOutputError::warning_tx_origin(

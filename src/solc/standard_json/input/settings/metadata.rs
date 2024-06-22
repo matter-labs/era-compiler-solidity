@@ -8,12 +8,13 @@
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
-    /// The bytecode hash mode.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bytecode_hash: Option<era_compiler_llvm_context::EraVMMetadataHash>,
     /// Whether to use literal content.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_literal_content: Option<bool>,
+
+    /// The bytecode hash mode.
+    #[serde(skip_serializing)]
+    pub bytecode_hash: Option<era_compiler_llvm_context::EraVMMetadataHash>,
 }
 
 impl Metadata {
