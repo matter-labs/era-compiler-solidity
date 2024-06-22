@@ -120,10 +120,19 @@ impl Error {
     ) -> Self {
         let message = r#"
 You are checking for 'tx.origin', which might lead to unexpected behavior.
+
 ZKsync Era comes with native account abstraction support, and therefore the initiator of a
 transaction might be different from the contract calling your code. It is highly recommended NOT
 to rely on tx.origin, but use msg.sender instead.
+
+In Solidity v0.4, where there is no `payable` type, this may be a false positive
+if `using X for address` is used with `X` implementing its own `send` or `transfer` functions.
+
 Learn more about Account Abstraction at https://docs.zksync.io/build/developer-reference/account-abstraction/
+
+You may disable this warning with:
+    a. `suppressedWarnings = ["txorigin"]` in standard JSON.
+    b. `--suppress-warnings txorigin` in the CLI.
 "#;
 
         Self::new_warning(
@@ -144,10 +153,16 @@ Learn more about Account Abstraction at https://docs.zksync.io/build/developer-r
         let message = r#"
 You are using '<address payable>.send/transfer(<X>)' without providing the gas amount.
 Such calls will fail depending on the pubdata costs.
+
 Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the
 reentrancy attack. `send` and `transfer` send limited amount of gas that prevents reentrancy,
 whereas `<address>.call{value: <X>}` sends all gas to the callee.
+
 Learn more about reentrancy at https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
+
+You may disable this error with:
+    1. `suppressedErrors = ["sendtransfer"]` in standard JSON.
+    2. `--suppress-errors sendtransfer` in the CLI.
 "#;
 
         Self::new_error(

@@ -36,6 +36,7 @@ impl Source {
     /// Checks the AST node for the `<address payable>`'s `send` and `transfer` methods usage.
     ///
     pub fn check_send_and_transfer(
+        solc_version: &SolcVersion,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, String>,
@@ -58,7 +59,11 @@ impl Source {
         let expression = expression.get("expression")?.as_object()?;
         let type_descriptions = expression.get("typeDescriptions")?.as_object()?;
         let type_identifier = type_descriptions.get("typeIdentifier")?.as_str()?;
-        if type_identifier != "t_address_payable" {
+        let mut affected_types = vec!["t_address_payable"];
+        if solc_version.default < semver::Version::new(0, 5, 0) {
+            affected_types.push("t_address");
+        }
+        if !affected_types.contains(&type_identifier) {
             return None;
         }
 
@@ -73,6 +78,7 @@ impl Source {
     /// Checks the AST node for the `origin` assembly instruction usage.
     ///
     pub fn check_assembly_origin(
+        solc_version: &SolcVersion,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, String>,
@@ -80,12 +86,12 @@ impl Source {
         let ast = ast.as_object()?;
 
         match ast.get("nodeType")?.as_str()? {
-            "InlineAssembly" => {
+            "InlineAssembly" if solc_version.default < semver::Version::new(0, 6, 0) => {
                 if !ast.get("operations")?.as_str()?.contains("origin()") {
                     return None;
                 }
             }
-            "YulFunctionCall" => {
+            "YulFunctionCall" if solc_version.default >= semver::Version::new(0, 6, 0) => {
                 if ast
                     .get("functionName")?
                     .as_object()?
@@ -177,25 +183,28 @@ impl Source {
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, String>,
-        version: &SolcVersion,
-        pipeline: SolcPipeline,
+        solc_version: &SolcVersion,
+        solc_pipeline: SolcPipeline,
         suppressed_messages: &[MessageType],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
         if !suppressed_messages.contains(&MessageType::SendTransfer) {
-            if let Some(message) = Self::check_send_and_transfer(ast, id_paths, sources) {
+            if let Some(message) =
+                Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
+            {
                 messages.push(message);
             }
         }
         if !suppressed_messages.contains(&MessageType::TxOrigin) {
-            if let Some(message) = Self::check_assembly_origin(ast, id_paths, sources) {
+            if let Some(message) = Self::check_assembly_origin(solc_version, ast, id_paths, sources)
+            {
                 messages.push(message);
             }
             if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
-        if SolcPipeline::EVMLA == pipeline && version.l2_revision.is_none() {
+        if SolcPipeline::EVMLA == solc_pipeline && solc_version.l2_revision.is_none() {
             if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }
@@ -208,8 +217,8 @@ impl Source {
                         element,
                         id_paths,
                         sources,
-                        version,
-                        pipeline,
+                        solc_version,
+                        solc_pipeline,
                         suppressed_messages,
                     ));
                 }
@@ -220,8 +229,8 @@ impl Source {
                         value,
                         id_paths,
                         sources,
-                        version,
-                        pipeline,
+                        solc_version,
+                        solc_pipeline,
                         suppressed_messages,
                     ));
                 }

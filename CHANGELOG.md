@@ -1,10 +1,11 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.1] - 2024-06-22
 
 ### Added
 
 - Parallelization in AST and IR parsing
+- More LLVM optimizations
 - Location resolution for EraVM-specific messages in standard JSON output
 - The `suppress-errors` parameter to disable some compilation errors
 

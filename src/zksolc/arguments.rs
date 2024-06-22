@@ -471,6 +471,21 @@ impl Arguments {
                 ));
             }
 
+            if self.suppressed_errors.is_some() {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Suppressed errors must be specified in standard JSON input settings.",
+                    None,
+                    None,
+                ));
+            }
+            if self.suppressed_warnings.is_some() {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Suppressed warnings must be specified in standard JSON input settings.",
+                    None,
+                    None,
+                ));
+            }
+
             if self.enable_eravm_extensions || self.system_mode {
                 messages.push(SolcStandardJsonOutputError::new_warning(
                 "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None, None
