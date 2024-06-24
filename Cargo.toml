@@ -44,6 +44,7 @@ zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", br
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
 era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+topological-sort = "0.2.2"
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"

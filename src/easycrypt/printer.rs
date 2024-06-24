@@ -195,7 +195,8 @@ impl<T: IPrinter> Visitor for T {
 
         self.println(format!("(* Begin {} *)", module_name).as_str());
 
-        for def in module.definitions.values() {
+        for full_name in &module.dependency_order {
+            let def = module.definitions.get(&Reference::from(full_name)).unwrap();
             if def.is_fun_def() {
                 self.visit_module_definition(def);
                 self.println("")
@@ -206,12 +207,14 @@ impl<T: IPrinter> Visitor for T {
         self.print(&module_name);
         self.println(" = {");
         self.increase_indent();
-        for def in module.definitions.values() {
+        for full_name in &module.dependency_order {
+            let def = module.definitions.get(&Reference::from(full_name)).unwrap();
             if def.is_proc_def() {
                 self.visit_module_definition(def);
                 self.println("")
             }
         }
+
         self.println("");
         self.println("}.");
         self.decrease_indent();

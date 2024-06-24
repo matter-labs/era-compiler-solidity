@@ -22,6 +22,20 @@ use crate::yul::path::Path;
 use super::DefinitionInfo;
 
 static STANDARD_DEFINITIONS_COLLECTION: OnceCell<Vec<(YulName, DefinitionInfo)>> = OnceCell::new();
+static TRANSPILER_DEFINITIONS_COLLECTION: OnceCell<Vec<DefinitionInfo>> = OnceCell::new();
+
+pub fn transpiler_specific_definitions() -> &'static Vec<DefinitionInfo> {
+    TRANSPILER_DEFINITIONS_COLLECTION.get_or_init(|| -> Vec<_> {
+        vec![DefinitionInfo {
+            kind: Kind::Function(FunctionName::UserDefined {
+                name: String::from("of_int"),
+                module: Some(String::from("W256")),
+            }),
+            yul_name: full_name("of_int"),
+            r#type: Type::Arrow(Box::from(Type::Integer), Box::from(Type::UInt(256))),
+        }]
+    })
+}
 
 /// Get a collection of definitions corresponding to the standard YUL functions.
 pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
@@ -62,19 +76,19 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             ),
             (
                 YulName::MLoad,
-                proc_mem(primops("mload"), "mload", Usage::READ, 1, 1),
+                proc_mem(primops_proc("mload"), "mload", Usage::READ, 1, 1),
             ),
             (
                 YulName::MStore,
-                proc_mem(primops("mstore"), "mstore", Usage::WRITE, 2, 0),
+                proc_mem(primops_proc("mstore"), "mstore", Usage::WRITE, 2, 0),
             ),
             (
                 YulName::MStore8,
-                proc_mem(primops("mstore8"), "mstore8", Usage::WRITE, 2, 0),
+                proc_mem(primops_proc("mstore8"), "mstore8", Usage::WRITE, 2, 0),
             ),
             (
                 YulName::MCopy,
-                proc_mem(primops("mcopy"), "mcopy", Usage::RW, 3, 1),
+                proc_mem(primops_proc("mcopy"), "mcopy", Usage::RW, 3, 1),
             ),
             (
                 YulName::SLoad,
@@ -194,7 +208,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 YulName::CallValue,
                 proc_simple(ProcName::CallValue, "callvalue", 0, 1),
             ),
-            (YulName::Gas, proc_simple(primops("gas"), "gas", 0, 1)),
+            (YulName::Gas, proc_simple(primops_proc("gas"), "gas", 0, 1)),
             (
                 YulName::Balance,
                 proc_other(ProcName::Balance, "balance", Usage::READ, 1, 0),
@@ -275,7 +289,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 YulName::Return,
                 (DefinitionInfo {
                     kind: Kind::Special(YulSpecial::Return),
-                    full_name: full_name("return"),
+                    yul_name: full_name("return"),
                     r#type: arrow_type(2),
                 }),
             ),
@@ -283,7 +297,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 YulName::Revert,
                 (DefinitionInfo {
                     kind: Kind::Special(YulSpecial::Revert),
-                    full_name: full_name("revert"),
+                    yul_name: full_name("revert"),
                     r#type: arrow_type(2),
                 }),
             ),
@@ -291,7 +305,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 YulName::Stop,
                 (DefinitionInfo {
                     kind: Kind::Special(YulSpecial::Stop),
-                    full_name: full_name("stop"),
+                    yul_name: full_name("stop"),
                     r#type: arrow_type_proc(0, 0),
                 }),
             ),
@@ -299,7 +313,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 YulName::Invalid,
                 (DefinitionInfo {
                     kind: Kind::Special(YulSpecial::Invalid),
-                    full_name: full_name("invalid"),
+                    yul_name: full_name("invalid"),
                     r#type: arrow_type_proc(0, 0),
                 }),
             ),
@@ -345,14 +359,14 @@ fn full_name(s: &str) -> FullName {
 fn unop(typ: UnaryOpType, name: &str) -> DefinitionInfo {
     DefinitionInfo {
         kind: Kind::UnOp(typ),
-        full_name: full_name(name),
+        yul_name: full_name(name),
         r#type: arrow_type(1),
     }
 }
 fn binop(typ: BinaryOpType, name: &str) -> DefinitionInfo {
     DefinitionInfo {
         kind: Kind::BinOp(typ),
-        full_name: full_name(name),
+        yul_name: full_name(name),
         r#type: arrow_type(2),
     }
 }
@@ -360,7 +374,7 @@ fn binop(typ: BinaryOpType, name: &str) -> DefinitionInfo {
 fn fun(typ: FunctionName, name_str: &str, input_args: usize) -> DefinitionInfo {
     DefinitionInfo {
         kind: Kind::Function(typ),
-        full_name: full_name(name_str),
+        yul_name: full_name(name_str),
         r#type: arrow_type(input_args),
     }
 }
@@ -374,7 +388,7 @@ fn proc(
 ) -> DefinitionInfo {
     DefinitionInfo {
         kind: Kind::Proc(ProcKind { name, attributes }),
-        full_name: full_name(name_str),
+        yul_name: full_name(name_str),
         r#type: arrow_type_proc(input_args, output_args),
     }
 }
@@ -432,7 +446,7 @@ fn proc_other(
     proc(name, name_str, input_args, output_args, attributes)
 }
 
-fn primops(name: &str) -> ProcName {
+fn primops_proc(name: &str) -> ProcName {
     ProcName::UserDefined {
         name: name.to_string(),
         module: Some("Primops".to_string()),

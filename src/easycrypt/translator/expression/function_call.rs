@@ -35,7 +35,7 @@ impl Translator {
         is_root: bool,
     ) -> Result<Transformed, Error> {
         let caller_full_name = self
-            .call_stack
+            .functions_stack
             .last()
             .expect("Internal error: inside a function call but callstack is empty.");
         let caller_definition = self

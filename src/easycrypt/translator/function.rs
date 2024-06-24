@@ -88,7 +88,7 @@ impl Translator {
             ..
         } = fd;
         let full_name = self.create_full_name(identifier);
-        self.call_stack.push(full_name.clone());
+        self.functions_stack.push(full_name.clone());
         let definition = self.definitions.get(&full_name).unwrap();
 
         let kind = definition.kind.clone();
@@ -161,7 +161,7 @@ impl Translator {
             .cloned()
             .collect();
         self.tracker.leave();
-        self.call_stack.pop();
+        self.functions_stack.pop();
         Ok((
             ctx.clone(),
             Translated::Proc(Proc {
@@ -191,7 +191,7 @@ impl Translator {
             kind: SignatureKind::Function,
         };
         self.tracker.leave();
-        self.call_stack.pop();
+        self.functions_stack.pop();
         Ok((
             ctx.clone(),
             Translated::Function(Function {

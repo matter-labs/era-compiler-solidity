@@ -49,7 +49,7 @@ pub trait Visitor {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
     /// Visit a variable declaration in YUL syntax tree: `var x` or `var x = <initializer>`.
-    fn visit_variable_declaration(&mut self, variable_definition: &VariableDeclaration) {
+    fn visit_variable_declaration(&mut self, variable_declaration: &VariableDeclaration) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
     /// Visit a function definition in YUL syntax tree.

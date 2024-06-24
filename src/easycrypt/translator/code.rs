@@ -2,7 +2,7 @@
 //! Transpilation of the `code` block of an arbitrary YUL object.
 //!
 
-use std::collections::HashMap;
+use std::iter;
 
 use anyhow::Error;
 
@@ -26,7 +26,7 @@ impl Translator {
     /// Transpile the `code` block of an arbitrary YUL object.
     pub fn transpile_code(&mut self, code: &YulCode) -> Result<Module, Error> {
         self.tracker.enter_code();
-        self.call_stack
+        self.functions_stack
             .push(self.create_full_name(IMPLICIT_CODE_FUNCTION_NAME));
 
         let (Context { module, locals }, TransformedBlock { statements }) =
@@ -46,20 +46,16 @@ impl Translator {
         let mut new_module = module;
 
         if !default_code_proc.body.statements.is_empty() {
-            new_module.merge(&Module {
-                name: None,
-                definitions: HashMap::from([(
-                    Reference {
-                        identifier: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
-                        location: Some(self.here()),
-                    },
-                    TopDefinition::Proc(default_code_proc),
-                )]),
-            });
+            new_module.merge(&Module::from_definitions(iter::once((
+                Reference {
+                    identifier: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
+                    location: Some(self.here()),
+                },
+                TopDefinition::Proc(default_code_proc),
+            ))))
         }
-
         self.tracker.leave();
-        self.call_stack.pop();
+        self.functions_stack.pop();
         Ok(new_module)
     }
 }

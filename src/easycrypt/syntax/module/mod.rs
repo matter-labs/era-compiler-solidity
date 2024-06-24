@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use crate::easycrypt::syntax::module::definition::TopDefinition;
 use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::Name;
+use crate::yul::path::full_name::FullName;
 
 /// EasyCrypt AST node containing a definition of a module.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,6 +18,7 @@ pub struct Module {
     pub name: Option<Name>,
     /// Definitions belonging to the module, including functions and procedures.
     pub definitions: HashMap<Reference, TopDefinition>,
+    pub dependency_order: Vec<FullName>,
 }
 
 impl Module {
@@ -25,6 +27,19 @@ impl Module {
         Self {
             definitions: HashMap::new(),
             name,
+            dependency_order: Vec::new(),
+        }
+    }
+
+    /// Create an anonymous module populated with given definitions.
+    pub fn from_definitions<T>(definitions: T) -> Self
+    where
+        T: Iterator<Item = (Reference, TopDefinition)>,
+    {
+        Self {
+            name: None,
+            definitions: definitions.collect(),
+            dependency_order: Vec::new(),
         }
     }
 

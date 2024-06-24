@@ -17,7 +17,6 @@ pub mod yul_analyzers;
 use anyhow::Error;
 
 use crate::easycrypt::syntax::definition::Definition;
-use crate::easycrypt::syntax::module::Module;
 use crate::easycrypt::syntax::r#type::Type;
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
@@ -32,9 +31,12 @@ use crate::YulVisitor;
 
 use self::definition_info::DefinitionInfo;
 use self::standard_definitions::standard_definitions;
+use self::yul_analyzers::calling_dependencies::CallingDependencies;
 use self::yul_analyzers::collect_definitions::CollectDefinitions;
 use self::yul_analyzers::functions::effects::derive::infer_effects;
 use self::yul_analyzers::functions::kind::infer_function_types;
+
+use super::syntax::module::Module;
 
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
@@ -42,7 +44,7 @@ pub struct Translator {
     tmp_counter: Counter,
     tracker: Builder,
     definitions: SymbolTable<DefinitionInfo>,
-    call_stack: Vec<FullName>,
+    functions_stack: Vec<FullName>,
 }
 
 fn predefined_symbol_table() -> SymbolTable<DefinitionInfo> {
@@ -73,11 +75,24 @@ impl Translator {
             //root: yul_object,
             tracker: Builder::new(Path::empty()),
             tmp_counter: Counter::new(),
-            definitions,
-            call_stack: Vec::new(),
+            definitions: definitions.clone(),
+            functions_stack: Vec::new(),
         };
 
-        transpiler.transpile_object(yul_object, true)
+        let mut module = transpiler.transpile_object(yul_object, true)?;
+
+        let dependencies: Vec<FullName> = {
+            let mut collector = CallingDependencies::new(&transpiler.definitions);
+            collector.visit_object(yul_object);
+            let result = collector.topological_sort.pop_all();
+            if result.is_empty() && !collector.topological_sort.is_empty() {
+                anyhow::bail!("There are cyclic dependencies in YUL file");
+            } else {
+                result
+            }
+        };
+        module.dependency_order = dependencies;
+        Ok(module)
     }
 
     fn new_definition_here(&self, name: &str, typ: Option<Type>) -> Definition {

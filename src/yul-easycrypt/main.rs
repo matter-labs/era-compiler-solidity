@@ -63,10 +63,10 @@ fn main_inner() -> anyhow::Result<()> {
         if let Some(obj) = contr.get_yul_object() {
             //WritePrinter::default().visit_object(obj);
 
-            let m = Translator::transpile(obj).unwrap();
+            let module = Translator::transpile(obj).unwrap();
             //println!("{:#?}", m);
 
-            WritePrinter::default().visit_module(&m);
+            WritePrinter::default().visit_module(&module);
         }
     });
 
