@@ -8,7 +8,7 @@ on:
         type: string
         description: "Prebuilt zksolc version to use, (repo: https://github.com/matter-labs/zksolc-bin/releases)"
         required: true
-        default: "1.5.1"
+        default: "1.5.0"
   pull_request:
     paths-ignore:
       - '.gitignore'
