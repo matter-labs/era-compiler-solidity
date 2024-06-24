@@ -73,7 +73,7 @@ impl ProcKind {
 pub fn state_formal_parameters(proc_definition: &DefinitionInfo) -> Vec<(Definition, Type)> {
     if let DefinitionInfo {
         kind: Kind::Proc(proc_kind),
-        full_name: FullName { path, .. },
+        yul_name: FullName { path, .. },
         ..
     } = proc_definition
     {
@@ -92,7 +92,7 @@ pub fn state_formal_parameters(proc_definition: &DefinitionInfo) -> Vec<(Definit
 pub fn state_return_vars(proc_definition: &DefinitionInfo) -> Vec<(Definition, Type)> {
     if let DefinitionInfo {
         kind: Kind::Proc(proc_kind),
-        full_name: FullName { path, .. },
+        yul_name: FullName { path, .. },
         ..
     } = proc_definition
     {

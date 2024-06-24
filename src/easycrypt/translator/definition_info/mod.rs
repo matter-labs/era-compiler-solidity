@@ -25,7 +25,7 @@ pub struct DefinitionInfo {
     /// Kind of definition: binop/unop, function, procedure etc.
     pub kind: Kind,
     /// Full path from the root of YUL syntax tree.
-    pub full_name: FullName,
+    pub yul_name: FullName,
     /// Type of definition.
     pub r#type: Type,
 }

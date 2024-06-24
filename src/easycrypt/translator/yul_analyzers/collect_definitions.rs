@@ -54,7 +54,7 @@ impl CollectDefinitions {
         let definition = DefinitionInfo {
             kind: Kind::Variable,
             r#type,
-            full_name: full_name.clone(),
+            yul_name: full_name.clone(),
         };
         self.tracker.add(name, &definition);
         self.all_symbols.insert(&full_name, &definition);
@@ -105,7 +105,7 @@ impl CollectDefinitions {
                 attributes: Default::default(),
             }),
             r#type,
-            full_name: full_name.clone(),
+            yul_name: full_name.clone(),
         };
         self.tracker.add(name, &definition);
         self.all_symbols.insert(&full_name, &definition);
