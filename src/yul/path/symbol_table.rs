@@ -35,7 +35,6 @@ where
     }
 
     /// Searches for the value by its full name in all its parent lexical scopes.
-    #[allow(dead_code)]
     pub fn get<'a>(&'a self, name: &FullName) -> Option<&'a T> {
         for parent in name.path.parents() {
             let full_name = FullName {

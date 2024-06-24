@@ -22,10 +22,10 @@ use crate::easycrypt::syntax::r#type::Type;
 use crate::util::counter::Counter;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::object::Object as YulObject;
+use crate::yul::path::builder::Builder;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
-use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
-use crate::yul::path::tracker::PathTracker;
+use crate::yul::path::tracker::PathTracker as _;
 use crate::yul::path::Path;
 use crate::yul::printer::name_identifier;
 use crate::YulVisitor;
@@ -39,9 +39,8 @@ use self::yul_analyzers::functions::kind::infer_function_types;
 /// Global state of YUL to EasyCrypt translator
 #[derive(Debug)]
 pub struct Translator {
-    //root: YulObject,
-    tracker: SymbolTracker<DefinitionInfo>,
     tmp_counter: Counter,
+    tracker: Builder,
     definitions: SymbolTable<DefinitionInfo>,
     call_stack: Vec<FullName>,
 }
@@ -66,7 +65,7 @@ impl Translator {
         infer_effects(&mut definitions, yul_object);
         let mut transpiler = Self {
             //root: yul_object,
-            tracker: SymbolTracker::new(),
+            tracker: Builder::new(Path::empty()),
             tmp_counter: Counter::new(),
             definitions,
             call_stack: Vec::new(),

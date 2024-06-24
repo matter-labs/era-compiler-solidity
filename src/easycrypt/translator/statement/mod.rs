@@ -13,7 +13,6 @@ use std::iter;
 use anyhow::Error;
 
 use super::context::Context;
-use super::definition_info::kind::proc_kind::ProcKind;
 use super::function;
 use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::function::Function;
@@ -21,8 +20,6 @@ use crate::easycrypt::syntax::module::definition::TopDefinition;
 use crate::easycrypt::syntax::proc::Proc;
 use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::block;
-use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::Statement as YulStatement;
 
@@ -89,14 +86,6 @@ impl Translator {
                 let (ctx, translation_result) = self.transpile_function_definition(fd, ctx)?;
                 match translation_result {
                     function::Translated::Function(ec_function) => {
-                        self.tracker.add(
-                            &ec_function.name.to_string(),
-                            &DefinitionInfo {
-                                kind: Kind::Function(ec_function.name.clone()),
-                                full_name: self.create_full_name(&ec_function.name.to_string()),
-                                r#type: ec_function.signature.get_type(),
-                            },
-                        );
                         let mut new_ctx = ctx.clone();
                         new_ctx
                             .module
@@ -104,17 +93,6 @@ impl Translator {
                         Ok((new_ctx, Transformed::Function(ec_function)))
                     }
                     function::Translated::Proc(ec_procedure) => {
-                        self.tracker.add(
-                            &ec_procedure.name.to_string(),
-                            &DefinitionInfo {
-                                kind: Kind::Proc(ProcKind {
-                                    name: ec_procedure.name.clone(),
-                                    attributes: Default::default(),
-                                }),
-                                full_name: self.create_full_name(&ec_procedure.name.to_string()),
-                                r#type: ec_procedure.signature.get_type(),
-                            },
-                        );
                         let mut new_ctx = ctx.clone();
                         new_ctx
                             .module

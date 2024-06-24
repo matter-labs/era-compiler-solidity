@@ -103,7 +103,6 @@ impl<T> SymbolTracker<T>
 where
     T: Clone + std::fmt::Debug + PartialEq + Eq,
 {
-    #[allow(dead_code)]
     pub fn get(&self, name: &String) -> Option<T> {
         self.symbols.get(name)
     }

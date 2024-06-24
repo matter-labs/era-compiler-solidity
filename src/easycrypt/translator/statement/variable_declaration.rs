@@ -5,10 +5,7 @@
 use anyhow::Error;
 
 use super::Transformed;
-use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::translator::context::Context;
-use crate::easycrypt::translator::definition_info::kind::Kind;
-use crate::easycrypt::translator::definition_info::DefinitionInfo;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::assignment::Assignment as YulAssignment;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
@@ -32,18 +29,6 @@ impl Translator {
             expression,
         } = vd;
         let definitions = self.bindings_to_definitions(bindings);
-
-        for def in &definitions {
-            let full_name = self.create_full_name(def.identifier.as_str());
-            self.tracker.add(
-                &def.identifier,
-                &DefinitionInfo {
-                    kind: Kind::Variable,
-                    full_name,
-                    r#type: Type::DEFAULT.clone(),
-                },
-            )
-        }
 
         let ctx = ctx.add_locals(definitions.iter());
         if let Some(initializer) = expression {
