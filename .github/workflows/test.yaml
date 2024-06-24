@@ -8,12 +8,7 @@ on:
         type: string
         description: "Prebuilt zksolc version to use, (repo: https://github.com/matter-labs/zksolc-bin/releases)"
         required: true
-        default: "1.4.1"
-      solc-version:
-        type: string
-        description: "Prebuilt solc version, (repo: https://github.com/matter-labs/era-solidity/releases)"
-        required: true
-        default: "0.8.26-1.0.1"
+        default: "1.5.1"
   pull_request:
     paths-ignore:
       - '.gitignore'
@@ -97,8 +92,6 @@ jobs:
 
       - name: Install solc compiler
         uses: ./.github/actions/install-solc
-        with:
-          solc-version: ${{ github.event.inputs.solc-version }}
 
       - name: Run tests
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
