@@ -45,19 +45,25 @@ pub struct Translator {
     call_stack: Vec<FullName>,
 }
 
+fn predefined_symbol_table() -> SymbolTable<DefinitionInfo> {
+    let mut table = SymbolTable::new();
+    for (name, info) in standard_definitions() {
+        let full_name = FullName {
+            name: name_identifier(name),
+            path: Path::empty(),
+        };
+        table.insert(&full_name, info)
+    }
+
+    table
+}
+
 impl Translator {
     /// Transpile an object
     pub fn transpile(yul_object: &YulObject) -> Result<Module, Error> {
         let mut definitions = {
-            let mut table = SymbolTable::new();
-            for (name, info) in standard_definitions() {
-                let full_name = FullName {
-                    name: name_identifier(name),
-                    path: Path::empty(),
-                };
-                table.insert(&full_name, info)
-            }
-            let mut collector = CollectDefinitions::new(table);
+            let predefined = predefined_symbol_table();
+            let mut collector = CollectDefinitions::new(predefined);
             collector.visit_object(yul_object);
             collector.all_symbols
         };

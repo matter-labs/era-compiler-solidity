@@ -10,6 +10,7 @@ pub enum Type {
     Unknown,
     Unit,
     Bool,
+    Integer,
     Int(usize),
     UInt(usize),
     Custom(String),
@@ -39,6 +40,7 @@ impl Display for Type {
             }
             Type::Unknown => f.write_str("Unknown"),
             Type::Context(ctx) => f.write_fmt(format_args!("{}", ctx)),
+            Type::Integer => f.write_str("int"),
         }
     }
 }

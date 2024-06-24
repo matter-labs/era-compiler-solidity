@@ -87,7 +87,7 @@ impl Translator {
                 ))
             }
             YulExpression::Literal(lit) => Ok(Transformed::Expression(
-                Expression::Literal(Self::transpile_literal(lit)?),
+                Self::transpile_literal(lit)?,
                 ectx.clone(),
             )),
         }

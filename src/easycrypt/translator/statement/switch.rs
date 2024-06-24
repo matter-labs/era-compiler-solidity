@@ -71,7 +71,7 @@ impl Translator {
                 condition: Expression::Binary(
                     BinaryOpType::Eq,
                     Box::from(Expression::Reference(tmp_ref.clone())),
-                    Box::from(Expression::Literal(transpiled_case_literal)),
+                    Box::from(transpiled_case_literal),
                 ),
                 yes: Box::from(Statement::Block(Block { statements })),
                 no: None,
