@@ -5,10 +5,6 @@ inputs:
     description: 'Space-separated list of solc versions to download.'
     required: false
     default: '0.4.26-1.0.1 0.5.17-1.0.1 0.6.12-1.0.1 0.7.6-1.0.1 0.8.26-1.0.1'
-  solc-version-latest:
-    description: 'Latest version of solc.'
-    required: false
-    default: '0.8.26-1.0.1'
   output-dir:
     description: 'Output directory for the solc binaries.'
     required: false
@@ -45,6 +41,5 @@ runs:
           OUTPUT="${OUTPUT}${WINDOWS_SUFFIX}"
           curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
           chmod a+x ${OUTPUT}
-          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp ${OUTPUT} ${{ inputs.output-dir }}/solc${WINDOWS_SUFFIX}
         done
         echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
