@@ -23,7 +23,7 @@ We recommend at least 4 GB of RAM available for the build process.
 ## Delivery Methods
 
 1. **Install via npm**:
-   - Use [ZKsync CLI](https://era.zksync.io/docs/tools/zksync-cli/) to obtain a compiler package and prepare a project environment. After the installation you can modify a hardhat configuration file in the project and specify `zksolc` version there. Use `npx hardhat compile` or `yarn hardhat compile` to compile. [@matterlabs/hardhat-zksync-solc](https://era.zksync.io/docs/tools/hardhat/getting-started.html) package will be used from npm repo.
+   - Use [ZKsync CLI](https://docs.zksync.io/build/tooling/zksync-cli/) to obtain a compiler package and prepare a project environment. After the installation you can modify a hardhat configuration file in the project and specify `zksolc` version there. Use `npx hardhat compile` or `yarn hardhat compile` to compile. [@matterlabs/hardhat-zksync-solc](https://docs.zksync.io/build/tooling/hardhat/getting-started) package will be used from npm repo.
 2. **Download prebuilt binaries**:
    - Download [solc](https://github.com/matter-labs/era-solidity/releases) and [zksolc](https://github.com/matter-labs/zksolc-bin) binaries directly from GitHub. Use the CLI or Hardhat to compile contracts.
 3. **Build binaries from sources**:
@@ -63,7 +63,7 @@ We recommend at least 4 GB of RAM available for the build process.
 <details>
 <summary>2. Install Rust.</summary>
 
-   * Follow the latest [official instructions]((https://www.rust-lang.org/tools/install)):
+   * Follow the latest [official instructions](https://www.rust-lang.org/tools/install):
       ```shell
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
       . ${HOME}/.cargo/env
@@ -197,7 +197,7 @@ For running command line interface tests, `zksolc` itself and `solc` must also b
 
 ## Troubleshooting
 
-- Unset any LLVM-related environment variables you may have set, especially `LLVM_SYS_<version>_PREFIX` (see e.g. [https://crates.io/crates/llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration)). To make sure: `set | grep LLVM`
+- Unset any LLVM-related environment variables you may have set, especially `LLVM_SYS_<version>_PREFIX` (see e.g. [llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration)). To make sure: `set | grep LLVM`
 
 ## License
 
@@ -210,7 +210,7 @@ at your option.
 
 ## Resources
 
-- [ZKsync Era compiler toolchain documentation](https://era.zksync.io/docs/api/compiler-toolchain)
+- [ZKsync Era compiler toolchain documentation](https://docs.zksync.io/zk-stack/components/compiler/toolchain)
 - [Solidity documentation](https://docs.soliditylang.org/en/latest/)
 
 ## Official Links
