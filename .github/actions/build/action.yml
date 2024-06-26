@@ -5,10 +5,18 @@ inputs:
     description: 'Specific build target triplet.'
     required: false
     default: ''
+  sanitizer:
+    description: 'Sanitizer to use for build.'
+    required: false
+    default: ''
   release-suffix:
     description: 'Suffix to use for release name.'
     required: false
     default: ''
+  build-type:
+    description: 'Type of build: release or debug.'
+    required: false
+    default: 'release'
 runs:
   using: "composite"
   steps:
@@ -20,11 +28,23 @@ runs:
         rustup target add ${{ inputs.target }}
         echo "target=--target ${{ inputs.target }}" >> $GITHUB_OUTPUT
 
+    - name: Install nightly
+      if: inputs.sanitizer != '' && inputs.target != ''
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      run: |
+        rustup install nightly-${{ inputs.target }}
+        rustup component add rust-src --toolchain nightly-${{ inputs.target }}
+
     - name: Build zksolc
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        cargo build --release ${{ steps.build-target.outputs.target }}
-        echo "${PWD}/target/${{ inputs.target }}/release" >> "${GITHUB_PATH}"
+        if [ '${{ inputs.sanitizer }}' != '' ]; then
+          export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
+          NIGHTLY='+nightly -Zbuild-std'
+        fi
+        [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
+        cargo ${NIGHTLY} build ${RELEASE} ${{ steps.build-target.outputs.target }}
+        echo "${PWD}/target/${{ inputs.target }}/${{ inputs.build-type }}" >> "${GITHUB_PATH}"
 
     - name: Prepare binary
       if: inputs.release-suffix != ''
@@ -33,8 +53,8 @@ runs:
         mkdir -p ./releases/${{ inputs.release-suffix }}
         [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="-v${GITHUB_REF_NAME}"
         [ "$RUNNER_OS" = "Windows" ] && WIN_SUFFIX=".exe"
-        strip "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}"
-        mv "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}" \
+        strip "./target/${{ matrix.target }}/${{ inputs.build-type }}/zksolc${WIN_SUFFIX}"
+        mv "./target/${{ matrix.target }}/${{ inputs.build-type }}/zksolc${WIN_SUFFIX}" \
           "./releases/${{ inputs.release-suffix }}/zksolc-${{ inputs.release-suffix }}${TAG_SUFFIX}${WIN_SUFFIX}"
 
     - name: Upload binary
