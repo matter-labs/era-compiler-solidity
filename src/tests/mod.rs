@@ -40,7 +40,7 @@ pub fn build_solidity(
     solc_pipeline: SolcPipeline,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(Some(solc_version));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -126,7 +126,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     solc_version: &semver::Version,
     solc_pipeline: SolcPipeline,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(Some(solc_version));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -193,7 +193,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 /// Builds the Yul `sources` and returns the standard JSON output.
 ///
 pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -238,7 +238,7 @@ pub fn build_yul_standard_json(
     solc_input: SolcStandardJsonInput,
     solc_compiler: Option<&SolcCompiler>,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(solc_compiler.map(|compiler| &compiler.version.default));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -289,7 +289,7 @@ pub fn build_yul_standard_json(
 pub fn build_llvm_ir_standard_json(
     input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -328,7 +328,7 @@ pub fn build_llvm_ir_standard_json(
 pub fn build_eravm_assembly_standard_json(
     input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    check_dependencies();
+    check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
@@ -373,7 +373,7 @@ pub fn check_solidity_message(
     skip_for_zksync_edition: bool,
     suppressed_warnings: Vec<MessageType>,
 ) -> anyhow::Result<bool> {
-    check_dependencies();
+    check_dependencies(Some(solc_version));
 
     let solc_compiler = SolcCompiler::new(
         format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
@@ -422,15 +422,18 @@ pub fn check_solidity_message(
 ///
 /// Checks if the required executables are present in `${PATH}`.
 ///
-fn check_dependencies() {
-    for executable in [
-        crate::r#const::DEFAULT_EXECUTABLE_NAME,
-        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-    ]
-    .iter()
-    {
+fn check_dependencies(solc_version: Option<&semver::Version>) {
+    let mut executables = vec![crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned()];
+    if let Some(solc_version) = solc_version {
+        executables.push(format!(
+            "{}-{}",
+            SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+            solc_version
+        ));
+    }
+    for executable in executables.into_iter() {
         assert!(
-            which::which(executable).is_ok(),
+            which::which(executable.as_str()).is_ok(),
             "The `{executable}` executable not found in ${{PATH}}"
         );
     }
