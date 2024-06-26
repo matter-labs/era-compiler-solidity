@@ -12,7 +12,7 @@ mod optimizer;
 mod remappings;
 mod runtime_code;
 mod standard_json;
-mod unsupported_opcodes;
+mod unsupported_instructions;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
@@ -36,7 +36,8 @@ pub fn build_solidity(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: Option<BTreeSet<String>>,
-    pipeline: SolcPipeline,
+    solc_version: &semver::Version,
+    solc_pipeline: SolcPipeline,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
@@ -45,14 +46,16 @@ pub fn build_solidity(
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?;
+    let solc_compiler = SolcCompiler::new(
+        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+    )?;
 
     let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             true,
             None,
@@ -60,7 +63,7 @@ pub fn build_solidity(
             false,
         ),
         None,
-        pipeline == SolcPipeline::EVMLA,
+        solc_pipeline == SolcPipeline::EVMLA,
         false,
         true,
         false,
@@ -71,7 +74,7 @@ pub fn build_solidity(
 
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
-        Some(pipeline),
+        Some(solc_pipeline),
         Some(&sources),
         &mut vec![],
         None,
@@ -84,7 +87,7 @@ pub fn build_solidity(
     let project = Project::try_from_solidity_sources(
         sources,
         libraries,
-        pipeline,
+        solc_pipeline,
         &mut solc_output,
         &solc_compiler,
         None,
@@ -120,7 +123,8 @@ pub fn build_solidity(
 pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
-    pipeline: SolcPipeline,
+    solc_version: &semver::Version,
+    solc_pipeline: SolcPipeline,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
 
@@ -128,14 +132,16 @@ pub fn build_solidity_and_detect_missing_libraries(
     era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
-    let solc_compiler = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?;
+    let solc_compiler = SolcCompiler::new(
+        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+    )?;
 
     let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
         None,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::new(
             true,
             None,
@@ -143,7 +149,7 @@ pub fn build_solidity_and_detect_missing_libraries(
             false,
         ),
         None,
-        pipeline == SolcPipeline::EVMLA,
+        solc_pipeline == SolcPipeline::EVMLA,
         false,
         false,
         false,
@@ -154,7 +160,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let mut solc_output = solc_compiler.standard_json(
         solc_input,
-        Some(pipeline),
+        Some(solc_pipeline),
         Some(&sources),
         &mut vec![],
         None,
@@ -165,7 +171,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let project = Project::try_from_solidity_sources(
         sources,
         libraries,
-        pipeline,
+        solc_pipeline,
         &mut solc_output,
         &solc_compiler,
         None,
@@ -281,7 +287,7 @@ pub fn build_yul_standard_json(
 /// Builds the LLVM IR standard JSON and returns the standard JSON output.
 ///
 pub fn build_llvm_ir_standard_json(
-    solc_input: SolcStandardJsonInput,
+    input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
 
@@ -291,13 +297,13 @@ pub fn build_llvm_ir_standard_json(
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
-        solc_input.settings.optimizer.mode.unwrap_or('0'),
+        input.settings.optimizer.mode.unwrap_or('0'),
     )?;
 
-    let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
+    let sources = input.sources()?;
+    let mut output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
-    let project = Project::try_from_llvm_ir_sources(sources, Some(&mut solc_output))?;
+    let project = Project::try_from_llvm_ir_sources(sources, Some(&mut output))?;
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
@@ -309,18 +315,18 @@ pub fn build_llvm_ir_standard_json(
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
+    build.write_to_standard_json(&mut output, None, &zksolc_version)?;
 
-    solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
-    Ok(solc_output)
+    output.take_and_write_warnings();
+    output.collect_errors()?;
+    Ok(output)
 }
 
 ///
 /// Builds the EraVM assembly standard JSON and returns the standard JSON output.
 ///
 pub fn build_eravm_assembly_standard_json(
-    solc_input: SolcStandardJsonInput,
+    input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies();
 
@@ -330,13 +336,13 @@ pub fn build_eravm_assembly_standard_json(
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
-        solc_input.settings.optimizer.mode.unwrap_or('0'),
+        input.settings.optimizer.mode.unwrap_or('0'),
     )?;
 
-    let sources = solc_input.sources()?;
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
+    let sources = input.sources()?;
+    let mut output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
-    let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut solc_output))?;
+    let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut output))?;
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
@@ -348,29 +354,31 @@ pub fn build_eravm_assembly_standard_json(
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
+    build.write_to_standard_json(&mut output, None, &zksolc_version)?;
 
-    solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
-    Ok(solc_output)
+    output.take_and_write_warnings();
+    output.collect_errors()?;
+    Ok(output)
 }
 
 ///
 /// Checks if the built Solidity project contains the given warning.
 ///
-pub fn check_solidity_warning(
+pub fn check_solidity_message(
     source_code: &str,
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
-    pipeline: SolcPipeline,
-    skip_for_zkvm_edition: bool,
+    solc_version: &semver::Version,
+    solc_pipeline: SolcPipeline,
+    skip_for_zksync_edition: bool,
     suppressed_warnings: Vec<MessageType>,
 ) -> anyhow::Result<bool> {
     check_dependencies();
 
-    let solc = SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?;
-    let solc_version = solc.version.to_owned();
-    if skip_for_zkvm_edition && solc_version.l2_revision.is_some() {
+    let solc_compiler = SolcCompiler::new(
+        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+    )?;
+    if skip_for_zksync_edition && solc_compiler.version.l2_revision.is_some() {
         return Ok(true);
     }
 
@@ -381,10 +389,10 @@ pub fn check_solidity_warning(
         sources.clone(),
         libraries,
         None,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, &solc_version.default, false),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsOptimizer::new(true, None, solc_version, false),
         None,
-        pipeline == SolcPipeline::EVMLA,
+        solc_pipeline == SolcPipeline::EVMLA,
         false,
         false,
         false,
@@ -393,9 +401,9 @@ pub fn check_solidity_warning(
         suppressed_warnings,
     )?;
 
-    let solc_output = solc.standard_json(
+    let solc_output = solc_compiler.standard_json(
         solc_input,
-        Some(pipeline),
+        Some(solc_pipeline),
         Some(&sources),
         &mut vec![],
         None,

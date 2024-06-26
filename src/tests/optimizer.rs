@@ -7,11 +7,37 @@
 use std::collections::BTreeMap;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::Compiler as SolcCompiler;
+
+#[test]
+fn default_04_evmla() {
+    default(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_05_evmla() {
+    default(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_06_evmla() {
+    default(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_07_evmla() {
+    default(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_08_evmla() {
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn default_08_yul() {
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
 
 pub const SOURCE_CODE: &str = r#"
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.5.0;
+pragma solidity >=0.4.12;
 
 contract Test {
     uint8 constant ARRAY_SIZE = 40;
@@ -26,9 +52,9 @@ contract Test {
         }
 
         bool result = true;
-        for(uint8 i = 0; i < ARRAY_SIZE/2; i++) {
-            result = result && hash(array, 0, i + 1) == hash(array, ARRAY_SIZE/2, ARRAY_SIZE/2 + i + 1)
-            &&  hash(array, i, ARRAY_SIZE/2) == hash(array, i + ARRAY_SIZE/2, ARRAY_SIZE);
+        for(uint8 j = 0; j < ARRAY_SIZE / 2; j++) {
+            result = result && hash(array, 0, j + 1) == hash(array, ARRAY_SIZE / 2, ARRAY_SIZE / 2 + j + 1)
+                && hash(array, j, ARRAY_SIZE / 2) == hash(array, j + ARRAY_SIZE / 2, ARRAY_SIZE);
         }
         if (result) {
             return 1;
@@ -47,8 +73,7 @@ contract Test {
 }
 "#;
 
-#[test]
-fn optimizer() {
+fn default(version: semver::Version, pipeline: SolcPipeline) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
@@ -56,7 +81,8 @@ fn optimizer() {
         sources.clone(),
         BTreeMap::new(),
         None,
-        SolcPipeline::Yul,
+        &version,
+        pipeline,
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
@@ -64,15 +90,17 @@ fn optimizer() {
         sources.clone(),
         BTreeMap::new(),
         None,
-        SolcPipeline::Yul,
+        &version,
+        pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");
     let build_optimized_for_size = super::build_solidity(
-        sources,
+        sources.clone(),
         BTreeMap::new(),
         None,
-        SolcPipeline::Yul,
+        &version,
+        pipeline,
         era_compiler_llvm_context::OptimizerSettings::size(),
     )
     .expect("Build failure");
@@ -127,11 +155,11 @@ fn optimizer() {
         .len();
 
     assert!(
-        size_when_optimized_for_cycles < size_when_unoptimized,
-        "Expected the cycles-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_cycles, size_when_unoptimized,
-    );
+            size_when_optimized_for_cycles < size_when_unoptimized,
+            "Expected the cycles-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_cycles, size_when_unoptimized,
+        );
     assert!(
-        size_when_optimized_for_size < size_when_unoptimized,
-        "Expected the size-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_size, size_when_unoptimized,
-    );
+            size_when_optimized_for_size < size_when_unoptimized,
+            "Expected the size-optimized bytecode to be smaller than the unoptimized. Optimized: {}B, Unoptimized: {}B", size_when_optimized_for_size, size_when_unoptimized,
+        );
 }
