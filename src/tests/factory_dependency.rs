@@ -7,11 +7,37 @@
 use std::collections::BTreeMap;
 
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::Compiler as SolcCompiler;
+
+#[test]
+fn default_04_evmla() {
+    default(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_05_evmla() {
+    default(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_06_evmla() {
+    default(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_07_evmla() {
+    default(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn default_08_evmla() {
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn default_08_yul() {
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
 
 pub const MAIN_CODE: &str = r#"
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.16;
+pragma solidity >=0.4.12;
 
 import "./callable.sol";
 
@@ -28,7 +54,7 @@ contract Main {
 pub const CALLABLE_CODE: &str = r#"
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.16;
+pragma solidity >=0.4.12;
 
 contract Callable {
     uint256 value;
@@ -43,17 +69,17 @@ contract Callable {
 }
 "#;
 
-#[test]
-fn default() {
+fn default(version: semver::Version, pipeline: SolcPipeline) {
     let mut sources = BTreeMap::new();
     sources.insert("main.sol".to_owned(), MAIN_CODE.to_owned());
     sources.insert("callable.sol".to_owned(), CALLABLE_CODE.to_owned());
 
     let output = super::build_solidity(
-        sources,
+        sources.clone(),
         BTreeMap::new(),
         None,
-        SolcPipeline::Yul,
+        &version,
+        pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");

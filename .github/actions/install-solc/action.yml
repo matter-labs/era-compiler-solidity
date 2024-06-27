@@ -1,38 +1,74 @@
 name: 'Install Solc'
 description: 'Installs the Solc compiler.'
 inputs:
-  solc-version:
-    description: 'Version of solc compiler to download.'
+  solc-default-name:
+    description: 'Default name of the solc executable.'
+    required: false
+    default: 'solc'
+  solc-version-latest:
+    description: 'The latest version of solc.'
     required: false
     default: '0.8.26-1.0.1'
+  solc-zksync-versions:
+    description: 'Space-separated list of ZKsync solc versions to download.'
+    required: false
+    default: '0.4.26-1.0.1 0.5.17-1.0.1 0.6.12-1.0.1 0.7.6-1.0.1 0.8.26-1.0.1'
+  solc-upstream-versions:
+    description: 'Space-separated list of upstream solc versions to download (on Windows only).'
+    required: false
+    default: 'v0.4.26+commit.4563c3fc v0.5.17+commit.d19bba13'
+  output-dir:
+    description: 'Output directory for the solc binaries.'
+    required: false
+    default: 'solc-bins'
 runs:
   using: "composite"
   steps:
-    - name: Install solc compiler
+    - name: Install ZKsync solc compilers
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       env:
         SOLC_URL: "https://github.com/matter-labs/era-solidity/releases/download"
-        SOLC_VERSION: ${{ inputs.solc-version || '0.8.26-1.0.1' }}
       run: |
-        OUTPUT=solc
-        case "${RUNNER_OS}-${RUNNER_ARCH}" in
-          Linux-ARM64*)
-            SOLC_DOWNLOAD_FILENAME="solc-linux-arm64-${SOLC_VERSION}"
-            ;;
-          Linux-X64*)
-            SOLC_DOWNLOAD_FILENAME="solc-linux-amd64-${SOLC_VERSION}"
-            ;;
-          macOS-ARM64*)
-            SOLC_DOWNLOAD_FILENAME="solc-macosx-arm64-${SOLC_VERSION}"
-            ;;
-          macOS-X64*)
-            SOLC_DOWNLOAD_FILENAME="solc-macosx-amd64-${SOLC_VERSION}"
-            ;;
-          Windows*)
-            OUTPUT=solc.exe
-            SOLC_DOWNLOAD_FILENAME="solc-windows-amd64-${SOLC_VERSION}.exe"
-            ;;
-        esac
-        curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
-        chmod a+x ${OUTPUT}
+        mkdir -p ${{ inputs.output-dir }}
+        for SOLC_VERSION in ${{ inputs.solc-zksync-versions }}; do
+          OUTPUT="${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_VERSION%%-*}"
+          case "${RUNNER_OS}-${RUNNER_ARCH}" in
+            Linux-ARM64*)
+              SOLC_DOWNLOAD_FILENAME="solc-linux-arm64-${SOLC_VERSION}"
+              ;;
+            Linux-X64*)
+              SOLC_DOWNLOAD_FILENAME="solc-linux-amd64-${SOLC_VERSION}"
+              ;;
+            macOS-ARM64*)
+              SOLC_DOWNLOAD_FILENAME="solc-macosx-arm64-${SOLC_VERSION}"
+              ;;
+            macOS-X64*)
+              SOLC_DOWNLOAD_FILENAME="solc-macosx-amd64-${SOLC_VERSION}"
+              ;;
+            Windows*)
+              SOLC_DOWNLOAD_FILENAME="solc-windows-amd64-${SOLC_VERSION}.exe"
+              ;;
+          esac
+          curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
+          chmod a+x "${OUTPUT}"
+          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}" && cp "${OUTPUT}" "${{ inputs.solc-default-name }}"
+        done
+        echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
+
+        # Tweak
         echo "${PWD}" >> "${GITHUB_PATH}"
+
+    - name: Install upstream solc on Windows
+      if: runner.os == 'Windows'
+      shell: 'msys2 {0}'
+      env:
+        SOLC_URL: "https://binaries.soliditylang.org/windows-amd64"
+      run: |
+        for SOLC_VERSION in ${{ inputs.solc-upstream-versions }}; do
+          SOLC_DOWNLOAD="solc-windows-amd64-${SOLC_VERSION}"
+          curl --location -o "${SOLC_DOWNLOAD}.zip" "${SOLC_URL}/${SOLC_DOWNLOAD}.zip"
+          unzip -d ${SOLC_DOWNLOAD} "${SOLC_DOWNLOAD}.zip"
+          SOLC_SHORT_VERSION=$(echo "${SOLC_VERSION}" | cut -d+ -f1 | tr -d v)
+          mv "${SOLC_DOWNLOAD}/solc.exe" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_SHORT_VERSION}"
+        done
+        ls -la "${PWD}/${{ inputs.output-dir }}"

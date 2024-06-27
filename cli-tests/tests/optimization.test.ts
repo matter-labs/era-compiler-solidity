@@ -3,7 +3,6 @@ import { paths } from '../src/entities';
 
 describe("Set of --optimization tests", () => {
   const zksolcCommand = 'zksolc';
-  const solcCommand = 'solc';
   const optimization_args: string[] = [`0`, `1`, `2`, `3`, `s`, `z`];
 
   //id1752:I

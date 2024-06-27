@@ -8,7 +8,7 @@ inputs:
   zksolc-version:
     description: 'Prebuilt version of zksolc compiler to download and use in tests.'
     required: true
-    default: '1.4.1'
+    default: '1.5.0'
 runs:
   using: "composite"
   steps:
@@ -17,7 +17,7 @@ runs:
       if: inputs.use-prebuilt-zksolc == 'true'
       env:
         ZKSOLC_DOWNLOAD_URL: "https://github.com/matter-labs/era-compiler-solidity/releases/download"
-        ZKSOLC_VERSION: ${{ inputs.zksolc-version || '1.4.1' }}
+        ZKSOLC_VERSION: ${{ inputs.zksolc-version || '1.5.0' }}
       run: |
         OUTPUT=zksolc
         case "${RUNNER_OS}-${RUNNER_ARCH}" in
@@ -53,6 +53,10 @@ runs:
       working-directory: cli-tests
       run: |
         npm install
+        which solc
+        which zksolc
+        solc --version
+        zksolc --version
         npx jest --ci --reporters=default --reporters=jest-junit
 
     - name: Upload results Linux
