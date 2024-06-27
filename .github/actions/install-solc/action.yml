@@ -42,13 +42,11 @@ runs:
               SOLC_DOWNLOAD_FILENAME="solc-macosx-amd64-${SOLC_VERSION}"
               ;;
             Windows*)
-              WINDOWS_SUFFIX=.exe
               SOLC_DOWNLOAD_FILENAME="solc-windows-amd64-${SOLC_VERSION}.exe"
               ;;
           esac
-          OUTPUT="${OUTPUT}${WINDOWS_SUFFIX}"
           curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
           chmod a+x "${OUTPUT}"
-          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}${WINDOWS_SUFFIX}"
+          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}"
         done
         echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
