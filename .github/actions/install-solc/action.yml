@@ -55,17 +55,17 @@ runs:
         done
         echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
 
-      - name: Install upstream solc on Windows
-        if: runner.os == 'Windows'
-        shell: 'msys2 {0}'
-        env:
-          SOLC_URL: "https://binaries.soliditylang.org/windows-amd64"
-        run: |
-          for SOLC_VERSION in ${{ inputs.solc-upstream-versions }}; do
-            SOLC_DOWNLOAD="solc-windows-amd64-${SOLC_VERSION}"
-            curl --location "${SOLC_URL}/${SOLC_DOWNLOAD}.zip"
-            unzip "${SOLC_DOWNLOAD}.zip"
-            SOLC_SHORT_VERSION=$(echo "${SOLC_VERSION}" | cut -d+ -f1 | tr -d v)
-            mv "${SOLC_DOWNLOAD}/solc.exe" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_SHORT_VERSION}"
-          done
-          ls -la "${PWD}/${{ inputs.output-dir }}"
+    - name: Install upstream solc on Windows
+      if: runner.os == 'Windows'
+      shell: 'msys2 {0}'
+      env:
+        SOLC_URL: "https://binaries.soliditylang.org/windows-amd64"
+      run: |
+        for SOLC_VERSION in ${{ inputs.solc-upstream-versions }}; do
+          SOLC_DOWNLOAD="solc-windows-amd64-${SOLC_VERSION}"
+          curl --location "${SOLC_URL}/${SOLC_DOWNLOAD}.zip"
+          unzip "${SOLC_DOWNLOAD}.zip"
+          SOLC_SHORT_VERSION=$(echo "${SOLC_VERSION}" | cut -d+ -f1 | tr -d v)
+          mv "${SOLC_DOWNLOAD}/solc.exe" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_SHORT_VERSION}"
+        done
+        ls -la "${PWD}/${{ inputs.output-dir }}"
