@@ -53,6 +53,10 @@ runs:
       working-directory: cli-tests
       run: |
         npm install
+        which solc
+        which zksolc
+        solc --version
+        zksolc --version
         npx jest --ci --reporters=default --reporters=jest-junit
 
     - name: Upload results Linux
