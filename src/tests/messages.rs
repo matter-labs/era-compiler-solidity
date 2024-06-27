@@ -11,106 +11,6 @@ use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::Compiler as SolcCompiler;
 
 #[test]
-fn tx_origin_04_evmla() {
-    tx_origin(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_05_evmla() {
-    tx_origin(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_06_evmla() {
-    tx_origin(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_07_evmla() {
-    tx_origin(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_08_evmla() {
-    tx_origin(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_08_yul() {
-    tx_origin(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
-}
-
-#[test]
-fn tx_origin_suppressed_04_evmla() {
-    tx_origin_suppressed(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_suppressed_05_evmla() {
-    tx_origin_suppressed(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_suppressed_06_evmla() {
-    tx_origin_suppressed(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_suppressed_07_evmla() {
-    tx_origin_suppressed(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_suppressed_08_evmla() {
-    tx_origin_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_suppressed_08_yul() {
-    tx_origin_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
-}
-
-#[test]
-fn tx_origin_assembly_04_evmla() {
-    tx_origin_assembly(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_05_evmla() {
-    tx_origin_assembly(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_06_evmla() {
-    tx_origin_assembly(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_07_evmla() {
-    tx_origin_assembly(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_08_evmla() {
-    tx_origin_assembly(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_08_yul() {
-    tx_origin_assembly(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
-}
-
-#[test]
-fn tx_origin_assembly_suppressed_04_evmla() {
-    tx_origin_assembly_suppressed(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_suppressed_05_evmla() {
-    tx_origin_assembly_suppressed(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_suppressed_06_evmla() {
-    tx_origin_assembly_suppressed(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_suppressed_07_evmla() {
-    tx_origin_assembly_suppressed(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_suppressed_08_evmla() {
-    tx_origin_assembly_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
-}
-#[test]
-fn tx_origin_assembly_suppressed_08_yul() {
-    tx_origin_assembly_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
-}
-
-#[test]
 fn send_04_evmla() {
     send(
         semver::Version::new(0, 4, 26),
@@ -390,6 +290,106 @@ fn internal_function_pointer_storage_08() {
     internal_function_pointer_storage(SolcCompiler::LAST_SUPPORTED_VERSION);
 }
 
+#[test]
+fn tx_origin_04_evmla() {
+    tx_origin(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_05_evmla() {
+    tx_origin(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_06_evmla() {
+    tx_origin(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_07_evmla() {
+    tx_origin(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_08_evmla() {
+    tx_origin(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_08_yul() {
+    tx_origin(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+
+#[test]
+fn tx_origin_suppressed_04_evmla() {
+    tx_origin_suppressed(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_suppressed_05_evmla() {
+    tx_origin_suppressed(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_suppressed_06_evmla() {
+    tx_origin_suppressed(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_suppressed_07_evmla() {
+    tx_origin_suppressed(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_suppressed_08_evmla() {
+    tx_origin_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_suppressed_08_yul() {
+    tx_origin_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+
+#[test]
+fn tx_origin_assembly_04_evmla() {
+    tx_origin_assembly(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_05_evmla() {
+    tx_origin_assembly(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_06_evmla() {
+    tx_origin_assembly(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_07_evmla() {
+    tx_origin_assembly(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_08_evmla() {
+    tx_origin_assembly(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_08_yul() {
+    tx_origin_assembly(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+
+#[test]
+fn tx_origin_assembly_suppressed_04_evmla() {
+    tx_origin_assembly_suppressed(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_suppressed_05_evmla() {
+    tx_origin_assembly_suppressed(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_suppressed_06_evmla() {
+    tx_origin_assembly_suppressed(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_suppressed_07_evmla() {
+    tx_origin_assembly_suppressed(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_suppressed_08_evmla() {
+    tx_origin_assembly_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn tx_origin_assembly_suppressed_08_yul() {
+    tx_origin_assembly_suppressed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+
 pub const SEND_TEST_SOURCE_04: &str = r#"
 contract SendExample {
     function s() public returns (bool) {
@@ -556,7 +556,7 @@ contract InternalFunctionPointerExample {
 
     assert!(super::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly pipeline.",
         BTreeMap::new(),
         &version,
         SolcPipeline::EVMLA,
@@ -594,7 +594,7 @@ contract StackFunctionPointerExample {
 
     assert!(super::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly pipeline.",
         BTreeMap::new(),
         &version,
         SolcPipeline::EVMLA,
@@ -639,7 +639,7 @@ contract StorageFunctionPointerExample {
 
     assert!(super::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in EVM legacy assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly pipeline.",
         BTreeMap::new(),
         &version,
         SolcPipeline::EVMLA,
