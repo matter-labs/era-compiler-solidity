@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [1.5.1] - 2024-06-22
+## [1.5.1] - 2024-06-27
 
 ### Added
 
@@ -29,6 +29,7 @@
 - Removed JSON stream readers which are much slower than strings and vectors
 - Missing output with non-canonical input paths in combined JSON output
 - Missing warnings with solc v0.4.x and v0.5.x due to differences in AST
+- Cryptic error on `type(T).runtimeCode` usage with EVM assembly codegen
 - The unknown `bytecodeHash` error in standard JSON mode with solc v0.5.x
 
 ## [1.5.0] - 2024-06-10
