@@ -19,7 +19,7 @@ runs:
       run: |
         mkdir -p ${{ inputs.output-dir }}
         for SOLC_VERSION in ${{ inputs.solc-versions }}; do
-          OUTPUT="${{ inputs.output-dir }}/solc-${SOLC_VERSION%-*}"
+          OUTPUT="${{ inputs.output-dir }}/solc-${SOLC_VERSION%%-*}"
           case "${RUNNER_OS}-${RUNNER_ARCH}" in
             Linux-ARM64*)
               SOLC_DOWNLOAD_FILENAME="solc-linux-arm64-${SOLC_VERSION}"
