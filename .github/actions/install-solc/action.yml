@@ -51,9 +51,12 @@ runs:
           esac
           curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
           chmod a+x "${OUTPUT}"
-          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}"
+          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}" && cp "${OUTPUT}" "${{ inputs.solc-default-name }}"
         done
         echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
+
+        # Tweak
+        echo "${PWD}" >> "${GITHUB_PATH}"
 
     - name: Install upstream solc on Windows
       if: runner.os == 'Windows'
