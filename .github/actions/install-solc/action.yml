@@ -1,10 +1,18 @@
 name: 'Install Solc'
 description: 'Installs the Solc compiler.'
 inputs:
+  solc-default-name:
+    description: 'Default name of the solc executable.'
+    required: false
+    default: 'solc'
   solc-versions:
     description: 'Space-separated list of solc versions to download.'
     required: false
     default: '0.4.26-1.0.1 0.5.17-1.0.1 0.6.12-1.0.1 0.7.6-1.0.1 0.8.26-1.0.1'
+  solc-version-latest:
+    description: 'Latest version of solc.'
+    required: false
+    default: '0.8.26-1.0.1'
   output-dir:
     description: 'Output directory for the solc binaries.'
     required: false
@@ -19,7 +27,7 @@ runs:
       run: |
         mkdir -p ${{ inputs.output-dir }}
         for SOLC_VERSION in ${{ inputs.solc-versions }}; do
-          OUTPUT="${{ inputs.output-dir }}/solc-${SOLC_VERSION%%-*}"
+          OUTPUT="${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_VERSION%%-*}"
           case "${RUNNER_OS}-${RUNNER_ARCH}" in
             Linux-ARM64*)
               SOLC_DOWNLOAD_FILENAME="solc-linux-arm64-${SOLC_VERSION}"
@@ -40,6 +48,7 @@ runs:
           esac
           OUTPUT="${OUTPUT}${WINDOWS_SUFFIX}"
           curl --location -o "${OUTPUT}" "${SOLC_URL}/${SOLC_VERSION}/${SOLC_DOWNLOAD_FILENAME}" && \
-          chmod a+x ${OUTPUT}
+          chmod a+x "${OUTPUT}"
+          [ ${SOLC_VERSION} = ${{ inputs.solc-version-latest }} ] && cp "${OUTPUT}" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}${WINDOWS_SUFFIX}"
         done
         echo "${PWD}/${{ inputs.output-dir }}" >> "${GITHUB_PATH}"
