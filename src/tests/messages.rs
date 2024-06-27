@@ -307,6 +307,27 @@ fn transfer_suppressed_08_yul() {
 }
 
 #[test]
+fn runtime_code_05_evmla() {
+    runtime_code(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+}
+#[test]
+fn runtime_code_06_evmla() {
+    runtime_code(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+}
+#[test]
+fn runtime_code_07_evmla() {
+    runtime_code(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+}
+#[test]
+fn runtime_code_08_evmla() {
+    runtime_code(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn runtime_code_08_yul() {
+    runtime_code(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+
+#[test]
 fn internal_function_pointer_argument_04() {
     internal_function_pointer_argument(semver::Version::new(0, 4, 26));
 }
@@ -367,76 +388,6 @@ fn internal_function_pointer_storage_07() {
 #[test]
 fn internal_function_pointer_storage_08() {
     internal_function_pointer_storage(SolcCompiler::LAST_SUPPORTED_VERSION);
-}
-
-pub const TX_ORIGIN_TEST_SOURCE: &str = r#"
-contract TxOriginExample {
-    function main() private {
-        address txOrigin = tx.origin;
-    }
-}
-"#;
-
-fn tx_origin(version: semver::Version, pipeline: SolcPipeline) {
-    assert!(super::check_solidity_message(
-        TX_ORIGIN_TEST_SOURCE,
-        "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
-        &version,
-        pipeline,
-        false,
-        vec![],
-    )
-    .expect("Test failure"));
-}
-
-fn tx_origin_suppressed(version: semver::Version, pipeline: SolcPipeline) {
-    assert!(!super::check_solidity_message(
-        TX_ORIGIN_TEST_SOURCE,
-        "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
-        &version,
-        pipeline,
-        false,
-        vec![MessageType::TxOrigin],
-    )
-    .expect("Test failure"));
-}
-
-pub const TX_ORIGIN_ASSEMBLY_TEST_SOURCE: &str = r#"
-contract TxOriginExample {
-    function main() private {
-        assembly {
-            let txOrigin := origin()
-        }
-    }
-}
-"#;
-
-fn tx_origin_assembly(version: semver::Version, pipeline: SolcPipeline) {
-    assert!(super::check_solidity_message(
-        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
-        "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
-        &version,
-        pipeline,
-        false,
-        vec![],
-    )
-    .expect("Test failure"));
-}
-
-fn tx_origin_assembly_suppressed(version: semver::Version, pipeline: SolcPipeline) {
-    assert!(!super::check_solidity_message(
-        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
-        "You are checking for 'tx.origin' in your code, which might lead to",
-        BTreeMap::new(),
-        &version,
-        pipeline,
-        false,
-        vec![MessageType::TxOrigin],
-    )
-    .expect("Test failure"));
 }
 
 pub const SEND_TEST_SOURCE_04: &str = r#"
@@ -541,6 +492,32 @@ fn transfer_suppressed(version: semver::Version, pipeline: SolcPipeline, source_
         pipeline,
         false,
         vec![MessageType::SendTransfer],
+    )
+    .expect("Test failure"));
+}
+
+pub const RUNTIME_CODE_SOURCE_CODE: &str = r#"
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.5.3;
+
+contract A {}
+
+contract Test {
+    function main() public pure returns(bytes memory) {
+        return type(A).runtimeCode;
+    }
+}
+"#;
+
+fn runtime_code(version: semver::Version, pipeline: SolcPipeline) {
+    assert!(super::check_solidity_message(
+        RUNTIME_CODE_SOURCE_CODE,
+        "Deploy and runtime code are merged together on ZKsync",
+        BTreeMap::new(),
+        &version,
+        pipeline,
+        false,
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -668,6 +645,76 @@ contract StorageFunctionPointerExample {
         SolcPipeline::EVMLA,
         true,
         vec![],
+    )
+    .expect("Test failure"));
+}
+
+pub const TX_ORIGIN_TEST_SOURCE: &str = r#"
+contract TxOriginExample {
+    function main() private {
+        address txOrigin = tx.origin;
+    }
+}
+"#;
+
+fn tx_origin(version: semver::Version, pipeline: SolcPipeline) {
+    assert!(super::check_solidity_message(
+        TX_ORIGIN_TEST_SOURCE,
+        "You are checking for 'tx.origin', which might lead to",
+        BTreeMap::new(),
+        &version,
+        pipeline,
+        false,
+        vec![],
+    )
+    .expect("Test failure"));
+}
+
+fn tx_origin_suppressed(version: semver::Version, pipeline: SolcPipeline) {
+    assert!(!super::check_solidity_message(
+        TX_ORIGIN_TEST_SOURCE,
+        "You are checking for 'tx.origin', which might lead to",
+        BTreeMap::new(),
+        &version,
+        pipeline,
+        false,
+        vec![MessageType::TxOrigin],
+    )
+    .expect("Test failure"));
+}
+
+pub const TX_ORIGIN_ASSEMBLY_TEST_SOURCE: &str = r#"
+contract TxOriginExample {
+    function main() private {
+        assembly {
+            let txOrigin := origin()
+        }
+    }
+}
+"#;
+
+fn tx_origin_assembly(version: semver::Version, pipeline: SolcPipeline) {
+    assert!(super::check_solidity_message(
+        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
+        "You are checking for 'tx.origin', which might lead to",
+        BTreeMap::new(),
+        &version,
+        pipeline,
+        false,
+        vec![],
+    )
+    .expect("Test failure"));
+}
+
+fn tx_origin_assembly_suppressed(version: semver::Version, pipeline: SolcPipeline) {
+    assert!(!super::check_solidity_message(
+        TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
+        "You are checking for 'tx.origin' in your code, which might lead to",
+        BTreeMap::new(),
+        &version,
+        pipeline,
+        false,
+        vec![MessageType::TxOrigin],
     )
     .expect("Test failure"));
 }

@@ -56,8 +56,12 @@ impl Error {
     {
         let message = message.to_string();
 
-        let mut formatted_message = format!("{type}: ");
-        formatted_message.push_str(message.trim());
+        let message_trimmed = message.trim();
+        let mut formatted_message = if message_trimmed.starts_with(r#type) {
+            message_trimmed.to_owned()
+        } else {
+            format!("{}: {}", r#type, message_trimmed)
+        };
         formatted_message.push('\n');
         if let Some(ref source_location) = source_location {
             let source_code = sources.and_then(|sources| {
@@ -185,6 +189,26 @@ Internal function pointers are not supported in the EVM assembly pipeline.
 Please do one of the following:
     1. Use the ZKsync fork of the Solidity compiler: https://github.com/matter-labs/era-solidity/releases
     2. Switch to the latest solc with Yul assembly pipeline: https://docs.soliditylang.org/en/latest/yul.html
+"#;
+
+        Self::new_error(
+            message,
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
+        )
+    }
+
+    ///
+    /// Returns the runtime code usage error.
+    ///
+    pub fn error_runtime_code(
+        node: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, String>,
+    ) -> Self {
+        let message = r#"
+Deploy and runtime code are merged together on ZKsync, so reading `type(T).runtimeCode` is not possible.
+Please consider changing the functionality relying on reading runtime code to a different approach.
 "#;
 
         Self::new_error(
