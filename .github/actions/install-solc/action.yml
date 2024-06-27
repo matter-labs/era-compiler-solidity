@@ -64,7 +64,7 @@ runs:
         for SOLC_VERSION in ${{ inputs.solc-upstream-versions }}; do
           SOLC_DOWNLOAD="solc-windows-amd64-${SOLC_VERSION}"
           curl --location -o "${SOLC_DOWNLOAD}.zip" "${SOLC_URL}/${SOLC_DOWNLOAD}.zip"
-          unzip "${SOLC_DOWNLOAD}.zip"
+          unzip -d ${SOLC_DOWNLOAD} "${SOLC_DOWNLOAD}.zip"
           SOLC_SHORT_VERSION=$(echo "${SOLC_VERSION}" | cut -d+ -f1 | tr -d v)
           mv "${SOLC_DOWNLOAD}/solc.exe" "${{ inputs.output-dir }}/${{ inputs.solc-default-name }}-${SOLC_SHORT_VERSION}"
         done
