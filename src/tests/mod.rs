@@ -15,7 +15,6 @@ mod unsupported_instructions;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::env::consts::EXE_SUFFIX;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -51,7 +50,7 @@ pub fn build_solidity(
             "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
             solc_version,
-            EXE_SUFFIX
+            std::env::consts::EXE_SUFFIX,
         )
         .as_str(),
     )?;
@@ -143,7 +142,7 @@ pub fn build_solidity_and_detect_missing_libraries(
             "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
             solc_version,
-            EXE_SUFFIX
+            std::env::consts::EXE_SUFFIX,
         )
         .as_str(),
     )?;
@@ -392,7 +391,7 @@ pub fn check_solidity_message(
             "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
             solc_version,
-            EXE_SUFFIX
+            std::env::consts::EXE_SUFFIX,
         )
         .as_str(),
     )?;
@@ -447,7 +446,7 @@ fn check_dependencies(solc_version: Option<&semver::Version>) {
             "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
             solc_version,
-            EXE_SUFFIX
+            std::env::consts::EXE_SUFFIX,
         ));
     }
     for executable in executables.into_iter() {
