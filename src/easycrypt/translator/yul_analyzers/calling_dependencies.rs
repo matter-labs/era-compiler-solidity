@@ -22,6 +22,7 @@ use crate::yul::path::full_name::FullName;
 use crate::yul::path::symbol_table::SymbolTable;
 use crate::yul::path::tracker::symbol_tracker::SymbolTracker;
 use crate::yul::path::tracker::PathTracker as _;
+use crate::yul::visitor::IMPLICIT_CODE_FUNCTION_NAME;
 use crate::YulVisitor;
 
 /// Collect all definitions in the YUL code.
@@ -92,7 +93,9 @@ impl YulVisitor for CallingDependencies<'_> {
             self.topological_sort
                 .add_dependency(dependency.clone(), who_depends);
         }
-
+        else {
+            panic!("Attempt to add dependency but there is no parent function");
+        }
         self.functions_stack.push(dependency);
         self.tracker.enter_function(identifier);
         self.visit_block(body);
@@ -120,9 +123,13 @@ impl YulVisitor for CallingDependencies<'_> {
                     name.to_string(),
                     self.tracker.here().clone(),
                 ));
-                let dependency = &attempted_dependency.unwrap().yul_name;
+                if let Some(dependency) = &attempted_dependency {
                 self.topological_sort
-                    .add_dependency(dependency.clone(), who_depends);
+                    .add_dependency(dependency.yul_name.clone(), who_depends);
+                }
+                else {
+                    panic!("Can't find dependency {}", name);
+                }
             }
         }
     }
@@ -174,7 +181,10 @@ impl YulVisitor for CallingDependencies<'_> {
 
     fn visit_code(&mut self, code: &Code) {
         self.tracker.enter_code();
+        self.functions_stack.push(
+            FullName::new(IMPLICIT_CODE_FUNCTION_NAME.to_string(),self.tracker.here().clone()));
         self.visit_block(&code.block);
+        self.functions_stack.pop();
         self.tracker.leave();
     }
 }

@@ -84,7 +84,10 @@ impl Translator {
         let dependencies: Vec<FullName> = {
             let mut collector = CallingDependencies::new(&transpiler.definitions);
             collector.visit_object(yul_object);
-            let result = collector.topological_sort.pop_all();
+            let mut result = Vec::new();
+            while !collector.topological_sort.is_empty() {
+                result.extend(collector.topological_sort.pop_all());
+            }
             if result.is_empty() && !collector.topological_sort.is_empty() {
                 anyhow::bail!("There are cyclic dependencies in YUL file");
             } else {
