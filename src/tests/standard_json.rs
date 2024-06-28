@@ -4,6 +4,7 @@
 
 #![cfg(test)]
 
+use std::env::consts::EXE_SUFFIX;
 use std::path::PathBuf;
 
 use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
@@ -42,9 +43,10 @@ fn standard_json_yul_default_validated() {
     .expect("Standard JSON reading error");
     let solc_compiler = SolcCompiler::new(
         format!(
-            "{}-{}",
+            "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-            SolcCompiler::LAST_SUPPORTED_VERSION
+            SolcCompiler::LAST_SUPPORTED_VERSION,
+            EXE_SUFFIX
         )
         .as_str(),
     )
@@ -102,9 +104,10 @@ fn standard_json_yul_default_urls_validated() {
     .expect("Standard JSON reading error");
     let solc_compiler = SolcCompiler::new(
         format!(
-            "{}-{}",
+            "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-            SolcCompiler::LAST_SUPPORTED_VERSION
+            SolcCompiler::LAST_SUPPORTED_VERSION,
+            EXE_SUFFIX
         )
         .as_str(),
     )
@@ -162,9 +165,10 @@ fn standard_json_yul_eravm_validated() {
     .expect("Standard JSON reading error");
     let solc_compiler = SolcCompiler::new(
         format!(
-            "{}-{}",
+            "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-            SolcCompiler::LAST_SUPPORTED_VERSION
+            SolcCompiler::LAST_SUPPORTED_VERSION,
+            EXE_SUFFIX
         )
         .as_str(),
     )
@@ -222,9 +226,10 @@ fn standard_json_yul_eravm_urls_validated() {
     .expect("Standard JSON reading error");
     let solc_compiler = SolcCompiler::new(
         format!(
-            "{}-{}",
+            "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-            SolcCompiler::LAST_SUPPORTED_VERSION
+            SolcCompiler::LAST_SUPPORTED_VERSION,
+            EXE_SUFFIX
         )
         .as_str(),
     )
