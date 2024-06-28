@@ -46,7 +46,13 @@ pub fn build_solidity(
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let solc_compiler = SolcCompiler::new(
-        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+        format!(
+            "{}-{}{}",
+            SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+            solc_version,
+            std::env::consts::EXE_SUFFIX,
+        )
+        .as_str(),
     )?;
 
     let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
@@ -132,7 +138,13 @@ pub fn build_solidity_and_detect_missing_libraries(
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let solc_compiler = SolcCompiler::new(
-        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+        format!(
+            "{}-{}{}",
+            SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+            solc_version,
+            std::env::consts::EXE_SUFFIX,
+        )
+        .as_str(),
     )?;
 
     let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
@@ -375,7 +387,13 @@ pub fn check_solidity_message(
     check_dependencies(Some(solc_version));
 
     let solc_compiler = SolcCompiler::new(
-        format!("{}-{}", SolcCompiler::DEFAULT_EXECUTABLE_NAME, solc_version).as_str(),
+        format!(
+            "{}-{}{}",
+            SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+            solc_version,
+            std::env::consts::EXE_SUFFIX,
+        )
+        .as_str(),
     )?;
     if skip_for_zksync_edition && solc_compiler.version.l2_revision.is_some() {
         return Ok(true);
@@ -425,9 +443,10 @@ fn check_dependencies(solc_version: Option<&semver::Version>) {
     let mut executables = vec![crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned()];
     if let Some(solc_version) = solc_version {
         executables.push(format!(
-            "{}-{}",
+            "{}-{}{}",
             SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-            solc_version
+            solc_version,
+            std::env::consts::EXE_SUFFIX,
         ));
     }
     for executable in executables.into_iter() {
