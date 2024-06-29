@@ -92,8 +92,7 @@ impl YulVisitor for CallingDependencies<'_> {
         if let Some(who_depends) = self.current_function() {
             self.topological_sort
                 .add_dependency(dependency.clone(), who_depends);
-        }
-        else {
+        } else {
             panic!("Attempt to add dependency but there is no parent function");
         }
         self.functions_stack.push(dependency);
@@ -124,10 +123,9 @@ impl YulVisitor for CallingDependencies<'_> {
                     self.tracker.here().clone(),
                 ));
                 if let Some(dependency) = &attempted_dependency {
-                self.topological_sort
-                    .add_dependency(dependency.yul_name.clone(), who_depends);
-                }
-                else {
+                    self.topological_sort
+                        .add_dependency(dependency.yul_name.clone(), who_depends);
+                } else {
                     panic!("Can't find dependency {}", name);
                 }
             }
@@ -181,8 +179,10 @@ impl YulVisitor for CallingDependencies<'_> {
 
     fn visit_code(&mut self, code: &Code) {
         self.tracker.enter_code();
-        self.functions_stack.push(
-            FullName::new(IMPLICIT_CODE_FUNCTION_NAME.to_string(),self.tracker.here().clone()));
+        self.functions_stack.push(FullName::new(
+            IMPLICIT_CODE_FUNCTION_NAME.to_string(),
+            self.tracker.here().clone(),
+        ));
         self.visit_block(&code.block);
         self.functions_stack.pop();
         self.tracker.leave();
