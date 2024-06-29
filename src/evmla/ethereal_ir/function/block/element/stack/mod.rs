@@ -4,6 +4,8 @@
 
 pub mod element;
 
+use sha3::Digest;
+
 use self::element::Element;
 
 ///
@@ -49,15 +51,15 @@ impl Stack {
     ///
     /// Each block clone has its own initial stack state, which uniquely identifies the block.
     ///
-    pub fn hash(&self) -> md5::Digest {
-        let mut hash_context = md5::Context::new();
+    pub fn hash(&self) -> [u8; era_compiler_common::BYTE_LENGTH_FIELD] {
+        let mut hasher = sha3::Sha3_256::new();
         for element in self.elements.iter() {
             match element {
-                Element::Tag(tag) => hash_context.consume(tag.to_bytes_be()),
-                _ => hash_context.consume([0]),
+                Element::Tag(tag) => hasher.update(tag.to_bytes_be()),
+                _ => hasher.update([0]),
             }
         }
-        hash_context.compute()
+        hasher.finalize().into()
     }
 
     ///

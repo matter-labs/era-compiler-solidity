@@ -11,7 +11,7 @@ use era_compiler_llvm_context::IEVMLAFunction;
 pub fn unconditional<'ctx, C>(
     context: &mut C,
     destination: num::BigUint,
-    stack_hash: md5::Digest,
+    stack_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
 ) -> anyhow::Result<()>
 where
     C: era_compiler_llvm_context::IContext<'ctx>,
@@ -46,7 +46,7 @@ where
 pub fn conditional<'ctx, C>(
     context: &mut C,
     destination: num::BigUint,
-    stack_hash: md5::Digest,
+    stack_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
     stack_height: usize,
 ) -> anyhow::Result<()>
 where

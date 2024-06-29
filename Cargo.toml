@@ -35,7 +35,6 @@ regex = "1.10"
 hex = "0.4"
 num = "0.4"
 sha3 = "0.10"
-md5 = "0.7"
 
 zkevm-assembly = { git = "https://github.com/matter-labs/era-zkEVM-assembly", branch = "v1.5.0" }
 
