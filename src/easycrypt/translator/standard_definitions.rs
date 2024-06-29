@@ -72,11 +72,11 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             (YulName::Lt, fun(FunctionName::Lt, "lt", 2)),
             (YulName::Gt, fun(FunctionName::Gt, "gt", 2)),
             (YulName::IsZero, fun(primops_fun("iszero"), "iszero", 2)),
-            (YulName::Slt, fun(FunctionName::Slt, "slt", 2)),
-            (YulName::Sgt, fun(FunctionName::Sgt, "sgt", 2)),
+            (YulName::Slt, fun(primops_fun("slt"), "slt", 2)),
+            (YulName::Sgt, fun(primops_fun("sgt"), "sgt", 2)),
             (YulName::Not, unop(UnaryOpType::Not, "not")),
             (YulName::Byte, fun(FunctionName::Byte, "byte", 2)),
-            (YulName::Pop, proc_simple(ProcName::Pop, "pop", 1, 0)),
+            (YulName::Pop, proc_simple(primops_proc("pop"), "pop", 1, 0)),
             (YulName::AddMod, fun(primops_fun("addmod"), "addmod", 3)),
             (YulName::MulMod, fun(primops_fun("mulmod"), "mulmod", 3)),
             (
@@ -219,7 +219,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             ),
             (
                 YulName::CallValue,
-                proc_simple(ProcName::CallValue, "callvalue", 0, 1),
+                proc_simple(primops_proc("callvalue"), "callvalue", 0, 1),
             ),
             (YulName::Gas, proc_simple(primops_proc("gas"), "gas", 0, 1)),
             (
