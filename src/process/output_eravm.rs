@@ -4,15 +4,12 @@
 //! The EraVM output data.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 
 ///
 /// The EraVM output data.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// The contract build.
     pub build: EraVMContractBuild,

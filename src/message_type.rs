@@ -4,13 +4,10 @@
 
 use std::str::FromStr;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The compiler message type.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MessageType {
     /// The error for eponymous feature.
     SendTransfer,

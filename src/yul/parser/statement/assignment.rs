@@ -4,11 +4,8 @@
 
 use std::collections::HashSet;
 
-use inkwell::types::BasicType;
-use serde::Deserialize;
-use serde::Serialize;
-
 use era_compiler_llvm_context::IContext;
+use inkwell::types::BasicType;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -23,7 +20,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul assignment expression statement.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Assignment {
     /// The location.
     pub location: Location,

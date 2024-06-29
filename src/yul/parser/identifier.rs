@@ -2,9 +2,6 @@
 //! The YUL source code identifier.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -16,7 +13,7 @@ use crate::yul::parser::r#type::Type;
 ///
 /// The YUL source code identifier.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Identifier {
     /// The location.
     pub location: Location,

@@ -2,13 +2,6 @@
 //! The YUL source code literal.
 //!
 
-use inkwell::values::BasicValue;
-use num::Num;
-use num::One;
-use num::Zero;
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
 use crate::yul::lexer::token::lexeme::literal::integer::Integer as IntegerLiteral;
@@ -20,11 +13,15 @@ use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::r#type::Type;
+use inkwell::values::BasicValue;
+use num::Num;
+use num::One;
+use num::Zero;
 
 ///
 /// Represents a literal in YUL without differentiating its type.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Literal {
     /// The location.
     pub location: Location,

@@ -4,9 +4,6 @@
 
 pub mod details;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::solc::Compiler as SolcCompiler;
 
 use self::details::Details;
@@ -14,7 +11,7 @@ use self::details::Details;
 ///
 /// The `solc --standard-json` input settings optimizer.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Optimizer {
     /// Whether the optimizer is enabled.

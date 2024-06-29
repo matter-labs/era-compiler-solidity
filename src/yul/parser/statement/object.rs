@@ -4,9 +4,6 @@
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use era_compiler_llvm_context::IContext;
 
 use crate::yul::error::Error;
@@ -23,7 +20,7 @@ use crate::yul::parser::statement::code::Code;
 ///
 /// The upper-level YUL object, representing the deploy code.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Object {
     /// The location.
     pub location: Location,

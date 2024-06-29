@@ -2,14 +2,12 @@
 //! The contract metadata.
 //!
 
-use serde::Serialize;
-
 ///
 /// The contract metadata.
 ///
 /// Is used to append the metadata hash to the contract bytecode.
 ///
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct Metadata<'a> {
     /// The `solc` metadata.
     pub solc_metadata: serde_json::Value,

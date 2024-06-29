@@ -4,9 +4,6 @@
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -19,7 +16,7 @@ use crate::yul::parser::statement::block::Block;
 ///
 /// The YUL code entity, which is the first block of the object.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Code {
     /// The location.
     pub location: Location,

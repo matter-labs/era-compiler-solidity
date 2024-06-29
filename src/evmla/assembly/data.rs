@@ -4,15 +4,12 @@
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::evmla::assembly::Assembly;
 
 ///
 /// The inner JSON legacy assembly code element.
 ///
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 #[serde(untagged)]
 pub enum Data {
     /// The assembly code wrapper.

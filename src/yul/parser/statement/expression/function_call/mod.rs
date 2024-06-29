@@ -7,11 +7,8 @@ pub mod verbatim;
 
 use std::collections::HashSet;
 
-use inkwell::values::BasicValue;
-use serde::Deserialize;
-use serde::Serialize;
-
 use era_compiler_llvm_context::IContext;
+use inkwell::values::BasicValue;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
@@ -29,7 +26,7 @@ use self::name::Name;
 ///
 /// The Yul function call subexpression.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct FunctionCall {
     /// The location.
     pub location: Location,

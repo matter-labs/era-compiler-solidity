@@ -15,9 +15,6 @@ pub mod variable_declaration;
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::Lexeme;
@@ -40,7 +37,7 @@ use self::variable_declaration::VariableDeclaration;
 ///
 /// The Yul block statement.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub enum Statement {
     /// The object element.
     Object(Object),

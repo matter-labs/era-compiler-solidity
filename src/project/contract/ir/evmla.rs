@@ -4,16 +4,13 @@
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 ///
 /// The contract EVM legacy assembly source code.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct EVMLA {
     /// The EVM legacy assembly source code.
     pub assembly: Assembly,

@@ -8,9 +8,6 @@ pub mod instruction;
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use era_compiler_llvm_context::IContext;
 
 use crate::evmla::ethereal_ir::entry_link::EntryLink;
@@ -24,7 +21,7 @@ use self::instruction::Instruction;
 ///
 /// The JSON assembly.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Assembly {
     /// The metadata string.
     #[serde(rename = ".auxdata")]

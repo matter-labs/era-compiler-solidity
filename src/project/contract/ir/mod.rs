@@ -9,9 +9,6 @@ pub mod yul;
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::statement::object::Object;
@@ -24,7 +21,7 @@ use self::yul::Yul;
 ///
 /// The contract source code.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub enum IR {
     /// The Yul source code.
     Yul(Yul),

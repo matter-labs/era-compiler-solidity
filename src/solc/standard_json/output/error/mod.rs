@@ -129,9 +129,6 @@ ZKsync Era comes with native account abstraction support, and therefore the init
 transaction might be different from the contract calling your code. It is highly recommended NOT
 to rely on tx.origin, but use msg.sender instead.
 
-In Solidity v0.4, where there is no `payable` type, this may be a false positive
-if `using X for address` is used with `X` implementing its own `send` or `transfer` functions.
-
 Learn more about Account Abstraction at https://docs.zksync.io/build/developer-reference/account-abstraction/
 
 You may disable this warning with:
@@ -161,6 +158,9 @@ Such calls will fail depending on the pubdata costs.
 Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the
 reentrancy attack. `send` and `transfer` send limited amount of gas that prevents reentrancy,
 whereas `<address>.call{value: <X>}` sends all gas to the callee.
+
+In Solidity v0.4, where there is no `payable` type, this may be a false positive
+if `using X for address` is used with `X` implementing its own `send` or `transfer` functions.
 
 Learn more about reentrancy at https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
 

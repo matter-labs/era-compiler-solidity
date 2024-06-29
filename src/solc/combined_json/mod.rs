@@ -9,15 +9,12 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::contract::Contract;
 
 ///
 /// The `solc --combined-json` output.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct CombinedJson {
     /// The contract entries.
     pub contracts: BTreeMap<String, Contract>,

@@ -2,13 +2,10 @@
 //! The function name.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The function name.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub enum Name {
     /// The user-defined function.
     UserDefined(String),

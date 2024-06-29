@@ -2,13 +2,10 @@
 //! The contract LLVM IR source code.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The contract LLVM IR source code.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct LLVMIR {
     /// The LLVM IR file path.
     pub path: String,

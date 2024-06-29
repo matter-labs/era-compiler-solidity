@@ -6,9 +6,6 @@ pub mod case;
 
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use era_compiler_llvm_context::IContext;
 
 use crate::yul::error::Error;
@@ -26,7 +23,7 @@ use self::case::Case;
 ///
 /// The Yul switch statement.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Switch {
     /// The location.
     pub location: Location,

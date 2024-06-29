@@ -2,13 +2,10 @@
 //! The EVM instruction name.
 //!
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The EVM instruction name.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq, Hash)]
 pub enum Name {
     /// The eponymous EVM instruction.
     PUSH,

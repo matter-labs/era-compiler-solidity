@@ -9,15 +9,12 @@ pub mod stack;
 
 use std::collections::BTreeMap;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 use self::name::Name;
 
 ///
 /// The EVM instruction.
 ///
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct Instruction {
     /// The opcode or tag identifier.
     pub name: Name,

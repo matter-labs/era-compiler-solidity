@@ -5,13 +5,10 @@
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
-use serde::Deserialize;
-use serde::Serialize;
-
 ///
 /// The contract.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Contract {
     /// The `solc` hashes output.

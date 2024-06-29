@@ -4,12 +4,9 @@
 
 use std::collections::HashSet;
 
+use era_compiler_llvm_context::IContext;
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
-use serde::Deserialize;
-use serde::Serialize;
-
-use era_compiler_llvm_context::IContext;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -25,7 +22,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul variable declaration statement.
 ///
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct VariableDeclaration {
     /// The location.
     pub location: Location,
