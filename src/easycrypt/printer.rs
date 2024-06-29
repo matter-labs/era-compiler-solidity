@@ -29,11 +29,13 @@ use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
 
 fn sanitize_identifier(identifier: &str) -> String {
+    const KEYWORDS: &[&str] = &["end", "var"];
     let mut result = identifier.replace('$', "_");
     if identifier
         .chars()
         .next()
         .map_or(false, |c| c.is_uppercase())
+        || KEYWORDS.contains(&identifier)
     {
         result.insert(0, '_');
     }
