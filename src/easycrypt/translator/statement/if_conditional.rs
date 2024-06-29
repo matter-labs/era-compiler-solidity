@@ -6,6 +6,9 @@ use std::iter;
 
 use anyhow::Error;
 
+use crate::easycrypt::syntax::expression::call::FunctionCall;
+use crate::easycrypt::syntax::expression::Expression;
+use crate::easycrypt::syntax::function::name::FunctionName;
 use crate::Translator;
 
 use crate::easycrypt::syntax::statement::block::Block;
@@ -47,8 +50,16 @@ impl Translator {
 
         let (ctx, TransformedBlock { statements }) = self.transpile_block(block, &ctx)?;
 
+        let wrapped_condition = Expression::ECall(FunctionCall {
+            target: FunctionName::UserDefined {
+                name: String::from("bool_of_uint256"),
+                module: None,
+            },
+            arguments: vec![transpiled_condition],
+        });
+
         let transpiled_conditional = IfConditional {
-            condition: transpiled_condition,
+            condition: wrapped_condition,
             yes: Box::from(Statement::Block(Block { statements })),
             no: None,
         };
