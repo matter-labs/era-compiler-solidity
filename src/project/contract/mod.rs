@@ -136,6 +136,7 @@ impl Contract {
                 let build = era_compiler_llvm_context::from_eravm_assembly(
                     self.path.as_str(),
                     eravm_assembly.source.to_owned(),
+                    vec![], // TODO
                     metadata_hash,
                     output_assembly,
                     debug_config.as_ref(),
