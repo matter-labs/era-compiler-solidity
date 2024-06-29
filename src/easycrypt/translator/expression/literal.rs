@@ -16,9 +16,13 @@ impl Translator {
     pub fn transpile_literal(lit: &YulLiteral) -> Result<Expression, Error> {
         let transpiled_integer = match &lit.inner {
             crate::yul::lexer::token::lexeme::literal::Literal::Boolean(b) => {
-                let is_true =
-                    b == &crate::yul::lexer::token::lexeme::literal::boolean::Boolean::True;
-                Literal::Bool(is_true)
+                    if b == &crate::yul::lexer::token::lexeme::literal::boolean::Boolean::True
+                    {
+                        Literal::Int(IntegerLiteral::Decimal { inner: "1".to_string() })
+                    }
+                    else {
+                        Literal::Int(IntegerLiteral::Decimal { inner: "0".to_string() })
+                    }
             }
             crate::yul::lexer::token::lexeme::literal::Literal::Integer(i) => match i {
                 crate::yul::lexer::token::lexeme::literal::integer::Integer::Decimal { inner } => {
