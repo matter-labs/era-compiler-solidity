@@ -340,7 +340,7 @@ impl Instruction {
     pub fn recursive_call(
         name: String,
         entry_key: era_compiler_llvm_context::BlockKey,
-        stack_hash: md5::Digest,
+        stack_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
         input_size: usize,
         output_size: usize,
         return_address: era_compiler_llvm_context::BlockKey,
