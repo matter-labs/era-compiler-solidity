@@ -47,32 +47,45 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             (YulName::Div, binop(BinaryOpType::Div, "div")),
             (YulName::Mod, binop(BinaryOpType::Mod, "mod")),
             (YulName::Exp, binop(BinaryOpType::Exp, "exp")),
-            (YulName::And, fun(FunctionName::BitwiseAnd, "and", 2)),
-            (YulName::Shl, fun(FunctionName::Shl, "shl", 2)),
-            (YulName::Shr, fun(FunctionName::Shr, "shr", 2)),
+            (YulName::And, fun(primops_fun("bit_and"), "bit_and", 2)),
+            (YulName::Shl, fun(primops_fun("shl"), "shl", 2)),
+            (YulName::Shr, fun(primops_fun("shr"), "shr", 2)),
             (YulName::Sar, fun(FunctionName::Sar, "sar", 2)),
-            (YulName::Eq, binop(BinaryOpType::Eq, "eq")),
+            (
+                YulName::Eq,
+                DefinitionInfo {
+                    kind: Kind::Function(FunctionName::UserDefined {
+                        name: "eq_uint256".to_string(),
+                        module: None,
+                    }),
+                    yul_name: FullName::new("eq_uint256".to_string(), Path::empty()),
+                    r#type: Type::Arrow(
+                        Box::from(Type::type_of_vec(&[Type::UInt(256), Type::UInt(256)])),
+                        Box::from(Type::UInt(256)),
+                    ),
+                },
+            ),
             (YulName::Or, fun(FunctionName::BitwiseOr, "or", 2)),
             (YulName::Xor, fun(FunctionName::BitwiseXor, "xor", 2)),
             (YulName::Smod, fun(FunctionName::Smod, "smod", 2)),
             (YulName::Sdiv, fun(FunctionName::Sdiv, "sdiv", 2)),
             (YulName::Lt, fun(FunctionName::Lt, "lt", 2)),
             (YulName::Gt, fun(FunctionName::Gt, "gt", 2)),
-            (YulName::IsZero, fun(FunctionName::IsZero, "iszero", 2)),
+            (YulName::IsZero, fun(primops_fun("iszero"), "iszero", 2)),
             (YulName::Slt, fun(FunctionName::Slt, "slt", 2)),
             (YulName::Sgt, fun(FunctionName::Sgt, "sgt", 2)),
             (YulName::Not, unop(UnaryOpType::Not, "not")),
             (YulName::Byte, fun(FunctionName::Byte, "byte", 2)),
             (YulName::Pop, proc_simple(ProcName::Pop, "pop", 1, 0)),
-            (YulName::AddMod, fun(FunctionName::AddMod, "addmod", 3)),
-            (YulName::MulMod, fun(FunctionName::MulMod, "mulmod", 3)),
+            (YulName::AddMod, fun(primops_fun("addmod"), "addmod", 3)),
+            (YulName::MulMod, fun(primops_fun("mulmod"), "mulmod", 3)),
             (
                 YulName::SignExtend,
                 fun(FunctionName::SignExtend, "signextend", 2),
             ),
             (
                 YulName::Keccak256,
-                proc_simple(ProcName::Keccak256, "keccak256", 2, 1),
+                proc_mem(primops_proc("keccak256"), "keccak256", Usage::READ, 2, 1),
             ),
             (
                 YulName::MLoad,
@@ -166,7 +179,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             ),
             (
                 YulName::StaticCall,
-                proc_mem(ProcName::StaticCall, "staticcall", Usage::WRITE, 6, 1),
+                proc_mem(primops_proc("staticcall"), "staticcall", Usage::WRITE, 6, 1),
             ),
             (
                 YulName::Create,
@@ -450,6 +463,12 @@ fn primops_proc(name: &str) -> ProcName {
     ProcName::UserDefined {
         name: name.to_string(),
         module: Some("Primops".to_string()),
+    }
+}
+fn primops_fun(name: &str) -> FunctionName {
+    FunctionName::UserDefined {
+        name: name.to_string(),
+        module: Some("PurePrimops".to_string()),
     }
 }
 
