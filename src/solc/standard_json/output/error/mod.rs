@@ -8,6 +8,8 @@ pub mod source_location;
 
 use std::collections::BTreeMap;
 
+use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
+
 use self::mapped_location::MappedLocation;
 use self::source_location::SourceLocation;
 
@@ -49,7 +51,7 @@ impl Error {
         r#type: &str,
         message: S,
         source_location: Option<SourceLocation>,
-        sources: Option<&BTreeMap<String, String>>,
+        sources: Option<&BTreeMap<String, StandardJSONInputSource>>,
     ) -> Self
     where
         S: std::fmt::Display,
@@ -67,7 +69,7 @@ impl Error {
             let source_code = sources.and_then(|sources| {
                 sources
                     .get(source_location.file.as_str())
-                    .map(|source_code| source_code.as_str())
+                    .and_then(|source| source.content())
             });
             let mapped_location =
                 MappedLocation::try_from_source_location(source_location, source_code);
@@ -92,7 +94,7 @@ impl Error {
     pub fn new_error<S>(
         message: S,
         source_location: Option<SourceLocation>,
-        sources: Option<&BTreeMap<String, String>>,
+        sources: Option<&BTreeMap<String, StandardJSONInputSource>>,
     ) -> Self
     where
         S: std::fmt::Display,
@@ -106,7 +108,7 @@ impl Error {
     pub fn new_warning<S>(
         message: S,
         source_location: Option<SourceLocation>,
-        sources: Option<&BTreeMap<String, String>>,
+        sources: Option<&BTreeMap<String, StandardJSONInputSource>>,
     ) -> Self
     where
         S: std::fmt::Display,
@@ -120,7 +122,7 @@ impl Error {
     pub fn warning_tx_origin(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Self {
         let message = r#"
 You are checking for 'tx.origin', which might lead to unexpected behavior.
@@ -149,7 +151,7 @@ You may disable this warning with:
     pub fn error_send_and_transfer(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Self {
         let message = r#"
 You are using '<address payable>.send/transfer(<X>)' without providing the gas amount.
@@ -182,7 +184,7 @@ You may disable this error with:
     pub fn error_internal_function_pointer(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Self {
         let message = r#"
 Internal function pointers are not supported in the EVM assembly pipeline.
@@ -204,7 +206,7 @@ Please do one of the following:
     pub fn error_runtime_code(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Self {
         let message = r#"
 Deploy and runtime code are merged together on ZKsync, so reading `type(T).runtimeCode` is not possible.

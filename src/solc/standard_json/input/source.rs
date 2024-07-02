@@ -2,7 +2,6 @@
 //! The `solc --standard-json` input source.
 //!
 
-use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -26,29 +25,27 @@ impl Source {
     ///
     pub fn try_read(path: &Path) -> anyhow::Result<Self> {
         let content = if path.to_string_lossy() == "-" {
-            let mut solidity_code = String::with_capacity(16384);
-            std::io::stdin()
-                .read_to_string(&mut solidity_code)
-                .map_err(|error| anyhow::anyhow!("<stdin> reading: {error}"))?;
-            solidity_code
+            std::io::read_to_string(std::io::stdin())
+                .map_err(|error| anyhow::anyhow!("<stdin> reading: {error}"))
         } else {
             std::fs::read_to_string(path)
-                .map_err(|error| anyhow::anyhow!("File {path:?} reading: {error}"))?
-        };
+                .map_err(|error| anyhow::anyhow!("File {path:?} reading: {error}"))
+        }?;
 
         Ok(Self {
             content: Some(content),
             urls: None,
         })
     }
-}
 
-impl TryInto<String> for &Source {
-    type Error = anyhow::Error;
-
-    fn try_into(self) -> anyhow::Result<String> {
+    ///
+    /// Tries to resolve the source code.
+    ///
+    /// At the moment only one URL pointing to the file system is supported.
+    ///
+    pub fn try_resolve(self) -> anyhow::Result<Self> {
         match (self.content.as_ref(), self.urls.as_ref()) {
-            (Some(content), None) => Ok(content.to_owned()),
+            (Some(_), None) => Ok(self),
             (None, Some(urls)) => {
                 let url = match urls.first() {
                     Some(url) => url,
@@ -57,11 +54,18 @@ impl TryInto<String> for &Source {
 
                 let url_path = PathBuf::from(url);
                 let source_with_content = Source::try_read(url_path.as_path())?;
-                Ok(source_with_content.content.expect("Always exists"))
+                Ok(source_with_content)
             }
             (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
             (None, None) => anyhow::bail!("Either `content` or `urls` must be set"),
         }
+    }
+
+    ///
+    /// Returns the source code reference, if the source has been previously read or resolved.
+    ///
+    pub fn content(&self) -> Option<&str> {
+        self.content.as_deref()
     }
 }
 

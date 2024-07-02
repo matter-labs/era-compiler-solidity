@@ -269,19 +269,4 @@ impl Input {
     pub fn normalize_yul_validation(&mut self) {
         self.settings.normalize_yul_validation();
     }
-
-    ///
-    /// Returns an owned tree of loaded sources.
-    ///
-    pub fn sources(&self) -> anyhow::Result<BTreeMap<String, String>> {
-        self.sources
-            .iter()
-            .map(|(path, source)| {
-                let source: String = source
-                    .try_into()
-                    .map_err(|error| anyhow::anyhow!("Source `{path}`: {error}"))?;
-                Ok((path.to_owned(), source))
-            })
-            .collect()
-    }
 }

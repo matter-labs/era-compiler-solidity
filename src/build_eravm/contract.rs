@@ -23,7 +23,7 @@ pub struct Contract {
     /// The LLVM module build.
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
-    pub metadata_json: serde_json::Value,
+    pub metadata_json: Option<serde_json::Value>,
     /// The factory dependencies.
     pub factory_dependencies: HashSet<String>,
 }
@@ -36,7 +36,7 @@ impl Contract {
         path: String,
         identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
-        metadata_json: serde_json::Value,
+        metadata_json: Option<serde_json::Value>,
         factory_dependencies: HashSet<String>,
     ) -> Self {
         Self {
@@ -140,9 +140,9 @@ impl Contract {
     ) -> anyhow::Result<()> {
         let hexadecimal_bytecode = hex::encode(self.build.bytecode);
 
-        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
-            *metadata = self.metadata_json.to_string();
-        }
+        combined_json_contract.metadata = self
+            .metadata_json
+            .map(|metadata_json| metadata_json.to_string());
         combined_json_contract.bin = Some(hexadecimal_bytecode);
         combined_json_contract
             .bin_runtime
@@ -164,7 +164,7 @@ impl Contract {
         let bytecode = hex::encode(self.build.bytecode.as_slice());
         let assembly = self.build.assembly;
 
-        standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract.metadata = self.metadata_json;
         standard_json_contract
             .evm
             .get_or_insert_with(StandardJsonOutputContractEVM::default)

@@ -16,7 +16,6 @@ use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
-use crate::solc::version::Version as SolcVersion;
 
 use self::factory_dependency::FactoryDependency;
 use self::ir::IR;
@@ -32,32 +31,14 @@ pub struct Contract {
     /// The IR source code data.
     pub ir: IR,
     /// The metadata JSON.
-    pub metadata_json: serde_json::Value,
+    pub metadata_json: Option<serde_json::Value>,
 }
 
 impl Contract {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(
-        path: String,
-        ir: IR,
-        metadata_json: Option<serde_json::Value>,
-        hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD],
-        solc_version: Option<&SolcVersion>,
-    ) -> Self {
-        let hash = hex::encode(hash.as_slice());
-        let solc_version = solc_version
-            .as_ref()
-            .map(|solc_version| serde_json::to_value(solc_version).expect("Always valid"))
-            .unwrap_or(serde_json::Value::Null);
-        let metadata_json = metadata_json.unwrap_or_else(|| {
-            serde_json::json!({
-                "solc_version": solc_version,
-                "hash": hash,
-            })
-        });
-
+    pub fn new(path: String, ir: IR, metadata_json: Option<serde_json::Value>) -> Self {
         Self {
             path,
             ir,
@@ -101,26 +82,33 @@ impl Contract {
         let identifier = self.identifier().to_owned();
         let solc_version = dependency_data.solc_version.clone();
 
-        let metadata = Metadata::new(
-            self.metadata_json.take(),
-            solc_version
-                .as_ref()
-                .map(|version| version.default.to_owned()),
-            solc_version
-                .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
-            semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
-            optimizer.settings().to_owned(),
-            llvm_options.as_slice(),
-        );
-        let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-        let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
-            if include_metadata_hash {
-                let metadata_string = serde_json::to_string(&metadata).expect("Always valid");
-                Some(sha3::Keccak256::digest(metadata_string.as_bytes()).into())
-            } else {
-                None
-            };
+        let (metadata_json, metadata_hash): (
+            Option<serde_json::Value>,
+            Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]>,
+        ) = match self.metadata_json.take() {
+            Some(solc_metadata) => {
+                let metadata = Metadata::new(
+                    solc_metadata,
+                    solc_version
+                        .as_ref()
+                        .map(|version| version.default.to_owned()),
+                    solc_version
+                        .as_ref()
+                        .and_then(|version| version.l2_revision.to_owned()),
+                    semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+                    optimizer.settings().to_owned(),
+                    llvm_options.as_slice(),
+                );
+                let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
+                let metadata_hash = if include_metadata_hash {
+                    Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
+                } else {
+                    None
+                };
+                (Some(metadata_json), metadata_hash)
+            }
+            None => (None, None),
+        };
 
         let module = match self.ir {
             IR::LLVMIR(ref llvm_ir) => {
@@ -219,26 +207,30 @@ impl Contract {
 
         let solc_version = dependency_data.solc_version.clone();
 
-        let metadata = Metadata::new(
-            self.metadata_json.take(),
-            solc_version
-                .as_ref()
-                .map(|version| version.default.to_owned()),
-            solc_version
-                .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
-            semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
-            optimizer.settings().to_owned(),
-            llvm_options.as_slice(),
-        );
-        let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-        let metadata_hash: Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]> =
-            if include_metadata_hash {
-                let metadata_string = serde_json::to_string(&metadata).expect("Always valid");
-                Some(sha3::Keccak256::digest(metadata_string.as_bytes()).into())
-            } else {
-                None
-            };
+        let (metadata_json, metadata_hash) = match self.metadata_json.take() {
+            Some(solc_metadata) => {
+                let metadata = Metadata::new(
+                    solc_metadata,
+                    solc_version
+                        .as_ref()
+                        .map(|version| version.default.to_owned()),
+                    solc_version
+                        .as_ref()
+                        .and_then(|version| version.l2_revision.to_owned()),
+                    semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+                    optimizer.settings().to_owned(),
+                    llvm_options.as_slice(),
+                );
+                let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
+                let metadata_hash = if include_metadata_hash {
+                    Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
+                } else {
+                    None
+                };
+                (Some(metadata_json), metadata_hash)
+            }
+            None => (None, None),
+        };
 
         let identifier = self.identifier().to_owned();
 

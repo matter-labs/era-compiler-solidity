@@ -87,17 +87,13 @@ impl Compiler {
     ///
     pub fn standard_json(
         &self,
-        mut input: StandardJsonInput,
+        input: &StandardJsonInput,
         pipeline: Option<Pipeline>,
-        sources: Option<&BTreeMap<String, String>>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
         allow_paths: Option<String>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        let mut suppressed_messages = input.suppressed_errors.take().unwrap_or_default();
-        suppressed_messages.extend(input.suppressed_warnings.take().unwrap_or_default());
-
         let mut command = std::process::Command::new(self.executable.as_str());
         command.stdin(std::process::Stdio::piped());
         command.stdout(std::process::Stdio::piped());
@@ -160,9 +156,12 @@ impl Compiler {
         });
         errors.append(messages);
 
-        if let (Some(sources), Some(pipeline)) = (sources, pipeline) {
+        if let Some(pipeline) = pipeline {
+            let mut suppressed_messages = input.suppressed_errors.to_owned().unwrap_or_default();
+            suppressed_messages.extend(input.suppressed_warnings.to_owned().unwrap_or_default());
+
             solc_output.preprocess_ast(
-                sources,
+                &input.sources,
                 &self.version,
                 pipeline,
                 suppressed_messages.as_slice(),
@@ -262,13 +261,13 @@ impl Compiler {
             );
         }
 
-        let solc_input = StandardJsonInput::from_yul_paths(
+        let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
             libraries.clone(),
             StandardJsonInputSettingsOptimizer::new_yul_validation(),
             vec![],
         );
-        self.validate_yul_standard_json(solc_input, messages)
+        self.validate_yul_standard_json(&mut solc_input, messages)
     }
 
     ///
@@ -276,7 +275,7 @@ impl Compiler {
     ///
     pub fn validate_yul_standard_json(
         &self,
-        mut solc_input: StandardJsonInput,
+        solc_input: &mut StandardJsonInput,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
@@ -287,8 +286,7 @@ impl Compiler {
         }
 
         solc_input.normalize_yul_validation();
-        let solc_output =
-            self.standard_json(solc_input, None, None, messages, None, vec![], None)?;
+        let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
         Ok(solc_output)
     }
 
