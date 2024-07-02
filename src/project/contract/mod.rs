@@ -31,18 +31,18 @@ pub struct Contract {
     /// The IR source code data.
     pub ir: IR,
     /// The metadata JSON.
-    pub metadata_json: Option<serde_json::Value>,
+    pub source_metadata: serde_json::Value,
 }
 
 impl Contract {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(path: String, ir: IR, metadata_json: Option<serde_json::Value>) -> Self {
+    pub fn new(path: String, ir: IR, source_metadata: serde_json::Value) -> Self {
         Self {
             path,
             ir,
-            metadata_json,
+            source_metadata,
         }
     }
 
@@ -76,38 +76,31 @@ impl Contract {
     ) -> anyhow::Result<EraVMContractBuild> {
         use era_compiler_llvm_context::EraVMWriteLLVM;
 
+        let identifier = self.identifier().to_owned();
+        let factory_dependencies = self.drain_factory_dependencies();
+
+        let solc_version = dependency_data.solc_version.clone();
+
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
-        let identifier = self.identifier().to_owned();
-        let solc_version = dependency_data.solc_version.clone();
-
-        let (metadata_json, metadata_hash): (
-            Option<serde_json::Value>,
-            Option<[u8; era_compiler_common::BYTE_LENGTH_FIELD]>,
-        ) = match self.metadata_json.take() {
-            Some(solc_metadata) => {
-                let metadata = Metadata::new(
-                    solc_metadata,
-                    solc_version
-                        .as_ref()
-                        .map(|version| version.default.to_owned()),
-                    solc_version
-                        .as_ref()
-                        .and_then(|version| version.l2_revision.to_owned()),
-                    semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
-                    optimizer.settings().to_owned(),
-                    llvm_options.as_slice(),
-                );
-                let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-                let metadata_hash = if include_metadata_hash {
-                    Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
-                } else {
-                    None
-                };
-                (Some(metadata_json), metadata_hash)
-            }
-            None => (None, None),
+        let metadata = Metadata::new(
+            self.source_metadata,
+            solc_version
+                .as_ref()
+                .map(|version| version.default.to_owned()),
+            solc_version
+                .as_ref()
+                .and_then(|version| version.l2_revision.to_owned()),
+            semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+            optimizer.settings().to_owned(),
+            llvm_options.as_slice(),
+        );
+        let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
+        let metadata_hash = if include_metadata_hash {
+            Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
+        } else {
+            None
         };
 
         let module = match self.ir {
@@ -170,8 +163,6 @@ impl Contract {
             _ => {}
         }
 
-        let factory_dependencies = self.drain_factory_dependencies();
-
         self.ir
             .declare(&mut context)
             .map_err(|error| anyhow::anyhow!("LLVM IR generator declaration pass: {error}"))?;
@@ -194,7 +185,7 @@ impl Contract {
     /// Compiles the specified contract to EVM, returning its build artifacts.
     ///
     pub fn compile_to_evm(
-        mut self,
+        self,
         dependency_data: EVMProcessInputDependencyData,
         include_metadata_hash: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -203,36 +194,30 @@ impl Contract {
     ) -> anyhow::Result<EVMContractBuild> {
         use era_compiler_llvm_context::EVMWriteLLVM;
 
-        let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
+        let identifier = self.identifier().to_owned();
 
         let solc_version = dependency_data.solc_version.clone();
 
-        let (metadata_json, metadata_hash) = match self.metadata_json.take() {
-            Some(solc_metadata) => {
-                let metadata = Metadata::new(
-                    solc_metadata,
-                    solc_version
-                        .as_ref()
-                        .map(|version| version.default.to_owned()),
-                    solc_version
-                        .as_ref()
-                        .and_then(|version| version.l2_revision.to_owned()),
-                    semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
-                    optimizer.settings().to_owned(),
-                    llvm_options.as_slice(),
-                );
-                let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-                let metadata_hash = if include_metadata_hash {
-                    Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
-                } else {
-                    None
-                };
-                (Some(metadata_json), metadata_hash)
-            }
-            None => (None, None),
-        };
+        let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
-        let identifier = self.identifier().to_owned();
+        let metadata = Metadata::new(
+            self.source_metadata,
+            solc_version
+                .as_ref()
+                .map(|version| version.default.to_owned()),
+            solc_version
+                .as_ref()
+                .and_then(|version| version.l2_revision.to_owned()),
+            semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
+            optimizer.settings().to_owned(),
+            llvm_options.as_slice(),
+        );
+        let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
+        let metadata_hash = if include_metadata_hash {
+            Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
+        } else {
+            None
+        };
 
         match self.ir {
             IR::Yul(mut yul) => {

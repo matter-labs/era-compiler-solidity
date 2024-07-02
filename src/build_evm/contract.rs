@@ -24,7 +24,7 @@ pub struct Contract {
     /// The LLVM runtime code module build.
     pub runtime_build: era_compiler_llvm_context::EVMBuild,
     /// The metadata JSON.
-    pub metadata_json: Option<serde_json::Value>,
+    pub metadata_json: serde_json::Value,
 }
 
 impl Contract {
@@ -36,7 +36,7 @@ impl Contract {
         identifier: String,
         deploy_build: era_compiler_llvm_context::EVMBuild,
         runtime_build: era_compiler_llvm_context::EVMBuild,
-        metadata_json: Option<serde_json::Value>,
+        metadata_json: serde_json::Value,
     ) -> Self {
         Self {
             path,
@@ -136,9 +136,9 @@ impl Contract {
         self,
         combined_json_contract: &mut CombinedJsonContract,
     ) -> anyhow::Result<()> {
-        combined_json_contract.metadata = self
-            .metadata_json
-            .map(|metadata_json| metadata_json.to_string());
+        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
+            *metadata = self.metadata_json.to_string();
+        }
 
         let hexadecimal_deploy_bytecode = hex::encode(self.deploy_build.bytecode);
         let hexadecimal_runtime_bytecode = hex::encode(self.runtime_build.bytecode);
@@ -174,7 +174,7 @@ impl Contract {
         let deploy_bytecode = hex::encode(self.deploy_build.bytecode.as_slice());
         let runtime_bytecode = hex::encode(self.runtime_build.bytecode.as_slice());
 
-        standard_json_contract.metadata = self.metadata_json;
+        standard_json_contract.metadata = Some(self.metadata_json);
         standard_json_contract
             .evm
             .get_or_insert_with(StandardJsonOutputContractEVM::default)

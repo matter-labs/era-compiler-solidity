@@ -9,8 +9,9 @@
 ///
 #[derive(Debug, serde::Serialize)]
 pub struct Metadata<'a> {
-    /// The `solc` metadata.
-    pub solc_metadata: serde_json::Value,
+    /// The source code metadata.
+    /// If `solc` is used in the pipeline, its metadata is used here.
+    pub source_metadata: serde_json::Value,
     /// The `solc` version if used.
     pub solc_version: Option<semver::Version>,
     /// The ZKsync `solc` edition.
@@ -28,7 +29,7 @@ impl<'a> Metadata<'a> {
     /// A shortcut constructor.
     ///
     pub fn new(
-        solc_metadata: serde_json::Value,
+        source_metadata: serde_json::Value,
         solc_version: Option<semver::Version>,
         solc_zkvm_edition: Option<semver::Version>,
         zk_version: semver::Version,
@@ -36,7 +37,7 @@ impl<'a> Metadata<'a> {
         llvm_options: &'a [String],
     ) -> Self {
         Self {
-            solc_metadata,
+            source_metadata,
             solc_version,
             solc_zkvm_edition,
             zk_version,

@@ -157,8 +157,11 @@ impl Project {
                         }
                     };
 
-                    let contract =
-                        Contract::new(full_path.clone(), source, contract.metadata.to_owned());
+                    let contract = Contract::new(
+                        full_path.clone(),
+                        source,
+                        contract.metadata.to_owned().expect("Always exists"),
+                    );
                     Some((full_path, Ok(contract)))
                 },
             )
@@ -241,10 +244,10 @@ impl Project {
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_yul(object),
-                    Some(serde_json::json!({
+                    serde_json::json!({
                         "source_hash": hex::encode(hash),
                         "solc_version": solc_version,
-                    })),
+                    }),
                 );
 
                 (path, Ok(contract))
@@ -309,9 +312,9 @@ impl Project {
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_llvm_ir(path.clone(), source_code),
-                    Some(serde_json::json!({
+                    serde_json::json!({
                         "source_hash": hex::encode(hash),
-                    })),
+                    }),
                 );
 
                 (path, Ok(contract))
@@ -376,9 +379,9 @@ impl Project {
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_eravm_assembly(path.clone(), source_code),
-                    Some(serde_json::json!({
+                    serde_json::json!({
                         "source_hash": hex::encode(hash),
-                    })),
+                    }),
                 );
 
                 (path, Ok(contract))
