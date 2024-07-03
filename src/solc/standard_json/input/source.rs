@@ -43,22 +43,43 @@ impl Source {
     ///
     /// At the moment only one URL pointing to the file system is supported.
     ///
-    pub fn try_resolve(self) -> anyhow::Result<Self> {
+    pub fn try_resolve(&mut self) -> anyhow::Result<()> {
         match (self.content.as_ref(), self.urls.as_ref()) {
-            (Some(_), None) => Ok(self),
+            (Some(_), None) => Ok(()),
             (None, Some(urls)) => {
-                let url = match urls.first() {
-                    Some(url) => url,
-                    None => anyhow::bail!("The URL list is empty"),
-                };
-
-                let url_path = PathBuf::from(url);
-                let source_with_content = Source::try_read(url_path.as_path())?;
-                Ok(source_with_content)
+                let mut errors = Vec::with_capacity(urls.len());
+                for url in urls.iter() {
+                    let url_path = PathBuf::from(url);
+                    match Source::try_read(url_path.as_path()) {
+                        Ok(resolved) => {
+                            *self = resolved;
+                            break;
+                        }
+                        Err(error) => errors.push(error),
+                    }
+                }
+                if !errors.is_empty() {
+                    anyhow::bail!(
+                        "{}",
+                        errors
+                            .into_iter()
+                            .map(|error| error.to_string())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    );
+                }
+                Ok(())
             }
             (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
             (None, None) => anyhow::bail!("Either `content` or `urls` must be set"),
         }
+    }
+
+    ///
+    /// Takes ownership of the source code and returns it.
+    ///
+    pub fn take_content(&mut self) -> Option<String> {
+        self.content.take()
     }
 
     ///

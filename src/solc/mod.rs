@@ -87,7 +87,7 @@ impl Compiler {
     ///
     pub fn standard_json(
         &self,
-        input: &StandardJsonInput,
+        input: &mut StandardJsonInput,
         pipeline: Option<Pipeline>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
@@ -160,6 +160,7 @@ impl Compiler {
             let mut suppressed_messages = input.suppressed_errors.to_owned().unwrap_or_default();
             suppressed_messages.extend(input.suppressed_warnings.to_owned().unwrap_or_default());
 
+            input.resolve_sources();
             solc_output.preprocess_ast(
                 &input.sources,
                 &self.version,

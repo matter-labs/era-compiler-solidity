@@ -216,9 +216,9 @@ impl Project {
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source)| {
-                let source_code: String = match source.try_resolve() {
-                    Ok(mut source) => source.content.take().expect("Always exists"),
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
                     Err(error) => return (path, Err(error)),
                 };
 
@@ -233,7 +233,7 @@ impl Project {
                     }
                 }
 
-                let mut lexer = Lexer::new(source_code.to_owned());
+                let mut lexer = Lexer::new(source_code);
                 let object = match Object::parse(&mut lexer, None)
                     .map_err(|error| anyhow::anyhow!("Yul parsing: {error:?}"))
                 {
@@ -300,9 +300,9 @@ impl Project {
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source)| {
-                let source_code: String = match source.try_resolve() {
-                    Ok(mut source) => source.content.take().expect("Always exists"),
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
                     Err(error) => return (path, Err(error)),
                 };
 
@@ -367,9 +367,9 @@ impl Project {
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source)| {
-                let source_code: String = match source.try_resolve() {
-                    Ok(mut source) => source.content.take().expect("Always exists"),
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
                     Err(error) => return (path, Err(error)),
                 };
 

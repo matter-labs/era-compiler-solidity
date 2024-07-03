@@ -12,6 +12,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::message_type::MessageType;
@@ -268,5 +269,17 @@ impl Input {
     ///
     pub fn normalize_yul_validation(&mut self) {
         self.settings.normalize_yul_validation();
+    }
+
+    ///
+    /// Tries to resolve all sources.
+    ///
+    pub fn resolve_sources(&mut self) {
+        self.sources
+            .par_iter_mut()
+            .map(|(_path, source)| {
+                let _ = source.try_resolve();
+            })
+            .collect::<Vec<()>>();
     }
 }

@@ -272,7 +272,7 @@ pub fn standard_output_eravm(
     let solc_version = solc_compiler.version.to_owned();
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
-    let solc_input = SolcStandardJsonInput::try_from_solidity_paths(
+    let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
         paths,
@@ -299,7 +299,7 @@ pub fn standard_output_eravm(
     )?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
     let mut solc_output = solc_compiler.standard_json(
-        &solc_input,
+        &mut solc_input,
         Some(solc_pipeline),
         messages,
         base_path,
@@ -358,7 +358,7 @@ pub fn standard_output_evm(
     let solc_version = solc_compiler.version.to_owned();
     let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
 
-    let solc_input = SolcStandardJsonInput::try_from_solidity_paths(
+    let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         SolcStandardJsonInputLanguage::Solidity,
         evm_version,
         paths,
@@ -385,7 +385,7 @@ pub fn standard_output_evm(
     )?;
     let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
     let mut solc_output = solc_compiler.standard_json(
-        &solc_input,
+        &mut solc_input,
         Some(solc_pipeline),
         messages,
         base_path,
@@ -473,7 +473,7 @@ pub fn standard_json_eravm(
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
-                &solc_input,
+                &mut solc_input,
                 Some(solc_pipeline),
                 messages,
                 base_path,
@@ -630,7 +630,7 @@ pub fn standard_json_evm(
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
-                &solc_input,
+                &mut solc_input,
                 Some(solc_pipeline),
                 messages,
                 base_path,
