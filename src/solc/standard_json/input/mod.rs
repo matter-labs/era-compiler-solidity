@@ -12,6 +12,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::message_type::MessageType;
@@ -271,17 +272,14 @@ impl Input {
     }
 
     ///
-    /// Returns an owned tree of loaded sources.
+    /// Tries to resolve all sources.
     ///
-    pub fn sources(&self) -> anyhow::Result<BTreeMap<String, String>> {
+    pub fn resolve_sources(&mut self) {
         self.sources
-            .iter()
-            .map(|(path, source)| {
-                let source: String = source
-                    .try_into()
-                    .map_err(|error| anyhow::anyhow!("Source `{path}`: {error}"))?;
-                Ok((path.to_owned(), source))
+            .par_iter_mut()
+            .map(|(_path, source)| {
+                let _ = source.try_resolve();
             })
-            .collect()
+            .collect::<Vec<()>>();
     }
 }

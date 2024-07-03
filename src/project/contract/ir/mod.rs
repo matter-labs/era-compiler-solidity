@@ -37,8 +37,8 @@ impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_yul(source_code: String, object: Object) -> Self {
-        Self::Yul(Yul::new(source_code, object))
+    pub fn new_yul(object: Object) -> Self {
+        Self::Yul(Yul::new(object))
     }
 
     ///

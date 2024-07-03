@@ -1,5 +1,21 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- The support for multiple `urls` to local files in standard JSON input
+
+### Removed
+
+- The source code loading mechanism leading to file system errors
+- The Solidity source code part of the metadata hash preimage
+- Some duplicate fields in the metadata hash preimage
+
+### Fixed
+
+- Errors with imports of files not included into the initial input
+
 ## [1.5.1] - 2024-06-27
 
 ### Added

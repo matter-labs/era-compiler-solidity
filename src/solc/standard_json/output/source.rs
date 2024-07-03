@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 
 use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
 
@@ -39,7 +40,7 @@ impl Source {
         solc_version: &SolcVersion,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -80,7 +81,7 @@ impl Source {
     pub fn check_runtime_code(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -114,7 +115,7 @@ impl Source {
     pub fn check_internal_function_pointer(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -146,7 +147,7 @@ impl Source {
     pub fn check_tx_origin(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -179,7 +180,7 @@ impl Source {
         solc_version: &SolcVersion,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
@@ -216,7 +217,7 @@ impl Source {
     pub fn get_messages(
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &SolcVersion,
         solc_pipeline: SolcPipeline,
         suppressed_messages: &[MessageType],

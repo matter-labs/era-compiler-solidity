@@ -18,6 +18,7 @@ use crate::evmla::assembly::Assembly;
 use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::solc::version::Version as SolcVersion;
 
@@ -59,16 +60,10 @@ impl Output {
     ///
     /// Is used for projects compiled without `solc`.
     ///
-    pub fn new(sources: &BTreeMap<String, String>, messages: &mut Vec<JsonOutputError>) -> Self {
-        let contracts = sources
-            .keys()
-            .map(|path| {
-                let mut contracts = BTreeMap::new();
-                contracts.insert(path.to_owned(), Contract::default());
-                (path.to_owned(), contracts)
-            })
-            .collect::<BTreeMap<String, BTreeMap<String, Contract>>>();
-
+    pub fn new(
+        sources: &BTreeMap<String, StandardJSONInputSource>,
+        messages: &mut Vec<JsonOutputError>,
+    ) -> Self {
         let sources = sources
             .keys()
             .enumerate()
@@ -76,7 +71,7 @@ impl Output {
             .collect::<BTreeMap<String, Source>>();
 
         Self {
-            contracts: Some(contracts),
+            contracts: Some(BTreeMap::new()),
             sources: Some(sources),
             errors: Some(std::mem::take(messages)),
             version: None,
@@ -223,7 +218,7 @@ impl Output {
     ///
     pub fn preprocess_ast(
         &mut self,
-        sources: &BTreeMap<String, String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
         suppressed_messages: &[MessageType],
