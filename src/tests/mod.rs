@@ -23,6 +23,7 @@ use crate::project::Project;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
+use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
 use crate::solc::standard_json::input::Input as SolcStandardJsonInput;
 use crate::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
@@ -55,7 +56,7 @@ pub fn build_solidity(
         .as_str(),
     )?;
 
-    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
@@ -78,9 +79,8 @@ pub fn build_solidity(
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
-        solc_input,
+        &mut solc_input,
         Some(solc_pipeline),
-        Some(&sources),
         &mut vec![],
         None,
         vec![],
@@ -89,8 +89,7 @@ pub fn build_solidity(
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
-    let project = Project::try_from_solidity_sources(
-        sources,
+    let project = Project::try_from_solc_output(
         libraries,
         solc_pipeline,
         &mut solc_output,
@@ -147,7 +146,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         .as_str(),
     )?;
 
-    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries.clone(),
@@ -170,17 +169,15 @@ pub fn build_solidity_and_detect_missing_libraries(
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
-        solc_input,
+        &mut solc_input,
         Some(solc_pipeline),
-        Some(&sources),
         &mut vec![],
         None,
         vec![],
         None,
     )?;
 
-    let project = Project::try_from_solidity_sources(
-        sources,
+    let project = Project::try_from_solc_output(
         libraries,
         solc_pipeline,
         &mut solc_output,
@@ -212,6 +209,11 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
+
+    let sources = sources
+        .into_iter()
+        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .collect();
 
     let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
 
@@ -246,7 +248,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 /// If `solc_compiler` is set, the standard JSON is validated with `solc`.
 ///
 pub fn build_yul_standard_json(
-    solc_input: SolcStandardJsonInput,
+    mut solc_input: SolcStandardJsonInput,
     solc_compiler: Option<&SolcCompiler>,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     check_dependencies(solc_compiler.map(|compiler| &compiler.version.default));
@@ -260,17 +262,20 @@ pub fn build_yul_standard_json(
         solc_input.settings.optimizer.mode.unwrap_or('0'),
     )?;
 
-    let sources = solc_input.sources()?;
     let (solc_version, mut solc_output) = match solc_compiler {
         Some(solc_compiler) => {
-            let solc_output = solc_compiler.validate_yul_standard_json(solc_input, &mut vec![])?;
+            let solc_output =
+                solc_compiler.validate_yul_standard_json(&mut solc_input, &mut vec![])?;
             (Some(&solc_compiler.version), solc_output)
         }
-        None => (None, SolcStandardJsonOutput::new(&sources, &mut vec![])),
+        None => (
+            None,
+            SolcStandardJsonOutput::new(&solc_input.sources, &mut vec![]),
+        ),
     };
 
     let project = Project::try_from_yul_sources(
-        sources,
+        solc_input.sources,
         BTreeMap::new(),
         Some(&mut solc_output),
         solc_version,
@@ -311,10 +316,9 @@ pub fn build_llvm_ir_standard_json(
         input.settings.optimizer.mode.unwrap_or('0'),
     )?;
 
-    let sources = input.sources()?;
-    let mut output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
+    let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
-    let project = Project::try_from_llvm_ir_sources(sources, Some(&mut output))?;
+    let project = Project::try_from_llvm_ir_sources(input.sources, Some(&mut output))?;
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
@@ -350,10 +354,9 @@ pub fn build_eravm_assembly_standard_json(
         input.settings.optimizer.mode.unwrap_or('0'),
     )?;
 
-    let sources = input.sources()?;
-    let mut output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
+    let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
-    let project = Project::try_from_eravm_assembly_sources(sources, Some(&mut output))?;
+    let project = Project::try_from_eravm_assembly_sources(input.sources, Some(&mut output))?;
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
@@ -401,7 +404,7 @@ pub fn check_solidity_message(
 
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_string(), source_code.to_string());
-    let solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
         None,
         sources.clone(),
         libraries,
@@ -419,9 +422,8 @@ pub fn check_solidity_message(
     )?;
 
     let solc_output = solc_compiler.standard_json(
-        solc_input,
+        &mut solc_input,
         Some(solc_pipeline),
-        Some(&sources),
         &mut vec![],
         None,
         vec![],

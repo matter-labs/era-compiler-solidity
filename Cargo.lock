@@ -324,7 +324,7 @@ dependencies = [
 
 [[package]]
 name = "era-compiler-solidity"
-version = "1.5.1"
+version = "1.5.2"
 dependencies = [
  "anyhow",
  "era-compiler-common",

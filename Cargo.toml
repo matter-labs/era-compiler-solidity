@@ -1,6 +1,6 @@
 [package]
 name = "era-compiler-solidity"
-version = "1.5.1"
+version = "1.5.2"
 authors = [
     "Oleksandr Zarudnyi <a.zarudnyy@matterlabs.dev>",
 ]

@@ -25,6 +25,7 @@ use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInpu
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
@@ -81,8 +82,7 @@ impl Project {
     ///
     /// Parses the Solidity `sources` and returns a Solidity project.
     ///
-    pub fn try_from_solidity_sources(
-        sources: BTreeMap<String, String>,
+    pub fn try_from_solc_output(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         pipeline: SolcPipeline,
         solc_output: &mut SolcStandardJsonOutput,
@@ -140,7 +140,7 @@ impl Project {
                                 Err(error) => return Some((full_path, Err(error))),
                             };
 
-                            ContractIR::new_yul(ir_optimized.to_owned(), object)
+                            ContractIR::new_yul(object)
                         }
                         SolcPipeline::EVMLA => {
                             let evm = contract.evm.as_ref();
@@ -157,21 +157,10 @@ impl Project {
                         }
                     };
 
-                    let source_code = match sources
-                        .get(path.as_str())
-                        .ok_or_else(|| anyhow::anyhow!("source code file not found"))
-                    {
-                        Ok(source_code) => source_code,
-                        Err(error) => return Some((full_path, Err(error))),
-                    };
-                    let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
                     let contract = Contract::new(
                         full_path.clone(),
                         source,
-                        contract.metadata.to_owned(),
-                        hash,
-                        Some(&solc_version),
+                        contract.metadata.to_owned().expect("Always exists"),
                     );
                     Some((full_path, Ok(contract)))
                 },
@@ -201,31 +190,17 @@ impl Project {
     pub fn try_from_yul_paths(
         paths: &[PathBuf],
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        mut solc_output: Option<&mut SolcStandardJsonOutput>,
+        solc_output: Option<&mut SolcStandardJsonOutput>,
         solc_version: Option<&SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        let results = paths
-            .par_iter()
+        let sources = paths
+            .iter()
             .map(|path| {
-                let source_code = std::fs::read_to_string(path.as_path())
-                    .map_err(|error| anyhow::anyhow!("Yul file {path:?} reading: {error}"));
-                (path.to_string_lossy().to_string(), source_code)
+                let source = SolcStandardJsonInputSource::from(path.as_path());
+                (path.to_string_lossy().to_string(), source)
             })
-            .collect::<BTreeMap<String, anyhow::Result<String>>>();
-
-        let mut sources = BTreeMap::new();
-        for (path, result) in results.into_iter() {
-            match result {
-                Ok(source_code) => {
-                    sources.insert(path, source_code);
-                }
-                Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
-                    None => anyhow::bail!(error),
-                },
-            }
-        }
+            .collect::<BTreeMap<String, SolcStandardJsonInputSource>>();
         Self::try_from_yul_sources(sources, libraries, solc_output, solc_version, debug_config)
     }
 
@@ -233,7 +208,7 @@ impl Project {
     /// Parses the Yul `sources` and returns a Yul project.
     ///
     pub fn try_from_yul_sources(
-        sources: BTreeMap<String, String>,
+        sources: BTreeMap<String, SolcStandardJsonInputSource>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         mut solc_output: Option<&mut SolcStandardJsonOutput>,
         solc_version: Option<&SolcVersion>,
@@ -241,16 +216,14 @@ impl Project {
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source_code)| {
-                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
-
-                let mut lexer = Lexer::new(source_code.to_owned());
-                let object = match Object::parse(&mut lexer, None)
-                    .map_err(|error| anyhow::anyhow!("Yul parsing: {error:?}"))
-                {
-                    Ok(object) => object,
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
                     Err(error) => return (path, Err(error)),
                 };
+
+                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
+                    sha3::Keccak256::digest(source_code.as_bytes()).into();
 
                 if let Some(debug_config) = debug_config {
                     if let Err(error) =
@@ -260,12 +233,21 @@ impl Project {
                     }
                 }
 
+                let mut lexer = Lexer::new(source_code);
+                let object = match Object::parse(&mut lexer, None)
+                    .map_err(|error| anyhow::anyhow!("Yul parsing: {error:?}"))
+                {
+                    Ok(object) => object,
+                    Err(error) => return (path, Err(error)),
+                };
+
                 let contract = Contract::new(
                     path.clone(),
-                    ContractIR::new_yul(source_code.to_owned(), object),
-                    None,
-                    hash,
-                    solc_version,
+                    ContractIR::new_yul(object),
+                    serde_json::json!({
+                        "source_hash": hex::encode(hash),
+                        "solc_version": solc_version,
+                    }),
                 );
 
                 (path, Ok(contract))
@@ -297,29 +279,15 @@ impl Project {
     ///
     pub fn try_from_llvm_ir_paths(
         paths: &[PathBuf],
-        mut solc_output: Option<&mut SolcStandardJsonOutput>,
+        solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
-        let results = paths
-            .par_iter()
+        let sources = paths
+            .iter()
             .map(|path| {
-                let source_code = std::fs::read_to_string(path.as_path())
-                    .map_err(|error| anyhow::anyhow!("LLVM IR file {path:?} reading: {error}"));
-                (path.to_string_lossy().to_string(), source_code)
+                let source = SolcStandardJsonInputSource::from(path.as_path());
+                (path.to_string_lossy().to_string(), source)
             })
-            .collect::<BTreeMap<String, anyhow::Result<String>>>();
-
-        let mut sources = BTreeMap::new();
-        for (path, result) in results.into_iter() {
-            match result {
-                Ok(source_code) => {
-                    sources.insert(path, source_code);
-                }
-                Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
-                    None => anyhow::bail!(error),
-                },
-            }
-        }
+            .collect::<BTreeMap<String, SolcStandardJsonInputSource>>();
         Self::try_from_llvm_ir_sources(sources, solc_output)
     }
 
@@ -327,20 +295,26 @@ impl Project {
     /// Parses the LLVM IR `sources` and returns an LLVM IR project.
     ///
     pub fn try_from_llvm_ir_sources(
-        sources: BTreeMap<String, String>,
+        sources: BTreeMap<String, SolcStandardJsonInputSource>,
         mut solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source_code)| {
-                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
+                    Err(error) => return (path, Err(error)),
+                };
+
+                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
+                    sha3::Keccak256::digest(source_code.as_bytes()).into();
 
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_llvm_ir(path.clone(), source_code),
-                    None,
-                    hash,
-                    None,
+                    serde_json::json!({
+                        "source_hash": hex::encode(hash),
+                    }),
                 );
 
                 (path, Ok(contract))
@@ -372,30 +346,15 @@ impl Project {
     ///
     pub fn try_from_eravm_assembly_paths(
         paths: &[PathBuf],
-        mut solc_output: Option<&mut SolcStandardJsonOutput>,
+        solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
-        let results = paths
-            .par_iter()
+        let sources = paths
+            .iter()
             .map(|path| {
-                let source_code = std::fs::read_to_string(path.as_path()).map_err(|error| {
-                    anyhow::anyhow!("EraVM assembly file {path:?} reading: {error}")
-                });
-                (path.to_string_lossy().to_string(), source_code)
+                let source = SolcStandardJsonInputSource::from(path.as_path());
+                (path.to_string_lossy().to_string(), source)
             })
-            .collect::<BTreeMap<String, anyhow::Result<String>>>();
-
-        let mut sources = BTreeMap::new();
-        for (path, result) in results.into_iter() {
-            match result {
-                Ok(source_code) => {
-                    sources.insert(path, source_code);
-                }
-                Err(error) => match solc_output {
-                    Some(ref mut solc_output) => solc_output.push_error(Some(path), error),
-                    None => anyhow::bail!(error),
-                },
-            }
-        }
+            .collect::<BTreeMap<String, SolcStandardJsonInputSource>>();
         Self::try_from_eravm_assembly_sources(sources, solc_output)
     }
 
@@ -403,20 +362,26 @@ impl Project {
     /// Parses the EraVM assembly `sources` and returns an EraVM assembly project.
     ///
     pub fn try_from_eravm_assembly_sources(
-        sources: BTreeMap<String, String>,
+        sources: BTreeMap<String, SolcStandardJsonInputSource>,
         mut solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
         let results = sources
             .into_par_iter()
-            .map(|(path, source_code)| {
-                let hash = sha3::Keccak256::digest(source_code.as_bytes()).into();
+            .map(|(path, mut source)| {
+                let source_code = match source.try_resolve() {
+                    Ok(()) => source.take_content().expect("Always exists"),
+                    Err(error) => return (path, Err(error)),
+                };
+
+                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
+                    sha3::Keccak256::digest(source_code.as_bytes()).into();
 
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_eravm_assembly(path.clone(), source_code),
-                    None,
-                    hash,
-                    None,
+                    serde_json::json!({
+                        "source_hash": hex::encode(hash),
+                    }),
                 );
 
                 (path, Ok(contract))
