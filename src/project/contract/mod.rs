@@ -132,14 +132,27 @@ impl Contract {
                 llvm.create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
-            IR::EraVMAssembly(ref eravm_assembly) => {
-                let build = era_compiler_llvm_context::from_eravm_assembly(
+            IR::EraVMAssembly(eravm_assembly) => {
+                let target_machine = era_compiler_llvm_context::TargetMachine::new(
+                    era_compiler_llvm_context::Target::EraVM,
+                    optimizer.settings(),
+                    llvm_options.as_slice(),
+                )?;
+                let bytecode_buffer = era_compiler_llvm_context::eravm_assemble(
+                    &target_machine,
                     self.path.as_str(),
-                    eravm_assembly.source.to_owned(),
-                    vec![], // TODO
-                    metadata_hash,
-                    output_assembly,
+                    eravm_assembly.source.as_str(),
                     debug_config.as_ref(),
+                )?;
+                let assembly_text = if output_assembly {
+                    Some(eravm_assembly.source)
+                } else {
+                    None
+                };
+                let build = era_compiler_llvm_context::eravm_build(
+                    bytecode_buffer,
+                    metadata_hash,
+                    assembly_text,
                 )?;
                 return Ok(EraVMContractBuild::new(
                     self.path,
