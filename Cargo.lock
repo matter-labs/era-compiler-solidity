@@ -604,7 +604,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#3e118f2d9de23caa227f2cf817cda229389b25ed"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#633babd21fc0cfdad51d64762ee654309ec67c21"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -619,7 +619,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#3e118f2d9de23caa227f2cf817cda229389b25ed"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#633babd21fc0cfdad51d64762ee654309ec67c21"
 dependencies = [
  "proc-macro2",
  "quote",

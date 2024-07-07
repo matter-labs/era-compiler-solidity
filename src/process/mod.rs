@@ -96,6 +96,7 @@ where
     let mut command = Command::new(executable.as_path());
     command.stdin(std::process::Stdio::piped());
     command.stdout(std::process::Stdio::piped());
+    command.stderr(std::process::Stdio::piped());
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
@@ -116,6 +117,16 @@ where
     let result = process
         .wait_with_output()
         .unwrap_or_else(|error| panic!("{executable:?} subprocess output reading: {error:?}"));
+
+    if result.status.code() != Some(era_compiler_common::EXIT_CODE_SUCCESS) {
+        panic!(
+            "{executable:?} subprocess failed with exit code {:?}:\n{}\n{}",
+            result.status.code(),
+            String::from_utf8_lossy(result.stdout.as_slice()),
+            String::from_utf8_lossy(result.stderr.as_slice()),
+        );
+    }
+
     era_compiler_common::deserialize_from_slice(result.stdout.as_slice())
         .unwrap_or_else(|error| panic!("{executable:?} subprocess stdout parsing: {error:?}"))
 }
