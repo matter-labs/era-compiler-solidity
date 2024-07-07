@@ -6,6 +6,10 @@
 
 - The support for multiple `urls` to local files in standard JSON input
 
+### Changed
+
+- Migrated to the LLVM-based assembler and linker
+
 ### Removed
 
 - The source code loading mechanism leading to file system errors

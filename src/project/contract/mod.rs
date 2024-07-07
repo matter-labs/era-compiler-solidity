@@ -113,15 +113,12 @@ impl Contract {
                 llvm.create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
             }
-            IR::EraVMAssembly(mut eravm_assembly) => {
+            IR::EraVMAssembly(eravm_assembly) => {
                 let target_machine = era_compiler_llvm_context::TargetMachine::new(
                     era_compiler_llvm_context::Target::EraVM,
                     optimizer.settings(),
                     llvm_options.as_slice(),
                 )?;
-                if !eravm_assembly.source.ends_with('\0') {
-                    eravm_assembly.source.push('\0');
-                }
                 let bytecode_buffer = era_compiler_llvm_context::eravm_assemble(
                     &target_machine,
                     self.path.as_str(),

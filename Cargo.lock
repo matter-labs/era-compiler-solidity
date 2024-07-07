@@ -308,7 +308,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#f61822b01fef9fb89cce8a6c35d6cfb489e27339"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#6474e46241d02c7d821ed3214f2bbbeeede8139d"
 dependencies = [
  "anyhow",
  "era-compiler-common",
