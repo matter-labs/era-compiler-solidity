@@ -33,10 +33,12 @@ impl Translator {
             match translated {
                 statement::Transformed::Statements(stmts) => {
                     result.statements.extend(stmts);
+                    context = ctx;
                 }
-                statement::Transformed::Function(_) | statement::Transformed::Proc(_) => (),
+                statement::Transformed::Function(_) | statement::Transformed::Proc(_) => {
+                    context.module.merge(&ctx.module);
+                },
             };
-            context = ctx
         }
         self.tracker.leave();
         Ok((context, result))
