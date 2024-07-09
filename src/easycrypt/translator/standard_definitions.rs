@@ -56,7 +56,7 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
                 DefinitionInfo {
                     kind: Kind::Function(FunctionName::UserDefined {
                         name: "eq_uint256".to_string(),
-                        module: None,
+                        module: Some(String::from("PurePrimops")),
                     }),
                     yul_name: FullName::new("eq_uint256".to_string(), Path::empty()),
                     r#type: Type::Arrow(
@@ -69,10 +69,10 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             (YulName::Xor, fun(FunctionName::BitwiseXor, "xor", 2)),
             (YulName::Smod, fun(FunctionName::Smod, "smod", 2)),
             (YulName::Sdiv, fun(FunctionName::Sdiv, "sdiv", 2)),
-            (YulName::Lt, fun(FunctionName::Lt, "lt", 2)),
-            (YulName::Gt, fun(FunctionName::Gt, "gt", 2)),
+            (YulName::Lt, fun(primops_fun("lt"), "lt", 2)),
+            (YulName::Gt, fun(primops_fun("gt"), "gt", 2)),
             (YulName::IsZero, fun(primops_fun("iszero"), "iszero", 2)),
-            (YulName::Slt, fun(primops_fun("slt"), "slt", 2)),
+            (YulName::Slt, fun(primops_fun("slt_uint256"), "slt_uint256", 2)),
             (YulName::Sgt, fun(primops_fun("sgt"), "sgt", 2)),
             (YulName::Not, unop(UnaryOpType::Not, "not")),
             (YulName::Byte, fun(FunctionName::Byte, "byte", 2)),
@@ -129,11 +129,11 @@ pub fn standard_definitions() -> &'static Vec<(YulName, DefinitionInfo)> {
             ),
             (
                 YulName::CallDataLoad,
-                proc_simple(ProcName::CallDataLoad, "calldataload", 1, 1),
+                proc_simple(primops_proc("calldataload"), "calldataload", 1, 1),
             ),
             (
                 YulName::CallDataSize,
-                proc_simple(ProcName::CallDataSize, "calldatasize", 0, 1),
+                proc_simple(primops_proc("calldatasize"), "calldatasize", 0, 1),
             ),
             (
                 YulName::CallDataCopy,
