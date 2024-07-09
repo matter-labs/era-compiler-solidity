@@ -66,6 +66,11 @@ fn main_inner() -> anyhow::Result<()> {
             let module = Translator::transpile(obj).unwrap();
             //println!("{:#?}", m);
 
+            println!(r"
+require import UInt256 PurePrimops YulPrimops.
+
+op STRING : int = 0.
+");
             WritePrinter::default().visit_module(&module);
         }
     });
