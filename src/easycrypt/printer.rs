@@ -31,6 +31,7 @@ use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
 use crate::yul::path::full_name::FullName;
 use crate::yul::path::Path;
+use crate::yul::visitor::IMPLICIT_CODE_FUNCTION_NAME;
 use crate::WritePrinter;
 
 // FIXME dirty hack
@@ -390,6 +391,10 @@ impl Visitor for ECPrinter {
     }
 
     fn visit_proc(&mut self, proc: &Proc) {
+        // FIXME temp
+        if proc.name.name == IMPLICIT_CODE_FUNCTION_NAME {
+            return;
+        }
         self.print("proc ");
         self.visit_proc_name(&proc.name.clone());
         self.visit_signature(&proc.signature);
