@@ -19,6 +19,7 @@ use crate::easycrypt::syntax::statement::Statement;
 use crate::easycrypt::translator::Translator;
 use crate::yul::parser::identifier::Identifier as YulIdentifier;
 use crate::yul::parser::statement::function_definition::FunctionDefinition;
+use crate::yul::path::full_name::FullName;
 use crate::yul::path::tracker::PathTracker;
 
 use super::block::Transformed as TransformedBlock;
@@ -104,7 +105,7 @@ impl Translator {
             Kind::Function(_) => {
                 match &ec_block.statements[0] {
                     Statement::EAssignment(_, expr) =>  {
-                        self.translate_to_function(formal_parameters, return_type, &ctx, identifier, expr)
+                        self.translate_to_function(formal_parameters, return_type, &ctx, identifier, &full_name, expr)
                     },
                     _ => anyhow::bail!("Attempt to translate a YUL function into EasyCrypt function, but only translating to procedure is possible."),
 
@@ -117,6 +118,7 @@ impl Translator {
                     result_vars,
                     ec_block,
                     ctx,
+                    &full_name,
                     identifier,
                 )
             }
@@ -131,6 +133,7 @@ impl Translator {
         result_vars: Vec<Definition>,
         ec_block: TransformedBlock,
         ctx: Context,
+        yul_name: &FullName,
         identifier: &str,
     ) -> Result<(Context, Translated), Error> {
         let signature = Signature {
@@ -165,9 +168,10 @@ impl Translator {
         Ok((
             ctx.clone(),
             Translated::Proc(Proc {
-                name: ProcName::UserDefined {
+                name: ProcName {
                     name: identifier.to_string(),
                     module: None,
+                    yul_name: Some(yul_name.clone()),
                 },
                 signature,
                 locals,
@@ -183,6 +187,7 @@ impl Translator {
         return_type: Type,
         ctx: &Context,
         identifier: &str,
+        yul_name: &FullName,
         body_expr: &Expression,
     ) -> Result<(Context, Translated), Error> {
         let signature = Signature {
@@ -195,9 +200,10 @@ impl Translator {
         Ok((
             ctx.clone(),
             Translated::Function(Function {
-                name: FunctionName::UserDefined {
+                name: FunctionName {
                     name: identifier.to_string(),
                     module: None,
+                    yul_name: Some(yul_name.clone()),
                 },
                 signature,
                 body: body_expr.clone(),

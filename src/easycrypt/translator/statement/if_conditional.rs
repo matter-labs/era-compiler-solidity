@@ -51,9 +51,10 @@ impl Translator {
         let (ctx, TransformedBlock { statements }) = self.transpile_block(block, &ctx)?;
 
         let wrapped_condition = Expression::ECall(FunctionCall {
-            target: FunctionName::UserDefined {
+            target: FunctionName {
                 name: String::from("bool_of_uint256"),
                 module: None,
+                yul_name: None,
             },
             arguments: vec![transpiled_condition],
         });

@@ -33,9 +33,10 @@ impl Translator {
             self.transpile_block(&code.block, &Context::new())?;
 
         let default_code_proc = Proc {
-            name: ProcName::UserDefined {
+            name: ProcName {
                 name: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
                 module: None,
+                yul_name: None,
             },
             signature: Signature::UNIT_TO_UNIT,
             body: Block { statements },

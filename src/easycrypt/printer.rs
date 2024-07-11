@@ -2,6 +2,8 @@
 //! EasyCrypt AST pretty printer
 //!
 
+use std::collections::HashMap;
+
 use super::syntax::definition::Definition;
 use super::syntax::expression::binary::BinaryOpType;
 use super::syntax::expression::call::FunctionCall;
@@ -27,6 +29,90 @@ use super::syntax::statement::Statement;
 use super::syntax::statement::while_loop::WhileLoop;
 use super::visitor::Visitor;
 use crate::util::printer::IPrinter;
+use crate::yul::path::full_name::FullName;
+use crate::yul::path::Path;
+use crate::WritePrinter;
+
+// FIXME dirty hack
+fn resolve<'a>(names: impl Iterator<Item = &'a FullName>) -> HashMap<String, Vec<FullName>> {
+    let mut result: HashMap<String, Vec<FullName>> = HashMap::new();
+    for item in names {
+        if !result.contains_key(&item.name) {
+            result.insert(item.name.clone(), vec![]);
+        }
+        result.get_mut(&item.name).unwrap().push(item.clone());
+    }
+    result
+}
+
+fn drop_common_prefix(duplicates: &Vec<FullName>) -> Vec<String> {
+    let min_length = duplicates
+        .iter()
+        .zip(duplicates.iter().skip(1))
+        .map(|(a, b)| a.path.common_prefix_length(&b.path))
+        .min()
+        .unwrap();
+    duplicates
+        .iter()
+        .map(|fp| fp.path.suffix(min_length))
+        .collect()
+}
+
+fn display_names<'a>(names: impl Iterator<Item = &'a FullName>) -> HashMap<FullName, String> {
+    let mut result: HashMap<FullName, String> = HashMap::new();
+    let resolved: HashMap<String, Vec<FullName>> = resolve(names);
+
+    for (name, resolution_results) in resolved {
+        if resolution_results.len() > 1 {
+            let without_prefix: Vec<_> = drop_common_prefix(&resolution_results);
+            dbg!(&without_prefix);
+            for (duplicate, display_name_part) in resolution_results.iter().zip(without_prefix) {
+                let name = Path::combine(&display_name_part, &name);
+                result.insert(duplicate.clone(), name);
+            }
+        } else {
+            result.insert(resolution_results[0].clone(), name.clone());
+        }
+    }
+    result
+}
+#[cfg(test)]
+mod test {
+    use crate::{
+        easycrypt::printer::display_names,
+        yul::path::{builder::Builder, full_name::FullName, tracker::PathTracker, Path},
+    };
+
+    #[test]
+    fn test() {
+        let mut builder = Builder::new(Path::empty());
+
+        builder.enter_function("T");
+        builder.enter_function("F");
+        builder.enter_block();
+        let path_x = builder.here().clone();
+        builder.leave();
+        builder.leave();
+        builder.enter_function("G");
+        builder.enter_block();
+        let path_y = builder.here().clone();
+
+        let names = vec![
+            FullName {
+                name: "x".to_string(),
+                path: path_x,
+            },
+            FullName {
+                name: "x".to_string(),
+                path: path_y,
+            },
+        ];
+        dbg!(&names);
+        //dbg!(drop_common_prefix(&names));
+        let disp_names = display_names(names.iter());
+        dbg!(disp_names);
+    }
+}
 
 fn sanitize_identifier(identifier: &str) -> String {
     const KEYWORDS: &[&str] = &["end", "var"];
@@ -42,6 +128,23 @@ fn sanitize_identifier(identifier: &str) -> String {
     result
 }
 
+fn disambiguate_and_sanitize(
+    identifier: &str,
+    location: Option<&Path>,
+    names_disambiguation: &HashMap<FullName, String>,
+) -> String {
+    let identifier = identifier.to_string();
+    if let Some(location) = location {
+        let full_name = FullName::new(identifier.clone(), location.clone());
+        if let Some(mapped) = names_disambiguation.get(&full_name) {
+            sanitize_identifier(mapped)
+        } else {
+            sanitize_identifier(&identifier)
+        }
+    } else {
+        sanitize_identifier(&identifier)
+    }
+}
 fn statement_followed_by_semicolon(statement: &Statement) -> bool {
     match &statement {
         Statement::Block(_) | Statement::If(_) => false,
@@ -55,7 +158,44 @@ fn statement_followed_by_semicolon(statement: &Statement) -> bool {
     }
 }
 
-impl<T: IPrinter> Visitor for T {
+pub struct ECPrinter {
+    printer: WritePrinter,
+    names_disambiguation: HashMap<FullName, String>,
+}
+
+impl ECPrinter {
+    pub fn new<'a>(ordered_names: impl Iterator<Item = &'a FullName>) -> Self {
+        let display_names = display_names(ordered_names);
+        Self {
+            printer: WritePrinter::default(),
+            names_disambiguation: display_names,
+        }
+    }
+
+    pub fn print_all(&mut self, module: &Module) {
+        self.visit_module(module)
+    }
+}
+
+impl IPrinter for ECPrinter {
+    fn print(&mut self, s: &str) {
+        <WritePrinter as IPrinter>::print(&mut self.printer, s)
+    }
+
+    fn println(&mut self, s: &str) {
+        <WritePrinter as IPrinter>::println(&mut self.printer, s)
+    }
+
+    fn increase_indent(&mut self) {
+        <WritePrinter as IPrinter>::increase_indent(&mut self.printer)
+    }
+
+    fn decrease_indent(&mut self) {
+        <WritePrinter as IPrinter>::decrease_indent(&mut self.printer)
+    }
+}
+
+impl Visitor for ECPrinter {
     fn visit_binary_op_type(&mut self, op: &BinaryOpType) {
         self.print(match op {
             BinaryOpType::Add => "+",
@@ -87,7 +227,14 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_definition(&mut self, definition: &Definition) {
-        self.print(sanitize_identifier(&definition.identifier).as_str());
+        self.print(
+            disambiguate_and_sanitize(
+                &definition.identifier,
+                definition.location.clone().as_ref(),
+                &self.names_disambiguation,
+            )
+            .as_str(),
+        );
     }
 
     fn visit_expression(&mut self, expression: &Expression) {
@@ -149,22 +296,18 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_function_name(&mut self, name: &FunctionName) {
+        if let Some(module) = &name.module {
+            self.print(&module);
+            self.print(".");
+        }
         match name {
-            FunctionName::UserDefined {
-                name,
-                module: Some(module),
-            } => {
-                self.print(module);
-                self.print(".");
-                let sanitized_name = sanitize_identifier(&name.to_string());
-                self.print(&sanitized_name);
-            }
-            FunctionName::UserDefined { name, module: None } => {
-                let sanitized_name = sanitize_identifier(&name.to_string());
-                self.print(&sanitized_name);
-            }
-            _ => {
-                let sanitized_name = sanitize_identifier(&name.to_string());
+            FunctionName { name, yul_name, .. } => {
+                let full_name = yul_name.clone();
+                let sanitized_name = disambiguate_and_sanitize(
+                    &name.to_string(),
+                    full_name.map(|name| name.path).as_ref(),
+                    &self.names_disambiguation,
+                );
                 self.print(&sanitized_name);
             }
         }
@@ -198,7 +341,10 @@ impl<T: IPrinter> Visitor for T {
         self.println(format!("(* Begin {} *)", module_name).as_str());
 
         for full_name in &module.dependency_order {
-            let def = module.definitions.get(&Reference::from(full_name)).unwrap();
+            let def = module
+                .definitions
+                .get(&Reference::from(full_name))
+                .expect(format!("Printer cannot find reference {:?}", full_name).as_str());
             if def.is_fun_def() {
                 self.visit_module_definition(def);
                 self.println("")
@@ -273,29 +419,17 @@ impl<T: IPrinter> Visitor for T {
     }
 
     fn visit_proc_name(&mut self, name: &ProcName) {
-        match name {
-            ProcName::UserDefined {
-                name,
-                module: Some(module),
-            } => {
-                self.print(module);
-                self.print(".");
-                let sanitized_name = sanitize_identifier(&name.to_string());
-                self.print(&sanitized_name);
-            }
-            ProcName::UserDefined { name, module: None } => {
-                let sanitized_name = sanitize_identifier(&name.to_string());
-                self.print(&sanitized_name);
-            }
-            _ => {
-                let sanitized_name = sanitize_identifier(&name.to_string());
-                self.print(&sanitized_name);
-            }
-        }
+        self.visit_function_name(name)
     }
 
     fn visit_reference(&mut self, reference: &Reference) {
-        self.print(sanitize_identifier(reference.identifier.as_str()).as_str())
+        let location = reference.location.as_ref();
+        let disambiguate_and_sanitize = &disambiguate_and_sanitize(
+            reference.identifier.as_str(),
+            location,
+            &self.names_disambiguation,
+        );
+        self.print(disambiguate_and_sanitize.as_str())
     }
 
     fn visit_signature(&mut self, signature: &Signature) {

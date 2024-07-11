@@ -36,16 +36,21 @@ pub struct Path {
     stack: Vec<LexicalScope>,
 }
 
+fn display_name<'a>(stack: impl Iterator<Item = &'a LexicalScope>) -> String {
+    stack.fold(String::from(""), |acc, step| -> String {
+        let contribution = LexicalScope::full_name_contribution(&step);
+        Path::combine(acc.as_str(), contribution.as_str())
+    })
+}
+
 impl Path {
+    pub fn combine(prefix: &str, suffix: &str) -> String {
+        format!("{prefix}_{suffix}")
+    }
     /// Transforms [`crate::yul::path::Path`] into a prefix for a variable name.
     /// Each block on the way from root will contribute to the prefix.
-    pub fn full(&self) -> String {
-        self.stack
-            .iter()
-            .fold(String::from(""), |acc, step| -> String {
-                let contribution = LexicalScope::full_name_contribution(step);
-                format!("{acc}_{contribution}")
-            })
+    pub fn display_name(&self) -> String {
+        display_name(self.stack.iter())
     }
 
     /// Pops the latest lexical scope for the path, so that it becomes its parent.
@@ -65,7 +70,30 @@ impl Path {
             .map(|s| Path { stack: s.to_vec() })
     }
 
-    pub(crate) fn empty() -> Path {
+    pub fn common_prefix_length(&self, other: &Path) -> usize {
+        self.stack
+            .iter()
+            .zip(other.stack.iter())
+            .take_while(|(a, b)| a == b)
+            .count()
+    }
+    pub fn difference(&self, other: Path) -> (Path, Path) {
+        let (new_self, new_other): (Vec<LexicalScope>, Vec<LexicalScope>) = self
+            .stack
+            .iter()
+            .cloned()
+            .zip(other.stack.iter().cloned())
+            .skip_while(|(a, b)| a == b)
+            .unzip();
+
+        (Path { stack: new_self }, Path { stack: new_other })
+    }
+
+    pub fn empty() -> Path {
         Path { stack: vec![] }
+    }
+
+    pub(crate) fn suffix(&self, prefix: usize) -> String {
+        display_name(self.stack.iter().skip(prefix))
     }
 }

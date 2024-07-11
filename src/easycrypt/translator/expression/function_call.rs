@@ -139,9 +139,10 @@ impl Translator {
                     let passignment = Statement::PAssignment(
                         vec![],
                         ProcCall {
-                            target: ProcName::UserDefined {
+                            target: ProcName {
                                 name: String::from("evm_return"),
                                 module: Some(String::from("Primops")),
+                                yul_name: None,
                             },
                             arguments,
                         },
@@ -158,9 +159,10 @@ impl Translator {
                     let passignment = Statement::PAssignment(
                         vec![],
                         ProcCall {
-                            target: ProcName::UserDefined {
+                            target: ProcName {
                                 name: String::from("revert"),
                                 module: Some(String::from("Primops")),
+                                yul_name: None,
                             },
                             arguments,
                         },

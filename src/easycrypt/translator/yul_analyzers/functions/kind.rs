@@ -5,8 +5,6 @@
 
 use anyhow::Error;
 
-use crate::easycrypt::syntax::function::name::FunctionName;
-use crate::easycrypt::syntax::proc::name::ProcName;
 use crate::easycrypt::translator::definition_info::get_definition;
 use crate::easycrypt::translator::definition_info::kind::proc_kind::ProcKind;
 use crate::easycrypt::translator::definition_info::kind::Kind;
@@ -55,14 +53,8 @@ impl<'a> StatementAction for FunctionKindRound<'a> {
 /// into procedures.
 fn promote_to_function(round: &mut Round, definition: &mut DefinitionInfo) {
     match &definition.kind {
-        Kind::Proc(ProcKind {
-            name: ProcName::UserDefined { name, module },
-            ..
-        }) => {
-            definition.kind = Kind::Function(FunctionName::UserDefined {
-                name: name.clone(),
-                module: module.clone(),
-            });
+        Kind::Proc(ProcKind { name, .. }) => {
+            definition.kind = Kind::Function(name.clone());
             round.register_effect()
         }
         Kind::Function(_) => (),

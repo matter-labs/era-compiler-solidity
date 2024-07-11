@@ -16,13 +16,15 @@ impl Translator {
     pub fn transpile_literal(lit: &YulLiteral) -> Result<Expression, Error> {
         let transpiled_integer = match &lit.inner {
             crate::yul::lexer::token::lexeme::literal::Literal::Boolean(b) => {
-                    if b == &crate::yul::lexer::token::lexeme::literal::boolean::Boolean::True
-                    {
-                        Literal::Int(IntegerLiteral::Decimal { inner: "1".to_string() })
-                    }
-                    else {
-                        Literal::Int(IntegerLiteral::Decimal { inner: "0".to_string() })
-                    }
+                if b == &crate::yul::lexer::token::lexeme::literal::boolean::Boolean::True {
+                    Literal::Int(IntegerLiteral::Decimal {
+                        inner: "1".to_string(),
+                    })
+                } else {
+                    Literal::Int(IntegerLiteral::Decimal {
+                        inner: "0".to_string(),
+                    })
+                }
             }
             crate::yul::lexer::token::lexeme::literal::Literal::Integer(i) => match i {
                 crate::yul::lexer::token::lexeme::literal::integer::Integer::Decimal { inner } => {
@@ -43,9 +45,10 @@ impl Translator {
         };
 
         let wrapper_call = FunctionCall {
-            target: FunctionName::UserDefined {
+            target: FunctionName {
                 name: String::from("of_int"),
                 module: Some(String::from("W256")),
+                yul_name: None,
             },
             arguments: vec![Expression::Literal(transpiled_integer)],
         };

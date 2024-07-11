@@ -5,8 +5,7 @@
 pub mod arguments;
 use self::arguments::Arguments;
 
-use era_compiler_solidity::ECVisitor;
-use era_compiler_solidity::{Project, Translator, WritePrinter};
+use era_compiler_solidity::{ECPrinter, Project, Translator, WritePrinter};
 
 ///
 /// The application entry point.
@@ -66,12 +65,15 @@ fn main_inner() -> anyhow::Result<()> {
             let module = Translator::transpile(obj).unwrap();
             //println!("{:#?}", m);
 
-            println!(r"
+            println!(
+                r"
 require import UInt256 PurePrimops YulPrimops.
 
 op STRING : int = 0.
-");
-            WritePrinter::default().visit_module(&module);
+"
+            );
+            let mut printer = ECPrinter::new(module.dependency_order.iter());
+            printer.print_all(&module);
         }
     });
 

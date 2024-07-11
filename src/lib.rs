@@ -55,6 +55,7 @@ pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 pub use self::warning::Warning;
 
+pub use self::easycrypt::printer::ECPrinter;
 pub use self::easycrypt::translator::Translator;
 pub use self::easycrypt::visitor::Visitor as ECVisitor;
 pub use self::util::printer::write_printer::WritePrinter;

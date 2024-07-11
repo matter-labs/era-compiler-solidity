@@ -37,7 +37,7 @@ impl Translator {
                 }
                 statement::Transformed::Function(_) | statement::Transformed::Proc(_) => {
                     context.module.merge(&ctx.module);
-                },
+                }
             };
         }
         self.tracker.leave();
