@@ -17,6 +17,13 @@ __entry:
         ret.ok.to_label r1, @DEFAULT_FAR_RETURN
 .func_end0:
 
+DEFAULT_UNWIND:
+	ret.panic.to_label	r0, @DEFAULT_UNWIND
+DEFAULT_FAR_RETURN:
+	ret.ok.to_label	r1, @DEFAULT_FAR_RETURN
+DEFAULT_FAR_REVERT:
+	ret.revert.to_label	r1, @DEFAULT_FAR_REVERT
+
         .note.GNU-stack
         .rodata
 CPI0_0:

@@ -114,6 +114,20 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
 
+      - name: Get changelog
+        if: github.ref_type == 'tag'
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          validation_level: warn
+          path: ./CHANGELOG.md
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release*
+          path: releases
+
       - name: Identify release name
         id: release
         run: |
@@ -129,11 +143,18 @@ jobs:
             echo "release_title=${VERSION_OR_SHA}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: release*
-          path: releases
+      - name: Check release version
+        if: github.ref_type == 'tag'
+        run: |
+          TAG="${{ steps.release.outputs.version_or_sha }}"
+          CARGO_PACKAGE_VERSION="$(cargo pkgid | cut -d "#" -f2)"
+          CHANGELOG_VERSION="${{ steps.changelog_reader.outputs.version }}"
+          # All versions must be equal
+          if [ "${CARGO_PACKAGE_VERSION}" != "${TAG}" ] || [ "${CARGO_PACKAGE_VERSION}" != "${CHANGELOG_VERSION}" ]; then
+            echo "Version mismatch: TAG=${TAG}, CARGO_PACKAGE_VERSION=${CARGO_PACKAGE_VERSION}, CHANGELOG_VERSION=${CHANGELOG_VERSION}"
+            echo "Please update the version in Cargo.toml, CHANGELOG.md and tag the commit with the same version."
+            exit 1
+          fi
 
       - name: Prepare universal macos binary
         if: github.ref_type == 'tag' || (inputs.release_macos_amd64 && inputs.release_macos_arm64)
@@ -147,14 +168,6 @@ jobs:
           llvm-lipo -create -output "${OUTPUT}" \
             ./releases/release-macosx-amd64/macosx-amd64/zksolc-macosx-amd64${TAG_SUFFIX} \
             ./releases/release-macosx-arm64/macosx-arm64/zksolc-macosx-arm64${TAG_SUFFIX}
-
-      - name: Get changelog
-        if: github.ref_type == 'tag'
-        id: changelog_reader
-        uses: mindsers/changelog-reader-action@v2
-        with:
-          validation_level: warn
-          path: ./CHANGELOG.md
 
       - name: Prepare release
         uses: softprops/action-gh-release@v2

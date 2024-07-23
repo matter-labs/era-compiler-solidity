@@ -119,14 +119,23 @@ where
         .unwrap_or_else(|error| panic!("{executable:?} subprocess output reading: {error:?}"));
 
     if result.status.code() != Some(era_compiler_common::EXIT_CODE_SUCCESS) {
-        panic!(
+        let message = format!(
             "{executable:?} subprocess failed with exit code {:?}:\n{}\n{}",
             result.status.code(),
             String::from_utf8_lossy(result.stdout.as_slice()),
             String::from_utf8_lossy(result.stderr.as_slice()),
         );
+        return Err(SolcStandardJsonOutputError::new_error(message, None, None));
     }
 
-    era_compiler_common::deserialize_from_slice(result.stdout.as_slice())
-        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdout parsing: {error:?}"))
+    match era_compiler_common::deserialize_from_slice(result.stdout.as_slice()) {
+        Ok(output) => output,
+        Err(error) => {
+            panic!(
+                "{executable:?} subprocess stdout parsing error: {error:?}\n{}\n{}",
+                String::from_utf8_lossy(result.stdout.as_slice()),
+                String::from_utf8_lossy(result.stderr.as_slice()),
+            );
+        }
+    }
 }
