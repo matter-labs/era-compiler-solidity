@@ -33,9 +33,6 @@ pub fn run(target: era_compiler_llvm_context::Target) {
                 std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
-            if input.enable_test_encoding {
-                zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
-            }
 
             let contract = input.contract.expect("Always exists");
             let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
