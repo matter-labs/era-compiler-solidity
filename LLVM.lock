@@ -1,2 +1,2 @@
 url = "https://github.com/matter-labs/era-compiler-llvm"
-branch = "az-cpr-1735-migrate-to-the-new-assembler"
+branch = "v1.5.1"
