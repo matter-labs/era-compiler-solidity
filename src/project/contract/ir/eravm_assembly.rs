@@ -17,11 +17,7 @@ impl EraVMAssembly {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(path: String, mut source: String) -> Self {
-        if !source.ends_with(char::from(0)) {
-            source.push(char::from(0));
-        }
-
+    pub fn new(path: String, source: String) -> Self {
         Self { path, source }
     }
 }

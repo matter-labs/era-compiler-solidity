@@ -284,7 +284,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#474c041325f4a3c92a509894b3b5b6a04deb8599"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#e853fd696993d930186402851e746ac7d80758a7"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -564,7 +564,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#a81920f41a27d949f87a671eb54129a34e7dc033"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#73190465ce709923f0fc968cbbc67c3e5774ecbd"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -579,7 +579,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#a81920f41a27d949f87a671eb54129a34e7dc033"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#73190465ce709923f0fc968cbbc67c3e5774ecbd"
 dependencies = [
  "proc-macro2",
  "quote",
