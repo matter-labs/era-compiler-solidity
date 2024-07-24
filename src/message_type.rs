@@ -7,7 +7,7 @@ use std::str::FromStr;
 ///
 /// The compiler message type.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum MessageType {
     /// The error for eponymous feature.
     SendTransfer,

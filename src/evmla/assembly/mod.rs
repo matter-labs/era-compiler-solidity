@@ -21,7 +21,7 @@ use self::instruction::Instruction;
 ///
 /// The JSON assembly.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Assembly {
     /// The metadata string.
     #[serde(rename = ".auxdata")]

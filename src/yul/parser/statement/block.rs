@@ -20,7 +20,7 @@ use crate::yul::parser::statement::Statement;
 ///
 /// The Yul source code block.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Block {
     /// The location.
     pub location: Location,

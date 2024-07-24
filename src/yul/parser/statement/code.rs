@@ -16,7 +16,7 @@ use crate::yul::parser::statement::block::Block;
 ///
 /// The YUL code entity, which is the first block of the object.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Code {
     /// The location.
     pub location: Location,

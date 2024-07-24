@@ -23,7 +23,7 @@ use self::case::Case;
 ///
 /// The Yul switch statement.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Switch {
     /// The location.
     pub location: Location,

@@ -5,7 +5,7 @@
 ///
 /// The function name.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Name {
     /// The user-defined function.
     UserDefined(String),

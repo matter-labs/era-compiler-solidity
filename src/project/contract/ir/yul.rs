@@ -9,7 +9,7 @@ use crate::yul::parser::statement::object::Object;
 ///
 /// The contract Yul source code.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
     pub object: Object,

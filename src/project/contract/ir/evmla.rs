@@ -10,7 +10,7 @@ use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMeta
 ///
 /// The contract EVM legacy assembly source code.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EVMLA {
     /// The EVM legacy assembly source code.
     pub assembly: Assembly,

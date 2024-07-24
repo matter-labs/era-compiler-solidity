@@ -5,7 +5,7 @@
 ///
 /// The contract EraVM assembly source code.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EraVMAssembly {
     /// The EraVM assembly file path.
     pub path: String,
@@ -17,7 +17,11 @@ impl EraVMAssembly {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(path: String, source: String) -> Self {
+    pub fn new(path: String, mut source: String) -> Self {
+        if !source.ends_with(char::from(0)) {
+            source.push(char::from(0));
+        }
+
         Self { path, source }
     }
 }
