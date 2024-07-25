@@ -26,6 +26,9 @@ jobs:
     container:
       image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
       options: -m 110g
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     env:
       TARGET: x86_64-unknown-linux-gnu
     steps:

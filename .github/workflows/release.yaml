@@ -77,6 +77,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     name: ${{ matrix.name }}
     steps:
       - name: Checkout source
@@ -105,6 +108,9 @@ jobs:
     runs-on: matterlabs-ci-runner
     container:
       image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     needs: build
     steps:
 
