@@ -170,7 +170,7 @@ impl Contract {
             .get_or_insert_with(StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
-        standard_json_contract.hash = Some(self.build.bytecode_hash);
+        standard_json_contract.hash = Some(hex::encode(self.build.bytecode_hash));
 
         Ok(())
     }

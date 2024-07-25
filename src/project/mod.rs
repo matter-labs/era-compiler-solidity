@@ -470,7 +470,7 @@ impl Project {
                         contract
                             .build
                             .factory_dependencies
-                            .insert(hash, dependency_path);
+                            .insert(hex::encode(hash), dependency_path);
                     }
                 }
                 (path, result)
