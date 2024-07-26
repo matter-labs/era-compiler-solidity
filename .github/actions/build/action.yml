@@ -33,11 +33,11 @@ runs:
         echo "target=--target ${{ inputs.target }}" >> $GITHUB_OUTPUT
 
     - name: Install nightly
-      if: inputs.sanitizer != '' && inputs.target != ''
+      if: inputs.sanitizer != '' || inputs.enable-coverage == 'true'
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        rustup install nightly-${{ inputs.target }}
-        rustup component add rust-src --toolchain nightly-${{ inputs.target }}
+        rustup install nightly
+        rustup component add rust-src --toolchain nightly
 
     - name: Build zksolc
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
