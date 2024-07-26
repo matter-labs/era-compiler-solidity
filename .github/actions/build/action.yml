@@ -9,6 +9,10 @@ inputs:
     description: 'Sanitizer to use for build.'
     required: false
     default: ''
+  enable-coverage:
+    description: 'Enable code coverage.'
+    required: false
+    default: 'true'
   release-suffix:
     description: 'Suffix to use for release name.'
     required: false
@@ -43,6 +47,12 @@ runs:
           NIGHTLY='+nightly -Zbuild-std'
         fi
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
+
+        if [ '${{ inputs.enable-coverage }}' = 'true' ]; then
+          export RUSTFLAGS="${RUSTFLAGS} -C instrument-coverage"
+          NIGHTLY='+nightly'
+        fi
+
         cargo ${NIGHTLY} build ${RELEASE} ${{ steps.build-target.outputs.target }}
         echo "${PWD}/target/${{ inputs.target }}/${{ inputs.build-type }}" >> "${GITHUB_PATH}"
 

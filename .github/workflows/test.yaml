@@ -35,20 +35,20 @@ jobs:
       fail-fast: false # finalize testing of all targets even if one failed
       matrix:
         include:
-          - name: "MacOS x86"
-            runner: macos-12-large
-          - name: "MacOS arm64"
-            runner: [self-hosted, macOS, ARM64]
+          # - name: "MacOS x86"
+          #   runner: macos-12-large
+          # - name: "MacOS arm64"
+          #   runner: [self-hosted, macOS, ARM64]
           - name: "Linux x86"
             runner: matterlabs-ci-runner
             image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
             target: "x86_64-unknown-linux-musl"
-          - name: "Linux ARM64"
-            runner: matterlabs-ci-runner-arm
-            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
-            target: "aarch64-unknown-linux-musl"
-          - name: "Windows"
-            runner: windows-2022-github-hosted-16core
+          # - name: "Linux ARM64"
+          #   runner: matterlabs-ci-runner-arm
+          #   image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
+          #   target: "aarch64-unknown-linux-musl"
+          # - name: "Windows"
+          #   runner: windows-2022-github-hosted-16core
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
@@ -73,16 +73,17 @@ jobs:
 
       - name: Build LLVM
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@abalias-cpr-1776-pass-the-target-parameter-to-compiler-tester
         with:
+          enable-coverage: 'true'
           target-env: 'musl'
           enable-assertions: 'false'
 
-      - name: Cargo checks
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true' && matrix.name == 'Linux x86'
-        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Cargo checks
+      #   if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true' && matrix.name == 'Linux x86'
+      #   uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build zksolc
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'

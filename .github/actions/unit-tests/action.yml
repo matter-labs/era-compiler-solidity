@@ -9,6 +9,10 @@ inputs:
     description: 'Sanitizer to use for test.'
     required: false
     default: ''
+  enable-coverage:
+    description: 'Enable code coverage.'
+    required: false
+    default: 'true'
   results-xml:
     description: 'Output unit tests results XML filename.'
     required: false
@@ -41,13 +45,20 @@ runs:
       env:
         RUSTC_BOOTSTRAP: 1
       run: |
+        TEST_COMMAND="test"
         cargo install cargo2junit
         if [ '${{ inputs.sanitizer }}' != '' ]; then
           export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
           NIGHTLY="+nightly"
         fi
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
-        cargo ${NIGHTLY} test ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
+
+        if [ '${{ inputs.enable-coverage }}' = 'true' ]; then
+          cargo +stable install cargo-llvm-cov
+          TEST_COMMAND="llvm-cov --all-features --workspace --lcov --output-path lcov.info"
+        fi
+
+        cargo ${NIGHTLY} ${TEST_COMMAND} ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
           --format json | tee -a results.json
         if [ $? -eq 0 ]; then
           cargo2junit < results.json > "${{ inputs.results-xml }}"
@@ -55,6 +66,13 @@ runs:
           echo "Unit tests failed"
           exit 1
         fi
+
+    # - name: Upload coverage to Codecov
+    #   uses: codecov/codecov-action@v4
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     files: lcov.info
+    #     slug: ${{ github.repository }}
 
     - name: Upload results Linux
       if: runner.os == 'Linux'
