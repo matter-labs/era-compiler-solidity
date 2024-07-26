@@ -36,8 +36,13 @@ runs:
       if: inputs.sanitizer != '' || inputs.enable-coverage == 'true'
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
-        rustup install nightly
-        rustup component add rust-src --toolchain nightly
+        if [ '${{ inputs.target }}' != '' ]; then
+          NIGHTLY=nightly-${{ inputs.target }}
+        else
+          NIGHTLY=nightly
+        fi
+        rustup install ${NIGHTLY}
+        rustup component add rust-src --toolchain ${NIGHTLY}
 
     - name: Build zksolc
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
