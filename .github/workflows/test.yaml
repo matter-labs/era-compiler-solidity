@@ -53,8 +53,8 @@ jobs:
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
       credentials:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
     name: ${{ matrix.name }}
     steps:
       - name: Checkout source
