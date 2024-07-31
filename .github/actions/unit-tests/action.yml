@@ -32,12 +32,12 @@ runs:
         rustup target add ${{ inputs.target }}
         echo "target=--target ${{ inputs.target }}" >> "${GITHUB_OUTPUT}"
 
-    - name: Install nightly
-      if: inputs.sanitizer != '' && inputs.target != ''
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
-      run: |
-        rustup install nightly-${{ inputs.target }}
-        rustup component add rust-src --toolchain nightly-${{ inputs.target }}
+    # - name: Install nightly
+    #   if: inputs.sanitizer != '' && inputs.target != ''
+    #   shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+    #   run: |
+    #     rustup install nightly-${{ inputs.target }}
+    #     rustup component add rust-src --toolchain nightly-${{ inputs.target }}
 
     - name: Run unit tests
       continue-on-error: true
@@ -54,7 +54,7 @@ runs:
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
 
         if [ '${{ inputs.enable-coverage }}' = 'true' ]; then
-          cargo +stable install cargo-llvm-cov
+          cargo install cargo-llvm-cov
           TEST_COMMAND="llvm-cov --all-features --workspace --lcov --output-path lcov.info"
         fi
 

@@ -73,7 +73,7 @@ jobs:
 
       - name: Build LLVM
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@abalias-cpr-1776-pass-the-target-parameter-to-compiler-tester
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
           enable-coverage: 'true'
           target-env: 'musl'
