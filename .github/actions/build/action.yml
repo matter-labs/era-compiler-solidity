@@ -12,7 +12,7 @@ inputs:
   enable-coverage:
     description: 'Enable code coverage.'
     required: false
-    default: 'true'
+    default: 'false'
   release-suffix:
     description: 'Suffix to use for release name.'
     required: false

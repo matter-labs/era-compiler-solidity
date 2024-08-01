@@ -39,11 +39,15 @@ jobs:
           #   runner: macos-12-large
           # - name: "MacOS arm64"
           #   runner: [self-hosted, macOS, ARM64]
-          - name: "Linux x86"
+          - name: "Linux x86 gnu"
             runner: matterlabs-ci-runner
             image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
-            target: "x86_64-unknown-linux-musl"
-          # - name: "Linux ARM64"
+            enable-coverage: 'true'
+          # - name: "Linux x86 musl"
+          #   runner: matterlabs-ci-runner
+          #   image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
+          #   target: "x86_64-unknown-linux-musl"
+          # - name: "Linux ARM64 musl"
           #   runner: matterlabs-ci-runner-arm
           #   image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
           #   target: "aarch64-unknown-linux-musl"
@@ -75,8 +79,8 @@ jobs:
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          enable-coverage: 'true'
-          target-env: 'musl'
+          enable-coverage: ${{ matrix.enable-coverage || 'false' }}
+          target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
 
       # - name: Cargo checks
