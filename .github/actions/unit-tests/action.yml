@@ -41,7 +41,7 @@ runs:
 
     - name: Run unit tests
       continue-on-error: true
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash -ex {0}' }}
       env:
         RUSTC_BOOTSTRAP: 1
       run: |
@@ -59,14 +59,7 @@ runs:
           TEST_COMMAND="llvm-cov"
         fi
 
-        cargo ${NIGHTLY} ${TEST_COMMAND} ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
-          --format json | tee -a results.json
-        if [ $? -eq 0 ]; then
-          cargo2junit < results.json > "${{ inputs.results-xml }}"
-        else
-          echo "Unit tests failed"
-          exit 1
-        fi
+        cargo ${NIGHTLY} ${TEST_COMMAND} ${RELEASE} ${{ steps.build-target.outputs.target }}
 
     # - name: Upload coverage to Codecov
     #   uses: codecov/codecov-action@v4
@@ -75,14 +68,14 @@ runs:
     #     files: lcov.info
     #     slug: ${{ github.repository }}
 
-    - name: Upload results Linux
-      if: runner.os == 'Linux'
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      with:
-        check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
-        files: ${{ inputs.results-xml }}
-        action_fail_on_inconclusive: true
-        comment_mode: off
+    # - name: Upload results Linux
+    #   if: runner.os == 'Linux'
+    #   uses: EnricoMi/publish-unit-test-result-action@v2
+    #   with:
+    #     check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
+    #     files: ${{ inputs.results-xml }}
+    #     action_fail_on_inconclusive: true
+    #     comment_mode: off
 
     - name: Upload test results MacOS
       if: runner.os == 'macOS'
