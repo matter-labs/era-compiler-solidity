@@ -80,7 +80,11 @@ pub fn run(target: era_compiler_llvm_context::Target) {
 ///
 /// Runs this process recursively to compile a single contract.
 ///
-pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> crate::Result<O>
+pub fn call<I, O>(
+    path: &str,
+    input: I,
+    target: era_compiler_llvm_context::Target,
+) -> crate::Result<O>
 where
     I: serde::Serialize,
     O: serde::de::DeserializeOwned,
@@ -122,7 +126,11 @@ where
             String::from_utf8_lossy(result.stdout.as_slice()),
             String::from_utf8_lossy(result.stderr.as_slice()),
         );
-        return Err(SolcStandardJsonOutputError::new_error(message, None, None));
+        return Err(SolcStandardJsonOutputError::new_error(
+            message,
+            Some(SolcStandardJsonOutputSourceLocation::new(path.to_owned())),
+            None,
+        ));
     }
 
     match era_compiler_common::deserialize_from_slice(result.stdout.as_slice()) {
