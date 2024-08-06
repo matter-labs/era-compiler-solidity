@@ -10,7 +10,7 @@ use crate::yul::lexer::token::Token;
 ///
 /// The string literal lexeme.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct String {
     /// The inner string contents.
     pub inner: std::string::String,

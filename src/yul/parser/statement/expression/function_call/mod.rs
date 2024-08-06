@@ -26,7 +26,7 @@ use self::name::Name;
 ///
 /// The Yul function call subexpression.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FunctionCall {
     /// The location.
     pub location: Location,

@@ -5,7 +5,7 @@
 ///
 /// The token location in the source code file.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, Copy, Eq)]
+#[derive(Debug, Clone, Copy, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Location {
     /// The line number, starting from 1.
     pub line: usize,

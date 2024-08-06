@@ -23,8 +23,6 @@ pub struct Input {
     pub enable_eravm_extensions: bool,
     /// Whether to append the metadata hash.
     pub include_metadata_hash: bool,
-    /// Enables the test bytecode encoding.
-    pub enable_test_encoding: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -44,7 +42,6 @@ impl Input {
         dependency_data: DependencyData,
         enable_eravm_extensions: bool,
         include_metadata_hash: bool,
-        enable_test_encoding: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -55,7 +52,6 @@ impl Input {
             dependency_data,
             enable_eravm_extensions,
             include_metadata_hash,
-            enable_test_encoding,
             optimizer_settings,
             llvm_options,
             output_assembly,

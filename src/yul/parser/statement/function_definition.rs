@@ -26,7 +26,7 @@ use crate::yul::parser::statement::expression::function_call::name::Name as Func
 /// 1. The hoisted declaration
 /// 2. The definition, which now has the access to all function signatures
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FunctionDefinition {
     /// The location.
     pub location: Location,
@@ -258,7 +258,7 @@ where
         )?;
         era_compiler_llvm_context::EraVMFunction::set_attributes(
             context.llvm(),
-            function.borrow().declaration(),
+            function.borrow().declaration().value,
             self.attributes
                 .clone()
                 .into_iter()

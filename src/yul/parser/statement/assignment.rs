@@ -20,7 +20,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul assignment expression statement.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Assignment {
     /// The location.
     pub location: Location,

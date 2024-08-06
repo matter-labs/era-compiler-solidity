@@ -16,7 +16,7 @@ use crate::yul::parser::statement::expression::Expression;
 ///
 /// The Yul if-conditional statement.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct IfConditional {
     /// The location.
     pub location: Location,

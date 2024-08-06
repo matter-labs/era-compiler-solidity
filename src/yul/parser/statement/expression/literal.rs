@@ -21,7 +21,7 @@ use num::Zero;
 ///
 /// Represents a literal in YUL without differentiating its type.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Literal {
     /// The location.
     pub location: Location,

@@ -14,7 +14,7 @@ use self::name::Name;
 ///
 /// The EVM instruction.
 ///
-#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Instruction {
     /// The opcode or tag identifier.
     pub name: Name,

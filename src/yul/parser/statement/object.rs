@@ -20,7 +20,7 @@ use crate::yul::parser::statement::code::Code;
 ///
 /// The upper-level YUL object, representing the deploy code.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Object {
     /// The location.
     pub location: Location,

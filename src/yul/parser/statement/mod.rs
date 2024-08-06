@@ -37,7 +37,7 @@ use self::variable_declaration::VariableDeclaration;
 ///
 /// The Yul block statement.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Statement {
     /// The object element.
     Object(Object),

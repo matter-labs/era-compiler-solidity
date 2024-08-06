@@ -14,7 +14,7 @@ use crate::yul::parser::error::Error as ParserError;
 ///
 /// The type is not currently in use, so all values have the `uint256` type by default.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Type {
     /// The `bool` type.
     Bool,

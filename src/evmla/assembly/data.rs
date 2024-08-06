@@ -9,7 +9,7 @@ use crate::evmla::assembly::Assembly;
 ///
 /// The inner JSON legacy assembly code element.
 ///
-#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
 pub enum Data {
     /// The assembly code wrapper.

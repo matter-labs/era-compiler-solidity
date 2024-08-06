@@ -5,7 +5,7 @@
 ///
 /// The EVM instruction name.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Name {
     /// The eponymous EVM instruction.
     PUSH,

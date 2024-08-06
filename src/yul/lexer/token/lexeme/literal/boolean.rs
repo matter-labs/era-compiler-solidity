@@ -7,7 +7,7 @@ use crate::yul::lexer::token::lexeme::keyword::Keyword;
 ///
 /// The boolean literal lexeme.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Boolean {
     /// Created from the `false` keyword.
     False,

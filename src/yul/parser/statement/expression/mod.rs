@@ -24,7 +24,7 @@ use self::literal::Literal;
 ///
 /// The Yul expression statement.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Expression {
     /// The function call subexpression.
     FunctionCall(FunctionCall),
