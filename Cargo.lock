@@ -284,7 +284,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#7be4f6d18fe4369a98c81fe4d0f9c95fa606729b"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#f9f499e1608e6df975a845e7edb810d2ad3eaab7"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1610,8 +1610,8 @@ checksum = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde"
 
 [[package]]
 name = "zkevm_opcode_defs"
-version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#28d2edabf902ea9b08f6a26a4506831fd89346b9"
+version = "0.150.0"
+source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#0d8b81f6339f0f4ccd8f0562aab0183804ca18e1"
 dependencies = [
  "bitflags 2.6.0",
  "blake2",
