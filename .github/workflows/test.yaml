@@ -39,13 +39,21 @@ jobs:
             runner: macos-12-large
           - name: "MacOS arm64"
             runner: [self-hosted, macOS, ARM64]
-          - name: "Linux x86"
+          - name: "Linux x86 gnu"
             runner: matterlabs-ci-runner
-            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
-            target: "x86_64-unknown-linux-musl"
-          - name: "Linux ARM64"
+            image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+            target: "x86_64-unknown-linux-gnu"
+          - name: "Linux ARM64 gnu"
             runner: matterlabs-ci-runner-arm
-            image: matterlabs/llvm_runner:ubuntu22-llvm17-latest
+            image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+            target: "aarch64-unknown-linux-gnu"
+          - name: "Linux x86 musl"
+            runner: matterlabs-ci-runner
+            image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+            target: "x86_64-unknown-linux-musl"
+          - name: "Linux ARM64 musl"
+            runner: matterlabs-ci-runner-arm
+            image: ghcr.io/matter-labs/zksync-llvm-runner:latest
             target: "aarch64-unknown-linux-musl"
           - name: "Windows"
             runner: windows-2022-github-hosted-16core
@@ -75,14 +83,8 @@ jobs:
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          target-env: 'musl'
+          target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
-
-      - name: Cargo checks
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true' && matrix.name == 'Linux x86'
-        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build zksolc
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
@@ -104,3 +106,9 @@ jobs:
         with:
           use-prebuilt-zksolc: ${{ steps.changed-files-yaml.outputs.cli_tests_only_changed }}
           zksolc-version: ${{ github.event.inputs.zksolc-version }}
+
+      - name: Cargo checks
+        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true' && matrix.name == 'Linux x86 gnu'
+        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
