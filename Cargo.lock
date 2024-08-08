@@ -696,7 +696,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#d165991787fe71259076aeabe25019f2e94c2a4b"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#53ff49c016baaa75caded057f1d533995fce5ae0"
 dependencies = [
  "anyhow",
  "cc",
