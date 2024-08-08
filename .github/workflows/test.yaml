@@ -29,6 +29,26 @@ jobs:
     uses: matter-labs/era-compiler-ci/.github/workflows/secrets-scanner.yaml@v1
     secrets: inherit
 
+  # Check for cargo issues
+  cargo-checks:
+    runs-on: matterlabs-ci-runner
+    container:
+      image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build LLVM
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        with:
+          target-env: 'gnu'
+          enable-assertions: 'false'
+
+      - name: Cargo checks
+        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   # Build and run unit and CLI tests
   build-and-test:
     strategy:
@@ -43,6 +63,7 @@ jobs:
             runner: matterlabs-ci-runner
             image: ghcr.io/matter-labs/zksync-llvm-runner:latest
             target: "x86_64-unknown-linux-gnu"
+            enable-coverage: 'true' # enable coverage on Linux GNU
           - name: "Linux ARM64 gnu"
             runner: matterlabs-ci-runner-arm
             image: ghcr.io/matter-labs/zksync-llvm-runner:latest
@@ -85,12 +106,14 @@ jobs:
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
+          enable-coverage: ${{ matrix.enable-coverage || 'false' }}
 
       - name: Build zksolc
         if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true'
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target || '' }}
+          enable-coverage: ${{ matrix.enable-coverage || 'false' }}
 
       - name: Install solc compiler
         uses: ./.github/actions/install-solc
@@ -100,15 +123,11 @@ jobs:
         uses: ./.github/actions/unit-tests
         with:
           target: ${{ matrix.target || '' }}
+          enable-coverage: ${{ matrix.enable-coverage || 'false' }}
+          coverage-token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run CLI tests
         uses: ./.github/actions/cli-tests
         with:
           use-prebuilt-zksolc: ${{ steps.changed-files-yaml.outputs.cli_tests_only_changed }}
           zksolc-version: ${{ github.event.inputs.zksolc-version }}
-
-      - name: Cargo checks
-        if: steps.changed-files-yaml.outputs.cli_tests_only_changed != 'true' && matrix.name == 'Linux x86 gnu'
-        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}

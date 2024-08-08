@@ -17,6 +17,14 @@ inputs:
     description: 'Type of build: release or debug.'
     required: false
     default: 'release'
+  enable-coverage:
+    description: 'Enable code coverage.'
+    required: false
+    default: 'false'
+  coverage-token:
+    description: 'Codecov token.'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -37,11 +45,19 @@ runs:
       run: |
         cargo install cargo2junit
         if [ '${{ inputs.sanitizer }}' != '' ]; then
-          export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
+          rustup component add rust-src --toolchain "$(rustc --version | cut -d ' ' -f2)-${TARGET}"
+          export RUSTFLAGS="${RUSTFLAGS} -Z sanitizer=${{ inputs.sanitizer }}"
         fi
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
 
-        cargo test ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
+        TEST_COMMAND="test"
+        if [ '${{ inputs.enable-coverage }}' = 'true' ]; then
+          cargo install cargo-llvm-cov
+          export LLVM_COV=$(which llvm-cov)
+          export LLVM_PROFDATA=$(which llvm-profdata)
+          TEST_COMMAND="llvm-cov --all-features --workspace --lcov --output-path lcov.info"
+        fi
+        cargo ${TEST_COMMAND} ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
           --format json | tee -a results.json
         if [ $? -eq 0 ]; then
           cargo2junit < results.json > "${{ inputs.results-xml }}"
@@ -76,3 +92,11 @@ runs:
         files: ${{ inputs.results-xml }}
         action_fail_on_inconclusive: true
         comment_mode: off
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: inputs.enable-coverage == 'true'
+      with:
+        token: ${{ inputs.coverage-token }}
+        files: lcov.info
+        slug: ${{ github.repository }}
