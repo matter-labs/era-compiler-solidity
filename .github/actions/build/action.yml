@@ -41,7 +41,7 @@ runs:
       run: |
         if [ '${{ inputs.sanitizer }}' != '' ]; then
           rustup component add rust-src --toolchain "$(rustc --version | cut -d ' ' -f2)-${TARGET}"
-          export RUSTFLAGS="${RUSTFLAGS} -Z sanitizer=${{ inputs.sanitizer }}"
+          export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
           BUILD_STD_LIB='-Zbuild-std'
         fi
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
