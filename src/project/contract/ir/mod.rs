@@ -11,6 +11,7 @@ use std::collections::HashSet;
 
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
 use crate::yul::parser::statement::object::Object;
 
 use self::eravm_assembly::EraVMAssembly;
@@ -37,7 +38,7 @@ impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_yul(object: Object) -> Self {
+    pub fn new_yul(object: Object<LLVMDialect>) -> Self {
         Self::Yul(Yul::new(object))
     }
 
