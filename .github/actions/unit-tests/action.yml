@@ -17,6 +17,7 @@ inputs:
     description: 'Type of build: release or debug.'
     required: false
     default: 'release'
+
 runs:
   using: "composite"
   steps:
@@ -28,26 +29,19 @@ runs:
         rustup target add ${{ inputs.target }}
         echo "target=--target ${{ inputs.target }}" >> "${GITHUB_OUTPUT}"
 
-    - name: Install nightly
-      if: inputs.sanitizer != '' && inputs.target != ''
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
-      run: |
-        rustup install nightly-${{ inputs.target }}
-        rustup component add rust-src --toolchain nightly-${{ inputs.target }}
-
     - name: Run unit tests
       continue-on-error: true
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash -ex {0}' }}
       env:
         RUSTC_BOOTSTRAP: 1
       run: |
         cargo install cargo2junit
         if [ '${{ inputs.sanitizer }}' != '' ]; then
           export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
-          NIGHTLY="+nightly"
         fi
         [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
-        cargo ${NIGHTLY} test ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
+
+        cargo test ${RELEASE} ${{ steps.build-target.outputs.target }} -- -Z unstable-options \
           --format json | tee -a results.json
         if [ $? -eq 0 ]; then
           cargo2junit < results.json > "${{ inputs.results-xml }}"

@@ -6,7 +6,7 @@ describe("Set of --eravm-assembly tests", () => {
 
   //id1745
   describe(`Run ${zksolcCommand} with --eravm-assembly by default`, () => {
-    const args = [`${paths.pathToBasicEraVMAssemblyContract}`, `--eravm-assembly`];
+    const args = [`${paths.pathToBasicEraVMAssemblyContract}`, `--eravm-assembly`, `--bin`];
     const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 0", () => {
@@ -14,8 +14,7 @@ describe("Set of --eravm-assembly tests", () => {
     });
 
     it("--eravm-assembly output is presented", () => {
-        expect(result.output).toMatch(/(Compiler run successful)/i);
-        expect(result.output).toMatch(/(No output requested)/i);
+        expect(result.output).toMatch(/(bytecode)/i);
     });
   });
 
@@ -35,7 +34,7 @@ describe("Set of --eravm-assembly tests", () => {
 
   //id1823
   xdescribe(`Run ${zksolcCommand} with incompatible input format`, () => {
-    const args = [`${paths.pathToBasicSolContract}`, `--eravm-assembly`];
+    const args = [`${paths.pathToBasicSolContract}`, `--eravm-assembly`, `--bin`];
     const result = executeCommand(zksolcCommand, args);
 
     it("Valid command exit code = 1", () => {
