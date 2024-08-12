@@ -28,11 +28,17 @@ pub enum Type {
 
 impl Default for Type {
     fn default() -> Self {
-        Self::UInt(era_compiler_common::BIT_LENGTH_FIELD)
+        Self::UInt(Self::DEFAULT_BIT_LENGTH)
     }
 }
 
 impl Type {
+    /// Bit length of a default integer type.
+    /// Mirrors the `BIT_LENGTH_FIELD` from `era_compiler_common` crate.
+    /// In future, if more dialects are supported, this should be moved to the
+    /// `Dialect` trait.
+    const DEFAULT_BIT_LENGTH: usize = 256;
+
     ///
     /// The element parser.
     ///
