@@ -75,6 +75,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
             serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
         }
     }
+    unsafe { inkwell::support::shutdown_llvm() };
 }
 
 ///
