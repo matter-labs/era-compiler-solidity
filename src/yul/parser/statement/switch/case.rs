@@ -16,7 +16,7 @@ use crate::yul::parser::statement::expression::literal::Literal;
 ///
 /// The Yul switch statement case.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Case {
     /// The location.
     pub location: Location,

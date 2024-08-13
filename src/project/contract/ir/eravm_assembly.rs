@@ -5,7 +5,7 @@
 ///
 /// The contract EraVM assembly source code.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EraVMAssembly {
     /// The EraVM assembly file path.
     pub path: String,

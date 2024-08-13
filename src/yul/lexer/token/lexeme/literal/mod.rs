@@ -13,7 +13,7 @@ use self::string::String;
 ///
 /// The literal lexeme.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Literal {
     /// A boolean literal, like `true`, or `false`.
     Boolean(Boolean),

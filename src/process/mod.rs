@@ -33,9 +33,6 @@ pub fn run(target: era_compiler_llvm_context::Target) {
                 std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .expect("Stdin reading error");
-            if input.enable_test_encoding {
-                zkevm_assembly::set_encoding_mode(zkevm_assembly::RunningVmEncodingMode::Testing);
-            }
 
             let contract = input.contract.expect("Always exists");
             let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
@@ -78,12 +75,17 @@ pub fn run(target: era_compiler_llvm_context::Target) {
             serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
         }
     }
+    unsafe { inkwell::support::shutdown_llvm() };
 }
 
 ///
 /// Runs this process recursively to compile a single contract.
 ///
-pub fn call<I, O>(input: I, target: era_compiler_llvm_context::Target) -> crate::Result<O>
+pub fn call<I, O>(
+    path: &str,
+    input: I,
+    target: era_compiler_llvm_context::Target,
+) -> crate::Result<O>
 where
     I: serde::Serialize,
     O: serde::de::DeserializeOwned,
@@ -96,6 +98,7 @@ where
     let mut command = Command::new(executable.as_path());
     command.stdin(std::process::Stdio::piped());
     command.stdout(std::process::Stdio::piped());
+    command.stderr(std::process::Stdio::piped());
     command.arg("--recursive-process");
     command.arg("--target");
     command.arg(target.to_string());
@@ -124,7 +127,11 @@ where
             String::from_utf8_lossy(result.stdout.as_slice()),
             String::from_utf8_lossy(result.stderr.as_slice()),
         );
-        return Err(SolcStandardJsonOutputError::new_error(message, None, None));
+        return Err(SolcStandardJsonOutputError::new_error(
+            message,
+            Some(SolcStandardJsonOutputSourceLocation::new(path.to_owned())),
+            None,
+        ));
     }
 
     match era_compiler_common::deserialize_from_slice(result.stdout.as_slice()) {

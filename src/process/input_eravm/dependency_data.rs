@@ -48,7 +48,7 @@ impl era_compiler_llvm_context::Dependency for DependencyData {
             .get(path.as_str())
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("dependency `{path}` not found in the project"))?;
-        Ok(contract.build.bytecode_hash)
+        Ok(hex::encode(contract.build.bytecode_hash))
     }
 
     fn resolve_path(&self, identifier: &str) -> anyhow::Result<String> {

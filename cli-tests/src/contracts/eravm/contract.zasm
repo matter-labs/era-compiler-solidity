@@ -6,16 +6,23 @@ __entry:
         sub.s!  0, r2, r1
         jump.eq @.BB0_2
         add     32, r0, r1
-        st.1    r0, r1
-        st.1    r1, r0
-        add     @CPI0_1[0], r0, r1
-        ret.ok.to_label r1, @DEFAULT_FAR_RETURN
+        stm.h   r0, r1
+        stm.h   r1, r0
+        add     code[@CPI0_1], r0, r1
+        retl    r1, @DEFAULT_FAR_RETURN
 .BB0_2:
         add     42, r0, r1
-        st.1    r0, r1
-        add     @CPI0_0[0], r0, r1
-        ret.ok.to_label r1, @DEFAULT_FAR_RETURN
+        stm.h   r0, r1
+        add     code[@CPI0_0], r0, r1
+        retl    r1, @DEFAULT_FAR_RETURN
 .func_end0:
+
+DEFAULT_UNWIND:
+        pncl    @DEFAULT_UNWIND
+DEFAULT_FAR_RETURN:
+        retl    r1, @DEFAULT_FAR_RETURN
+DEFAULT_FAR_REVERT:
+        revl    r1, @DEFAULT_FAR_REVERT
 
         .note.GNU-stack
         .rodata
