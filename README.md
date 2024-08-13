@@ -121,7 +121,7 @@ We recommend at least 4 GB of RAM available for the build process.
 </details>
 
 <details>
-<summary>6. Build ZKsync LLVM framework.</summary>
+<summary>6. Build the ZKsync LLVM framework.</summary>
 
    * Clone and build the ZKsync LLVM framework using the `zksync-llvm` tool:
       ```shell
@@ -148,19 +148,19 @@ We recommend at least 4 GB of RAM available for the build process.
 <details>
 <summary>7. Build the Solidity compiler executable.</summary>
 
-   * On MacOS, Windows or Linux for personal use:
-      ```shell
-      cargo build --release
-      ```
 
-   * On Linux for distribution:
+```shell
+cargo build --release
+```
+
+   * On Linux with musl:
 
       For `x86_64`:
       ```shell
       cargo build --release --target x86_64-unknown-linux-musl
       ```
 
-      For `arm64(aarch64)`:
+      For `ARM64 (aarch64)`:
       ```shell
       cargo build --release --target aarch64-unknown-linux-musl
       ```
