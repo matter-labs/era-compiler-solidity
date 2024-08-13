@@ -132,9 +132,9 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
+checksum = "51e852e6dc9a5bed1fae92dd2375037bf2b768725bf3be87811edee3249d09ad"
 dependencies = [
  "libc",
 ]
@@ -284,7 +284,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1735-migrate-to-the-new-assembler#f9f499e1608e6df975a845e7edb810d2ad3eaab7"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#93c56db7d429a66b6535d6ce276e8bc0e4d7bfdf"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -564,7 +564,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#73190465ce709923f0fc968cbbc67c3e5774ecbd"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#45cd0b68b94e8eee7348f261884a7490bd3af097"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -579,7 +579,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1735-migrate-to-the-new-assembler#73190465ce709923f0fc968cbbc67c3e5774ecbd"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#45cd0b68b94e8eee7348f261884a7490bd3af097"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -655,7 +655,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1735-migrate-to-the-new-assembler#a0d01b0895e7961dd7a0a230f892ed0b95cce994"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#475d1dcfceeef4b14e37c8f36b5fde5a0c65e77e"
 dependencies = [
  "anyhow",
  "cc",
@@ -1165,18 +1165,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.206"
+version = "1.0.207"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b3e4cd94123dd520a128bcd11e34d9e9e423e7e3e50425cb1b4b1e3549d0284"
+checksum = "5665e14a49a4ea1b91029ba7d3bca9f299e1f7cfa194388ccc20f14743e784f2"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.206"
+version = "1.0.207"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fabfb6138d2383ea8208cf98ccf69cdfb1aff4088460681d84189aa259762f97"
+checksum = "6aea2634c86b0e8ef2cfdc0c340baede54ec27b1e46febd7f80dffb2aa44a00e"
 dependencies = [
  "proc-macro2",
  "quote",

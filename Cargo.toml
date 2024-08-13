@@ -37,11 +37,11 @@ num = "0.4"
 sha3 = "0.10"
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-1735-migrate-to-the-new-assembler" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"
-branch = "az-cpr-1735-migrate-to-the-new-assembler"
+branch = "llvm-17"
 default-features = false
 features = ["llvm17-0", "no-libffi-linking", "target-eravm", "target-evm"]
 
