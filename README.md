@@ -12,9 +12,10 @@ This repository contains the ZKsync Solidity compiler.
 ## System Requirements
 
 Supported platforms:
-- **Linux: x86_64**
-   * MUSL-based static builds do not depend on system libraries and can be run on any recent Linux distribution.
-- **MacOS 11+: x86_64, arm64 (Apple silicon)**
+- **Linux: x86_64, ARM64**
+   * Users are encouraged to adopt GNU libc builds, which offer the same compatibility and are substantially faster.
+   * [musl](https://musl.libc.org)-based builds are deprecated, but still supported to preserve tooling compatibility. 
+- **MacOS 11+: x86_64, ARM64 (Apple silicon)**
 - **Windows: x86_64**
    * Only Windows 10 has been tested so far, but other versions should be OK as well.
 
@@ -71,7 +72,7 @@ We recommend at least 4 GB of RAM available for the build process.
 
       > Currently we are not pinned to any specific version of Rust, so just install the latest stable build for your   platform.
 
-   * If you would like to build statically-linked binaries on Linux, install the `musl` target for your platform:
+   * If you would like to use `musl` binaries on Linux, install the target for your platform:
 
       For `x86_64`:
       ```shell
@@ -120,7 +121,7 @@ We recommend at least 4 GB of RAM available for the build process.
 </details>
 
 <details>
-<summary>6. Build ZKsync LLVM framework.</summary>
+<summary>6. Build the ZKsync LLVM framework.</summary>
 
    * Clone and build the ZKsync LLVM framework using the `zksync-llvm` tool:
       ```shell
@@ -129,7 +130,7 @@ We recommend at least 4 GB of RAM available for the build process.
       ```
 
       The build artifacts will end up in the `./target-llvm/target-final/` directory.
-      You may point your `LLVM_SYS_170_PREFIX` to that directory to use this build as a compiler dependency.
+      You may point your `LLVM_SYS_170_PREFIX` to the absolute path to that directory to use this build as a compiler dependency.
       If built with the `--enable-tests` option, test tools will be in the `./target-llvm/build-final/` directory, along   with copies of the build artifacts. For all supported build options, run `zksync-llvm build --help`.
 
       > If you need a specific branch of ZKsync LLVM framework, change it in the `LLVM.lock` file at the root of the repository.
@@ -147,19 +148,19 @@ We recommend at least 4 GB of RAM available for the build process.
 <details>
 <summary>7. Build the Solidity compiler executable.</summary>
 
-   * On MacOS, Windows or Linux for personal use:
-      ```shell
-      cargo build --release
-      ```
 
-   * On Linux for distribution:
+```shell
+cargo build --release
+```
+
+   * On Linux with musl:
 
       For `x86_64`:
       ```shell
       cargo build --release --target x86_64-unknown-linux-musl
       ```
 
-      For `arm64(aarch64)`:
+      For `ARM64 (aarch64)`:
       ```shell
       cargo build --release --target aarch64-unknown-linux-musl
       ```
