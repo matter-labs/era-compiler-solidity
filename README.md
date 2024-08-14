@@ -13,8 +13,7 @@ This repository contains the ZKsync Solidity compiler.
 
 Supported platforms:
 - **Linux: x86_64, ARM64**
-   * [MUSL](https://musl.libc.org)-based static builds are currently supported, but may be deprecated in the future; they do not depend on system libraries and can be run on any recent Linux distribution.
-   * Conventional builds with GNU libraries are substantially faster but may have stricter compatibility requirements.
+   * [musl](https://musl.libc.org)-based builds are currently supported, but may be deprecated in the future. Users are encouraged to switch to GNU libc builds which offer the same compatibility, are substantially faster, and are recommended for future use.
 - **MacOS 11+: x86_64, ARM64 (Apple silicon)**
 - **Windows: x86_64**
    * Only Windows 10 has been tested so far, but other versions should be OK as well.
