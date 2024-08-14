@@ -72,7 +72,7 @@ We recommend at least 4 GB of RAM available for the build process.
 
       > Currently we are not pinned to any specific version of Rust, so just install the latest stable build for your   platform.
 
-   * If you would like to use statically-linked `musl` binaries on Linux, install the target for your platform:
+   * If you would like to use `musl` binaries on Linux, install the target for your platform:
 
       For `x86_64`:
       ```shell
