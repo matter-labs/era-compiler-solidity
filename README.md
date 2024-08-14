@@ -130,7 +130,7 @@ We recommend at least 4 GB of RAM available for the build process.
       ```
 
       The build artifacts will end up in the `./target-llvm/target-final/` directory.
-      You may point your `LLVM_SYS_170_PREFIX` to the absolute path to that directory to use this build as a compiler dependency.
+      You may set the `LLVM_SYS_170_PREFIX` shell variable to the absolute path to that directory to use this build as a compiler dependency.
       If built with the `--enable-tests` option, test tools will be in the `./target-llvm/build-final/` directory, along   with copies of the build artifacts. For all supported build options, run `zksync-llvm build --help`.
 
       > If you need a specific branch of ZKsync LLVM framework, change it in the `LLVM.lock` file at the root of the repository.
@@ -171,7 +171,7 @@ cargo build --release
 
 ## Usage
 
-Check `./target/*/zksolc --help` for the compiler usage.
+Check `./target/*/zksolc --help` for compiler usage.
 
 The `solc` compiler must be available in `$PATH`, or its path must be passed explicitly with the `--solc` option.
 
