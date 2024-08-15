@@ -43,7 +43,7 @@ pub fn build_solidity(
     check_dependencies(Some(solc_version));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let solc_compiler = SolcCompiler::new(
@@ -132,7 +132,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     check_dependencies(Some(solc_version));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let solc_compiler = SolcCompiler::new(
@@ -203,7 +203,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -252,7 +252,7 @@ pub fn build_yul_standard_json(
     check_dependencies(solc_compiler.map(|compiler| &compiler.version.default));
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -305,7 +305,7 @@ pub fn build_llvm_ir_standard_json(
     check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
@@ -342,7 +342,7 @@ pub fn build_eravm_assembly_standard_json(
     check_dependencies(None);
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(era_compiler_llvm_context::Target::EraVM);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
     let _ = crate::process::EXECUTABLE.set(PathBuf::from(crate::r#const::DEFAULT_EXECUTABLE_NAME));
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");

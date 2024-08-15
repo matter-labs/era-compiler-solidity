@@ -273,28 +273,28 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9b0143d1687b4b259e620aa292fa9dbb389dfb4d"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=az-cpr-1794-split-target-parameter-of-compiler-tester#96935671d9f82b61c47a725c9c5fb00fb984ea74"
 dependencies = [
  "anyhow",
+ "hex",
  "serde",
  "serde_json",
  "serde_stacker",
+ "sha3",
 ]
 
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#93c56db7d429a66b6535d6ce276e8bc0e4d7bfdf"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1794-split-target-parameter-of-compiler-tester#7066216eebc93002a85d0cac86fd80405d9b1571"
 dependencies = [
  "anyhow",
  "era-compiler-common",
- "hex",
  "inkwell",
  "itertools",
  "num",
  "semver",
  "serde",
- "sha3",
  "zkevm_opcode_defs",
 ]
 

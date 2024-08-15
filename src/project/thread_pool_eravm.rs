@@ -140,11 +140,8 @@ impl ThreadPool {
         let results = self.results.clone();
         let pool = self.to_owned();
         self.inner.evaluate(move || {
-            let result: crate::Result<EraVMOutput> = crate::process::call(
-                path.as_str(),
-                input,
-                era_compiler_llvm_context::Target::EraVM,
-            );
+            let result: crate::Result<EraVMOutput> =
+                crate::process::call(path.as_str(), input, era_compiler_common::Target::EraVM);
             results
                 .write()
                 .expect("Sync")

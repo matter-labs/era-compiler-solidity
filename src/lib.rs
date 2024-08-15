@@ -283,7 +283,7 @@ pub fn standard_output_eravm(
             optimizer_settings.is_fallback_to_size_enabled(),
         ),
         Some(SolcStandardJsonInputSettingsMetadata::new(
-            era_compiler_llvm_context::EraVMMetadataHash::None,
+            era_compiler_common::HashType::None,
             use_literal_content,
         )),
         force_evmla,
@@ -368,7 +368,7 @@ pub fn standard_output_evm(
             optimizer_settings.is_fallback_to_size_enabled(),
         ),
         Some(SolcStandardJsonInputSettingsMetadata::new(
-            era_compiler_llvm_context::EraVMMetadataHash::None,
+            era_compiler_common::HashType::None,
             use_literal_content,
         )),
         force_evmla,
@@ -451,9 +451,7 @@ pub fn standard_json_eravm(
         .unwrap_or_default()
         || detect_missing_libraries;
     let include_metadata_hash = match solc_input.settings.metadata {
-        Some(ref metadata) => {
-            metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
-        }
+        Some(ref metadata) => metadata.bytecode_hash != Some(era_compiler_common::HashType::None),
         None => true,
     };
     let output_assembly = solc_input
@@ -613,9 +611,7 @@ pub fn standard_json_evm(
     let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
 
     let include_metadata_hash = match solc_input.settings.metadata {
-        Some(ref metadata) => {
-            metadata.bytecode_hash != Some(era_compiler_llvm_context::EraVMMetadataHash::None)
-        }
+        Some(ref metadata) => metadata.bytecode_hash != Some(era_compiler_common::HashType::None),
         None => true,
     };
 

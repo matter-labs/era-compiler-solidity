@@ -341,7 +341,7 @@ impl Arguments {
         }
 
         if self.eravm_assembly {
-            if Some(era_compiler_llvm_context::Target::EVM.to_string()) == self.target {
+            if Some(era_compiler_common::Target::EVM.to_string()) == self.target {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EraVM assembly cannot be compiled to EVM bytecode.",
                     None,

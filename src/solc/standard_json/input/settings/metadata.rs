@@ -14,17 +14,14 @@ pub struct Metadata {
 
     /// The bytecode hash mode.
     #[serde(skip_serializing)]
-    pub bytecode_hash: Option<era_compiler_llvm_context::EraVMMetadataHash>,
+    pub bytecode_hash: Option<era_compiler_common::HashType>,
 }
 
 impl Metadata {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(
-        bytecode_hash: era_compiler_llvm_context::EraVMMetadataHash,
-        use_literal_content: bool,
-    ) -> Self {
+    pub fn new(bytecode_hash: era_compiler_common::HashType, use_literal_content: bool) -> Self {
         Self {
             bytecode_hash: Some(bytecode_hash),
             use_literal_content: Some(use_literal_content),
