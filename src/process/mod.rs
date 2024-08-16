@@ -26,9 +26,9 @@ pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.
 ///
-pub fn run(target: era_compiler_llvm_context::Target) {
+pub fn run(target: era_compiler_common::Target) {
     match target {
-        era_compiler_llvm_context::Target::EraVM => {
+        era_compiler_common::Target::EraVM => {
             let input_json =
                 std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
@@ -52,7 +52,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
                 });
             serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
         }
-        era_compiler_llvm_context::Target::EVM => {
+        era_compiler_common::Target::EVM => {
             let input_json =
                 std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
             let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
@@ -81,11 +81,7 @@ pub fn run(target: era_compiler_llvm_context::Target) {
 ///
 /// Runs this process recursively to compile a single contract.
 ///
-pub fn call<I, O>(
-    path: &str,
-    input: I,
-    target: era_compiler_llvm_context::Target,
-) -> crate::Result<O>
+pub fn call<I, O>(path: &str, input: I, target: era_compiler_common::Target) -> crate::Result<O>
 where
     I: serde::Serialize,
     O: serde::de::DeserializeOwned,

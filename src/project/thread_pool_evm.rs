@@ -134,7 +134,7 @@ impl ThreadPool {
         let pool = self.to_owned();
         self.inner.evaluate(move || {
             let result: crate::Result<EVMOutput> =
-                crate::process::call(path.as_str(), input, era_compiler_llvm_context::Target::EVM);
+                crate::process::call(path.as_str(), input, era_compiler_common::Target::EVM);
             results
                 .write()
                 .expect("Sync")

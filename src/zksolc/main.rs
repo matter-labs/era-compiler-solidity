@@ -75,8 +75,8 @@ fn main_inner(
     }
 
     let target = match arguments.target {
-        Some(ref target) => era_compiler_llvm_context::Target::from_str(target.as_str())?,
-        None => era_compiler_llvm_context::Target::EraVM,
+        Some(ref target) => era_compiler_common::Target::from_str(target.as_str())?,
+        None => era_compiler_common::Target::EraVM,
     };
 
     let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
@@ -95,7 +95,7 @@ fn main_inner(
         era_compiler_solidity::run_recursive(target);
         return Ok(());
     }
-    if let era_compiler_llvm_context::Target::EVM = target {
+    if let era_compiler_common::Target::EVM = target {
         anyhow::bail!("The EVM target is under development and not available yet.")
     }
 
@@ -110,9 +110,8 @@ fn main_inner(
 
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
-            let metadata =
-                era_compiler_llvm_context::EraVMMetadataHash::from_str(metadata_hash.as_str())?;
-            metadata != era_compiler_llvm_context::EraVMMetadataHash::None
+            let metadata = era_compiler_common::HashType::from_str(metadata_hash.as_str())?;
+            metadata != era_compiler_common::HashType::None
         }
         None => true,
     };
@@ -153,7 +152,7 @@ fn main_inner(
     let enable_eravm_extensions = arguments.enable_eravm_extensions || arguments.system_mode;
 
     match target {
-        era_compiler_llvm_context::Target::EraVM => {
+        era_compiler_common::Target::EraVM => {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
@@ -296,7 +295,7 @@ fn main_inner(
                 )?;
             }
         }
-        era_compiler_llvm_context::Target::EVM => {
+        era_compiler_common::Target::EVM => {
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
