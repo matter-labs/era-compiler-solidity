@@ -101,21 +101,6 @@ fn main_inner(
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
-    let evm_version = match arguments.evm_version {
-        Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
-            evm_version.as_str(),
-        )?),
-        None => None,
-    };
-
-    let include_metadata_hash = match arguments.metadata_hash {
-        Some(metadata_hash) => {
-            let metadata = era_compiler_common::HashType::from_str(metadata_hash.as_str())?;
-            metadata != era_compiler_common::HashType::None
-        }
-        None => true,
-    };
-
     let mut optimizer_settings = match arguments.optimization {
         Some(mode) => era_compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
         None => era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -160,7 +145,7 @@ fn main_inner(
                     arguments.solc,
                     messages,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -171,7 +156,7 @@ fn main_inner(
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -182,7 +167,7 @@ fn main_inner(
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     llvm_options,
                     arguments.output_assembly,
                     arguments.threads,
@@ -220,11 +205,11 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -253,11 +238,11 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -302,7 +287,7 @@ fn main_inner(
                     arguments.libraries,
                     arguments.solc,
                     messages,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.threads,
@@ -312,7 +297,7 @@ fn main_inner(
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.threads,
@@ -348,10 +333,10 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -377,10 +362,10 @@ fn main_inner(
                     arguments.libraries,
                     &solc,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    include_metadata_hash,
+                    arguments.metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,

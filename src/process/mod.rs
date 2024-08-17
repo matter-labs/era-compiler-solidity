@@ -40,7 +40,7 @@ pub fn run(target: era_compiler_common::Target) {
                 .compile_to_eravm(
                     input.dependency_data,
                     input.enable_eravm_extensions,
-                    input.include_metadata_hash,
+                    input.metadata_hash_type,
                     input.optimizer_settings,
                     input.llvm_options,
                     input.output_assembly,
@@ -63,7 +63,7 @@ pub fn run(target: era_compiler_common::Target) {
             let result = contract
                 .compile_to_evm(
                     input.dependency_data,
-                    input.include_metadata_hash,
+                    input.metadata_hash_type,
                     input.optimizer_settings,
                     input.llvm_options,
                     input.debug_config,

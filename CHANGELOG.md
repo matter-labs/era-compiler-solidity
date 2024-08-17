@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- The support for IPFS metadata hash type
+
 ### Changed
 
 - Migrated to the LLVM-based assembler and linker

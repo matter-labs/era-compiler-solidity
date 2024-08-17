@@ -14,7 +14,6 @@ use std::path::PathBuf;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
-use sha3::Digest;
 
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
@@ -222,8 +221,7 @@ impl Project {
                     Err(error) => return (path, Err(error)),
                 };
 
-                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
-                    sha3::Keccak256::digest(source_code.as_bytes()).into();
+                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 if let Some(debug_config) = debug_config {
                     if let Err(error) =
@@ -245,7 +243,7 @@ impl Project {
                     path.clone(),
                     ContractIR::new_yul(object),
                     serde_json::json!({
-                        "source_hash": hex::encode(hash),
+                        "source_hash": source_hash.to_string(),
                         "solc_version": solc_version,
                     }),
                 );
@@ -306,14 +304,13 @@ impl Project {
                     Err(error) => return (path, Err(error)),
                 };
 
-                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
-                    sha3::Keccak256::digest(source_code.as_bytes()).into();
+                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_llvm_ir(path.clone(), source_code),
                     serde_json::json!({
-                        "source_hash": hex::encode(hash),
+                        "source_hash": source_hash.to_string(),
                     }),
                 );
 
@@ -373,14 +370,13 @@ impl Project {
                     Err(error) => return (path, Err(error)),
                 };
 
-                let hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
-                    sha3::Keccak256::digest(source_code.as_bytes()).into();
+                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let contract = Contract::new(
                     path.clone(),
                     ContractIR::new_eravm_assembly(path.clone(), source_code),
                     serde_json::json!({
-                        "source_hash": hex::encode(hash),
+                        "source_hash": source_hash.to_string(),
                     }),
                 );
 
@@ -415,7 +411,7 @@ impl Project {
         self,
         messages: &mut Vec<SolcStandardJsonOutputError>,
         enable_eravm_extensions: bool,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -433,7 +429,7 @@ impl Project {
             None,
             dependency_data,
             enable_eravm_extensions,
-            include_metadata_hash,
+            metadata_hash_type,
             optimizer_settings,
             llvm_options,
             output_assembly,
@@ -487,7 +483,7 @@ impl Project {
         messages: &mut Vec<SolcStandardJsonOutputError>,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
@@ -500,7 +496,7 @@ impl Project {
         let input_template = EVMProcessInput::new(
             None,
             dependency_data,
-            include_metadata_hash,
+            metadata_hash_type,
             optimizer_settings,
             llvm_options,
             debug_config,

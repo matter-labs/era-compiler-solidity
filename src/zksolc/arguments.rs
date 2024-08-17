@@ -84,10 +84,10 @@ pub struct Arguments {
     #[structopt(long = "solc")]
     pub solc: Option<String>,
 
-    /// The EVM target version to generate IR for.
+    /// The EVM version to generate IR for.
     /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
     #[structopt(long = "evm-version")]
-    pub evm_version: Option<String>,
+    pub evm_version: Option<era_compiler_common::EVMVersion>,
 
     /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
@@ -157,11 +157,11 @@ pub struct Arguments {
     #[structopt(long = "enable-eravm-extensions")]
     pub enable_eravm_extensions: bool,
 
-    /// Set metadata hash mode.
-    /// The only supported value is `none` that disables appending the metadata hash.
-    /// Is enabled by default.
-    #[structopt(long = "metadata-hash")]
-    pub metadata_hash: Option<String>,
+    /// Set the metadata hash type.
+    /// Available types: `none`, `keccak256`, `ipfs`.
+    /// The default is `keccak256`.
+    #[structopt(long = "metadata-hash", default_value = "keccak256")]
+    pub metadata_hash_type: era_compiler_common::HashType,
 
     /// Sets the literal content flag for contract metadata.
     /// If enabled, the metadata will contain the literal content of the source files.
@@ -456,7 +456,7 @@ impl Arguments {
                     None,
                 ));
             }
-            if self.metadata_hash.is_some() {
+            if self.metadata_hash_type != era_compiler_common::HashType::Keccak256 {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "Metadata hash mode must be specified in standard JSON input settings.",
                     None,

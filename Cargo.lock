@@ -31,9 +31,9 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "arrayvec"
-version = "0.7.4"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "autocfg"
@@ -390,7 +390,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#503b2edb28958f6b096427aaabf05cf7994b4cb4"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#46d12b9ac54c6382fae26f4b3fc7f88131ffb41d"
 dependencies = [
  "anyhow",
  "base58",
@@ -405,7 +405,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#b00192e637041b8a27f166568eedd99f258ba01d"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1727-implement-the-ipfs-hash-algorithm#802cf54ee132f1cd43efcd3c24e53e2b9bc5038e"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -438,7 +438,6 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "sha3 0.10.8",
  "structopt",
  "thiserror",
  "which",
@@ -1003,7 +1002,7 @@ version = "3.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "306800abfa29c7f16596b5970a588435e3d5b3149683d00c12b699cc19f895ee"
 dependencies = [
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
  "bitvec",
  "byte-slice-cast",
  "impl-trait-for-tuples",
