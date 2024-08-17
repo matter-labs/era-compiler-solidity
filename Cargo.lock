@@ -390,7 +390,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#8c92a59f925f0b8d83c5f074aa0965aeb58b6ad8"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#503b2edb28958f6b096427aaabf05cf7994b4cb4"
 dependencies = [
  "anyhow",
  "base58",
@@ -405,7 +405,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#149a06491d2ed526e39c659b5c5634b370f28b02"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#b00192e637041b8a27f166568eedd99f258ba01d"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1873,7 +1873,7 @@ checksum = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde"
 [[package]]
 name = "zkevm_opcode_defs"
 version = "0.150.0"
-source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#0d8b81f6339f0f4ccd8f0562aab0183804ca18e1"
+source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#cf5f9c18c580f845b32fc2a4d565a77380fd15bc"
 dependencies = [
  "bitflags 2.6.0",
  "blake2",
