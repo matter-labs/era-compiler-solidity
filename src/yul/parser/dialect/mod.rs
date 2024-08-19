@@ -40,5 +40,5 @@ pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clon
         arguments: &mut Vec<Identifier>,
         location: Location,
         lexer: &mut Lexer,
-    ) -> Option<Error>;
+    ) -> Result<(), Error>;
 }

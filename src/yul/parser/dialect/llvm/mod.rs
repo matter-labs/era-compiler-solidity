@@ -35,21 +35,19 @@ impl Dialect for LLVMDialect {
         arguments: &mut Vec<Identifier>,
         location: Location,
         _lexer: &mut Lexer,
-    ) -> Option<Error> {
+    ) -> Result<(), Error> {
         if identifier
             .inner
             .contains(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
         {
             if arguments.is_empty() {
-                return Some(
-                    ParserError::InvalidNumberOfArguments {
-                        location,
-                        identifier: identifier.inner.clone(),
-                        expected: 1,
-                        found: arguments.len(),
-                    }
-                    .into(),
-                );
+                return Err(ParserError::InvalidNumberOfArguments {
+                    location,
+                    identifier: identifier.inner.clone(),
+                    expected: 1,
+                    found: arguments.len(),
+                }
+                .into());
             }
 
             arguments.remove(0);
@@ -58,16 +56,14 @@ impl Dialect for LLVMDialect {
             era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER,
         ) && !arguments.is_empty()
         {
-            return Some(
-                ParserError::InvalidNumberOfArguments {
-                    location,
-                    identifier: identifier.inner.clone(),
-                    expected: 0,
-                    found: arguments.len(),
-                }
-                .into(),
-            );
+            return Err(ParserError::InvalidNumberOfArguments {
+                location,
+                identifier: identifier.inner.clone(),
+                expected: 0,
+                found: arguments.len(),
+            }
+            .into());
         }
-        None
+        Ok(())
     }
 }
