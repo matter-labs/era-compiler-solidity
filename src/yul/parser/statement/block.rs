@@ -2,146 +2,19 @@
 //! The source code block.
 //!
 
-use std::collections::HashSet;
-
 use era_compiler_llvm_context::IContext;
+use yul_syntax_tools::yul::parser::statement::Statement;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::lexeme::symbol::Symbol;
-use crate::yul::lexer::token::lexeme::Lexeme;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
+use crate::create_wrapper;
 use crate::yul::parser::dialect::llvm::LLVMDialect;
-use crate::yul::parser::dialect::Dialect;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::statement::assignment::Assignment;
-use crate::yul::parser::statement::expression::Expression;
-use crate::yul::parser::statement::Statement;
+use crate::yul::parser::wrapper::Wrap as _;
 
-///
-/// The Yul source code block.
-///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-#[serde(bound = "P: serde::de::DeserializeOwned")]
-pub struct Block<P>
-where
-    P: Dialect,
-{
-    /// The location.
-    pub location: Location,
-    /// The block statements.
-    pub statements: Vec<Statement<P>>,
-}
+create_wrapper!(
+    yul_syntax_tools::yul::parser::statement::block::Block<LLVMDialect>,
+    WrappedBlock
+);
 
-impl<P: Dialect> Block<P> {
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
-
-        let mut statements = Vec::new();
-
-        let location = match token {
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::BracketCurlyLeft),
-                location,
-                ..
-            } => location,
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["{"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        };
-
-        let mut remaining = None;
-
-        loop {
-            match crate::yul::parser::take_or_next(remaining.take(), lexer)? {
-                token @ Token {
-                    lexeme: Lexeme::Keyword(_),
-                    ..
-                } => {
-                    let (statement, next) = Statement::parse(lexer, Some(token))?;
-                    remaining = next;
-                    statements.push(statement);
-                }
-                token @ Token {
-                    lexeme: Lexeme::Literal(_),
-                    ..
-                } => {
-                    statements
-                        .push(Expression::parse(lexer, Some(token)).map(Statement::Expression)?);
-                }
-                token @ Token {
-                    lexeme: Lexeme::Identifier(_),
-                    ..
-                } => match lexer.peek()? {
-                    Token {
-                        lexeme: Lexeme::Symbol(Symbol::Assignment),
-                        ..
-                    } => {
-                        statements.push(
-                            Assignment::parse(lexer, Some(token)).map(Statement::Assignment)?,
-                        );
-                    }
-                    Token {
-                        lexeme: Lexeme::Symbol(Symbol::Comma),
-                        ..
-                    } => {
-                        statements.push(
-                            Assignment::parse(lexer, Some(token)).map(Statement::Assignment)?,
-                        );
-                    }
-                    _ => {
-                        statements.push(
-                            Expression::parse(lexer, Some(token)).map(Statement::Expression)?,
-                        );
-                    }
-                },
-                token @ Token {
-                    lexeme: Lexeme::Symbol(Symbol::BracketCurlyLeft),
-                    ..
-                } => statements.push(Block::parse(lexer, Some(token)).map(Statement::Block)?),
-                Token {
-                    lexeme: Lexeme::Symbol(Symbol::BracketCurlyRight),
-                    ..
-                } => break,
-                token => {
-                    return Err(ParserError::InvalidToken {
-                        location: token.location,
-                        expected: vec!["{keyword}", "{expression}", "{identifier}", "{", "}"],
-                        found: token.lexeme.to_string(),
-                    }
-                    .into());
-                }
-            }
-        }
-
-        Ok(Self {
-            location,
-            statements,
-        })
-    }
-
-    ///
-    /// Get the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = HashSet::new();
-        for statement in self.statements.iter() {
-            libraries.extend(statement.get_missing_libraries());
-        }
-        libraries
-    }
-}
-
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Block<LLVMDialect>
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedBlock
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -149,16 +22,17 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
+        let term = self.0;
         let current_function = context.current_function().borrow().name().to_owned();
         let current_block = context.basic_block();
 
-        let mut functions = Vec::with_capacity(self.statements.len());
-        let mut local_statements = Vec::with_capacity(self.statements.len());
+        let mut functions = Vec::with_capacity(term.statements.len());
+        let mut local_statements = Vec::with_capacity(term.statements.len());
 
-        for statement in self.statements.into_iter() {
+        for statement in term.statements.into_iter() {
             match statement {
-                Statement::FunctionDefinition(mut statement) => {
-                    statement.declare(context)?;
+                Statement::FunctionDefinition(statement) => {
+                    statement.clone().wrap().declare(context)?;
                     functions.push(statement);
                 }
                 statement => local_statements.push(statement),
@@ -166,7 +40,7 @@ where
         }
 
         for function in functions.into_iter() {
-            function.into_llvm(context)?;
+            function.wrap().into_llvm(context)?;
         }
 
         context.set_current_function(current_function.as_str())?;
@@ -178,16 +52,16 @@ where
 
             match statement {
                 Statement::Block(block) => {
-                    block.into_llvm(context)?;
+                    block.wrap().into_llvm(context)?;
                 }
                 Statement::Expression(expression) => {
-                    expression.into_llvm(context)?;
+                    expression.wrap().into_llvm(context)?;
                 }
-                Statement::VariableDeclaration(statement) => statement.into_llvm(context)?,
-                Statement::Assignment(statement) => statement.into_llvm(context)?,
-                Statement::IfConditional(statement) => statement.into_llvm(context)?,
-                Statement::Switch(statement) => statement.into_llvm(context)?,
-                Statement::ForLoop(statement) => statement.into_llvm(context)?,
+                Statement::VariableDeclaration(statement) => statement.wrap().into_llvm(context)?,
+                Statement::Assignment(statement) => statement.wrap().into_llvm(context)?,
+                Statement::IfConditional(statement) => statement.wrap().into_llvm(context)?,
+                Statement::Switch(statement) => statement.wrap().into_llvm(context)?,
+                Statement::ForLoop(statement) => statement.wrap().into_llvm(context)?,
                 Statement::Continue(_location) => {
                     context.build_unconditional_branch(context.r#loop().continue_block)?;
                     break;
@@ -213,7 +87,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block<LLVMDialect>
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedBlock
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -224,13 +98,13 @@ where
         let current_function = context.current_function().borrow().name().to_owned();
         let current_block = context.basic_block();
 
-        let mut functions = Vec::with_capacity(self.statements.len());
-        let mut local_statements = Vec::with_capacity(self.statements.len());
+        let mut functions = Vec::with_capacity(self.0.statements.len());
+        let mut local_statements = Vec::with_capacity(self.0.statements.len());
 
-        for statement in self.statements.into_iter() {
+        for statement in self.0.statements.into_iter() {
             match statement {
-                Statement::FunctionDefinition(mut statement) => {
-                    statement.declare(context)?;
+                Statement::FunctionDefinition(statement) => {
+                    statement.clone().wrap().declare(context)?;
                     functions.push(statement);
                 }
                 statement => local_statements.push(statement),
@@ -238,7 +112,7 @@ where
         }
 
         for function in functions.into_iter() {
-            function.into_llvm(context)?;
+            function.wrap().into_llvm(context)?;
         }
 
         context.set_current_function(current_function.as_str())?;
@@ -250,16 +124,16 @@ where
 
             match statement {
                 Statement::Block(block) => {
-                    block.into_llvm(context)?;
+                    block.wrap().into_llvm(context)?;
                 }
                 Statement::Expression(expression) => {
-                    expression.into_llvm_evm(context)?;
+                    expression.wrap().into_llvm_evm(context)?;
                 }
-                Statement::VariableDeclaration(statement) => statement.into_llvm(context)?,
-                Statement::Assignment(statement) => statement.into_llvm(context)?,
-                Statement::IfConditional(statement) => statement.into_llvm(context)?,
-                Statement::Switch(statement) => statement.into_llvm(context)?,
-                Statement::ForLoop(statement) => statement.into_llvm(context)?,
+                Statement::VariableDeclaration(statement) => statement.wrap().into_llvm(context)?,
+                Statement::Assignment(statement) => statement.wrap().into_llvm(context)?,
+                Statement::IfConditional(statement) => statement.wrap().into_llvm(context)?,
+                Statement::Switch(statement) => statement.wrap().into_llvm(context)?,
+                Statement::ForLoop(statement) => statement.wrap().into_llvm(context)?,
                 Statement::Continue(_location) => {
                     context.build_unconditional_branch(context.r#loop().continue_block)?;
                     break;
@@ -282,81 +156,5 @@ where
         }
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::yul::lexer::token::location::Location;
-    use crate::yul::lexer::Lexer;
-    use crate::yul::parser::dialect::llvm::LLVMDialect;
-    use crate::yul::parser::error::Error;
-    use crate::yul::parser::statement::object::Object;
-
-    #[test]
-    fn error_invalid_token_bracket_curly_left() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                (
-                    return(0, 0)
-                }
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(11, 17),
-                expected: vec!["{keyword}", "{expression}", "{identifier}", "{", "}"],
-                found: "(".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_statement() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                :=
-                return(0, 0)
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(11, 17),
-                expected: vec!["{keyword}", "{expression}", "{identifier}", "{", "}"],
-                found: ":=".to_owned(),
-            }
-            .into())
-        );
     }
 }

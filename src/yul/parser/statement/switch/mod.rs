@@ -2,141 +2,18 @@
 //! The switch statement.
 //!
 
-pub mod case;
+use era_compiler_llvm_context::{EraVMWriteLLVM, IContext};
 
-use std::collections::HashSet;
-
-use era_compiler_llvm_context::IContext;
-
-use crate::yul::error::Error;
-use crate::yul::lexer::token::lexeme::keyword::Keyword;
-use crate::yul::lexer::token::lexeme::Lexeme;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
+use crate::create_wrapper;
 use crate::yul::parser::dialect::llvm::LLVMDialect;
-use crate::yul::parser::dialect::Dialect;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::statement::block::Block;
-use crate::yul::parser::statement::expression::Expression;
+use crate::yul::parser::wrapper::Wrap as _;
 
-use self::case::Case;
+create_wrapper!(
+    yul_syntax_tools::yul::parser::statement::switch::Switch<LLVMDialect>,
+    WrappedSwitch
+);
 
-///
-/// The Yul switch statement.
-///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-#[serde(bound = "P: serde::de::DeserializeOwned")]
-pub struct Switch<P>
-where
-    P: Dialect,
-{
-    /// The location.
-    pub location: Location,
-    /// The expression being matched.
-    pub expression: Expression,
-    /// The non-default cases.
-    pub cases: Vec<Case<P>>,
-    /// The optional default case, if `cases` do not cover all possible values.
-    pub default: Option<Block<P>>,
-}
-
-///
-/// The parsing state.
-///
-pub enum State {
-    /// After match expression.
-    CaseOrDefaultKeyword,
-    /// After `case`.
-    CaseBlock,
-    /// After `default`.
-    DefaultBlock,
-}
-
-impl<P> Switch<P>
-where
-    P: Dialect,
-{
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let mut token = crate::yul::parser::take_or_next(initial, lexer)?;
-        let location = token.location;
-        let mut state = State::CaseOrDefaultKeyword;
-
-        let expression = Expression::parse(lexer, Some(token.clone()))?;
-        let mut cases = Vec::new();
-        let mut default = None;
-
-        loop {
-            match state {
-                State::CaseOrDefaultKeyword => match lexer.peek()? {
-                    _token @ Token {
-                        lexeme: Lexeme::Keyword(Keyword::Case),
-                        ..
-                    } => {
-                        token = _token;
-                        state = State::CaseBlock;
-                    }
-                    _token @ Token {
-                        lexeme: Lexeme::Keyword(Keyword::Default),
-                        ..
-                    } => {
-                        token = _token;
-                        state = State::DefaultBlock;
-                    }
-                    _token => {
-                        token = _token;
-                        break;
-                    }
-                },
-                State::CaseBlock => {
-                    lexer.next()?;
-                    cases.push(Case::parse(lexer, None)?);
-                    state = State::CaseOrDefaultKeyword;
-                }
-                State::DefaultBlock => {
-                    lexer.next()?;
-                    default = Some(Block::parse(lexer, None)?);
-                    break;
-                }
-            }
-        }
-
-        if cases.is_empty() && default.is_none() {
-            return Err(ParserError::InvalidToken {
-                location: token.location,
-                expected: vec!["case", "default"],
-                found: token.lexeme.to_string(),
-            }
-            .into());
-        }
-
-        Ok(Self {
-            location,
-            expression,
-            cases,
-            default,
-        })
-    }
-
-    ///
-    /// Get the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = HashSet::new();
-        for case in self.cases.iter() {
-            libraries.extend(case.get_missing_libraries());
-        }
-        if let Some(default) = &self.default {
-            libraries.extend(default.get_missing_libraries());
-        }
-        libraries
-    }
-}
-
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Switch<LLVMDialect>
+impl<D> EraVMWriteLLVM<D> for WrappedSwitch
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -144,11 +21,12 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        let scrutinee = self.expression.into_llvm(context)?;
+        let term = self.0;
+        let scrutinee = term.expression.wrap().into_llvm(context)?;
 
-        if self.cases.is_empty() {
-            if let Some(block) = self.default {
-                block.into_llvm(context)?;
+        if term.cases.is_empty() {
+            if let Some(block) = term.default {
+                block.wrap().into_llvm(context)?;
             }
             return Ok(());
         }
@@ -156,24 +34,24 @@ where
         let current_block = context.basic_block();
         let join_block = context.append_basic_block("switch_join_block");
 
-        let mut branches = Vec::with_capacity(self.cases.len());
-        for (index, case) in self.cases.into_iter().enumerate() {
-            let constant = case.literal.into_llvm(context)?.to_llvm();
+        let mut branches = Vec::with_capacity(term.cases.len());
+        for (index, case) in term.cases.into_iter().enumerate() {
+            let constant = case.literal.wrap().into_llvm(context)?.to_llvm();
 
             let expression_block = context
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());
             context.set_basic_block(expression_block);
-            case.block.into_llvm(context)?;
+            case.block.wrap().into_llvm(context)?;
             context.build_unconditional_branch(join_block)?;
 
             branches.push((constant.into_int_value(), expression_block));
         }
 
-        let default_block = match self.default {
+        let default_block = match term.default {
             Some(default) => {
                 let default_block = context.append_basic_block("switch_default_block");
                 context.set_basic_block(default_block);
-                default.into_llvm(context)?;
+                default.wrap().into_llvm(context)?;
                 context.build_unconditional_branch(join_block)?;
                 default_block
             }
@@ -193,7 +71,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch<LLVMDialect>
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedSwitch
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -201,11 +79,11 @@ where
         self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        let scrutinee = self.expression.into_llvm_evm(context)?;
+        let scrutinee = self.0.expression.wrap().into_llvm_evm(context)?;
 
-        if self.cases.is_empty() {
-            if let Some(block) = self.default {
-                block.into_llvm(context)?;
+        if self.0.cases.is_empty() {
+            if let Some(block) = self.0.default {
+                era_compiler_llvm_context::EVMWriteLLVM::into_llvm(block.wrap(), context)?;
             }
             return Ok(());
         }
@@ -213,24 +91,24 @@ where
         let current_block = context.basic_block();
         let join_block = context.append_basic_block("switch_join_block");
 
-        let mut branches = Vec::with_capacity(self.cases.len());
-        for (index, case) in self.cases.into_iter().enumerate() {
-            let constant = case.literal.into_llvm(context)?.to_llvm();
+        let mut branches = Vec::with_capacity(self.0.cases.len());
+        for (index, case) in self.0.cases.into_iter().enumerate() {
+            let constant = case.literal.wrap().into_llvm(context)?.to_llvm();
 
             let expression_block = context
                 .append_basic_block(format!("switch_case_branch_{}_block", index + 1).as_str());
             context.set_basic_block(expression_block);
-            case.block.into_llvm(context)?;
+            era_compiler_llvm_context::EVMWriteLLVM::into_llvm(case.block.wrap(), context)?;
             context.build_unconditional_branch(join_block)?;
 
             branches.push((constant.into_int_value(), expression_block));
         }
 
-        let default_block = match self.default {
+        let default_block = match self.0.default {
             Some(default) => {
                 let default_block = context.append_basic_block("switch_default_block");
                 context.set_basic_block(default_block);
-                default.into_llvm(context)?;
+                era_compiler_llvm_context::EVMWriteLLVM::into_llvm(default.wrap(), context)?;
                 context.build_unconditional_branch(join_block)?;
                 default_block
             }
@@ -247,49 +125,5 @@ where
         context.set_basic_block(join_block);
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::yul::lexer::token::location::Location;
-    use crate::yul::lexer::Lexer;
-    use crate::yul::parser::dialect::llvm::LLVMDialect;
-    use crate::yul::parser::error::Error;
-    use crate::yul::parser::statement::object::Object;
-
-    #[test]
-    fn error_invalid_token_case() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                switch 42
-                    branch x {}
-                    default {}
-                }
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(12, 21),
-                expected: vec!["case", "default"],
-                found: "branch".to_owned(),
-            }
-            .into())
-        );
     }
 }

@@ -6,14 +6,14 @@ use inkwell::values::BasicValue;
 
 use era_compiler_llvm_context::IContext;
 
-use crate::yul::parser::statement::expression::function_call::FunctionCall;
+use super::WrappedFunctionCall;
 
 ///
 /// Translates the verbatim simulations.
 ///
 pub fn verbatim<'ctx, D>(
     context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    call: &mut FunctionCall,
+    call: &mut WrappedFunctionCall,
     input_size: usize,
     output_size: usize,
 ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
@@ -23,7 +23,7 @@ where
     if output_size > 1 {
         anyhow::bail!(
             "{} Verbatim instructions with multiple return values are not supported",
-            call.location
+            call.0.location
         );
     }
 
@@ -31,14 +31,14 @@ where
     let identifier = arguments[0]
         .original
         .take()
-        .ok_or_else(|| anyhow::anyhow!("{} Verbatim literal is missing", call.location))?;
+        .ok_or_else(|| anyhow::anyhow!("{} Verbatim literal is missing", call.0.location))?;
     match identifier.as_str() {
         identifier @ "to_l1" => {
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -59,7 +59,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -73,7 +73,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -93,7 +93,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -113,7 +113,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -127,7 +127,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -150,7 +150,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -175,7 +175,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -203,7 +203,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -233,7 +233,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -256,7 +256,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -281,7 +281,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -310,7 +310,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -341,7 +341,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -364,7 +364,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -389,7 +389,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -413,7 +413,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -439,7 +439,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -462,7 +462,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -487,7 +487,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -511,7 +511,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -537,7 +537,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -556,7 +556,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -575,7 +575,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -589,7 +589,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -610,7 +610,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -631,7 +631,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -645,7 +645,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -659,7 +659,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -673,7 +673,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -692,7 +692,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -711,7 +711,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -730,7 +730,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -750,7 +750,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -769,7 +769,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -807,14 +807,14 @@ where
                     let stripped = stripped.strip_prefix('_').ok_or_else(|| {
                         anyhow::anyhow!(
                             "{} Invalid global variable identifier `{:?}`",
-                            call.location,
+                            call.0.location,
                             identifier
                         )
                     })?;
                     let index = stripped.parse::<u64>().map_err(|error| {
                         anyhow::anyhow!(
                             "{} Invalid global variable identifier `{:?}`: {}",
-                            call.location,
+                            call.0.location,
                             identifier,
                             error,
                         )
@@ -823,7 +823,7 @@ where
                     {
                         anyhow::bail!(
                             "{} Extra ABI data overflow. Only indexes `0..=9` are allowed",
-                            call.location,
+                            call.0.location,
                         );
                     }
                     era_compiler_llvm_context::eravm_abi::get_extra_abi_data(
@@ -834,7 +834,7 @@ where
                 }
                 identifier => Err(anyhow::anyhow!(
                     "{} Invalid global variable identifier `{:?}`",
-                    call.location,
+                    call.0.location,
                     identifier
                 )),
             }
@@ -844,7 +844,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -863,7 +863,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -877,7 +877,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -898,7 +898,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -912,7 +912,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -926,7 +926,7 @@ where
             if input_size != ARGUMENTS_COUNT {
                 anyhow::bail!(
                     "{} Internal function `{}` expected {} arguments, found {}",
-                    call.location,
+                    call.0.location,
                     identifier,
                     ARGUMENTS_COUNT,
                     input_size
@@ -943,7 +943,7 @@ where
         }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",
-            call.location,
+            call.0.location,
             identifier
         ),
     }

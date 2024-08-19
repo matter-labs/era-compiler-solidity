@@ -2,81 +2,21 @@
 //! The for-loop statement.
 //!
 
-use std::collections::HashSet;
-
 use era_compiler_llvm_context::IContext;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::dialect::llvm::LLVMDialect;
-use crate::yul::parser::dialect::Dialect;
-use crate::yul::parser::statement::block::Block;
-use crate::yul::parser::statement::expression::Expression;
+use crate::{
+    create_wrapper,
+    yul::parser::{dialect::llvm::LLVMDialect, wrapper::Wrap as _},
+};
 
-///
-/// The Yul for-loop statement.
-///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-#[serde(bound = "P: serde::de::DeserializeOwned")]
-pub struct ForLoop<P>
-where
-    P: Dialect,
-{
-    /// The location.
-    pub location: Location,
-    /// The index variables initialization block.
-    pub initializer: Block<P>,
-    /// The continue condition block.
-    pub condition: Expression,
-    /// The index variables mutating block.
-    pub finalizer: Block<P>,
-    /// The loop body.
-    pub body: Block<P>,
-}
+use super::expression::WrappedExpression;
 
-impl<P> ForLoop<P>
-where
-    P: Dialect,
-{
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
-        let location = token.location;
+create_wrapper!(
+    yul_syntax_tools::yul::parser::statement::for_loop::ForLoop<LLVMDialect>,
+    WrappedForLoop
+);
 
-        let initializer = Block::parse(lexer, Some(token))?;
-
-        let condition = Expression::parse(lexer, None)?;
-
-        let finalizer = Block::parse(lexer, None)?;
-
-        let body = Block::parse(lexer, None)?;
-
-        Ok(Self {
-            location,
-            initializer,
-            condition,
-            finalizer,
-            body,
-        })
-    }
-
-    ///
-    /// Get the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = self.initializer.get_missing_libraries();
-        libraries.extend(self.condition.get_missing_libraries());
-        libraries.extend(self.finalizer.get_missing_libraries());
-        libraries.extend(self.body.get_missing_libraries());
-        libraries
-    }
-}
-
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop<LLVMDialect>
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedForLoop
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -84,7 +24,8 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.initializer.into_llvm(context)?;
+        let term = self.0;
+        term.initializer.wrap().into_llvm(context)?;
 
         let condition_block = context.append_basic_block("for_condition");
         let body_block = context.append_basic_block("for_body");
@@ -93,8 +34,7 @@ where
 
         context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
-        let condition = self
-            .condition
+        let condition = WrappedExpression(term.condition)
             .into_llvm(context)?
             .expect("Always exists")
             .to_llvm()
@@ -115,11 +55,11 @@ where
         context.push_loop(body_block, increment_block, join_block);
 
         context.set_basic_block(body_block);
-        self.body.into_llvm(context)?;
+        term.body.wrap().into_llvm(context)?;
         context.build_unconditional_branch(increment_block)?;
 
         context.set_basic_block(increment_block);
-        self.finalizer.into_llvm(context)?;
+        term.finalizer.wrap().into_llvm(context)?;
         context.build_unconditional_branch(condition_block)?;
 
         context.pop_loop();
@@ -129,7 +69,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop<LLVMDialect>
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedForLoop
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -137,7 +77,7 @@ where
         self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.initializer.into_llvm(context)?;
+        self.0.initializer.wrap().into_llvm(context)?;
 
         let condition_block = context.append_basic_block("for_condition");
         let body_block = context.append_basic_block("for_body");
@@ -146,8 +86,7 @@ where
 
         context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
-        let condition = self
-            .condition
+        let condition = WrappedExpression(self.0.condition)
             .into_llvm_evm(context)?
             .expect("Always exists")
             .to_llvm()
@@ -168,11 +107,11 @@ where
         context.push_loop(body_block, increment_block, join_block);
 
         context.set_basic_block(body_block);
-        self.body.into_llvm(context)?;
+        self.0.body.wrap().into_llvm(context)?;
         context.build_unconditional_branch(increment_block)?;
 
         context.set_basic_block(increment_block);
-        self.finalizer.into_llvm(context)?;
+        self.0.finalizer.wrap().into_llvm(context)?;
         context.build_unconditional_branch(condition_block)?;
 
         context.pop_loop();

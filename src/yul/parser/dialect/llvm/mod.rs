@@ -6,15 +6,14 @@ pub mod attributes;
 
 use std::collections::BTreeSet;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::identifier::Identifier;
+use yul_syntax_tools::yul::error::Error;
+use yul_syntax_tools::yul::lexer::token::location::Location;
+use yul_syntax_tools::yul::lexer::Lexer;
+use yul_syntax_tools::yul::parser::dialect::Dialect;
+use yul_syntax_tools::yul::parser::error::Error as ParserError;
+use yul_syntax_tools::yul::parser::identifier::Identifier;
 
 use self::attributes::get_llvm_attributes;
-
-use super::Dialect;
 
 /// LLVM-specific part of the parser.
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Eq, Clone, Debug)]
@@ -26,7 +25,7 @@ impl Dialect for LLVMDialect {
     fn extract_attributes(
         identifier: &Identifier,
         _: &mut Lexer,
-    ) -> Result<BTreeSet<Self::FunctionAttribute>, crate::yul::error::Error> {
+    ) -> Result<BTreeSet<Self::FunctionAttribute>, yul_syntax_tools::yul::error::Error> {
         get_llvm_attributes(identifier)
     }
 

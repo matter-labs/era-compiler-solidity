@@ -348,6 +348,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "which",
+ "yul-syntax-tools",
  "zkevm-assembly",
 ]
 
@@ -1516,9 +1517,9 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "which"
-version = "6.0.2"
+version = "6.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d9c5ed668ee1f17edb3b627225343d210006a90bb1e3745ce1f30b1fb115075"
+checksum = "b4ee928febd44d98f2f459a4a79bd4d928591333a494a10a868418ac1b39cf1f"
 dependencies = [
  "either",
  "home",
@@ -1652,6 +1653,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
+]
+
+[[package]]
+name = "yul-syntax-tools"
+version = "1.5.2"
+source = "git+https://github.com/matter-labs/yul-syntax-tools?branch=dev#1e14dab72fe5756a5baaafa2ac0ee0c2fce683c0"
+dependencies = [
+ "anyhow",
+ "regex",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]

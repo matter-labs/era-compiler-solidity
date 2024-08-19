@@ -4,8 +4,10 @@
 
 use std::collections::HashSet;
 
+use yul_syntax_tools::yul::parser::statement::object::Object;
+
 use crate::yul::parser::dialect::llvm::LLVMDialect;
-use crate::yul::parser::statement::object::Object;
+use crate::yul::parser::statement::object::WrappedObject;
 
 ///
 /// The contract Yul source code.
@@ -13,14 +15,14 @@ use crate::yul::parser::statement::object::Object;
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: Object<LLVMDialect>,
+    pub object: WrappedObject,
 }
 
 impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(object: Object<LLVMDialect>) -> Self {
+    pub fn new(object: WrappedObject) -> Self {
         Self { object }
     }
 
@@ -28,14 +30,14 @@ impl Yul {
     /// Extracts the runtime code from the Yul object.
     ///
     pub fn take_runtime_code(&mut self) -> Option<Object<LLVMDialect>> {
-        self.object.inner_object.take().map(|object| *object)
+        self.object.0.inner_object.take().map(|object| *object)
     }
 
     ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
-        self.object.get_missing_libraries()
+        self.object.0.get_missing_libraries()
     }
 }
 

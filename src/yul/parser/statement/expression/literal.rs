@@ -2,76 +2,22 @@
 //! The YUL source code literal.
 //!
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
-use crate::yul::lexer::token::lexeme::literal::integer::Integer as IntegerLiteral;
-use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
-use crate::yul::lexer::token::lexeme::symbol::Symbol;
-use crate::yul::lexer::token::lexeme::Lexeme;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::r#type::Type;
+use crate::create_wrapper;
+use crate::yul::parser::wrapper::Wrap as _;
 use inkwell::values::BasicValue;
 use num::Num;
 use num::One;
 use num::Zero;
+use yul_syntax_tools::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
+use yul_syntax_tools::yul::lexer::token::lexeme::literal::integer::Integer as IntegerLiteral;
+use yul_syntax_tools::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
 
-///
-/// Represents a literal in YUL without differentiating its type.
-///
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-pub struct Literal {
-    /// The location.
-    pub location: Location,
-    /// The lexical literal.
-    pub inner: LexicalLiteral,
-    /// The type, if it has been explicitly specified.
-    pub yul_type: Option<Type>,
-}
+create_wrapper!(
+    yul_syntax_tools::yul::parser::statement::expression::literal::Literal,
+    WrappedLiteral
+);
 
-impl Literal {
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
-
-        let (location, literal) = match token {
-            Token {
-                lexeme: Lexeme::Literal(literal),
-                location,
-                ..
-            } => (location, literal),
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["{literal}"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        };
-
-        let yul_type = match lexer.peek()? {
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::Colon),
-                ..
-            } => {
-                lexer.next()?;
-                Some(Type::parse(lexer, None)?)
-            }
-            _ => None,
-        };
-
-        Ok(Self {
-            location,
-            inner: literal,
-            yul_type,
-        })
-    }
-
+impl WrappedLiteral {
     ///
     /// Converts the literal into its LLVM.
     ///
@@ -82,11 +28,13 @@ impl Literal {
     where
         C: era_compiler_llvm_context::IContext<'ctx>,
     {
-        match self.inner {
+        match self.0.inner {
             LexicalLiteral::Boolean(inner) => {
                 let value = self
+                    .0
                     .yul_type
                     .unwrap_or_default()
+                    .wrap()
                     .into_llvm(context)
                     .const_int(
                         match inner {
@@ -107,7 +55,12 @@ impl Literal {
                 ))
             }
             LexicalLiteral::Integer(inner) => {
-                let r#type = self.yul_type.unwrap_or_default().into_llvm(context);
+                let r#type = self
+                    .0
+                    .yul_type
+                    .unwrap_or_default()
+                    .wrap()
+                    .into_llvm(context);
                 let value = match inner {
                     IntegerLiteral::Decimal { ref inner } => r#type.const_int_from_string(
                         inner.as_str(),
@@ -139,7 +92,12 @@ impl Literal {
             }
             LexicalLiteral::String(inner) => {
                 let string = inner.inner;
-                let r#type = self.yul_type.unwrap_or_default().into_llvm(context);
+                let r#type = self
+                    .0
+                    .yul_type
+                    .unwrap_or_default()
+                    .wrap()
+                    .into_llvm(context);
 
                 let mut hex_string = if inner.is_hexadecimal {
                     string.clone()
