@@ -101,13 +101,6 @@ fn main_inner(
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
-    let evm_version = match arguments.evm_version {
-        Some(evm_version) => Some(era_compiler_common::EVMVersion::try_from(
-            evm_version.as_str(),
-        )?),
-        None => None,
-    };
-
     let include_metadata_hash = match arguments.metadata_hash {
         Some(metadata_hash) => {
             let metadata = era_compiler_common::HashType::from_str(metadata_hash.as_str())?;
@@ -220,7 +213,7 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
@@ -253,7 +246,7 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
@@ -348,7 +341,7 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     include_metadata_hash,
@@ -377,7 +370,7 @@ fn main_inner(
                     arguments.libraries,
                     &solc,
                     messages,
-                    evm_version,
+                    arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     include_metadata_hash,

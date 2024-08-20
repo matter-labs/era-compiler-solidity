@@ -87,7 +87,7 @@ pub struct Arguments {
     /// The EVM target version to generate IR for.
     /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
     #[structopt(long = "evm-version")]
-    pub evm_version: Option<String>,
+    pub evm_version: Option<era_compiler_common::EVMVersion>,
 
     /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
