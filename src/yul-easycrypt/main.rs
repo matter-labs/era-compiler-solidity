@@ -20,14 +20,6 @@ fn main() {
     })
 }
 
-fn print_version() {
-    println!(
-        "Yul to EasyCrypt transpiler, part of {} v{}",
-        env!("CARGO_PKG_DESCRIPTION"),
-        env!("CARGO_PKG_VERSION"),
-    );
-}
-
 ///
 /// The auxiliary `main` function to facilitate the `?` error conversion operator.
 ///

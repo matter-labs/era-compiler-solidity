@@ -12,7 +12,10 @@ use structopt::StructOpt;
 /// Describes the accepted command line arguments.
 ///
 #[derive(Debug, StructOpt)]
-#[structopt(name = "The EraVM Yul to CoreYul transpiler")]
+#[structopt(
+    name = "The EraVM Yul to CoreYul transpiler",
+    global_settings = &[structopt::clap::AppSettings::ArgRequiredElseHelp],
+)]
 pub struct Arguments {
     /// Print the version and exit.
     #[structopt(long = "version")]
