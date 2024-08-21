@@ -23,12 +23,6 @@ pub struct Arguments {
     #[structopt(short = "o", long = "output-dir")]
     pub output_directory: Option<PathBuf>,
 
-    /// Enable EraVM extensions.
-    /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
-    /// In the Yul mode, the `verbatim_*` instruction family becomes available.
-    #[structopt(long = "enable-eravm-extensions")]
-    pub enable_eravm_extensions: bool,
-
     /// Suppress specified warnings.
     /// Available arguments: `ecrecover`, `sendtransfer`, `extcodesize`, `txorigin`, `blocktimestamp`, `blocknumber`, `blockhash`.
     #[structopt(long = "suppress-warnings")]
