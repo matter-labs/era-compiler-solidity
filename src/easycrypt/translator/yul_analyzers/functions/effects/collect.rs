@@ -22,7 +22,9 @@ use crate::yul::path::Path;
 
 use crate::yul::visitor::statements::StatementAction;
 
+///
 /// Collect effects occurring in a procedure. Does not propagate them.
+///
 pub struct CollectEffects<'a> {
     pub result: Attributes,
     pub state: State<'a>,

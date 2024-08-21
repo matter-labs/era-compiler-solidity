@@ -6,7 +6,9 @@ use std::fmt::Debug;
 
 use super::IEnvironment;
 
+///
 /// An entry in a lookup data structure.
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Entry<K, V>
 where

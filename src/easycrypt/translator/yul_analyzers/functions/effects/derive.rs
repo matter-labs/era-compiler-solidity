@@ -66,7 +66,9 @@ impl<'a> StatementAction for Effects<'a> {
     }
 }
 
+///
 /// Infer types of all YUL functions.
+///
 pub fn infer_effects(environment: &mut SymbolTable<DefinitionInfo>, root: &Object) {
     while {
         let mut stmts = Statements::new(Effects::new(environment), Path::empty());

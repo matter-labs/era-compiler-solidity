@@ -11,7 +11,9 @@ use crate::easycrypt::syntax::signature::Signature;
 use crate::easycrypt::syntax::statement::block::Block;
 use crate::yul::path::Path;
 
+///
 /// EasyCrypt AST node containing a definition of a new procedure.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proc {
     /// Name of the procedure.

@@ -5,7 +5,7 @@
 pub mod arguments;
 use self::arguments::Arguments;
 
-use era_compiler_solidity::{ECPrinter, Project, Translator, WritePrinter};
+use era_compiler_solidity::{ECPrinter, Project, Translator};
 
 ///
 /// The application entry point.

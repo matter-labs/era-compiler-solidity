@@ -8,7 +8,9 @@ use std::path::PathBuf;
 use path_slash::PathExt;
 use structopt::StructOpt;
 
+///
 /// Describes the accepted command line arguments.
+///
 #[derive(Debug, StructOpt)]
 #[structopt(name = "The EraVM Yul to CoreYul transpiler")]
 pub struct Arguments {
@@ -58,7 +60,9 @@ impl Arguments {
         Ok(())
     }
 
+    ///
     /// Returns the YUL input files paths provided by user
+    ///
     pub fn input_files_paths(&self) -> anyhow::Result<Vec<PathBuf>> {
         let mut input_files = Vec::with_capacity(self.inputs.len());
 

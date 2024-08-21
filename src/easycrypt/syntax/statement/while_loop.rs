@@ -5,7 +5,9 @@
 use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::statement::Statement;
 
+///
 /// EasyCrypt AST node containing a `while` loop.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WhileLoop {
     /// Execute while this condition is true.

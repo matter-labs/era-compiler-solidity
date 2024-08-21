@@ -2,7 +2,9 @@
 //! Types of binary operations in EasyCrypt AST.
 //!
 
+///
 /// Types of binary operations in EasyCrypt AST.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BinaryOpType {
     /// `x + y`.

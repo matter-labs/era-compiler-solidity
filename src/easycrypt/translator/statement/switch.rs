@@ -19,7 +19,9 @@ use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::switch::Switch as YulSwitch;
 
 impl Translator {
+    ///
     /// Transpile a switch statement in YUL.
+    ///
     ///
     /// switch expr case val1 {} case val2 {}
     /// switch expr case val1 {} case val2 {} default {}

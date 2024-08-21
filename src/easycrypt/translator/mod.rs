@@ -38,7 +38,9 @@ use self::yul_analyzers::functions::kind::infer_function_types;
 
 use super::syntax::module::Module;
 
+///
 /// Global state of YUL to EasyCrypt translator
+///
 #[derive(Debug)]
 pub struct Translator {
     tmp_counter: Counter,
@@ -61,7 +63,9 @@ fn predefined_symbol_table() -> SymbolTable<DefinitionInfo> {
 }
 
 impl Translator {
+    ///
     /// Transpile an object
+    ///
     pub fn transpile(yul_object: &YulObject) -> Result<Module, Error> {
         let mut definitions = {
             let predefined = predefined_symbol_table();

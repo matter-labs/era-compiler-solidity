@@ -6,7 +6,9 @@ use crate::easycrypt::syntax::r#type::Type;
 use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::Name;
 
+///
 /// EasyCrypt AST node containing a definition of a new variable.
+///
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Definition {
     /// Name of the variable.
@@ -20,7 +22,9 @@ pub struct Definition {
 }
 
 impl Definition {
+    ///
     /// Produce a reference to the variable.
+    ///
     pub fn reference(&self) -> Reference {
         Reference {
             identifier: self.identifier.clone(),

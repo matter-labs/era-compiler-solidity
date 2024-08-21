@@ -75,7 +75,9 @@ impl Translator {
         )
     }
 
+    ///
     /// Transpile an arbitrary YUL function into an EasyCrypt function or procedure.
+    ///
     pub fn transpile_function_definition(
         &mut self,
         fd: &FunctionDefinition,

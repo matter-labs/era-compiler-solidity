@@ -4,7 +4,9 @@
 
 use crate::{easycrypt::syntax::Name, yul::path::full_name::FullName};
 
+///
 /// EasyCrypt AST node containing a reference to a previously defined variable.
+///
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Reference {
     /// Name of the variable

@@ -18,6 +18,7 @@ use crate::yul::parser::statement::for_loop::ForLoop as YulForLoop;
 use crate::yul::path::tracker::PathTracker;
 
 impl Translator {
+    ///
     /// Transpile a `for` loop.
     /// In the first approximation, `for INIT COND POST BODY` becomes `{ INIT; while (COND) { BODY; POST } }`.
     ///
@@ -27,6 +28,7 @@ impl Translator {
     ///
     /// Let then COND, CSTMT be the result of transpiling COND.
     /// Then `for INIT COND POST BODY` becomes `{ INIT; CSTMT; while (COND) { BODY; POST; CSTMT } }`.
+    ///
     pub fn transpile_for_loop(
         &mut self,
         for_loop: &YulForLoop,

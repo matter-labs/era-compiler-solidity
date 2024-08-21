@@ -1,3 +1,7 @@
+//!
+//! Type of an EasyCrypt expression.
+//!
+
 pub mod context_kind;
 
 use std::fmt::Display;
@@ -5,6 +9,9 @@ use std::fmt::Display;
 use self::context_kind::ContextKind;
 use super::definition::Definition;
 
+///
+/// Type of an EasyCrypt expression.
+///
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Type {
     Unknown,
@@ -45,14 +52,18 @@ impl Display for Type {
     }
 }
 impl Type {
+    ///
     /// Default type: currently only `UInt(256)` is used for all definitions, as
     /// this is the limitation of the current YUL dialect.
+    ///
     pub const DEFAULT: &'static Type = &Type::UInt(256);
 
+    ///
     /// Returns either:
     /// - `Type::Unit`, if [`types`] is empty;
     /// - First type of [`types`] if there is only one type;
     /// - A tuple with all types otherwise.
+    ///
     pub fn type_of_vec(types: &[Type]) -> Type {
         match types.len() {
             0 => Type::Unit,
@@ -61,10 +72,12 @@ impl Type {
         }
     }
 
+    ///
     /// Returns either:
     /// - `Type::Unit`, if [`definitions`] is empty;
     /// - The type of the first definition, if there is only one definition;
     /// - A tuple with types of all definitions otherwise.
+    ///
     pub fn type_of_definitions(definitions: &[Definition]) -> Type {
         let vec: Vec<Type> = definitions
             .iter()

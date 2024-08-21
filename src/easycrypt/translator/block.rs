@@ -16,7 +16,9 @@ pub struct Transformed {
 }
 
 impl Translator {
+    ///
     /// Transpile an arbitrary YUL block.
+    ///
     pub fn transpile_block(
         &mut self,
         block: &YulBlock,

@@ -12,9 +12,11 @@ use crate::easycrypt::syntax::expression::unary::UnaryOpType;
 use crate::easycrypt::syntax::literal::Literal;
 use crate::easycrypt::syntax::reference::Reference;
 
+///
 /// EasyCrypt AST nodes containing different kinds of expressions. Expressions
 /// are a syntactic category whose terms are computed to a value in a pure way,
 /// without side effects.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expression {
     /// Unary expressions, like `-x`.
@@ -32,8 +34,10 @@ pub enum Expression {
 }
 
 impl Expression {
+    ///
     /// Pack two or more expressions in a tuple expression. A single expression
     /// is returned as-is, unpacked.
+    ///
     pub fn pack_tuple(exprs: &[Self]) -> Self {
         match exprs.len() {
             0 => panic!("Attempt to pack zero expressions in a tuple."),

@@ -10,7 +10,9 @@ use crate::yul::path::tracker::PathTracker;
 use crate::Translator;
 
 impl Translator {
+    ///
     /// Transpile an arbitrary YUL object.
+    ///
     pub fn transpile_object(&mut self, obj: &Object, is_root: bool) -> Result<Module, Error> {
         let module_name = &obj.identifier;
 

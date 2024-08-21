@@ -7,7 +7,9 @@ use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::statement::call::ProcCall;
 use crate::easycrypt::syntax::statement::Statement;
 
+///
 /// Expression translation context.
+///
 #[derive(Clone, Debug)]
 pub struct Context {
     /// When the root expression is finished translating, assignments will be
@@ -20,7 +22,9 @@ pub struct Context {
 }
 
 impl Context {
+    ///
     /// Creates a new instance of [`Context`] with an empty state.
+    ///
     pub fn new() -> Self {
         Self {
             assignments: vec![],
@@ -28,9 +32,11 @@ impl Context {
         }
     }
 
+    ///
     /// Add a new assignment to the context. When the root expression is
     /// finished translating, all such assignments will be prepended to the
     /// currently translated statement.
+    ///
     pub fn add_assignment(&mut self, new_definition: &Definition, rhs: ProcCall) {
         self.assignments.push(Statement::PAssignment(
             vec![new_definition.reference()],

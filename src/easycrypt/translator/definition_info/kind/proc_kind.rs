@@ -13,6 +13,9 @@ use crate::yul::path::Path;
 
 use super::Kind;
 
+///
+/// Description of a procedure.
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProcKind {
     pub name: ProcName,
@@ -20,6 +23,9 @@ pub struct ProcKind {
     pub attributes: Attributes,
 }
 
+///
+/// Name for a parameter used to pass a part of a context to a procedure.
+///
 pub fn formal_state_parameter_name(kind: &ContextKind) -> &'static str {
     match kind {
         ContextKind::Memory => "state_memory",
@@ -30,6 +36,9 @@ pub fn formal_state_parameter_name(kind: &ContextKind) -> &'static str {
 }
 
 impl ProcKind {
+    ///
+    /// Returns a [`Definition`] of a parameter used to pass a part of a context to a procedure.
+    ///
     pub fn get_state_param_definition(&self, kind: ContextKind, path: &Path) -> Option<Definition> {
         let definition = Some(Definition {
             identifier: formal_state_parameter_name(&kind).to_string(),

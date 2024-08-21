@@ -18,8 +18,10 @@ use crate::yul::printer::name_identifier;
 
 use self::kind::Kind;
 
+///
 /// Static description of a definition (standard or non-standard) in transpiled
 /// EasyCrypt code. Common part for all definitions.
+///
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DefinitionInfo {
     /// Kind of definition: binop/unop, function, procedure etc.

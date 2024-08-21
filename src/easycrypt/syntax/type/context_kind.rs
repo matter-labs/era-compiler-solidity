@@ -1,5 +1,14 @@
+//!
+//! Kind of a context that has to be passed to a function and returned from it,
+//! as well as propagated through calls.
+//!
+
 use std::fmt::Display;
 
+///
+/// Kind of a context that has to be passed to a function and returned from it,
+/// as well as propagated through calls.
+///
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ContextKind {
     Memory,

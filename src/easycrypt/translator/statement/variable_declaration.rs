@@ -11,6 +11,7 @@ use crate::yul::parser::statement::assignment::Assignment as YulAssignment;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 
 impl Translator {
+    ///
     /// Transpiles `var x,y,... = expr` or `var x,y` as follows:
     /// 1. Transform expression `expr`. This may produce additional statements
     /// and new temporary locals when `expr` contains function calls that are
@@ -18,6 +19,7 @@ impl Translator {
     /// distinct statement. All of them should be added to the context `ctx`.
     /// 2. Add `x,y,...` to the list of locals in context `ctx`
     /// 3. Return an assignment, if there was an expression on the right hand side.
+    ///
     pub fn transpile_variable_declaration(
         &mut self,
         vd: &VariableDeclaration,

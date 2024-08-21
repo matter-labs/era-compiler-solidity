@@ -18,7 +18,9 @@ pub enum YulSpecial {
     Invalid,
 }
 
+///
 /// Kind of a [`DefinitionInfo`].
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Kind {
     Function(FunctionName),

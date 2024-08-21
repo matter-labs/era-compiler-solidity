@@ -23,7 +23,9 @@ use crate::easycrypt::translator::context::Context;
 use crate::yul::path::tracker::PathTracker;
 
 impl Translator {
+    ///
     /// Transpile the `code` block of an arbitrary YUL object.
+    ///
     pub fn transpile_code(&mut self, code: &YulCode) -> Result<Module, Error> {
         self.tracker.enter_code();
         self.functions_stack

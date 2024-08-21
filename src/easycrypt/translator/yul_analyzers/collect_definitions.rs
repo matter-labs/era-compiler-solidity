@@ -27,7 +27,9 @@ use crate::yul::path::Path;
 use crate::yul::visitor::implicit_code_function;
 use crate::YulVisitor;
 
+///
 /// Collect all definitions in the YUL code.
+///
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CollectDefinitions {
     /// Tracks current location and allows binding the identifiers in the current scope.

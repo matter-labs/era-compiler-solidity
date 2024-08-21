@@ -25,7 +25,9 @@ use crate::easycrypt::translator::context::Context;
 use crate::easycrypt::translator::expression::context::Context as ExprContext;
 
 impl Translator {
+    ///
     /// Transpile a function call in YUL into either EasyCrypt procedure or function.
+    ///
     pub fn transpile_function_call(
         &mut self,
         name: &YulName,

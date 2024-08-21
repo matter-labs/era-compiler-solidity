@@ -5,7 +5,9 @@
 use crate::easycrypt::syntax::expression::Expression;
 use crate::easycrypt::syntax::statement::Statement;
 
+///
 /// EasyCrypt AST node containing an `if` statement.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IfConditional {
     /// On which condition the statement should be executed.

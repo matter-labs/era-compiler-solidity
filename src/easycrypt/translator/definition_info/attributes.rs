@@ -4,7 +4,10 @@
 
 use super::usage::Usage;
 
-/// Attributes of a procedure. Describe aspects of its behavior that are relevant for transpilation.
+///
+/// Attributes of a procedure. Describe aspects of its behavior that are
+/// relevant for transpilation.
+///
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Attributes {
     /// How is this procedure affecting heap.

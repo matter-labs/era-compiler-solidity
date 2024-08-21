@@ -25,10 +25,14 @@ use crate::yul::path::tracker::PathTracker as _;
 use crate::yul::visitor::IMPLICIT_CODE_FUNCTION_NAME;
 use crate::YulVisitor;
 
+///
 /// Collect all definitions in the YUL code.
+///
 #[derive(Clone, Debug)]
 pub struct CallingDependencies<'a> {
+    ///
     /// Tracks current location and allows binding the identifiers in the current scope.
+    ///
     pub tracker: SymbolTracker<DefinitionInfo>,
     pub topological_sort: TopologicalSort<FullName>,
     pub functions_stack: Vec<FullName>,

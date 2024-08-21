@@ -8,7 +8,9 @@ use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
 
+///
 /// Path tracker with a symbol table.
+///
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SymbolTracker<T>
 where

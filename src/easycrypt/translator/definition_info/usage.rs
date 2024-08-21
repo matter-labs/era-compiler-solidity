@@ -3,7 +3,9 @@
 //!
 
 #[allow(dead_code)]
+///
 /// How is memory or storage affected by a procedure.
+///
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Usage {
     pub read: bool,
@@ -33,6 +35,9 @@ impl Usage {
         meta: false,
     };
 
+    ///
+    /// Merges usage information from two descriptions.
+    ///
     pub fn union(&self, other: &Self) -> Self {
         Self {
             read: self.read || other.read,

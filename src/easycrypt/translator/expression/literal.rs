@@ -12,7 +12,9 @@ use crate::easycrypt::translator::Translator;
 use crate::yul::parser::statement::expression::literal::Literal as YulLiteral;
 
 impl Translator {
+    ///
     /// Transpile an arbitrary YUL literal into an EasyCrypt literal.
+    ///
     pub fn transpile_literal(lit: &YulLiteral) -> Result<Expression, Error> {
         let transpiled_integer = match &lit.inner {
             crate::yul::lexer::token::lexeme::literal::Literal::Boolean(b) => {

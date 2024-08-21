@@ -8,7 +8,9 @@ use std::fmt::Display;
 use crate::easycrypt::syntax::Name;
 use crate::yul::path::full_name::FullName;
 
+///
 /// Name of a function, which can be a user-defined custom name or one of the pre-defined names such as `lt`.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FunctionName {
     /// The user-defined function.

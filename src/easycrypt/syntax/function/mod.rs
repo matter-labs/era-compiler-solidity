@@ -11,7 +11,9 @@ use crate::easycrypt::syntax::signature::Signature;
 
 use self::name::FunctionName;
 
+///
 /// EasyCrypt AST node containing a definition of a function.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Function {
     /// Name of the function.

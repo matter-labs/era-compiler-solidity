@@ -22,7 +22,9 @@ use crate::yul::parser::statement::if_conditional::IfConditional as YulIfConditi
 use crate::yul::path::tracker::PathTracker;
 
 impl Translator {
+    ///
     /// Transpile an "if" conditional statement.
+    ///
     pub fn transpile_if(
         &mut self,
         conditional: &YulIfConditional,

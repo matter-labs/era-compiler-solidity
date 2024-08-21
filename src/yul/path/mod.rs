@@ -29,8 +29,10 @@ mod step;
 use self::step::LexicalScope;
 use crate::util::iter::prefixes;
 
+///
 /// Path from the root of YUL syntax tree to a specific lexical block in it,
 /// including all the blocks on the way from root.
+///
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
     stack: Vec<LexicalScope>,
@@ -44,32 +46,46 @@ fn display_name<'a>(stack: impl Iterator<Item = &'a LexicalScope>) -> String {
 }
 
 impl Path {
+    ///
+    /// Combines prefix and suffix to form an identifier.
+    ///
     pub fn combine(prefix: &str, suffix: &str) -> String {
         format!("{prefix}_{suffix}")
     }
+    ///
     /// Transforms [`crate::yul::path::Path`] into a prefix for a variable name.
     /// Each block on the way from root will contribute to the prefix.
+    ///
     pub fn display_name(&self) -> String {
         display_name(self.stack.iter())
     }
 
+    ///
     /// Pops the latest lexical scope for the path, so that it becomes its parent.
+    ///
     pub fn leave(&mut self) {
         self.stack.pop();
     }
 
+    ///
     /// True if the path is empty (the root of YUL syntax tree).
+    ///
     pub fn is_empty(&self) -> bool {
         self.stack.is_empty()
     }
 
+    ///
     /// Iterate over all parents of this path, starting from the path itself.
+    ///
     pub fn parents(&self) -> impl '_ + Iterator<Item = Path> {
         prefixes(self.stack.as_slice())
             .rev()
             .map(|s| Path { stack: s.to_vec() })
     }
 
+    ///
+    /// Counts the length of the common part of two paths before they diverge.
+    ///
     pub fn common_prefix_length(&self, other: &Path) -> usize {
         self.stack
             .iter()
@@ -77,22 +93,18 @@ impl Path {
             .take_while(|(a, b)| a == b)
             .count()
     }
-    pub fn difference(&self, other: Path) -> (Path, Path) {
-        let (new_self, new_other): (Vec<LexicalScope>, Vec<LexicalScope>) = self
-            .stack
-            .iter()
-            .cloned()
-            .zip(other.stack.iter().cloned())
-            .skip_while(|(a, b)| a == b)
-            .unzip();
 
-        (Path { stack: new_self }, Path { stack: new_other })
-    }
-
+    ///
+    /// Returns a new instance of an empty [`Path`].
+    ///
     pub fn empty() -> Path {
         Path { stack: vec![] }
     }
 
+    ///
+    /// Skips [`prefix`] elements in the path and returns the remaining part
+    /// flattened to string.
+    ///
     pub(crate) fn suffix(&self, prefix: usize) -> String {
         display_name(self.stack.iter().skip(prefix))
     }

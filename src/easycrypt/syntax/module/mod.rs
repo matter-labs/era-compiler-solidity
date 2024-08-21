@@ -11,7 +11,9 @@ use crate::easycrypt::syntax::reference::Reference;
 use crate::easycrypt::syntax::Name;
 use crate::yul::path::full_name::FullName;
 
+///
 /// EasyCrypt AST node containing a definition of a module.
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Module {
     /// Name of the module, derived from the name of YUL object.
@@ -22,7 +24,9 @@ pub struct Module {
 }
 
 impl Module {
+    ///
     /// Creates a new empty instance of [`Module`].
+    ///
     pub fn new(name: Option<Name>) -> Self {
         Self {
             definitions: HashMap::new(),
@@ -31,7 +35,9 @@ impl Module {
         }
     }
 
+    ///
     /// Create an anonymous module populated with given definitions.
+    ///
     pub fn from_definitions<T>(definitions: T) -> Self
     where
         T: Iterator<Item = (Reference, TopDefinition)>,
@@ -43,7 +49,9 @@ impl Module {
         }
     }
 
+    ///
     /// Merge this module with another, nameless module.
+    ///
     pub fn merge(&mut self, other: &Self) {
         if other.name.is_none() {
             self.definitions.extend(other.definitions.clone())

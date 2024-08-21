@@ -37,7 +37,9 @@ impl Transformed {
 }
 
 impl Translator {
+    ///
     /// Transpile multiple YUL expressions accumulating the context.
+    ///
     pub fn transpile_expression_list(
         &mut self,
         list: &[YulExpression],
@@ -93,7 +95,9 @@ impl Translator {
         }
     }
 
+    ///
     /// Transpile a YUL expression that is not a subexpression of any other expression.
+    ///
     pub fn transpile_expression_root(
         &mut self,
         expr: &YulExpression,

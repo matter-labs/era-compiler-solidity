@@ -16,12 +16,18 @@ use crate::yul::path::builder::Builder;
 use crate::yul::path::tracker::PathTracker;
 use crate::yul::path::Path;
 
+///
 /// State of statement visitor.
+///
 pub trait StatementAction {
     /// Action to perform on each statement.
     fn action(&mut self, statement: &Statement, path: &Path);
 }
 
+///
+/// Iterate over all statements in YUL syntax tree using depth-first search in
+/// post-order traversal.
+///
 pub struct Statements<A>
 where
     A: StatementAction,
@@ -34,6 +40,9 @@ impl<A> Statements<A>
 where
     A: StatementAction,
 {
+    ///
+    /// Returns a new instance of [`Statements`].
+    ///
     pub fn new(action: A, path: Path) -> Self {
         Self {
             action,

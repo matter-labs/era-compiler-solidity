@@ -49,8 +49,10 @@ impl<'a> StatementAction for FunctionKindRound<'a> {
         }
     }
 }
+///
 /// Promote a procedure to a function. By default, all functions are translated
 /// into procedures.
+///
 fn promote_to_function(round: &mut Round, definition: &mut DefinitionInfo) {
     match &definition.kind {
         Kind::Proc(ProcKind { name, .. }) => {
@@ -64,7 +66,9 @@ fn promote_to_function(round: &mut Round, definition: &mut DefinitionInfo) {
 }
 
 impl<'a> FunctionKindRound<'a> {
+    ///
     /// Returns a new instance.
+    ///
     pub fn new(all_definitions: &'a mut SymbolTable<DefinitionInfo>) -> Self {
         Self {
             round: Round::new(),
@@ -72,13 +76,17 @@ impl<'a> FunctionKindRound<'a> {
         }
     }
 
+    ///
     /// Returns true if the round did any work.
+    ///
     pub fn had_effect(&self) -> bool {
         self.round.had_effect()
     }
 
+    ///
     /// Recursively analyze an expression to determine if it has any calls to
     /// procedures.
+    ///
     fn prevents_promotion(&self, expr: &Expression, path: &Path) -> Result<bool, Error> {
         match expr {
             Expression::FunctionCall(FunctionCall {
@@ -124,7 +132,9 @@ impl<'a> FunctionKindRound<'a> {
     }
 }
 
+///
 /// Infer types of all YUL functions.
+///
 pub fn infer_function_types(environment: &mut SymbolTable<DefinitionInfo>, root: &Object) {
     while {
         let mut stmts = Statements::new(FunctionKindRound::new(environment), Path::empty());
