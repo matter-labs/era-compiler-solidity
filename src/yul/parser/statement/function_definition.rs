@@ -112,7 +112,7 @@ where
         // special low-level "near" call instructions, able to set up their own
         // exception handlers.
         // sanitize_function
-        let _ = P::sanitize_function(&identifier, &mut arguments, location, lexer)?;
+        P::sanitize_function(&identifier, &mut arguments, location, lexer)?;
 
         match crate::yul::parser::take_or_next(next, lexer)? {
             Token {
