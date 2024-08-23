@@ -110,7 +110,7 @@ pub struct Arguments {
     #[structopt(long = "target")]
     pub target: Option<String>,
 
-    /// Sets the number of threads, which execute the tests concurrently.
+    /// Sets the number of threads, where each thread compiles its own translation unit in a child process.
     #[structopt(short = "t", long = "threads")]
     pub threads: Option<usize>,
 
