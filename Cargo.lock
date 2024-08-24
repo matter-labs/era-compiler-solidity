@@ -2788,6 +2788,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "yul-syntax-tools"
+version = "1.5.2"
+dependencies = [
+ "anyhow",
+ "regex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "zerocopy"
 version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"

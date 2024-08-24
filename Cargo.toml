@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "era-compiler-solidity",
+    "yul-syntax-tools",
 ]
 
 resolver = "2"
