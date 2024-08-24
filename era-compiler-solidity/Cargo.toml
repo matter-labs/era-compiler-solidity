@@ -1,0 +1,49 @@
+[package]
+name = "era-compiler-solidity"
+version = "1.5.2"
+authors = [
+    "Oleksandr Zarudnyi <a.zarudnyy@matterlabs.dev>",
+]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+description = "Solidity compiler for ZKsync"
+links = "compiler-rt-zksolc"
+
+[[bin]]
+name = "zksolc"
+path = "src/zksolc/main.rs"
+
+[lib]
+doctest = false
+
+[dependencies]
+structopt = { version = "0.3", default-features = false }
+thiserror = "1.0"
+anyhow = "1.0"
+which = "6.0"
+path-slash = "0.2"
+normpath = "1.2"
+rayon = "1.10"
+rusty_pool = { version = "0.7", default-features = false }
+num_cpus = "1.16"
+
+serde = { version = "1.0", "features" = [ "derive" ] }
+serde_json = { version = "1.0", features = [ "arbitrary_precision" ] }
+semver = { version = "1.0", features = [ "serde" ] }
+rand = "0.8"
+regex = "1.10"
+hex = "0.4"
+num = "0.4"
+sha3 = "0.10"
+
+era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+
+[dependencies.inkwell]
+git = "https://github.com/matter-labs-forks/inkwell"
+branch = "llvm-17"
+default-features = false
+features = ["llvm17-0", "no-libffi-linking", "target-eravm", "target-evm"]
+
+[target.'cfg(target_env = "musl")'.dependencies]
+mimalloc = { version = "*", default-features = false }
