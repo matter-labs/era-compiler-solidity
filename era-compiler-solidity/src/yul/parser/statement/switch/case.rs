@@ -9,6 +9,7 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::expression::literal::Literal;
@@ -16,17 +17,24 @@ use crate::yul::parser::statement::expression::literal::Literal;
 ///
 /// The Yul switch statement case.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Case {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct Case<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The matched constant.
     pub literal: Literal,
     /// The case block.
-    pub block: Block,
+    pub block: Block<P>,
 }
 
-impl Case {
+impl<P> Case<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///
@@ -70,6 +78,7 @@ impl Case {
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -96,7 +105,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {

@@ -4,7 +4,7 @@
 
 use crate::util::counter::Counter;
 
-use super::step::LexicalScope;
+use super::lexical_scope::LexicalScope;
 use super::tracker::PathTracker;
 use super::Path;
 

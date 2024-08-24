@@ -24,9 +24,9 @@ pub mod full_name;
 pub mod symbol_table;
 pub mod tracker;
 
-mod step;
+mod lexical_scope;
 
-use self::step::LexicalScope;
+use self::lexical_scope::LexicalScope;
 use crate::util::iter::prefixes;
 
 ///
@@ -36,13 +36,6 @@ use crate::util::iter::prefixes;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
     stack: Vec<LexicalScope>,
-}
-
-fn display_name<'a>(stack: impl Iterator<Item = &'a LexicalScope>) -> String {
-    stack.fold(String::from(""), |acc, step| -> String {
-        let contribution = LexicalScope::full_name_contribution(&step);
-        Path::combine(acc.as_str(), contribution.as_str())
-    })
 }
 
 impl Path {
@@ -57,7 +50,7 @@ impl Path {
     /// Each block on the way from root will contribute to the prefix.
     ///
     pub fn display_name(&self) -> String {
-        display_name(self.stack.iter())
+        Self::display_name_impl(self.stack.iter())
     }
 
     ///
@@ -106,6 +99,13 @@ impl Path {
     /// flattened to string.
     ///
     pub(crate) fn suffix(&self, prefix: usize) -> String {
-        display_name(self.stack.iter().skip(prefix))
+        Self::display_name_impl(self.stack.iter().skip(prefix))
+    }
+
+    fn display_name_impl<'a>(stack: impl Iterator<Item = &'a LexicalScope>) -> String {
+        stack.fold(String::from(""), |acc, step| -> String {
+            let contribution = LexicalScope::full_name_contribution(&step);
+            Path::combine(acc.as_str(), contribution.as_str())
+        })
     }
 }

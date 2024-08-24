@@ -34,31 +34,37 @@ use self::object::Object;
 use self::switch::Switch;
 use self::variable_declaration::VariableDeclaration;
 
+use super::dialect::Dialect;
+
 ///
 /// The Yul block statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum Statement {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub enum Statement<P>
+where
+    P: Dialect,
+{
     /// The object element.
-    Object(Object),
+    Object(Object<P>),
     /// The code element.
-    Code(Code),
+    Code(Code<P>),
     /// The code block.
-    Block(Block),
+    Block(Block<P>),
     /// The expression.
     Expression(Expression),
     /// The `function` statement.
-    FunctionDefinition(FunctionDefinition),
+    FunctionDefinition(FunctionDefinition<P>),
     /// The `let` statement.
     VariableDeclaration(VariableDeclaration),
     /// The `:=` existing variables reassignment statement.
     Assignment(Assignment),
     /// The `if` statement.
-    IfConditional(IfConditional),
+    IfConditional(IfConditional<P>),
     /// The `switch` statement.
-    Switch(Switch),
+    Switch(Switch<P>),
     /// The `for` statement.
-    ForLoop(ForLoop),
+    ForLoop(ForLoop<P>),
     /// The `continue` statement.
     Continue(Location),
     /// The `break` statement.
@@ -67,7 +73,10 @@ pub enum Statement {
     Leave(Location),
 }
 
-impl Statement {
+impl<P> Statement<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///

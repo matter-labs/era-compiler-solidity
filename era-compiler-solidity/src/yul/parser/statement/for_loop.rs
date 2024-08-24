@@ -10,27 +10,36 @@ use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::expression::Expression;
 
 ///
 /// The Yul for-loop statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct ForLoop {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct ForLoop<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The index variables initialization block.
-    pub initializer: Block,
+    pub initializer: Block<P>,
     /// The continue condition block.
     pub condition: Expression,
     /// The index variables mutating block.
-    pub finalizer: Block,
+    pub finalizer: Block<P>,
     /// The loop body.
-    pub body: Block,
+    pub body: Block<P>,
 }
 
-impl ForLoop {
+impl<P> ForLoop<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///
@@ -67,7 +76,7 @@ impl ForLoop {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -120,7 +129,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {

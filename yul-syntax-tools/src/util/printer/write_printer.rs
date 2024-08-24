@@ -1,11 +1,14 @@
 //!
 //! A simple pretty printer that outputs text via a type implementing [`Write`]
 //!
-use std::io::{stdout, Write};
+use std::io::stdout;
+use std::io::Write;
 
 use super::IPrinter;
 
+///
 /// State of the printer
+///
 pub struct WritePrinter {
     indent: u32,
     line_start: bool,
@@ -13,8 +16,11 @@ pub struct WritePrinter {
 }
 
 impl WritePrinter {
-    const INDENT: &'static str = "  ";
+    const INDENT_CHARACTER: &'static str = "  ";
+
+    ///
     /// Creates a new [`Printer`].
+    ///
     pub fn new(writer: Box<dyn Write>) -> WritePrinter {
         WritePrinter {
             indent: 0,
@@ -26,10 +32,11 @@ impl WritePrinter {
     fn indent_reset(&mut self) {
         self.line_start = true;
     }
+
     fn indent(&mut self) {
         if self.line_start {
             for _ in 0..self.indent {
-                let _ = self.writer.write_all(Self::INDENT.as_bytes());
+                let _ = self.writer.write_all(Self::INDENT_CHARACTER.as_bytes());
             }
             self.line_start = false;
         }
@@ -61,6 +68,8 @@ impl IPrinter for WritePrinter {
     fn decrease_indent(&mut self) {
         if self.indent > 0 {
             self.indent -= 1
+        } else {
+            panic!("Internal error: Attempted to decrease the printing indentation below zero.");
         }
     }
 }

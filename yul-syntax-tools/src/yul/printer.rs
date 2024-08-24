@@ -25,9 +25,8 @@ where
     T: IPrinter,
 {
     fn visit_object(&mut self, obj: &Object) {
-        self.print("object \"");
-        self.print(obj.identifier.as_str());
-        self.println("\" {");
+        let identifier = obj.identifier.as_str();
+        self.print(format!("object \"{identifier}\" {").as_str);
         self.increase_indent();
         self.visit_code(&obj.code);
         self.println("");
@@ -55,8 +54,7 @@ where
             self.println("");
         }
         if let Some(block) = &s.default {
-            self.print("default");
-            self.print("   ");
+            self.print("default ");
             self.visit_block(block);
             self.println("");
         }

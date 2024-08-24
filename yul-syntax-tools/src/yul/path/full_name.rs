@@ -7,8 +7,8 @@ use crate::yul::path::Path;
 pub struct FullName {
     /// The name as given in the source code.
     pub name: String,
-    /// The path to the definition, incorporating all lexical blocks starting
-    /// from the root of the YUL syntax tree.
+    /// The path to the lexical scope containing this definition, incorporating
+    /// all lexical scopes starting from the root of the YUL syntax tree.
     pub path: Path,
 }
 

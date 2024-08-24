@@ -14,20 +14,26 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::code::Code;
 
 ///
 /// The upper-level YUL object, representing the deploy code.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Object {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct Object<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The identifier.
     pub identifier: String,
     /// The code.
-    pub code: Code,
+    pub code: Code<P>,
     /// The optional inner object, representing the runtime code.
     pub inner_object: Option<Box<Self>>,
     /// The factory dependency objects, which are represented by nested Yul object. The nested
@@ -36,7 +42,7 @@ pub struct Object {
     pub factory_dependencies: HashSet<String>,
 }
 
-impl Object {
+impl<P: Dialect> Object<P> {
     ///
     /// The element parser.
     ///
@@ -182,7 +188,7 @@ impl Object {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Object
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Object<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -250,7 +256,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -276,6 +282,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -299,7 +306,7 @@ class "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -331,7 +338,7 @@ object 256 {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -363,7 +370,7 @@ object "Test" (
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -395,7 +402,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -427,7 +434,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidObjectName {

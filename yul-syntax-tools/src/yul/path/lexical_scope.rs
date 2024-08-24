@@ -2,11 +2,11 @@
 //! A piece of a path inside YUL AST.
 //!
 
-type CodeID = u32;
-type BlockID = u32;
-type IfID = u32;
-type ForID = u32;
-type Name = String;
+pub type CodeID = u32;
+pub type BlockID = u32;
+pub type IfID = u32;
+pub type ForID = u32;
+pub type Name = String;
 
 ///
 /// Types of lexical blocks that are accounted for in a [`crate::yul::path::Path`] from the root

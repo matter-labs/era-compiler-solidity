@@ -10,23 +10,29 @@ use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::expression::Expression;
 
 ///
 /// The Yul if-conditional statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct IfConditional {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct IfConditional<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The condition expression.
     pub condition: Expression,
     /// The conditional block.
-    pub block: Block,
+    pub block: Block<P>,
 }
 
-impl IfConditional {
+impl<P: Dialect> IfConditional<P> {
     ///
     /// The element parser.
     ///
@@ -55,7 +61,7 @@ impl IfConditional {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -92,7 +98,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {

@@ -334,6 +334,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -358,7 +359,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::ReservedIdentifier {

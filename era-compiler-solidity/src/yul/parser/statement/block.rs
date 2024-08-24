@@ -12,6 +12,8 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::assignment::Assignment;
 use crate::yul::parser::statement::expression::Expression;
@@ -20,15 +22,19 @@ use crate::yul::parser::statement::Statement;
 ///
 /// The Yul source code block.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Block {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct Block<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The block statements.
-    pub statements: Vec<Statement>,
+    pub statements: Vec<Statement<P>>,
 }
 
-impl Block {
+impl<P: Dialect> Block<P> {
     ///
     /// The element parser.
     ///
@@ -135,7 +141,7 @@ impl Block {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Block
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Block<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -207,7 +213,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -283,6 +289,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -308,7 +315,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -341,7 +348,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {

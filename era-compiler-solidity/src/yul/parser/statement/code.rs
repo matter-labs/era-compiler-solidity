@@ -10,21 +10,30 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::block::Block;
 
 ///
 /// The YUL code entity, which is the first block of the object.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Code {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct Code<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The main block.
-    pub block: Block,
+    pub block: Block<P>,
 }
 
-impl Code {
+impl<P> Code<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///
@@ -60,7 +69,7 @@ impl Code {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -74,7 +83,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -92,6 +101,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -115,7 +125,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {

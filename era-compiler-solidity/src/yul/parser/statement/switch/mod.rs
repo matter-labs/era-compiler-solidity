@@ -14,6 +14,8 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::expression::Expression;
@@ -23,16 +25,20 @@ use self::case::Case;
 ///
 /// The Yul switch statement.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Switch {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct Switch<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The expression being matched.
     pub expression: Expression,
     /// The non-default cases.
-    pub cases: Vec<Case>,
+    pub cases: Vec<Case<P>>,
     /// The optional default case, if `cases` do not cover all possible values.
-    pub default: Option<Block>,
+    pub default: Option<Block<P>>,
 }
 
 ///
@@ -47,7 +53,10 @@ pub enum State {
     DefaultBlock,
 }
 
-impl Switch {
+impl<P> Switch<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///
@@ -127,7 +136,7 @@ impl Switch {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Switch
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Switch<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -184,7 +193,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -245,6 +254,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -271,7 +281,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {

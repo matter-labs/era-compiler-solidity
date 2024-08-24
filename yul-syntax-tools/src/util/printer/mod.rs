@@ -3,7 +3,9 @@
 //!
 pub mod write_printer;
 
+///
 /// Interface to YUL pretty printer
+///
 pub trait IPrinter {
     /// Indent if in the beginning of line, and print string,
     fn print(&mut self, s: &str);
@@ -15,6 +17,9 @@ pub trait IPrinter {
     fn decrease_indent(&mut self);
 }
 
+///
+/// Prints elements interspersed with comma
+///
 pub fn print_list_comma_separated<'a>(
     iter: impl IntoIterator<Item = &'a str>,
     printer: &mut impl IPrinter,

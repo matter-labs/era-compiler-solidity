@@ -8,12 +8,17 @@ use std::collections::HashSet;
 use era_compiler_llvm_context::IContext;
 use inkwell::types::BasicType;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
 use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
+use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::identifier::Identifier;
 use crate::yul::parser::statement::block::Block;
@@ -26,8 +31,12 @@ use crate::yul::parser::statement::expression::function_call::name::Name as Func
 /// 1. The hoisted declaration
 /// 2. The definition, which now has the access to all function signatures
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct FunctionDefinition {
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(bound = "P: serde::de::DeserializeOwned")]
+pub struct FunctionDefinition<P>
+where
+    P: Dialect,
+{
     /// The location.
     pub location: Location,
     /// The function identifier.
@@ -37,18 +46,15 @@ pub struct FunctionDefinition {
     /// The function return variables.
     pub result: Vec<Identifier>,
     /// The function body block.
-    pub body: Block,
+    pub body: Block<P>,
     /// The function LLVM attributes encoded in the identifier.
-    pub attributes: BTreeSet<era_compiler_llvm_context::Attribute>,
+    pub attributes: BTreeSet<P::FunctionAttribute>,
 }
 
-impl FunctionDefinition {
-    /// The LLVM attribute section prefix.
-    pub const LLVM_ATTRIBUTE_PREFIX: &'static str = "$llvm_";
-
-    /// The LLVM attribute section suffix.
-    pub const LLVM_ATTRIBUTE_SUFFIX: &'static str = "_llvm$";
-
+impl<P> FunctionDefinition<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///
@@ -99,34 +105,14 @@ impl FunctionDefinition {
         }
 
         let (mut arguments, next) = Identifier::parse_typed_list(lexer, None)?;
-        if identifier
-            .inner
-            .contains(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
-        {
-            if arguments.is_empty() {
-                return Err(ParserError::InvalidNumberOfArguments {
-                    location,
-                    identifier: identifier.inner,
-                    expected: 1,
-                    found: arguments.len(),
-                }
-                .into());
-            }
 
-            arguments.remove(0);
-        }
-        if identifier.inner.contains(
-            era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER,
-        ) && !arguments.is_empty()
-        {
-            return Err(ParserError::InvalidNumberOfArguments {
-                location,
-                identifier: identifier.inner,
-                expected: 0,
-                found: arguments.len(),
-            }
-            .into());
-        }
+        // The names of special functions may contain dialect-specific information.
+        // For example, in Era, functions prefixed with
+        // [`ZKSYNC_NEAR_CALL_ABI_PREFIX = "ZKSYNC_NEAR_CALL"`] are compiled to
+        // special low-level "near" call instructions, able to set up their own
+        // exception handlers.
+        // sanitize_function
+        P::sanitize_function(&identifier, &mut arguments, location, lexer)?;
 
         match crate::yul::parser::take_or_next(next, lexer)? {
             Token {
@@ -167,7 +153,7 @@ impl FunctionDefinition {
 
         let body = Block::parse(lexer, next)?;
 
-        let attributes = Self::get_llvm_attributes(&identifier)?;
+        let attributes = P::extract_attributes(&identifier, lexer)?;
 
         Ok(Self {
             location,
@@ -185,48 +171,9 @@ impl FunctionDefinition {
     pub fn get_missing_libraries(&self) -> HashSet<String> {
         self.body.get_missing_libraries()
     }
-
-    ///
-    /// Gets the list of LLVM attributes provided in the function name.
-    ///
-    pub fn get_llvm_attributes(
-        identifier: &Identifier,
-    ) -> Result<BTreeSet<era_compiler_llvm_context::Attribute>, Error> {
-        let mut valid_attributes = BTreeSet::new();
-
-        let llvm_begin = identifier.inner.find(Self::LLVM_ATTRIBUTE_PREFIX);
-        let llvm_end = identifier.inner.find(Self::LLVM_ATTRIBUTE_SUFFIX);
-        let attribute_string = if let (Some(llvm_begin), Some(llvm_end)) = (llvm_begin, llvm_end) {
-            if llvm_begin < llvm_end {
-                &identifier.inner[llvm_begin + Self::LLVM_ATTRIBUTE_PREFIX.len()..llvm_end]
-            } else {
-                return Ok(valid_attributes);
-            }
-        } else {
-            return Ok(valid_attributes);
-        };
-
-        let mut invalid_attributes = BTreeSet::new();
-        for value in attribute_string.split('_') {
-            match era_compiler_llvm_context::Attribute::try_from(value) {
-                Ok(attribute) => valid_attributes.insert(attribute),
-                Err(value) => invalid_attributes.insert(value),
-            };
-        }
-
-        if !invalid_attributes.is_empty() {
-            return Err(ParserError::InvalidAttributes {
-                location: identifier.location,
-                values: invalid_attributes,
-            }
-            .into());
-        }
-
-        Ok(valid_attributes)
-    }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -384,7 +331,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for FunctionDefinition
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for FunctionDefinition<LLVMDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -512,6 +459,7 @@ mod tests {
 
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
+    use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -539,7 +487,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -575,7 +523,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -611,7 +559,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -647,7 +595,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {
@@ -683,7 +631,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidNumberOfArguments {
@@ -720,7 +668,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidNumberOfArguments {
@@ -757,7 +705,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::ReservedIdentifier {
@@ -794,7 +742,7 @@ object "Test" {
         invalid_attributes.insert("UnknownAttribute".to_owned());
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidAttributes {
@@ -832,7 +780,7 @@ object "Test" {
         invalid_attributes.insert("UnknownAttribute2".to_owned());
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidAttributes {
