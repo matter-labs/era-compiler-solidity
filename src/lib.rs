@@ -9,16 +9,16 @@
 #![allow(clippy::should_implement_trait)]
 #![allow(clippy::result_large_err)]
 
-pub(crate) mod build_eravm;
-pub(crate) mod build_evm;
-pub(crate) mod r#const;
-pub(crate) mod evmla;
-pub(crate) mod message_type;
-pub(crate) mod missing_libraries;
-pub(crate) mod process;
-pub(crate) mod project;
-pub(crate) mod solc;
-pub(crate) mod yul;
+pub mod build_eravm;
+pub mod build_evm;
+pub mod r#const;
+pub mod evmla;
+pub mod message_type;
+pub mod missing_libraries;
+pub mod process;
+pub mod project;
+pub mod solc;
+pub mod yul;
 
 pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
@@ -55,8 +55,6 @@ pub use self::solc::standard_json::output::error::Error as SolcStandardJsonOutpu
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
-
-mod tests;
 
 use std::collections::BTreeSet;
 use std::path::PathBuf;

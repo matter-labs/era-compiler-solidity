@@ -180,12 +180,7 @@ projects, the CLI suffices.
 
 ## Unit testing
 
-For running unit tests, `zksolc` itself must also be available in `$PATH`, because it calls itself recursively to allow
-compiling each contract in a separate process. To successfully run unit tests:
-
-1. Run `cargo build --release`.
-2. Move the binary from `./target/release/zksolc` to a directory from `$PATH`, or add the target directory itself to `$PATH`.
-3. Run `cargo test`.
+Run `cargo test` from the repository root.
 
 ## CLI testing
 
