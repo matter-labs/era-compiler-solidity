@@ -22,6 +22,9 @@ pub enum Element {
 }
 
 impl Element {
+    ///
+    /// A shortcut constructor.
+    ///
     pub fn value(identifier: String) -> Self {
         Self::Value(identifier)
     }
