@@ -28,3 +28,8 @@ strip = true
 
 [env]
 LLVM_SYS_170_PREFIX = { value = "./target-llvm/target-final/", relative = true, force = false }
+
+[tools.clippy]
+warn = [
+    "missing_docs_in_private_items",
+]

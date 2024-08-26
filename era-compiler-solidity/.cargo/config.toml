@@ -1,4 +1,0 @@
-[tools.clippy]
-warn = [
-    "missing_docs_in_private_items",
-]
