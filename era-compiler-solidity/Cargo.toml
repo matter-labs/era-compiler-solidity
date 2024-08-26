@@ -1,11 +1,9 @@
 [package]
 name = "era-compiler-solidity"
 version = "1.5.2"
-authors = [
-    "Oleksandr Zarudnyi <a.zarudnyy@matterlabs.dev>",
-]
-license = "MIT OR Apache-2.0"
-edition = "2021"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
 description = "Solidity compiler for ZKsync"
 links = "compiler-rt-zksolc"
 

@@ -4,3 +4,11 @@ members = [
 ]
 
 resolver = "2"
+
+[workspace.package]
+authors = [
+    "Oleksandr Zarudnyi <a.zarudnyy@matterlabs.dev>",
+    "Igor Zhirkov <iz@matterlabs.dev>",
+]
+license = "MIT OR Apache-2.0"
+edition = "2021"
