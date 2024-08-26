@@ -541,7 +541,7 @@ dependencies = [
 
 [[package]]
 name = "era-compiler-solidity"
-version = "1.5.2"
+version = "1.5.3"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -574,7 +574,7 @@ dependencies = [
 [[package]]
 name = "era-solc-downloader"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=aba-solc-downloader-workspace#e7d36998ee84c8844b184c1def0daac726dd0e2d"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9deb616c1498dc690a6b0abd446af83779304c6f"
 dependencies = [
  "anyhow",
  "colored",
