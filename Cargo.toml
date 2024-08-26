@@ -3,7 +3,6 @@ members = [
     "era-compiler-solidity",
     "yul-syntax-tools",
 ]
-
 resolver = "2"
 
 [workspace.package]
@@ -13,4 +12,4 @@ authors = [
 ]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-version = "1.5.2"
+version = "1.5.3"

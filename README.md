@@ -88,7 +88,7 @@ We recommend at least 4 GB of RAM available for the build process.
 <details>
 <summary>3. Download `solc` compiler.</summary>
 
-   [Download a version](https://github.com/ethereum/solc-bin) of [the solc compiler](https://docs.soliditylang.org/en/v0.8.21/) compiler.
+   [Download the latest version](https://github.com/ethereum/solc-bin) of [the solc compiler](https://docs.soliditylang.org/en/latest/) compiler.
 
    > If it is not named exactly `solc` and in your `$PATH`, see the `--solc` option below.
 
@@ -178,18 +178,9 @@ The `solc` compiler must be available in `$PATH`, or its path must be passed exp
 For big projects it is more convenient to use the compiler via the Hardhat plugin. For single-file contracts, or small
 projects, the CLI suffices.
 
-## Unit testing
+## Unit and e2e/CLI testing
 
 Run `cargo test` from the repository root.
-
-## CLI testing
-
-For running command line interface tests, `zksolc` itself and `solc` must also be available in `$PATH`, because it calls itself recursively to allow compiling each contract in a separate processes. To successfully run CLI tests:
-
-1. Go to `cli-tests`.
-2. Make `npm i`.
-3. Add `solc` and `zksolc` to `$PATH`.
-4. Run `npm test`.
 
 ## Troubleshooting
 
