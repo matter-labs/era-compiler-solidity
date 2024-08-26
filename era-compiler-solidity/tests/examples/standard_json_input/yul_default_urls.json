@@ -1,0 +1,1 @@
+{"language":"Yul","sources":{"Test":{"urls":["tests/examples/Test.yul"]}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}
