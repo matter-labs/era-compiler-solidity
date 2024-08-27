@@ -1,11 +1,25 @@
-#![cfg(test)]
-
 use crate::common;
-use assert_cmd::prelude::*;
+use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::cargo::CommandCargoExt;
 use era_compiler_solidity::SolcCompiler;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
+
+mod asm;
+mod basic;
+mod bin;
+mod combined_json;
+mod eravm_assembly;
+mod libraries;
+mod llvm_ir;
+mod metadata_hash;
+mod missing_lib;
+mod optimization;
+mod output_dir;
+mod solc;
+mod standard_json;
+mod yul;
 
 /// The solidity contract name
 pub const TEST_SOLIDITY_CONTRACT_NAME: &'static str = "contract.sol";
@@ -18,9 +32,6 @@ pub const SOLIDITY_BIN_OUTPUT_NAME: &'static str = "C.zbin";
 
 /// The solidity assembly artifact output name
 pub const SOLIDITY_ASM_OUTPUT_NAME: &'static str = "C.zasm";
-
-/// The yul contract name
-pub const TEST_YUL_CONTRACT_NAME: &'static str = "contract.yul";
 
 /// The yul contract for testing
 pub const TEST_YUL_CONTRACT_PATH: &'static str = "tests/examples/contracts/yul/contract.yul";
