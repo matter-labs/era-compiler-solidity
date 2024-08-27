@@ -35,6 +35,12 @@ pub const TEST_LLVM_CONTRACT_PATH: &'static str = "tests/examples/contracts/llvm
 /// The standard JSON contract path
 pub const TEST_JSON_CONTRACT_PATH: &'static str = "tests/examples/contracts/json/contract.json";
 
+/// The binary bytecode sample path
+pub const TEST_BINARY_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.zbin";
+
+/// The hexadecimal string bytecode sample path
+pub const TEST_HEXADECIMAL_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.hex";
+
 /// Shared library path and address
 pub const LIBRARY_DEFAULT_PATH: &'static str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
