@@ -58,7 +58,6 @@ pub use self::solc::Compiler as SolcCompiler;
 
 use std::collections::BTreeSet;
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 
 /// The default error compatible with `solc` standard JSON output.
@@ -850,28 +849,45 @@ pub fn combined_json_evm(
 ///
 /// Runs the disassembler for EraVM bytecode file and prints the output to stdout.
 ///
-pub fn disassemble_eravm(path: &Path) -> anyhow::Result<()> {
+pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
     let target_machine = era_compiler_llvm_context::TargetMachine::new(
         era_compiler_common::Target::EraVM,
         &era_compiler_llvm_context::OptimizerSettings::cycles(),
         &[],
     )?;
 
-    let bytecode = match path.extension().and_then(|extension| extension.to_str()) {
-        Some("hex") => {
-            let string = std::fs::read_to_string(path)?;
-            let hexadecimal_string = string.trim().strip_prefix("0x").unwrap_or(string.as_str());
-            hex::decode(hexadecimal_string)?
-        }
-        Some("zbin") => std::fs::read(path)?,
-        Some(extension) => anyhow::bail!(
-            "Invalid file extension: {extension}. Supported extensions: *.hex, *.zbin"
-        ),
-        None => anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin"),
-    };
+    let disassemblies: Vec<(String, String)> = paths
+        .into_iter()
+        .map(|path| {
+            let pathbuf = PathBuf::from(path.as_str());
 
-    let disassembly =
-        era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
-    writeln!(std::io::stdout(), "{disassembly}")?;
+            let bytecode = match pathbuf.extension().and_then(|extension| extension.to_str()) {
+                Some("hex") => {
+                    let string = std::fs::read_to_string(pathbuf)?;
+                    let hexadecimal_string =
+                        string.trim().strip_prefix("0x").unwrap_or(string.as_str());
+                    hex::decode(hexadecimal_string)?
+                }
+                Some("zbin") => std::fs::read(pathbuf)?,
+                Some(extension) => anyhow::bail!(
+                    "Invalid file extension: {extension}. Supported extensions: *.hex, *.zbin"
+                ),
+                None => {
+                    anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin")
+                }
+            };
+
+            let disassembly =
+                era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
+            Ok((path, disassembly))
+        })
+        .collect::<anyhow::Result<Vec<(String, String)>>>()?;
+
+    for (path, disassembly) in disassemblies.into_iter() {
+        writeln!(
+            std::io::stdout(),
+            "File `{path}` disassembly:\n\n{disassembly}\n\n"
+        )?;
+    }
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }

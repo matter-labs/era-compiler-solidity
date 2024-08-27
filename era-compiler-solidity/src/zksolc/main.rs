@@ -181,8 +181,8 @@ fn main_inner(
                     arguments.threads,
                     debug_config,
                 )
-            } else if let Some(bytecode_path) = arguments.disassemble {
-                era_compiler_solidity::disassemble_eravm(bytecode_path.as_path())?;
+            } else if arguments.disassemble {
+                era_compiler_solidity::disassemble_eravm(arguments.inputs)?;
                 return Ok(());
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
@@ -314,7 +314,7 @@ fn main_inner(
                     arguments.threads,
                     debug_config,
                 )
-            } else if arguments.disassemble.is_some() {
+            } else if arguments.disassemble {
                 anyhow::bail!("The EVM target does not support disassembling yet.");
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
