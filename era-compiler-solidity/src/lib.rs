@@ -57,6 +57,8 @@ pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
 use std::collections::BTreeSet;
+use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 
 /// The default error compatible with `solc` standard JSON output.
@@ -842,5 +844,34 @@ pub fn combined_json_evm(
             serde_json::to_writer(std::io::stdout(), &combined_json)?;
         }
     }
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+}
+
+///
+/// Runs the disassembler for EraVM bytecode file and prints the output to stdout.
+///
+pub fn disassemble_eravm(path: &Path) -> anyhow::Result<()> {
+    let target_machine = era_compiler_llvm_context::TargetMachine::new(
+        era_compiler_common::Target::EraVM,
+        &era_compiler_llvm_context::OptimizerSettings::cycles(),
+        &[],
+    )?;
+
+    let bytecode = match path.extension().and_then(|extension| extension.to_str()) {
+        Some("hex") => {
+            let string = std::fs::read_to_string(path)?;
+            let hexadecimal_string = string.trim().strip_prefix("0x").unwrap_or(string.as_str());
+            hex::decode(hexadecimal_string)?
+        }
+        Some("zbin") => std::fs::read(path)?,
+        Some(extension) => anyhow::bail!(
+            "Invalid file extension: {extension}. Supported extensions: *.hex, *.zbin"
+        ),
+        None => anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin"),
+    };
+
+    let disassembly =
+        era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
+    writeln!(std::io::stdout(), "{disassembly}")?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }

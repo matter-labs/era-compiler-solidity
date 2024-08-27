@@ -527,7 +527,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#8809df8ecd952972a9cba078b5f368df5c153c58"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1801-add-disassembler-support-to-zksolczkvyper#515219e2a8fd83a06e03371548b76ccba5100f17"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1000,7 +1000,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#45cd0b68b94e8eee7348f261884a7490bd3af097"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1801-add-disassembler-support-to-zksolczkvyper#1a95e81245ba925095952d9d6c9ab0d752d2cc13"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1015,7 +1015,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#45cd0b68b94e8eee7348f261884a7490bd3af097"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1801-add-disassembler-support-to-zksolczkvyper#1a95e81245ba925095952d9d6c9ab0d752d2cc13"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1140,7 +1140,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#475d1dcfceeef4b14e37c8f36b5fde5a0c65e77e"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1801-add-disassembler-support-to-zksolczkvyper#7ceb9a8f6c6ecb2a3c0d79c80adc74ba3d4d0ce0"
 dependencies = [
  "anyhow",
  "cc",
