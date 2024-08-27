@@ -4,7 +4,7 @@
 
 ### Added
 
-- The EravM disassembler
+- The EraVM disassembler
 
 ## [1.5.3] - 2024-08-27
 
