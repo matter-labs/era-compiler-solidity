@@ -2,14 +2,10 @@
 //! The Solidity compiler unit tests for the optimizer.
 //!
 
-#![cfg(test)]
-
-pub mod common;
-
-use std::collections::BTreeMap;
-
+use crate::common;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
+use std::collections::BTreeMap;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]

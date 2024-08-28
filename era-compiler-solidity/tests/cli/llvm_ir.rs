@@ -1,17 +1,14 @@
-#![cfg(test)]
-
-pub mod cli_tests;
-pub mod common;
+use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
 fn run_zksolc_with_llvm_ir_by_default() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_LLVM_CONTRACT_PATH, "--llvm-ir"];
+    let args = &[cli::TEST_LLVM_CONTRACT_PATH, "--llvm-ir"];
     let invalid_args = &["--llvm-ir", "anyarg"];
 
-    let result = cli_tests::execute_zksolc(args)?;
-    let invalid_result = cli_tests::execute_zksolc(invalid_args)?;
+    let result = cli::execute_zksolc(args)?;
+    let invalid_result = cli::execute_zksolc(invalid_args)?;
 
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested. Use --asm and --bin flags.",
@@ -24,9 +21,9 @@ fn run_zksolc_with_llvm_ir_by_default() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_same_llvm_ir_flags() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_LLVM_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
+    let args = &[cli::TEST_LLVM_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "The argument '--llvm-ir' was provided more than once",
     ));
@@ -37,9 +34,9 @@ fn run_zksolc_with_same_llvm_ir_flags() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_wrong_input_format() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
+    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("expected top-level entity"));
@@ -51,13 +48,13 @@ fn run_zksolc_with_wrong_input_format() -> anyhow::Result<()> {
 fn run_zksolc_with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[
-        cli_tests::TEST_LLVM_CONTRACT_PATH,
+        cli::TEST_LLVM_CONTRACT_PATH,
         "--llvm-ir",
         "--combined-json",
         "anyarg",
     ];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -68,13 +65,9 @@ fn run_zksolc_with_incompatible_json_modes_combined_json() -> anyhow::Result<()>
 #[test]
 fn run_zksolc_with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[
-        cli_tests::TEST_YUL_CONTRACT_PATH,
-        "--llvm-ir",
-        "--standard-json",
-    ];
+    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--llvm-ir", "--standard-json"];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));

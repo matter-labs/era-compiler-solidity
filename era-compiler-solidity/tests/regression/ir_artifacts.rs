@@ -4,14 +4,10 @@
 //! The tests check if the IR artifacts are kept in the final output.
 //!
 
-#![cfg(test)]
-
-pub mod common;
-
-use std::collections::BTreeMap;
-
+use crate::common;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
+use std::collections::BTreeMap;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
