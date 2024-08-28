@@ -4,12 +4,12 @@
 
 #![cfg(test)]
 
-use yul_syntax_tools::util::printer::write_printer::WritePrinter;
-use yul_syntax_tools::yul::lexer::Lexer;
-use yul_syntax_tools::yul::parser::dialect::DefaultDialect;
-use yul_syntax_tools::yul::parser::statement::expression::Expression;
-use yul_syntax_tools::yul::parser::statement::Statement;
-use yul_syntax_tools::yul::visitor::Visitor;
+use era_yul::util::printer::write_printer::WritePrinter;
+use era_yul::yul::lexer::Lexer;
+use era_yul::yul::parser::dialect::DefaultDialect;
+use era_yul::yul::parser::statement::expression::Expression;
+use era_yul::yul::parser::statement::Statement;
+use era_yul::yul::visitor::Visitor;
 
 fn print_expression(input: &str) -> String {
     let mut lexer = Lexer::new(input.to_string());
