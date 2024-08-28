@@ -6,23 +6,23 @@ use anyhow::Result;
 pub mod write_printer;
 
 ///
-/// Interface to YUL pretty printer
+/// Interface to YUL pretty printer.
 ///
 pub trait IPrinter {
     ///
-    /// Indent if in the beginning of line, and print string,
+    /// Indent if in the beginning of line and print string.
     ///
     fn print(&mut self, s: &str) -> Result<()>;
     ///
-    /// Like [`print`], but adds a line feed
+    /// Like [`print`], but adds a line feed.
     ///
     fn println(&mut self, s: &str) -> Result<()>;
     ///
-    /// Increase current indent
+    /// Increase current indent.
     ///
     fn increase_indent(&mut self) -> Result<()>;
     ///
-    /// Decrease current indent
+    /// Decrease current indent.
     ///
     fn decrease_indent(&mut self) -> Result<()>;
 }

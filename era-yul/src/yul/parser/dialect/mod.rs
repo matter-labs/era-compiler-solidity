@@ -14,8 +14,11 @@ use crate::yul::lexer::Lexer;
 
 use super::identifier::Identifier;
 
+///
 /// Describes a pragmatic, target-specific part of the parser.
+///
 pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clone + Debug {
+
     /// Type of function attributes parsed from their identifiers.
     type FunctionAttribute: for<'de> Deserialize<'de>
         + Debug
@@ -25,14 +28,18 @@ pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clon
         + Serialize
         + Ord;
 
+    ///
     /// Extractor for the function attributes.
+    ///
     fn extract_attributes(
         identifier: &Identifier,
         lexer: &mut Lexer,
     ) -> Result<BTreeSet<Self::FunctionAttribute>, Error>;
 
+    ///
     /// Check the dialect-specific function invariants and potentially modify
     /// their arguments list.
+    ///
     fn sanitize_function(
         identifier: &Identifier,
         arguments: &mut Vec<Identifier>,
@@ -41,7 +48,9 @@ pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clon
     ) -> Result<(), Error>;
 }
 
+///
 /// The root dialect without target-dependent features.
+///
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Eq, PartialEq)]
 pub struct DefaultDialect {}
 

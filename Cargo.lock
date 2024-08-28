@@ -585,6 +585,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "era-yul"
+version = "1.5.3"
+dependencies = [
+ "anyhow",
+ "regex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "errno"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2785,16 +2795,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
-]
-
-[[package]]
-name = "yul-syntax-tools"
-version = "1.5.3"
-dependencies = [
- "anyhow",
- "regex",
- "serde",
- "thiserror",
 ]
 
 [[package]]
