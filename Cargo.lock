@@ -548,6 +548,7 @@ dependencies = [
  "era-compiler-common",
  "era-compiler-llvm-context",
  "era-solc-downloader",
+ "era-yul",
  "hex",
  "inkwell",
  "mimalloc",

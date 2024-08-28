@@ -4,9 +4,9 @@
 
 use std::collections::BTreeSet;
 
-use crate::yul::error::Error as YulError;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::identifier::Identifier;
+use era_yul::yul::error::Error as YulError;
+use era_yul::yul::parser::error::Error as ParserError;
+use era_yul::yul::parser::identifier::Identifier;
 
 /// The LLVM attribute section prefix.
 pub const LLVM_ATTRIBUTE_PREFIX: &str = "$llvm_";
@@ -57,10 +57,10 @@ pub(crate) fn get_llvm_attributes(
 mod tests {
     use std::collections::BTreeSet;
 
-    use crate::yul::error::Error as YulError;
-    use crate::yul::lexer::token::location::Location;
-    use crate::yul::parser::error::Error as ParserError;
-    use crate::yul::parser::identifier::Identifier;
+    use era_yul::yul::error::Error as YulError;
+    use era_yul::yul::lexer::token::location::Location;
+    use era_yul::yul::parser::error::Error as ParserError;
+    use era_yul::yul::parser::identifier::Identifier;
 
     use super::get_llvm_attributes;
 

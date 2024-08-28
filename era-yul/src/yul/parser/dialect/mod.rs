@@ -18,7 +18,6 @@ use super::identifier::Identifier;
 /// Describes a pragmatic, target-specific part of the parser.
 ///
 pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clone + Debug {
-
     /// Type of function attributes parsed from their identifiers.
     type FunctionAttribute: for<'de> Deserialize<'de>
         + Debug

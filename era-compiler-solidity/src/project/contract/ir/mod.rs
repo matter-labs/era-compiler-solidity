@@ -12,7 +12,7 @@ use std::collections::HashSet;
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::statement::object::Object;
+use era_yul::yul::parser::statement::object::Object;
 
 use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;

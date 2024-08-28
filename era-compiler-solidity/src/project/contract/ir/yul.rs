@@ -5,7 +5,8 @@
 use std::collections::HashSet;
 
 use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::statement::object::Object;
+use crate::yul::parser::wrapper::Wrap as _;
+use era_yul::yul::parser::statement::object::Object;
 
 ///
 /// The contract Yul source code.
@@ -47,14 +48,14 @@ where
         &mut self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.declare(context)
+        self.object.clone().wrap().declare(context)
     }
 
     fn into_llvm(
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.into_llvm(context)
+        self.object.wrap().into_llvm(context)
     }
 }
 
@@ -66,13 +67,13 @@ where
         &mut self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.declare(context)
+        self.object.clone().wrap().declare(context)
     }
 
     fn into_llvm(
         self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.into_llvm(context)
+        self.object.wrap().into_llvm(context)
     }
 }

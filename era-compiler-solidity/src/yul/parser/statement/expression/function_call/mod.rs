@@ -2,146 +2,48 @@
 //! The function call subexpression.
 //!
 
-pub mod name;
-pub mod verbatim;
-
-use std::collections::HashSet;
-
+use era_compiler_llvm_context::EraVMContext;
 use era_compiler_llvm_context::IContext;
+use era_yul::yul::parser::statement::expression::function_call::name::Name;
 use inkwell::values::BasicValue;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
-use crate::yul::lexer::token::lexeme::symbol::Symbol;
-use crate::yul::lexer::token::lexeme::Lexeme;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::statement::expression::literal::Literal;
-use crate::yul::parser::statement::expression::Expression;
+use crate::create_wrapper;
+use crate::yul::parser::wrapper::Wrap as _;
 
-use self::name::Name;
+use super::WrappedExpression;
 
-///
-/// The Yul function call subexpression.
-///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct FunctionCall {
-    /// The location.
-    pub location: Location,
-    /// The function name.
-    pub name: Name,
-    /// The function arguments expression list.
-    pub arguments: Vec<Expression>,
-}
+pub mod verbatim;
 
-impl FunctionCall {
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
+create_wrapper!(
+    era_yul::yul::parser::statement::expression::function_call::FunctionCall,
+    WrappedFunctionCall
+);
 
-        let (location, name) = match token {
-            Token {
-                lexeme: Lexeme::Identifier(identifier),
-                location,
-                ..
-            } => (location, Name::from(identifier.inner.as_str())),
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["{identifier}"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        };
-
-        let mut arguments = Vec::new();
-        loop {
-            let argument = match lexer.next()? {
-                Token {
-                    lexeme: Lexeme::Symbol(Symbol::ParenthesisRight),
-                    ..
-                } => break,
-                token => Expression::parse(lexer, Some(token))?,
-            };
-
-            arguments.push(argument);
-
-            match lexer.peek()? {
-                Token {
-                    lexeme: Lexeme::Symbol(Symbol::Comma),
-                    ..
-                } => {
-                    lexer.next()?;
-                    continue;
-                }
-                Token {
-                    lexeme: Lexeme::Symbol(Symbol::ParenthesisRight),
-                    ..
-                } => {
-                    lexer.next()?;
-                    break;
-                }
-                _ => break,
-            }
-        }
-
-        Ok(Self {
-            location,
-            name,
-            arguments,
-        })
-    }
-
-    ///
-    /// Get the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = HashSet::new();
-
-        if let Name::LinkerSymbol = self.name {
-            let _argument = self.arguments.first().expect("Always exists");
-            if let Expression::Literal(Literal {
-                inner: LexicalLiteral::String(library_path),
-                ..
-            }) = self.arguments.first().expect("Always exists")
-            {
-                libraries.insert(library_path.to_string());
-            }
-            return libraries;
-        }
-
-        for argument in self.arguments.iter() {
-            libraries.extend(argument.get_missing_libraries());
-        }
-        libraries
-    }
-
+impl WrappedFunctionCall {
     ///
     /// Converts the function call into an LLVM value.
     ///
     pub fn into_llvm<'ctx, D>(
         mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
         D: era_compiler_llvm_context::Dependency,
     {
-        let location = self.location;
+        let location = self.0.location;
 
-        match self.name {
+        match self.0.name {
             Name::UserDefined(name)
                 if name.starts_with(
                     era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX,
                 ) && context.are_eravm_extensions_enabled() =>
             {
-                let mut values = Vec::with_capacity(self.arguments.len());
-                for argument in self.arguments.into_iter().rev() {
-                    let value = argument.into_llvm(context)?.expect("Always exists").value;
+                let mut values = Vec::with_capacity(self.0.arguments.len());
+                for argument in self.0.arguments.into_iter().rev() {
+                    let value = WrappedExpression(argument)
+                        .into_llvm(context)?
+                        .expect("Always exists")
+                        .value;
                     values.push(value);
                 }
                 values.reverse();
@@ -200,9 +102,12 @@ impl FunctionCall {
                 }
             }
             Name::UserDefined(name) => {
-                let mut values = Vec::with_capacity(self.arguments.len());
-                for argument in self.arguments.into_iter().rev() {
-                    let value = argument.into_llvm(context)?.expect("Always exists").value;
+                let mut values = Vec::with_capacity(self.0.arguments.len());
+                for argument in self.0.arguments.into_iter().rev() {
+                    let value = WrappedExpression(argument)
+                        .into_llvm(context)?
+                        .expect("Always exists")
+                        .value;
                     values.push(value);
                 }
                 values.reverse();
@@ -1016,7 +921,7 @@ impl FunctionCall {
             }
             Name::SelfBalance => {
                 let address = context
-                    .build_call(context.intrinsics().address, &[], "self_balance_address")?
+                    .build_call(context.intrinsics().address, &[], "self.0_balance_address")?
                     .expect("Always exists")
                     .into_int_value();
 
@@ -1086,7 +991,7 @@ impl FunctionCall {
             }
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
+                anyhow::bail!("{location} The `SELF.0DESTRUCT` instruction is not supported")
             }
 
             Name::ZkToL1 => {
@@ -1518,14 +1423,20 @@ impl FunctionCall {
     ///
     fn pop_arguments_llvm<'ctx, D, const N: usize>(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
         D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N).rev() {
-            arguments.push(expression.into_llvm(context)?.expect("Always exists").value);
+        for expression in self.0.arguments.drain(0..N).rev() {
+            arguments.push(
+                expression
+                    .wrap()
+                    .into_llvm(context)?
+                    .expect("Always exists")
+                    .value,
+            );
         }
         arguments.reverse();
 
@@ -1537,14 +1448,19 @@ impl FunctionCall {
     ///
     fn pop_arguments<'ctx, D, const N: usize>(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
         D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N).rev() {
-            arguments.push(expression.into_llvm(context)?.expect("Always exists"));
+        for expression in self.0.arguments.drain(0..N).rev() {
+            arguments.push(
+                expression
+                    .wrap()
+                    .into_llvm(context)?
+                    .expect("Always exists"),
+            );
         }
         arguments.reverse();
 
@@ -1563,13 +1479,14 @@ impl FunctionCall {
     where
         D: era_compiler_llvm_context::Dependency,
     {
-        let location = self.location;
+        let location = self.0.location;
 
-        match self.name {
+        match self.0.name {
             Name::UserDefined(name) => {
-                let mut values = Vec::with_capacity(self.arguments.len());
-                for argument in self.arguments.into_iter().rev() {
+                let mut values = Vec::with_capacity(self.0.arguments.len());
+                for argument in self.0.arguments.into_iter().rev() {
                     let value = argument
+                        .wrap()
                         .into_llvm_evm(context)?
                         .expect("Always exists")
                         .value;
@@ -2220,7 +2137,7 @@ impl FunctionCall {
             Name::Pc => anyhow::bail!("{location} The `PC` instruction is not supported"),
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm_evm::<D, 1>(context)?;
-                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
+                anyhow::bail!("{location} The `SELF.0DESTRUCT` instruction is not supported")
             }
 
             _ => Ok(None),
@@ -2240,9 +2157,10 @@ impl FunctionCall {
         D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N).rev() {
+        for expression in self.0.arguments.drain(0..N).rev() {
             arguments.push(
                 expression
+                    .wrap()
                     .into_llvm_evm(context)?
                     .expect("Always exists")
                     .value,
@@ -2266,8 +2184,13 @@ impl FunctionCall {
         D: era_compiler_llvm_context::Dependency,
     {
         let mut arguments = Vec::with_capacity(N);
-        for expression in self.arguments.drain(0..N).rev() {
-            arguments.push(expression.into_llvm_evm(context)?.expect("Always exists"));
+        for expression in self.0.arguments.drain(0..N).rev() {
+            arguments.push(
+                expression
+                    .wrap()
+                    .into_llvm_evm(context)?
+                    .expect("Always exists"),
+            );
         }
         arguments.reverse();
 

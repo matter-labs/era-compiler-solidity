@@ -16,6 +16,7 @@ use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
+use crate::yul::parser::wrapper::Wrap as _;
 
 use self::factory_dependency::FactoryDependency;
 use self::ir::IR;
@@ -247,7 +248,7 @@ impl Contract {
                     (era_compiler_llvm_context::CodeType::Runtime, runtime_code),
                 ]
                 .into_iter()
-                .map(|(code_type, mut code)| {
+                .map(|(code_type, code)| {
                     let llvm = inkwell::context::Context::create();
                     let module =
                         llvm.create_module(format!("{}.{}", self.path, code_type).as_str());
@@ -260,10 +261,10 @@ impl Contract {
                         Some(dependency_data.clone()),
                         debug_config.clone(),
                     );
-                    code.declare(&mut context).map_err(|error| {
+                    code.clone().wrap().declare(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator declaration pass: {error}")
                     })?;
-                    code.into_llvm(&mut context).map_err(|error| {
+                    code.wrap().into_llvm(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
                     })?;
                     let build = context.build(self.path.as_str(), metadata_hash)?;

@@ -10,11 +10,11 @@ use std::fmt::Debug;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::Lexer;
+use era_yul::yul::error::Error;
+use era_yul::yul::lexer::token::location::Location;
+use era_yul::yul::lexer::Lexer;
 
-use super::identifier::Identifier;
+use era_yul::yul::parser::identifier::Identifier;
 
 /// Describes a pragmatic, target-specific part of the parser.
 pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clone + Debug {

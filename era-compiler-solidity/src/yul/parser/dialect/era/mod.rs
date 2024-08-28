@@ -6,15 +6,15 @@ pub mod attributes;
 
 use std::collections::BTreeSet;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::identifier::Identifier;
+use era_yul::yul::error::Error;
+use era_yul::yul::lexer::token::location::Location;
+use era_yul::yul::lexer::Lexer;
+use era_yul::yul::parser::error::Error as ParserError;
+use era_yul::yul::parser::identifier::Identifier;
 
 use self::attributes::get_llvm_attributes;
 
-use super::Dialect;
+use era_yul::yul::parser::dialect::Dialect;
 
 /// Era-specific part of the parser.
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Eq, Clone, Debug)]
@@ -26,7 +26,7 @@ impl Dialect for EraDialect {
     fn extract_attributes(
         identifier: &Identifier,
         _: &mut Lexer,
-    ) -> Result<BTreeSet<Self::FunctionAttribute>, crate::yul::error::Error> {
+    ) -> Result<BTreeSet<Self::FunctionAttribute>, era_yul::yul::error::Error> {
         get_llvm_attributes(identifier)
     }
 
