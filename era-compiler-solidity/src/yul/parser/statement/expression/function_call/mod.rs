@@ -921,7 +921,7 @@ impl WrappedFunctionCall {
             }
             Name::SelfBalance => {
                 let address = context
-                    .build_call(context.intrinsics().address, &[], "self.0_balance_address")?
+                    .build_call(context.intrinsics().address, &[], "self_balance_address")?
                     .expect("Always exists")
                     .into_int_value();
 
@@ -991,7 +991,7 @@ impl WrappedFunctionCall {
             }
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm::<D, 1>(context)?;
-                anyhow::bail!("{location} The `SELF.0DESTRUCT` instruction is not supported")
+                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
             }
 
             Name::ZkToL1 => {
