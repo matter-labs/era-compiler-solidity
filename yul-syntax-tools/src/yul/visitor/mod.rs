@@ -2,8 +2,6 @@
 //! Implementation of a visitor pattern for YUL syntax tree.
 //!
 
-pub mod statements;
-
 use std::collections::BTreeSet;
 
 use crate::yul::parser::statement::assignment::Assignment;
@@ -21,6 +19,8 @@ use crate::yul::parser::statement::switch::Switch;
 use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 use crate::yul::parser::statement::Statement;
 
+use super::parser::dialect::Dialect;
+
 ///
 /// Utility conventional name of a function corresponding to the `code` block of
 /// an object.
@@ -31,7 +31,10 @@ pub const IMPLICIT_CODE_FUNCTION_NAME: &str = "BODY";
 /// Create a virtual definition of a function corresponding to the `code` block
 /// of an object.
 ///
-pub fn implicit_code_function(code: &Code) -> FunctionDefinition {
+pub fn implicit_code_function<P>(code: &Code<P>) -> FunctionDefinition<P>
+where
+    P: Dialect,
+{
     FunctionDefinition {
         location: code.location,
         identifier: IMPLICIT_CODE_FUNCTION_NAME.to_string(),
@@ -46,25 +49,28 @@ pub fn implicit_code_function(code: &Code) -> FunctionDefinition {
 ///
 /// Visitor for YUL syntax tree.
 ///
-pub trait Visitor {
+pub trait Visitor<P>
+where
+    P: Dialect,
+{
     ///
     /// Visit `switch` statement in YUL syntax tree.
     ///
-    fn visit_switch(&mut self, switch: &Switch) {
+    fn visit_switch(&mut self, switch: &Switch<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
     /// Visit YUL object in YUL syntax tree.
     ///
-    fn visit_object(&mut self, object: &Object) {
+    fn visit_object(&mut self, object: &Object<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
     /// Visit `for` statement in YUL syntax tree.
     ///
-    fn visit_for_loop(&mut self, for_loop: &ForLoop) {
+    fn visit_for_loop(&mut self, for_loop: &ForLoop<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
@@ -78,7 +84,7 @@ pub trait Visitor {
     ///
     /// Visit a function definition in YUL syntax tree.
     ///
-    fn visit_function_definition(&mut self, function_definition: &FunctionDefinition) {
+    fn visit_function_definition(&mut self, function_definition: &FunctionDefinition<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
@@ -99,7 +105,7 @@ pub trait Visitor {
     ///
     /// Visit an `if` statement in YUL syntax tree.
     ///
-    fn visit_if_conditional(&mut self, if_conditional: &IfConditional) {
+    fn visit_if_conditional(&mut self, if_conditional: &IfConditional<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
@@ -127,21 +133,21 @@ pub trait Visitor {
     ///
     /// Visit an arbitrary statement in YUL syntax tree.
     ///
-    fn visit_statement(&mut self, stmt: &Statement) {
+    fn visit_statement(&mut self, stmt: &Statement<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
     /// Visit a block of statements in YUL syntax tree.
     ///
-    fn visit_block(&mut self, block: &Block) {
+    fn visit_block(&mut self, block: &Block<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
     /// Visit a `code` block of an object in YUL syntax tree.
     ///
-    fn visit_code(&mut self, code: &Code) {
+    fn visit_code(&mut self, code: &Code<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 

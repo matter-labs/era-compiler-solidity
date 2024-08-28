@@ -20,163 +20,174 @@ use crate::yul::parser::statement::variable_declaration::VariableDeclaration;
 use crate::yul::parser::statement::Statement;
 use crate::yul::visitor::Visitor;
 
-impl<T> Visitor for T
+use super::parser::dialect::Dialect;
+
+impl<T, P> Visitor<P> for T
 where
     T: IPrinter,
+    P: Dialect,
 {
-    fn visit_object(&mut self, obj: &Object) {
+    fn visit_object(&mut self, obj: &Object<P>) {
         let identifier = obj.identifier.as_str();
-        self.print(format!("object \"{identifier}\" {").as_str);
-        self.increase_indent();
+        self.println(format!("object \"{identifier}\" {{").as_str())
+            .unwrap();
+        self.increase_indent().unwrap();
         self.visit_code(&obj.code);
-        self.println("");
+        self.println("").unwrap();
         if let Some(inner) = &obj.inner_object {
             self.visit_object(inner)
         }
-        self.println("}");
-        self.decrease_indent();
+        self.println("}").unwrap();
+        self.decrease_indent().unwrap();
     }
 
-    fn visit_code(&mut self, code: &Code) {
-        self.print("code ");
+    fn visit_code(&mut self, code: &Code<P>) {
+        self.print("code ").unwrap();
         self.visit_block(&code.block);
     }
 
-    fn visit_switch(&mut self, s: &Switch) {
-        self.print("switch ");
-        self.visit_expression(&s.expression);
-        self.println("");
+    fn visit_switch(&mut self, s: &Switch<P>) {
+        self.print("switch ").unwrap();
+        <T as Visitor<P>>::visit_expression(self, &s.expression);
+        self.println("").unwrap();
         for clause in s.cases.iter() {
-            self.print("case ");
-            self.visit_literal(&clause.literal);
-            self.print("   ");
+            self.print("case ").unwrap();
+            <T as Visitor<P>>::visit_literal(self, &clause.literal);
+            self.print("   ").unwrap();
             self.visit_block(&clause.block);
-            self.println("");
+            self.println("").unwrap();
         }
         if let Some(block) = &s.default {
-            self.print("default ");
+            self.print("default ").unwrap();
             self.visit_block(block);
-            self.println("");
+            self.println("").unwrap();
         }
     }
 
-    fn visit_for_loop(&mut self, def: &ForLoop) {
-        self.print("for ");
+    fn visit_for_loop(&mut self, def: &ForLoop<P>) {
+        self.print("for ").unwrap();
         self.visit_block(&def.initializer);
-        self.visit_expression(&def.condition);
+        <T as Visitor<P>>::visit_expression(self, &def.condition);
         self.visit_block(&def.finalizer);
-        self.println("");
+        self.println("").unwrap();
         self.visit_block(&def.body);
-        self.println("");
+        self.println("").unwrap();
     }
 
     fn visit_variable_declaration(&mut self, def: &VariableDeclaration) {
-        self.print("let ");
-        print_list_comma_separated(def.bindings.iter().map(|b| b.inner.as_str()), self);
+        self.print("let ").unwrap();
+        print_list_comma_separated(def.bindings.iter().map(|b| b.inner.as_str()), self).unwrap();
         if let Some(expr) = &def.expression {
-            self.print(" := ");
-            self.visit_expression(expr);
+            self.print(" := ").unwrap();
+            <T as Visitor<P>>::visit_expression(self, expr);
         }
     }
 
-    fn visit_function_definition(&mut self, def: &FunctionDefinition) {
+    fn visit_function_definition(&mut self, def: &FunctionDefinition<P>) {
         let identifier: &str = def.identifier.as_str();
-        self.print(format!("function {identifier}(").as_str());
+        self.print(format!("function {identifier}(").as_str())
+            .unwrap();
         let arguments = def.arguments.iter().map(|a| a.inner.as_str());
-        print_list_comma_separated(arguments, self);
-        self.print(") -> ");
+        print_list_comma_separated(arguments, self).unwrap();
+        self.print(") -> ").unwrap();
         let result_identifiers = def.result.iter().map(|r| r.inner.as_str());
-        print_list_comma_separated(result_identifiers, self);
-        self.print(" ");
+        print_list_comma_separated(result_identifiers, self).unwrap();
+        self.print(" ").unwrap();
         self.visit_block(&def.body);
-        self.println("");
+        self.println("").unwrap();
     }
 
     fn visit_name(&mut self, name: &Name) {
-        self.print(&name_identifier(name));
+        self.print(&name_identifier(name)).unwrap();
     }
 
     fn visit_function_call(&mut self, call: &FunctionCall) {
-        self.visit_name(&call.name);
-        self.print("(");
+        <T as Visitor<P>>::visit_name(self, &call.name);
+        self.print("(").unwrap();
         for (idx, a) in call.arguments.iter().enumerate() {
             if idx > 0 {
-                self.print(", ")
+                self.print(", ").unwrap();
             }
-            self.visit_expression(a);
+            <T as Visitor<P>>::visit_expression(self, a);
         }
-        self.print(")");
+        self.print(")").unwrap();
     }
 
-    fn visit_if_conditional(&mut self, if_conditional: &IfConditional) {
-        self.print("if ");
-        self.visit_expression(&if_conditional.condition);
-        self.print(" ");
+    fn visit_if_conditional(&mut self, if_conditional: &IfConditional<P>) {
+        self.print("if ").unwrap();
+        <T as Visitor<P>>::visit_expression(self, &if_conditional.condition);
+        self.print(" ").unwrap();
         self.visit_block(&if_conditional.block);
-        self.println("");
+        self.println("").unwrap();
     }
 
     fn visit_literal(&mut self, lit: &Literal) {
-        let inner: &crate::yul::lexer::token::lexeme::literal::Literal = &lit.inner;
-        self.print(format!("{inner}").as_str());
+        let inner = &lit.inner;
+        if let super::lexer::token::lexeme::literal::Literal::String(_) = inner {
+            self.print(format!("\"{inner}\"").as_str()).unwrap();
+        } else {
+            self.print(format!("{inner}").as_str()).unwrap();
+        }
     }
 
     fn visit_expression(&mut self, expr: &Expression) {
         match expr {
-            Expression::FunctionCall(fc) => self.visit_function_call(fc),
-            Expression::Identifier(i) => self.print(i.inner.as_str()),
-            Expression::Literal(l) => self.visit_literal(l),
+            Expression::FunctionCall(fc) => <T as Visitor<P>>::visit_function_call(self, fc),
+            Expression::Identifier(i) => self.print(i.inner.as_str()).unwrap(),
+            Expression::Literal(l) => <T as Visitor<P>>::visit_literal(self, l),
         }
     }
     fn visit_assignment(&mut self, assignment: &Assignment) {
         for (idx, a) in assignment.bindings.iter().enumerate() {
             if idx > 0 {
-                self.print(", ")
+                self.print(", ").unwrap()
             }
-            self.print(a.inner.as_str());
+            self.print(a.inner.as_str()).unwrap();
         }
-        self.print(" := ");
-        self.visit_expression(&assignment.initializer);
+        self.print(" := ").unwrap();
+        <T as Visitor<P>>::visit_expression(self, &assignment.initializer);
     }
 
-    fn visit_statement(&mut self, stmt: &Statement) {
+    fn visit_statement(&mut self, stmt: &Statement<P>) {
         match stmt {
             Statement::Object(o) => self.visit_object(o),
             Statement::Code(c) => self.visit_code(c),
             Statement::Block(b) => self.visit_block(b),
-            Statement::Expression(e) => self.visit_expression(e),
+            Statement::Expression(e) => <T as Visitor<P>>::visit_expression(self, e),
             Statement::FunctionDefinition(fd) => self.visit_function_definition(fd),
-            Statement::VariableDeclaration(vd) => self.visit_variable_declaration(vd),
-            Statement::Assignment(a) => self.visit_assignment(a),
-            Statement::IfConditional(i) => self.visit_if_conditional(i),
-            Statement::Switch(s) => self.visit_switch(s),
-            Statement::ForLoop(f) => self.visit_for_loop(f),
-            Statement::Continue(_) => self.print("continue"),
-            Statement::Break(_) => self.print("break"),
-            Statement::Leave(_) => self.print("leave"),
+            Statement::VariableDeclaration(vd) => {
+                <T as Visitor<P>>::visit_variable_declaration(self, vd)
+            }
+            Statement::Assignment(a) => <T as Visitor<P>>::visit_assignment(self, a),
+            Statement::IfConditional(i) => <T as Visitor<P>>::visit_if_conditional(self, i),
+            Statement::Switch(s) => <T as Visitor<P>>::visit_switch(self, s),
+            Statement::ForLoop(f) => <T as Visitor<P>>::visit_for_loop(self, f),
+            Statement::Continue(_) => self.print("continue").unwrap(),
+            Statement::Break(_) => self.print("break").unwrap(),
+            Statement::Leave(_) => self.print("leave").unwrap(),
         }
     }
 
-    fn visit_block(&mut self, block: &Block) {
+    fn visit_block(&mut self, block: &Block<P>) {
         if block.statements.is_empty() {
-            self.print(" { }");
+            self.print(" { }").unwrap();
             return;
         }
 
         if block.statements.len() == 1 {
-            self.print("{ ");
+            self.print("{ ").unwrap();
             self.visit_statement(block.statements.first().unwrap());
-            self.print(" }");
+            self.print(" }").unwrap();
             return;
         }
-        self.println(" {");
-        self.increase_indent();
+        self.println(" {").unwrap();
+        self.increase_indent().unwrap();
         for s in block.statements.iter() {
             self.visit_statement(s);
-            self.println("");
+            self.println("").unwrap();
         }
-        self.println(" }");
-        self.decrease_indent();
+        self.println(" }").unwrap();
+        self.decrease_indent().unwrap();
     }
 }
 
