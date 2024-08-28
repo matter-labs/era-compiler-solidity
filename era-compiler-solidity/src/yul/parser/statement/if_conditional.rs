@@ -10,7 +10,7 @@ use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
-use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::statement::block::Block;
 use crate::yul::parser::statement::expression::Expression;
@@ -61,7 +61,7 @@ impl<P: Dialect> IfConditional<P> {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional<LLVMDialect>
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional<EraDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -98,7 +98,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional<LLVMDialect>
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional<EraDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {

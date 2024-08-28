@@ -16,11 +16,11 @@ use self::attributes::get_llvm_attributes;
 
 use super::Dialect;
 
-/// LLVM-specific part of the parser.
+/// Era-specific part of the parser.
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Eq, Clone, Debug)]
-pub struct LLVMDialect {}
+pub struct EraDialect {}
 
-impl Dialect for LLVMDialect {
+impl Dialect for EraDialect {
     type FunctionAttribute = era_compiler_llvm_context::Attribute;
 
     fn extract_attributes(

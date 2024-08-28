@@ -2,7 +2,7 @@
 //! Describes a pragmatic, target-specific part of the parser.
 //!
 
-pub mod llvm;
+pub mod era;
 
 use std::collections::BTreeSet;
 use std::fmt::Debug;

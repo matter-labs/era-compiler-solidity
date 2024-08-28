@@ -10,7 +10,7 @@ use crate::yul::lexer::token::lexeme::Lexeme;
 use crate::yul::lexer::token::location::Location;
 use crate::yul::lexer::token::Token;
 use crate::yul::lexer::Lexer;
-use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::dialect::Dialect;
 use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::block::Block;
@@ -69,7 +69,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code<LLVMDialect>
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code<EraDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -83,7 +83,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code<LLVMDialect>
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code<EraDialect>
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -101,7 +101,7 @@ where
 mod tests {
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
-    use crate::yul::parser::dialect::llvm::LLVMDialect;
+    use crate::yul::parser::dialect::era::EraDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
 
@@ -125,7 +125,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
+        let result = Object::<EraDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidToken {

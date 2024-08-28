@@ -4,7 +4,7 @@
 
 use std::collections::HashSet;
 
-use crate::yul::parser::dialect::llvm::LLVMDialect;
+use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::statement::object::Object;
 
 ///
@@ -13,21 +13,21 @@ use crate::yul::parser::statement::object::Object;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: Object<LLVMDialect>,
+    pub object: Object<EraDialect>,
 }
 
 impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(object: Object<LLVMDialect>) -> Self {
+    pub fn new(object: Object<EraDialect>) -> Self {
         Self { object }
     }
 
     ///
     /// Extracts the runtime code from the Yul object.
     ///
-    pub fn take_runtime_code(&mut self) -> Option<Object<LLVMDialect>> {
+    pub fn take_runtime_code(&mut self) -> Option<Object<EraDialect>> {
         self.object.inner_object.take().map(|object| *object)
     }
 
