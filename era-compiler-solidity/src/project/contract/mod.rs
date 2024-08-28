@@ -245,7 +245,10 @@ impl Contract {
                     era_compiler_llvm_context::EVMBuild,
                 >; 2] = [
                     (era_compiler_llvm_context::CodeType::Deploy, deploy_code),
-                    (era_compiler_llvm_context::CodeType::Runtime, runtime_code.wrap()),
+                    (
+                        era_compiler_llvm_context::CodeType::Runtime,
+                        runtime_code.wrap(),
+                    ),
                 ]
                 .into_iter()
                 .map(|(code_type, mut code)| {

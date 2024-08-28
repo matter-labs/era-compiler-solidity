@@ -12,7 +12,6 @@ create_wrapper!(
     WrappedObject
 );
 
-
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedObject
 where
     D: era_compiler_llvm_context::Dependency,
