@@ -39,7 +39,10 @@ where
     pub factory_dependencies: HashSet<String>,
 }
 
-impl<P: Dialect> Object<P> {
+impl<P> Object<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///

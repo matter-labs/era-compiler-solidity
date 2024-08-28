@@ -31,7 +31,10 @@ where
     pub statements: Vec<Statement<P>>,
 }
 
-impl<P: Dialect> Block<P> {
+impl<P> Block<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///

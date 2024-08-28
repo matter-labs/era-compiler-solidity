@@ -29,7 +29,10 @@ where
     pub block: Block<P>,
 }
 
-impl<P: Dialect> IfConditional<P> {
+impl<P> IfConditional<P>
+where
+    P: Dialect,
+{
     ///
     /// The element parser.
     ///

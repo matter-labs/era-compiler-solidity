@@ -24,10 +24,10 @@ use std::time::Duration;
 static DOWNLOAD_SOLC: Once = Once::new();
 
 /// Download directory for `solc` binaries
-pub const SOLC_DOWNLOAD_DIR: &'static str = "solc-bin";
+pub const SOLC_DOWNLOAD_DIR: &str = "solc-bin";
 
 /// Path to the `solc` binary configuration file
-pub const SOLC_BIN_CONFIG: &'static str = "tests/solc-bin.json";
+pub const SOLC_BIN_CONFIG: &str = "tests/solc-bin.json";
 
 ///
 /// Returns the `solc` compiler for the given version.
