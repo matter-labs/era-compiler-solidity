@@ -40,7 +40,8 @@ impl WrappedFunctionCall {
             {
                 let mut values = Vec::with_capacity(self.0.arguments.len());
                 for argument in self.0.arguments.into_iter().rev() {
-                    let value = WrappedExpression(argument)
+                    let value = argument
+                        .wrap()
                         .into_llvm(context)?
                         .expect("Always exists")
                         .value;

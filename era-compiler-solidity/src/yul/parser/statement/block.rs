@@ -22,14 +22,13 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        let term = self.0;
         let current_function = context.current_function().borrow().name().to_owned();
         let current_block = context.basic_block();
 
-        let mut functions = Vec::with_capacity(term.statements.len());
-        let mut local_statements = Vec::with_capacity(term.statements.len());
+        let mut functions = Vec::with_capacity(self.0.statements.len());
+        let mut local_statements = Vec::with_capacity(self.0.statements.len());
 
-        for statement in term.statements.into_iter() {
+        for statement in self.0.statements.into_iter() {
             match statement {
                 Statement::FunctionDefinition(statement) => {
                     statement.clone().wrap().declare(context)?;
