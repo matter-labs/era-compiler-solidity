@@ -10,6 +10,7 @@ mod asm;
 mod basic;
 mod bin;
 mod combined_json;
+mod disassembler;
 mod eravm_assembly;
 mod libraries;
 mod llvm_ir;
