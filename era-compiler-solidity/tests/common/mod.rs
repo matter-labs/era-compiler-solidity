@@ -2,8 +2,6 @@
 //! The Solidity compiler unit tests.
 //!
 
-#![cfg(test)]
-
 use assert_cmd::Command;
 use era_compiler_solidity::message_type::MessageType;
 use era_compiler_solidity::project::Project;

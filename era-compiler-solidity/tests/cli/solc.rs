@@ -1,9 +1,6 @@
-#![cfg(test)]
-
-pub mod cli_tests;
-pub mod common;
 use assert_cmd::Command;
 
+use crate::{cli, common};
 use predicates::prelude::predicate;
 
 #[test]
@@ -16,7 +13,7 @@ fn call_zksolc_with_solc_argument() -> anyhow::Result<()> {
             .executable;
 
     let assert = zksolc
-        .arg(cli_tests::TEST_SOLIDITY_CONTRACT_PATH)
+        .arg(cli::TEST_SOLIDITY_CONTRACT_PATH)
         .arg("--solc")
         .arg(solc_compiler)
         .assert();

@@ -1,16 +1,14 @@
-pub mod cli_tests;
-#[cfg(test)]
-pub mod common;
+use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
 fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
+    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
 
     // Valid command
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     let result_status_code = result
         .success()
         .stdout(predicate::str::contains("__entry:"))
@@ -20,11 +18,11 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     // solc exit code == zksolc exit code
-    let solc_result = cli_tests::execute_solc(args)?;
+    let solc_result = cli::execute_solc(args)?;
     solc_result.code(result_status_code);
 
     // Run invalid: zksolc --asm
-    let invalid_result = cli_tests::execute_zksolc(invalid_args)?;
+    let invalid_result = cli::execute_zksolc(invalid_args)?;
     let invalid_result_status_code = invalid_result
         .failure()
         .stderr(
@@ -37,7 +35,7 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     // Invalid solc exit code == Invalid zksolc exit code
-    let invalid_solc_result = cli_tests::execute_solc(invalid_args)?;
+    let invalid_solc_result = cli::execute_solc(invalid_args)?;
     invalid_solc_result.code(invalid_result_status_code);
 
     Ok(())
@@ -46,9 +44,9 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
+    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
@@ -59,7 +57,7 @@ fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli_tests::execute_solc(args)?;
+    let solc_result = cli::execute_solc(args)?;
     solc_result.code(status_code);
 
     Ok(())
@@ -68,10 +66,10 @@ fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli_tests::TEST_YUL_CONTRACT_PATH, "--asm"];
+    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 
-    let result = cli_tests::execute_zksolc(args)?;
-    let solc_result = cli_tests::execute_solc(args)?;
+    let result = cli::execute_zksolc(args)?;
+    let solc_result = cli::execute_solc(args)?;
 
     let result_exit_code = result
         .failure()

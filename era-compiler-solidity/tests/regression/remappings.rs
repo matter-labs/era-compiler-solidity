@@ -2,15 +2,11 @@
 //! The Solidity compiler unit tests for remappings.
 //!
 
-#![cfg(test)]
-
-pub mod common;
-
-use std::collections::BTreeMap;
-use std::collections::BTreeSet;
-
+use crate::common;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]

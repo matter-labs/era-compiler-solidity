@@ -1,8 +1,4 @@
-#![cfg(test)]
-
-pub mod cli_tests;
-pub mod common;
-
+use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
@@ -15,11 +11,11 @@ fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli_tests::TEST_JSON_CONTRACT_PATH,
+        cli::TEST_JSON_CONTRACT_PATH,
     ];
-    let args_solc = &["--standard-json", cli_tests::TEST_JSON_CONTRACT_PATH];
+    let args_solc = &["--standard-json", cli::TEST_JSON_CONTRACT_PATH];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     let zksolc_exit_code = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -28,7 +24,7 @@ fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli_tests::execute_solc(args_solc)?;
+    let solc_result = cli::execute_solc(args_solc)?;
     solc_result.code(zksolc_exit_code);
 
     Ok(())
@@ -37,9 +33,9 @@ fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_standard_json_incompatible_input() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &["--standard-json", cli_tests::TEST_YUL_CONTRACT_PATH];
+    let args = &["--standard-json", cli::TEST_YUL_CONTRACT_PATH];
 
-    let result = cli_tests::execute_zksolc(args)?;
+    let result = cli::execute_zksolc(args)?;
     let zksolc_exit_code = result
         .success()
         .stdout(predicate::str::contains("parsing: expected value"))
@@ -48,7 +44,7 @@ fn run_zksolc_with_standard_json_incompatible_input() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli_tests::execute_solc(args)?;
+    let solc_result = cli::execute_solc(args)?;
     solc_result.code(zksolc_exit_code);
 
     Ok(())
