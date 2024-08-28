@@ -169,10 +169,11 @@ where
     }
 }
 
+///
+/// This module contains only dialect-agnostic tests.
+///
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeSet;
-
     use crate::yul::lexer::token::location::Location;
     use crate::yul::lexer::Lexer;
     use crate::yul::parser::dialect::DefaultDialect;
@@ -323,79 +324,7 @@ object "Test" {
         );
     }
 
-    #[test]
-    fn error_invalid_number_of_arguments_near_call_abi() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
 
-            function ZKSYNC_NEAR_CALL_test() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<DefaultDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidNumberOfArguments {
-                location: Location::new(14, 22),
-                identifier: "ZKSYNC_NEAR_CALL_test".to_owned(),
-                expected: 1,
-                found: 0,
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_number_of_arguments_near_call_abi_catch() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function ZKSYNC_CATCH_NEAR_CALL(length) {
-                revert(0, length)
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<DefaultDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidNumberOfArguments {
-                location: Location::new(14, 22),
-                identifier: "ZKSYNC_CATCH_NEAR_CALL".to_owned(),
-                expected: 0,
-                found: 1,
-            }
-            .into())
-        );
-    }
 
     #[test]
     fn error_reserved_identifier() {
@@ -427,81 +356,6 @@ object "Test" {
             Err(Error::ReservedIdentifier {
                 location: Location::new(14, 22),
                 identifier: "basefee".to_owned()
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_attributes_single() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test_$llvm_UnknownAttribute_llvm$_test() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-        let mut invalid_attributes = BTreeSet::new();
-        invalid_attributes.insert("UnknownAttribute".to_owned());
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<DefaultDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidAttributes {
-                location: Location::new(14, 22),
-                values: invalid_attributes,
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_attributes_multiple_repeated() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test_$llvm_UnknownAttribute1_UnknownAttribute1_UnknownAttribute2_llvm$_test() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-        let mut invalid_attributes = BTreeSet::new();
-        invalid_attributes.insert("UnknownAttribute1".to_owned());
-        invalid_attributes.insert("UnknownAttribute2".to_owned());
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<DefaultDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidAttributes {
-                location: Location::new(14, 22),
-                values: invalid_attributes,
             }
             .into())
         );

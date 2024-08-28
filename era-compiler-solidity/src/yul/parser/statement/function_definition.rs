@@ -454,6 +454,9 @@ where
 }
 
 #[cfg(test)]
+///
+/// This module contains only dialect-specific tests.
+///
 mod tests {
     use std::collections::BTreeSet;
 
@@ -462,150 +465,6 @@ mod tests {
     use crate::yul::parser::dialect::llvm::LLVMDialect;
     use crate::yul::parser::error::Error;
     use crate::yul::parser::statement::object::Object;
-
-    #[test]
-    fn error_invalid_token_identifier() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function 256() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 22),
-                expected: vec!["{identifier}"],
-                found: "256".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_parenthesis_left() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test{) -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 26),
-                expected: vec!["("],
-                found: "{".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_parenthesis_right() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test(} -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 27),
-                expected: vec![")"],
-                found: "}".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_arrow_or_bracket_curly_left() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test() := result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 29),
-                expected: vec!["->", "{"],
-                found: ":=".to_owned(),
-            }
-            .into())
-        );
-    }
 
     #[test]
     fn error_invalid_number_of_arguments_near_call_abi() {
@@ -676,41 +535,6 @@ object "Test" {
                 identifier: "ZKSYNC_CATCH_NEAR_CALL".to_owned(),
                 expected: 0,
                 found: 1,
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_reserved_identifier() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function basefee() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::<LLVMDialect>::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::ReservedIdentifier {
-                location: Location::new(14, 22),
-                identifier: "basefee".to_owned()
             }
             .into())
         );
