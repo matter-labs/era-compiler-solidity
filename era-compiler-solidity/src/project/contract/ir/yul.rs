@@ -5,7 +5,7 @@
 use std::collections::HashSet;
 
 use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::statement::object::WrappedObject;
 use era_yul::yul::parser::statement::object::Object;
 
 ///
@@ -14,14 +14,14 @@ use era_yul::yul::parser::statement::object::Object;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: Object<EraDialect>,
+    pub object: WrappedObject,
 }
 
 impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(object: Object<EraDialect>) -> Self {
+    pub fn new(object: WrappedObject) -> Self {
         Self { object }
     }
 
@@ -29,14 +29,14 @@ impl Yul {
     /// Extracts the runtime code from the Yul object.
     ///
     pub fn take_runtime_code(&mut self) -> Option<Object<EraDialect>> {
-        self.object.inner_object.take().map(|object| *object)
+        self.object.0.inner_object.take().map(|object| *object)
     }
 
     ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
-        self.object.get_missing_libraries()
+        self.object.0.get_missing_libraries()
     }
 }
 
@@ -48,14 +48,14 @@ where
         &mut self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.clone().wrap().declare(context)
+        self.object.declare(context)
     }
 
     fn into_llvm(
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.wrap().into_llvm(context)
+        self.object.into_llvm(context)
     }
 }
 
@@ -67,13 +67,13 @@ where
         &mut self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.clone().wrap().declare(context)
+        self.object.declare(context)
     }
 
     fn into_llvm(
         self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        self.object.wrap().into_llvm(context)
+        self.object.into_llvm(context)
     }
 }

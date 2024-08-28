@@ -55,7 +55,7 @@ impl Contract {
     ///
     pub fn identifier(&self) -> &str {
         match self.ir {
-            IR::Yul(ref yul) => yul.object.identifier.as_str(),
+            IR::Yul(ref yul) => yul.object.0.identifier.as_str(),
             IR::EVMLA(ref evm) => evm.assembly.full_path(),
             IR::LLVMIR(ref llvm_ir) => llvm_ir.path.as_str(),
             IR::EraVMAssembly(ref eravm_assembly) => eravm_assembly.path.as_str(),
@@ -245,10 +245,10 @@ impl Contract {
                     era_compiler_llvm_context::EVMBuild,
                 >; 2] = [
                     (era_compiler_llvm_context::CodeType::Deploy, deploy_code),
-                    (era_compiler_llvm_context::CodeType::Runtime, runtime_code),
+                    (era_compiler_llvm_context::CodeType::Runtime, runtime_code.wrap()),
                 ]
                 .into_iter()
-                .map(|(code_type, code)| {
+                .map(|(code_type, mut code)| {
                     let llvm = inkwell::context::Context::create();
                     let module =
                         llvm.create_module(format!("{}.{}", self.path, code_type).as_str());
@@ -261,10 +261,10 @@ impl Contract {
                         Some(dependency_data.clone()),
                         debug_config.clone(),
                     );
-                    code.clone().wrap().declare(&mut context).map_err(|error| {
+                    code.declare(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator declaration pass: {error}")
                     })?;
-                    code.wrap().into_llvm(&mut context).map_err(|error| {
+                    code.into_llvm(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
                     })?;
                     let build = context.build(self.path.as_str(), metadata_hash)?;
@@ -394,6 +394,7 @@ impl FactoryDependency for Contract {
         match self.ir {
             IR::Yul(ref yul) => yul
                 .object
+                .0
                 .factory_dependencies
                 .iter()
                 .map(|path| path.as_str())
@@ -411,7 +412,7 @@ impl FactoryDependency for Contract {
 
     fn drain_factory_dependencies(&mut self) -> HashSet<String> {
         match self.ir {
-            IR::Yul(ref mut yul) => yul.object.factory_dependencies.drain().collect(),
+            IR::Yul(ref mut yul) => yul.object.0.factory_dependencies.drain().collect(),
             IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
             IR::LLVMIR(_) => HashSet::new(),
             IR::EraVMAssembly(_) => HashSet::new(),
@@ -429,6 +430,7 @@ impl FactoryDependency for Contract {
         match self.ir {
             IR::Yul(ref yul) => yul
                 .object
+                .0
                 .factory_dependencies
                 .iter()
                 .map(|identifier| {

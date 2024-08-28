@@ -12,6 +12,7 @@ use std::collections::HashSet;
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap as _;
 use era_yul::yul::parser::statement::object::Object;
 
 use self::eravm_assembly::EraVMAssembly;
@@ -39,7 +40,7 @@ impl IR {
     /// A shortcut constructor.
     ///
     pub fn new_yul(object: Object<EraDialect>) -> Self {
-        Self::Yul(Yul::new(object))
+        Self::Yul(Yul::new(object.wrap()))
     }
 
     ///
