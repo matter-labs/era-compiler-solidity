@@ -4,10 +4,9 @@
 
 use era_compiler_llvm_context::IContext;
 
-use crate::{
-    create_wrapper,
-    yul::parser::{dialect::era::EraDialect, wrapper::Wrap as _},
-};
+use crate::create_wrapper;
+use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap as _;
 
 use super::expression::WrappedExpression;
 

@@ -2,7 +2,8 @@
 //! The switch statement.
 //!
 
-use era_compiler_llvm_context::{EraVMWriteLLVM, IContext};
+use era_compiler_llvm_context::EraVMWriteLLVM;
+use era_compiler_llvm_context::IContext;
 
 use crate::create_wrapper;
 use crate::yul::parser::dialect::era::EraDialect;
