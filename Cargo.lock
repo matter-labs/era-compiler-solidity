@@ -512,7 +512,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#da3a2ca37e9e2693d5d974346667276d0c90b6a8"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#be47c80014b3519f4b4f428852952232bd240f53"
 dependencies = [
  "anyhow",
  "base58",
@@ -522,6 +522,19 @@ dependencies = [
  "serde_json",
  "serde_stacker",
  "sha3 0.10.8",
+]
+
+[[package]]
+name = "era-compiler-downloader"
+version = "0.1.0"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#be47c80014b3519f4b4f428852952232bd240f53"
+dependencies = [
+ "anyhow",
+ "colored",
+ "openssl",
+ "reqwest",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -546,8 +559,8 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "era-compiler-common",
+ "era-compiler-downloader",
  "era-compiler-llvm-context",
- "era-solc-downloader",
  "hex",
  "inkwell",
  "mimalloc",
@@ -569,19 +582,6 @@ dependencies = [
  "tempfile",
  "thiserror",
  "which",
-]
-
-[[package]]
-name = "era-solc-downloader"
-version = "0.1.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9deb616c1498dc690a6b0abd446af83779304c6f"
-dependencies = [
- "anyhow",
- "colored",
- "openssl",
- "reqwest",
- "serde",
- "serde_json",
 ]
 
 [[package]]
