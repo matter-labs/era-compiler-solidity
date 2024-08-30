@@ -54,6 +54,12 @@ where
     P: Dialect,
 {
     ///
+    /// By convention, methods not implemented for a specific visitor should
+    /// panic with this message.
+    ///
+    const MSG_METHOD_NOT_IMPLEMENTED: &'static str = "Method not implemented for this visitor.";
+
+    ///
     /// Visit `switch` statement in YUL syntax tree.
     ///
     fn visit_switch(&mut self, switch: &Switch<P>) {
@@ -150,10 +156,4 @@ where
     fn visit_code(&mut self, code: &Code<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
-
-    ///
-    /// By convention, methods not implemented for a specific visitor should
-    /// panic with this message.
-    ///
-    const MSG_METHOD_NOT_IMPLEMENTED: &'static str = "Method not implemented for this visitor.";
 }
