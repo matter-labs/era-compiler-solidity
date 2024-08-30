@@ -16,7 +16,7 @@ use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 
 use self::factory_dependency::FactoryDependency;
 use self::ir::IR;

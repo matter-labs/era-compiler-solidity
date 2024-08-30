@@ -8,7 +8,7 @@ use era_yul::yul::parser::statement::expression::function_call::name::Name;
 use inkwell::values::BasicValue;
 
 use crate::create_wrapper;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 
 use super::WrappedExpression;
 

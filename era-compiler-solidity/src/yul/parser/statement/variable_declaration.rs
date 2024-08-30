@@ -7,7 +7,7 @@ use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
 
 use crate::create_wrapper;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 
 use super::expression::WrappedExpression;
 create_wrapper!(

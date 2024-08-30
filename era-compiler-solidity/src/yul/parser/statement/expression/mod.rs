@@ -8,7 +8,7 @@ pub mod literal;
 use crate::create_wrapper;
 use era_compiler_llvm_context::IContext;
 
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 use era_yul::yul::parser::statement::expression::Expression;
 
 create_wrapper!(Expression, WrappedExpression);

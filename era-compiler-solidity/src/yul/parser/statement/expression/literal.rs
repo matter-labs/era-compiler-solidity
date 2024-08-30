@@ -3,7 +3,7 @@
 //!
 
 use crate::create_wrapper;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 use era_yul::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
 use era_yul::yul::lexer::token::lexeme::literal::integer::Integer as IntegerLiteral;
 use era_yul::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;

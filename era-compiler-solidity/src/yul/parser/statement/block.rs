@@ -7,7 +7,7 @@ use era_yul::yul::parser::statement::Statement;
 
 use crate::create_wrapper;
 use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::wrapper::Wrap as _;
+use crate::yul::parser::wrapper::Wrap;
 
 create_wrapper!(
     era_yul::yul::parser::statement::block::Block<EraDialect>,
