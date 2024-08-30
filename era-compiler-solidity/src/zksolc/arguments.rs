@@ -135,10 +135,16 @@ pub struct Arguments {
 
     /// Switch to EraVM assembly mode.
     /// Only one input EraVM assembly file is allowed.
-    /// Cannot be used with combined JSON modes.
+    /// Cannot be used with combined and standard JSON modes.
     /// Use this mode at your own risk, as EraVM assembly input validation is not implemented.
     #[structopt(long = "eravm-assembly")]
     pub eravm_assembly: bool,
+
+    /// Specify the bytecode file to disassemble.
+    /// Two file types are allowed: raw binary bytecode (*.zbin), and hexadecimal string (*.hex).
+    /// Cannot be used with combined and standard JSON modes.
+    #[structopt(long = "disassemble")]
+    pub disassemble: bool,
 
     /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
@@ -256,6 +262,7 @@ impl Arguments {
             self.yul,
             self.llvm_ir,
             self.eravm_assembly,
+            self.disassemble,
             self.combined_json.is_some(),
             self.standard_json.is_some(),
         ]
@@ -264,7 +271,7 @@ impl Arguments {
         .count();
         if modes_count > 1 {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, combined JSON, standard JSON.", None, None));
+                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, disassembler, combined JSON, standard JSON.", None, None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly {
@@ -369,6 +376,14 @@ impl Arguments {
                     None,
                 ));
             }
+        }
+
+        if self.disassemble && std::env::args().count() > self.inputs.len() + 2 {
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "No other options are allowed in disassembler mode.",
+                None,
+                None,
+            ));
         }
 
         if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
