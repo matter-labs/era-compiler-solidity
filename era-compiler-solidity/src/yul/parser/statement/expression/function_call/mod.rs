@@ -2137,7 +2137,7 @@ impl FunctionCall {
             Name::Pc => anyhow::bail!("{location} The `PC` instruction is not supported"),
             Name::SelfDestruct => {
                 let _arguments = self.pop_arguments_llvm_evm::<D, 1>(context)?;
-                anyhow::bail!("{location} The `SELF.0DESTRUCT` instruction is not supported")
+                anyhow::bail!("{location} The `SELFDESTRUCT` instruction is not supported")
             }
 
             _ => Ok(None),
