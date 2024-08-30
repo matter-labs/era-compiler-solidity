@@ -9,10 +9,10 @@ use era_compiler_llvm_context::IContext;
 
 create_wrapper!(
     era_yul::yul::parser::statement::object::Object<EraDialect>,
-    WrappedObject
+    Object
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedObject
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Object
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -69,7 +69,7 @@ where
 
         match term.inner_object {
             Some(object) => {
-                WrappedObject(*object).into_llvm(context)?;
+                Object(*object).into_llvm(context)?;
             }
             None => {
                 let runtime = era_compiler_llvm_context::EraVMRuntime::default();
@@ -81,7 +81,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedObject
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object
 where
     D: era_compiler_llvm_context::Dependency,
 {

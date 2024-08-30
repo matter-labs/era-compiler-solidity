@@ -5,7 +5,6 @@
 use std::collections::HashSet;
 
 use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::statement::object::WrappedObject;
 use era_yul::yul::parser::statement::object::Object;
 
 ///
@@ -14,14 +13,14 @@ use era_yul::yul::parser::statement::object::Object;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: WrappedObject,
+    pub object: crate::yul::parser::statement::object::Object
 }
 
 impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(object: WrappedObject) -> Self {
+    pub fn new(object: crate::yul::parser::statement::object::Object) -> Self {
         Self { object }
     }
 

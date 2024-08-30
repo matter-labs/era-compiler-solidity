@@ -9,11 +9,13 @@ use crate::create_wrapper;
 use era_compiler_llvm_context::IContext;
 
 use crate::yul::parser::wrapper::Wrap;
-use era_yul::yul::parser::statement::expression::Expression;
 
-create_wrapper!(Expression, WrappedExpression);
+create_wrapper!(
+    era_yul::yul::parser::statement::expression::Expression,
+    Expression
+);
 
-impl WrappedExpression {
+impl Expression {
     ///
     /// Converts the expression into an LLVM value.
     ///
@@ -25,7 +27,7 @@ impl WrappedExpression {
         D: era_compiler_llvm_context::Dependency,
     {
         match self.0 {
-            Expression::Literal(literal) => literal
+            era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal
                 .clone()
                 .wrap()
                 .into_llvm(context)
@@ -38,7 +40,7 @@ impl WrappedExpression {
                     )
                 })
                 .map(Some),
-            Expression::Identifier(identifier) => {
+            era_yul::yul::parser::statement::expression::Expression::Identifier(identifier) => {
                 let pointer = context
                     .current_function()
                     .borrow()
@@ -66,7 +68,7 @@ impl WrappedExpression {
                     None => Ok(Some(value.into())),
                 }
             }
-            Expression::FunctionCall(call) => Ok(call
+            era_yul::yul::parser::statement::expression::Expression::FunctionCall(call) => Ok(call
                 .wrap()
                 .into_llvm(context)?
                 .map(era_compiler_llvm_context::Value::new)),
@@ -86,7 +88,7 @@ impl WrappedExpression {
         D: era_compiler_llvm_context::Dependency,
     {
         match self.0 {
-            Expression::Literal(literal) => literal
+            era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal
                 .clone()
                 .wrap()
                 .into_llvm(context)
@@ -99,7 +101,7 @@ impl WrappedExpression {
                     )
                 })
                 .map(Some),
-            Expression::Identifier(identifier) => {
+            era_yul::yul::parser::statement::expression::Expression::Identifier(identifier) => {
                 let pointer = context
                     .current_function()
                     .borrow()
@@ -115,7 +117,7 @@ impl WrappedExpression {
                 let value = context.build_load(pointer, identifier.inner.as_str())?;
                 Ok(Some(value.into()))
             }
-            Expression::FunctionCall(call) => Ok(call
+            era_yul::yul::parser::statement::expression::Expression::FunctionCall(call) => Ok(call
                 .wrap()
                 .into_llvm_evm(context)?
                 .map(era_compiler_llvm_context::Value::new)),

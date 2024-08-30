@@ -8,14 +8,14 @@ use crate::create_wrapper;
 use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::wrapper::Wrap;
 
-use super::expression::WrappedExpression;
+use super::expression::Expression;
 
 create_wrapper!(
     era_yul::yul::parser::statement::for_loop::ForLoop<EraDialect>,
-    WrappedForLoop
+    ForLoop
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedForLoop
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -33,7 +33,9 @@ where
 
         context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
-        let condition = WrappedExpression(term.condition)
+        let condition = term
+            .condition
+            .wrap()
             .into_llvm(context)?
             .expect("Always exists")
             .to_llvm()
@@ -68,7 +70,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedForLoop
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -85,7 +87,7 @@ where
 
         context.build_unconditional_branch(condition_block)?;
         context.set_basic_block(condition_block);
-        let condition = WrappedExpression(self.0.condition)
+        let condition = Expression(self.0.condition)
             .into_llvm_evm(context)?
             .expect("Always exists")
             .to_llvm()

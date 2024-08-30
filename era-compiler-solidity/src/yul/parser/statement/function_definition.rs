@@ -11,10 +11,10 @@ use crate::yul::parser::wrapper::Wrap;
 
 create_wrapper!(
     era_yul::yul::parser::statement::function_definition::FunctionDefinition<EraDialect>,
-    WrappedFunctionDefinition
+    FunctionDefinition
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedFunctionDefinition
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -181,7 +181,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedFunctionDefinition
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for FunctionDefinition
 where
     D: era_compiler_llvm_context::Dependency,
 {

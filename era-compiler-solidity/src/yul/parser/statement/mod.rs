@@ -19,5 +19,5 @@ pub mod variable_declaration;
 
 create_wrapper!(
     era_yul::yul::parser::statement::Statement<EraDialect>,
-    WrappedStatement
+    Statement
 );

@@ -10,16 +10,14 @@ use inkwell::values::BasicValue;
 use crate::create_wrapper;
 use crate::yul::parser::wrapper::Wrap;
 
-use super::WrappedExpression;
-
 pub mod verbatim;
 
 create_wrapper!(
     era_yul::yul::parser::statement::expression::function_call::FunctionCall,
-    WrappedFunctionCall
+    FunctionCall
 );
 
-impl WrappedFunctionCall {
+impl FunctionCall {
     ///
     /// Converts the function call into an LLVM value.
     ///
@@ -105,7 +103,8 @@ impl WrappedFunctionCall {
             Name::UserDefined(name) => {
                 let mut values = Vec::with_capacity(self.0.arguments.len());
                 for argument in self.0.arguments.into_iter().rev() {
-                    let value = WrappedExpression(argument)
+                    let value = argument
+                        .wrap()
                         .into_llvm(context)?
                         .expect("Always exists")
                         .value;

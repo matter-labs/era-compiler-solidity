@@ -6,14 +6,14 @@ use inkwell::values::BasicValue;
 
 use era_compiler_llvm_context::IContext;
 
-use super::WrappedFunctionCall;
+use super::FunctionCall;
 
 ///
 /// Translates the verbatim simulations.
 ///
 pub fn verbatim<'ctx, D>(
     context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    call: &mut WrappedFunctionCall,
+    call: &mut FunctionCall,
     input_size: usize,
     output_size: usize,
 ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>

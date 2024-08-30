@@ -9,13 +9,13 @@ use inkwell::values::BasicValue;
 use crate::create_wrapper;
 use crate::yul::parser::wrapper::Wrap;
 
-use super::expression::WrappedExpression;
+use super::expression::Expression;
 create_wrapper!(
     era_yul::yul::parser::statement::variable_declaration::VariableDeclaration,
-    WrappedVariableDeclaration
+    VariableDeclaration
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedVariableDeclaration
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for VariableDeclaration
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -37,7 +37,7 @@ where
                 .insert_stack_pointer(identifier.inner.clone(), pointer);
 
             let value = if let Some(expression) = self.0.expression {
-                match WrappedExpression(expression).into_llvm(context)? {
+                match Expression(expression).into_llvm(context)? {
                     Some(mut value) => {
                         if let Some(constant) = value.constant.take() {
                             context
@@ -143,7 +143,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedVariableDeclaration
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for VariableDeclaration
 where
     D: era_compiler_llvm_context::Dependency,
 {

@@ -8,10 +8,10 @@ use crate::yul::parser::wrapper::Wrap;
 
 create_wrapper!(
     era_yul::yul::parser::statement::code::Code<EraDialect>,
-    WrappedCode
+    Code
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedCode
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -25,7 +25,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedCode
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code
 where
     D: era_compiler_llvm_context::Dependency,
 {

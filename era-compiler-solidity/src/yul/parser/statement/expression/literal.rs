@@ -14,10 +14,10 @@ use num::Zero;
 
 create_wrapper!(
     era_yul::yul::parser::statement::expression::literal::Literal,
-    WrappedLiteral
+    Literal
 );
 
-impl WrappedLiteral {
+impl Literal {
     ///
     /// Converts the literal into its LLVM.
     ///

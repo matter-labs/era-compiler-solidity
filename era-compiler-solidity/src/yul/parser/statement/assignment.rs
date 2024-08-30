@@ -10,10 +10,10 @@ use crate::yul::parser::wrapper::Wrap;
 
 create_wrapper!(
     era_yul::yul::parser::statement::assignment::Assignment,
-    WrappedAssignment
+    Assignment
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for WrappedAssignment
+impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -82,7 +82,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedAssignment
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Assignment
 where
     D: era_compiler_llvm_context::Dependency,
 {

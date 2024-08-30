@@ -11,10 +11,10 @@ use crate::yul::parser::wrapper::Wrap;
 
 create_wrapper!(
     era_yul::yul::parser::statement::switch::Switch<EraDialect>,
-    WrappedSwitch
+    Switch
 );
 
-impl<D> EraVMWriteLLVM<D> for WrappedSwitch
+impl<D> EraVMWriteLLVM<D> for Switch
 where
     D: era_compiler_llvm_context::Dependency,
 {
@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for WrappedSwitch
+impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch
 where
     D: era_compiler_llvm_context::Dependency,
 {
