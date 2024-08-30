@@ -1,5 +1,5 @@
 //!
-//! Solidity to EraVM compiler library.
+//! YUL parser.
 //!
 
 #![allow(non_camel_case_types)]
