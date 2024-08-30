@@ -1,5 +1,5 @@
 //!
-//! YUL pretty printer
+//! YUL pretty printer.
 //!
 
 use anyhow::Result;
@@ -28,7 +28,7 @@ pub trait IPrinter {
 }
 
 ///
-/// Prints elements interspersed with comma
+/// Prints elements interspersed with comma.
 ///
 pub fn print_list_comma_separated<'a>(
     iter: impl IntoIterator<Item = &'a str>,
