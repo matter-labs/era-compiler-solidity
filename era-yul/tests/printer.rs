@@ -67,7 +67,8 @@ mod statements {
         let expected = "object \"test\" {\n  code  { }\n  object \"test_deployed\" {\n    code { function power(base, exponent) -> result  {\n      result := 1\n      for { let i := 0 }lt(i, exponent){ i := add(i, 1) }\n       {\n        result := mul(result, base)\n        break\n        continue\n         }\n      \n      \n       }\n    \n     }\n    }\n  }\n";
         assert_eq!(
             print_statement(
-                r#"object "test" {
+                r#"
+object "test" {
     code { }
     object "test_deployed" {
         code {
@@ -84,7 +85,8 @@ continue
        }
     }
 
-}"#
+}
+"#
             ),
             expected
         );
@@ -96,7 +98,8 @@ continue
   "object \"ecadd\" {\n  code  { }\n  object \"ecadd_deployed\" {\n    code  {\n      let x\n      let a := 4\n       }\n    \n    }\n  }\n";
         assert_eq!(
             print_statement(
-                r#"object "ecadd" {
+                r#"
+object "ecadd" {
     code { }
     object "ecadd_deployed" {
         code {
@@ -105,7 +108,8 @@ continue
 }
     }
 
-}"#
+}
+"#
             ),
             expected
         );
@@ -116,7 +120,8 @@ continue
         let expected = "object \"ecadd\" {\n  code  { }\n  object \"ecadd_deployed\" {\n    code  {\n      let x\n      x := 4\n       }\n    \n    }\n  }\n";
         assert_eq!(
             print_statement(
-                r#"object "ecadd" {
+                r#"
+object "ecadd" {
     code { }
     object "ecadd_deployed" {
         code {
@@ -125,7 +130,8 @@ continue
 }
     }
 
-}"#
+}
+"#
             ),
             expected
         );
