@@ -53,7 +53,7 @@ pub fn download_binaries() -> anyhow::Result<()> {
     http_client_builder = http_client_builder.timeout(Duration::from_secs(60));
     let http_client = http_client_builder.build()?;
     let config_path = Path::new(SOLC_BIN_CONFIG);
-    era_solc_downloader::Downloader::new(http_client.clone()).download(config_path)?;
+    era_compiler_downloader::Downloader::new(http_client.clone()).download(config_path)?;
     // Copy the latest `solc-*` binary to `solc` for CLI tests
     let latest_solc =
         PathBuf::from(get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)?.executable);

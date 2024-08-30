@@ -1,4 +1,4 @@
-name: [PoC] Dependencies test
+name: Dependencies test
 
 on:
   workflow_dispatch:
