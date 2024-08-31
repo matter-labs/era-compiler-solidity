@@ -22,38 +22,40 @@ mod solc;
 mod standard_json;
 mod yul;
 
-/// The Solidity contract name.
+/// The solidity contract name
 pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "contract.sol";
-
-/// The Solidity contract full path.
+/// The solidity contract full path
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/contract.sol";
 
-/// The Solidity binary artifact output name.
+/// The solidity binary artifact output name
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 
-/// The Solidity assembly artifact output name.
+/// The solidity assembly artifact output name
 pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
-/// The YUL contract for testing.
+/// The yul contract for testing
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
 
-/// The Era assembly contract path.
+/// The era assembly contract path
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
 
-/// The LLVM contract path.
+/// The LLVM contract path
 pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
 
+/// The standard JSON contract path
+pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
+
 /// The binary bytecode sample path
-pub const TEST_BINARY_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.zbin";
+pub const TEST_BINARY_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.zbin";
 
 /// The hexadecimal string bytecode sample path
-pub const TEST_HEXADECIMAL_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.hex";
+pub const TEST_HEXADECIMAL_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.hex";
 
 /// Shared library path and address
-pub const LIBRARY_DEFAULT_PATH: &'static str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+pub const LIBRARY_DEFAULT_PATH: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
 ///
-/// Execute zksolc with the given arguments and return the result.
+/// Execute zksolc with the given arguments and return the result
 ///
 pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
     let mut cmd = Command::cargo_bin("zksolc")?;
@@ -67,7 +69,7 @@ pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Asser
 }
 
 ///
-/// Execute solc with the given arguments and return the result.
+/// Execute solc with the given arguments and return the result
 ///
 pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
     let solc_compiler =
@@ -77,7 +79,7 @@ pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert>
 }
 
 ///
-/// Check if the file at the given path is empty.
+/// Check if the file at the given path is empty
 ///
 pub fn is_file_empty(file_path: &str) -> anyhow::Result<bool> {
     let metadata = fs::metadata(file_path)?;
@@ -85,7 +87,7 @@ pub fn is_file_empty(file_path: &str) -> anyhow::Result<bool> {
 }
 
 ///
-/// Check if the output is the same as the file content.
+/// Check if the output is the same as the file content
 ///
 pub fn is_output_same_as_file(file_path: &str, output: &str) -> anyhow::Result<bool> {
     let file_content = fs::read_to_string(file_path)?;
