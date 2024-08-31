@@ -13,7 +13,7 @@ use era_yul::yul::parser::statement::object::Object;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: crate::yul::parser::statement::object::Object
+    pub object: crate::yul::parser::statement::object::Object,
 }
 
 impl Yul {
