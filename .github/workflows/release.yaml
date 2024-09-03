@@ -161,7 +161,7 @@ jobs:
         if: github.ref_type == 'tag'
         run: |
           TAG="${{ steps.release.outputs.version_or_sha }}"
-          CARGO_PACKAGE_VERSION="$(cargo pkgid | cut -d "#" -f2)"
+          CARGO_PACKAGE_VERSION="$(cargo pkgid --manifest-path era-compiler-solidity/Cargo.toml | cut -d "#" -f2)"
           CHANGELOG_VERSION="${{ steps.changelog_reader.outputs.version }}"
           # All versions must be equal
           if [ "${CARGO_PACKAGE_VERSION}" != "${TAG}" ] || [ "${CARGO_PACKAGE_VERSION}" != "${CHANGELOG_VERSION}" ]; then

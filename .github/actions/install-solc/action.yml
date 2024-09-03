@@ -20,7 +20,7 @@ inputs:
   output-dir:
     description: 'Output directory for the solc binaries.'
     required: false
-    default: 'solc-bins'
+    default: 'solc-bin'
 runs:
   using: "composite"
   steps:

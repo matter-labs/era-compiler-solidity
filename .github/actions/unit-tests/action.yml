@@ -38,7 +38,6 @@ runs:
         echo "target=--target ${{ inputs.target }}" >> "${GITHUB_OUTPUT}"
 
     - name: Run unit tests
-      continue-on-error: true
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash -ex {0}' }}
       env:
         RUSTC_BOOTSTRAP: 1
@@ -61,13 +60,10 @@ runs:
           --format json | tee -a results.json
         if [ $? -eq 0 ]; then
           cargo2junit < results.json > "${{ inputs.results-xml }}"
-        else
-          echo "Unit tests failed"
-          exit 1
         fi
 
     - name: Upload results Linux
-      if: runner.os == 'Linux'
+      if: (success() || failure()) && runner.os == 'Linux'
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
@@ -76,7 +72,7 @@ runs:
         comment_mode: off
 
     - name: Upload test results MacOS
-      if: runner.os == 'macOS'
+      if: (success() || failure()) && runner.os == 'macOS'
       uses: EnricoMi/publish-unit-test-result-action/macos@v2
       with:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
@@ -85,7 +81,7 @@ runs:
         comment_mode: off
 
     - name: Upload test results Windows
-      if: runner.os == 'Windows'
+      if: (success() || failure()) && runner.os == 'Windows'
       uses: EnricoMi/publish-unit-test-result-action/windows@v2
       with:
         check_name: ${{ runner.os }} ${{ runner.arch }} Unit Tests Results
@@ -95,7 +91,7 @@ runs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
-      if: inputs.enable-coverage == 'true'
+      if: (success() || failure()) && inputs.enable-coverage == 'true'
       with:
         token: ${{ inputs.coverage-token }}
         files: lcov.info

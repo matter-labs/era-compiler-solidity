@@ -1,0 +1,40 @@
+name: Dependencies test
+
+on:
+  workflow_dispatch:
+    inputs:
+      dependencies_branch:
+        description: 'Branch of testing dependencies'
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  dependencies-check:
+    runs-on: matterlabs-ci-runner
+    container:
+      image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.dependencies_branch }}
+
+      - name: Patch era-compiler-common
+        run: |
+          echo "[patch.\"https://github.com/matter-labs/era-compiler-common\"]" >> "Cargo.toml"
+          echo "era-compiler-common = { git = 'https://www.github.com/matter-labs/era-compiler-common', branch = '${{ inputs.dependencies_branch }}' }" >> "Cargo.toml"
+
+      - name: Patch era-compiler-llvm-context
+        run: |
+          echo "[patch.\"https://github.com/matter-labs/era-compiler-llvm-context\"]" >> "Cargo.toml"
+          echo "era-compiler-common = { git = 'https://www.github.com/matter-labs/era-compiler-llvm-context', branch = '${{ inputs.dependencies_branch }}' }" >> "Cargo.toml"
+
+      - name: Build LLVM
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        with:
+          enable-assertions: false
+
+      - name: Run tests
+        uses: ./.github/actions/unit-tests
