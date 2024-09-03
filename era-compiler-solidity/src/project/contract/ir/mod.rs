@@ -11,7 +11,9 @@ use std::collections::HashSet;
 
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
-use crate::yul::parser::statement::object::Object;
+use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap;
+use era_yul::yul::parser::statement::object::Object;
 
 use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;
@@ -37,8 +39,8 @@ impl IR {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new_yul(object: Object) -> Self {
-        Self::Yul(Yul::new(object))
+    pub fn new_yul(object: Object<EraDialect>) -> Self {
+        Self::Yul(Yul::new(object.wrap()))
     }
 
     ///

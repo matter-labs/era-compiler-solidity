@@ -2,229 +2,17 @@
 //! The function definition statement.
 //!
 
-use std::collections::BTreeSet;
-use std::collections::HashSet;
-
 use era_compiler_llvm_context::IContext;
 use inkwell::types::BasicType;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::lexeme::symbol::Symbol;
-use crate::yul::lexer::token::lexeme::Lexeme;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::error::Error as ParserError;
-use crate::yul::parser::identifier::Identifier;
-use crate::yul::parser::statement::block::Block;
-use crate::yul::parser::statement::expression::function_call::name::Name as FunctionName;
+use crate::create_wrapper;
+use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap;
 
-///
-/// The function definition statement.
-///
-/// All functions are translated in two steps:
-/// 1. The hoisted declaration
-/// 2. The definition, which now has the access to all function signatures
-///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct FunctionDefinition {
-    /// The location.
-    pub location: Location,
-    /// The function identifier.
-    pub identifier: String,
-    /// The function formal arguments.
-    pub arguments: Vec<Identifier>,
-    /// The function return variables.
-    pub result: Vec<Identifier>,
-    /// The function body block.
-    pub body: Block,
-    /// The function LLVM attributes encoded in the identifier.
-    pub attributes: BTreeSet<era_compiler_llvm_context::Attribute>,
-}
-
-impl FunctionDefinition {
-    /// The LLVM attribute section prefix.
-    pub const LLVM_ATTRIBUTE_PREFIX: &'static str = "$llvm_";
-
-    /// The LLVM attribute section suffix.
-    pub const LLVM_ATTRIBUTE_SUFFIX: &'static str = "_llvm$";
-
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
-
-        let (location, identifier) = match token {
-            Token {
-                lexeme: Lexeme::Identifier(identifier),
-                location,
-                ..
-            } => (location, identifier),
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["{identifier}"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        };
-        let identifier = Identifier::new(location, identifier.inner);
-
-        match FunctionName::from(identifier.inner.as_str()) {
-            FunctionName::UserDefined(_) => {}
-            _function_name => {
-                return Err(ParserError::ReservedIdentifier {
-                    location,
-                    identifier: identifier.inner,
-                }
-                .into())
-            }
-        }
-
-        match lexer.next()? {
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::ParenthesisLeft),
-                ..
-            } => {}
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["("],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        }
-
-        let (mut arguments, next) = Identifier::parse_typed_list(lexer, None)?;
-        if identifier
-            .inner
-            .contains(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
-        {
-            if arguments.is_empty() {
-                return Err(ParserError::InvalidNumberOfArguments {
-                    location,
-                    identifier: identifier.inner,
-                    expected: 1,
-                    found: arguments.len(),
-                }
-                .into());
-            }
-
-            arguments.remove(0);
-        }
-        if identifier.inner.contains(
-            era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER,
-        ) && !arguments.is_empty()
-        {
-            return Err(ParserError::InvalidNumberOfArguments {
-                location,
-                identifier: identifier.inner,
-                expected: 0,
-                found: arguments.len(),
-            }
-            .into());
-        }
-
-        match crate::yul::parser::take_or_next(next, lexer)? {
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::ParenthesisRight),
-                ..
-            } => {}
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec![")"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        }
-
-        let (result, next) = match lexer.peek()? {
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::Arrow),
-                ..
-            } => {
-                lexer.next()?;
-                Identifier::parse_typed_list(lexer, None)?
-            }
-            Token {
-                lexeme: Lexeme::Symbol(Symbol::BracketCurlyLeft),
-                ..
-            } => (vec![], None),
-            token => {
-                return Err(ParserError::InvalidToken {
-                    location: token.location,
-                    expected: vec!["->", "{"],
-                    found: token.lexeme.to_string(),
-                }
-                .into());
-            }
-        };
-
-        let body = Block::parse(lexer, next)?;
-
-        let attributes = Self::get_llvm_attributes(&identifier)?;
-
-        Ok(Self {
-            location,
-            identifier: identifier.inner,
-            arguments,
-            result,
-            body,
-            attributes,
-        })
-    }
-
-    ///
-    /// Gets the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        self.body.get_missing_libraries()
-    }
-
-    ///
-    /// Gets the list of LLVM attributes provided in the function name.
-    ///
-    pub fn get_llvm_attributes(
-        identifier: &Identifier,
-    ) -> Result<BTreeSet<era_compiler_llvm_context::Attribute>, Error> {
-        let mut valid_attributes = BTreeSet::new();
-
-        let llvm_begin = identifier.inner.find(Self::LLVM_ATTRIBUTE_PREFIX);
-        let llvm_end = identifier.inner.find(Self::LLVM_ATTRIBUTE_SUFFIX);
-        let attribute_string = if let (Some(llvm_begin), Some(llvm_end)) = (llvm_begin, llvm_end) {
-            if llvm_begin < llvm_end {
-                &identifier.inner[llvm_begin + Self::LLVM_ATTRIBUTE_PREFIX.len()..llvm_end]
-            } else {
-                return Ok(valid_attributes);
-            }
-        } else {
-            return Ok(valid_attributes);
-        };
-
-        let mut invalid_attributes = BTreeSet::new();
-        for value in attribute_string.split('_') {
-            match era_compiler_llvm_context::Attribute::try_from(value) {
-                Ok(attribute) => valid_attributes.insert(attribute),
-                Err(value) => invalid_attributes.insert(value),
-            };
-        }
-
-        if !invalid_attributes.is_empty() {
-            return Err(ParserError::InvalidAttributes {
-                location: identifier.location,
-                values: invalid_attributes,
-            }
-            .into());
-        }
-
-        Ok(valid_attributes)
-    }
-}
+create_wrapper!(
+    era_yul::yul::parser::statement::function_definition::FunctionDefinition<EraDialect>,
+    FunctionDefinition
+);
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition
 where
@@ -235,31 +23,34 @@ where
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
+            .0
             .arguments
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm(context).as_basic_type_enum()
+                yul_type.wrap().into_llvm(context).as_basic_type_enum()
             })
             .collect();
 
         let function_type = context.function_type(
             argument_types,
-            self.result.len(),
-            self.identifier
+            self.0.result.len(),
+            self.0
+                .identifier
                 .starts_with(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX),
         );
 
         let function = context.add_function(
-            self.identifier.as_str(),
+            self.0.identifier.as_str(),
             function_type,
-            self.result.len(),
+            self.0.result.len(),
             Some(inkwell::module::Linkage::Private),
         )?;
         era_compiler_llvm_context::EraVMFunction::set_attributes(
             context.llvm(),
             function.borrow().declaration().value,
-            self.attributes
+            self.0
+                .attributes
                 .clone()
                 .into_iter()
                 .map(|attribute| (attribute, None))
@@ -277,24 +68,28 @@ where
         mut self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        context.set_current_function(self.identifier.as_str())?;
+        context.set_current_function(self.0.identifier.as_str())?;
         let r#return = context.current_function().borrow().r#return();
 
         context.set_basic_block(context.current_function().borrow().entry_block());
         match r#return {
             era_compiler_llvm_context::FunctionReturn::None => {}
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let identifier = self.result.pop().expect("Always exists");
+                let identifier = self.0.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
-                context.build_store(pointer, r#type.into_llvm(context).const_zero())?;
+                context.build_store(pointer, r#type.wrap().into_llvm(context).const_zero())?;
                 context
                     .current_function()
                     .borrow_mut()
                     .insert_stack_pointer(identifier.inner, pointer);
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                for (index, identifier) in self.result.into_iter().enumerate() {
-                    let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
+                for (index, identifier) in self.0.result.into_iter().enumerate() {
+                    let r#type = identifier
+                        .r#type
+                        .unwrap_or_default()
+                        .wrap()
+                        .into_llvm(context);
                     let pointer = context.build_gep(
                         pointer,
                         &[
@@ -316,20 +111,22 @@ where
         };
 
         let argument_types: Vec<_> = self
+            .0
             .arguments
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm(context)
+                yul_type.wrap().into_llvm(context)
             })
             .collect();
-        for (mut index, argument) in self.arguments.iter().enumerate() {
+        for (mut index, argument) in self.0.arguments.iter().enumerate() {
             let pointer = context.build_alloca(argument_types[index], argument.inner.as_str())?;
             context
                 .current_function()
                 .borrow_mut()
                 .insert_stack_pointer(argument.inner.clone(), pointer);
             if self
+                .0
                 .identifier
                 .starts_with(era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_PREFIX)
                 && matches!(
@@ -346,7 +143,7 @@ where
             )?;
         }
 
-        self.body.into_llvm(context)?;
+        self.0.body.wrap().into_llvm(context)?;
         match context
             .basic_block()
             .get_last_instruction()
@@ -393,20 +190,21 @@ where
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
+            .0
             .arguments
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm(context).as_basic_type_enum()
+                yul_type.wrap().into_llvm(context).as_basic_type_enum()
             })
             .collect();
 
-        let function_type = context.function_type(argument_types, self.result.len());
+        let function_type = context.function_type(argument_types, self.0.result.len());
 
         context.add_function(
-            self.identifier.as_str(),
+            self.0.identifier.as_str(),
             function_type,
-            self.result.len(),
+            self.0.result.len(),
             Some(inkwell::module::Linkage::Private),
         )?;
 
@@ -417,24 +215,28 @@ where
         mut self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        context.set_current_function(self.identifier.as_str())?;
+        context.set_current_function(self.0.identifier.as_str())?;
         let r#return = context.current_function().borrow().r#return();
 
         context.set_basic_block(context.current_function().borrow().entry_block());
         match r#return {
             era_compiler_llvm_context::FunctionReturn::None => {}
             era_compiler_llvm_context::FunctionReturn::Primitive { pointer } => {
-                let identifier = self.result.pop().expect("Always exists");
+                let identifier = self.0.result.pop().expect("Always exists");
                 let r#type = identifier.r#type.unwrap_or_default();
-                context.build_store(pointer, r#type.into_llvm(context).const_zero())?;
+                context.build_store(pointer, r#type.wrap().into_llvm(context).const_zero())?;
                 context
                     .current_function()
                     .borrow_mut()
                     .insert_stack_pointer(identifier.inner, pointer);
             }
             era_compiler_llvm_context::FunctionReturn::Compound { pointer, .. } => {
-                for (index, identifier) in self.result.into_iter().enumerate() {
-                    let r#type = identifier.r#type.unwrap_or_default().into_llvm(context);
+                for (index, identifier) in self.0.result.into_iter().enumerate() {
+                    let r#type = identifier
+                        .r#type
+                        .unwrap_or_default()
+                        .wrap()
+                        .into_llvm(context);
                     let pointer = context.build_gep(
                         pointer,
                         &[
@@ -456,14 +258,15 @@ where
         };
 
         let argument_types: Vec<_> = self
+            .0
             .arguments
             .iter()
             .map(|argument| {
                 let yul_type = argument.r#type.to_owned().unwrap_or_default();
-                yul_type.into_llvm(context)
+                yul_type.wrap().into_llvm(context)
             })
             .collect();
-        for (index, argument) in self.arguments.iter().enumerate() {
+        for (index, argument) in self.0.arguments.iter().enumerate() {
             let pointer = context.build_alloca(argument_types[index], argument.inner.as_str())?;
             context
                 .current_function()
@@ -475,7 +278,7 @@ where
             )?;
         }
 
-        self.body.into_llvm(context)?;
+        self.0.body.wrap().into_llvm(context)?;
         match context
             .basic_block()
             .get_last_instruction()
@@ -507,157 +310,17 @@ where
 }
 
 #[cfg(test)]
+///
+/// This module contains only dialect-specific tests.
+///
 mod tests {
     use std::collections::BTreeSet;
 
-    use crate::yul::lexer::token::location::Location;
-    use crate::yul::lexer::Lexer;
-    use crate::yul::parser::error::Error;
-    use crate::yul::parser::statement::object::Object;
-
-    #[test]
-    fn error_invalid_token_identifier() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function 256() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 22),
-                expected: vec!["{identifier}"],
-                found: "256".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_parenthesis_left() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test{) -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 26),
-                expected: vec!["("],
-                found: "{".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_parenthesis_right() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test(} -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 27),
-                expected: vec![")"],
-                found: "}".to_owned(),
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_invalid_token_arrow_or_bracket_curly_left() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function test() := result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::InvalidToken {
-                location: Location::new(14, 29),
-                expected: vec!["->", "{"],
-                found: ":=".to_owned(),
-            }
-            .into())
-        );
-    }
+    use crate::yul::parser::dialect::era::EraDialect;
+    use era_yul::yul::lexer::token::location::Location;
+    use era_yul::yul::lexer::Lexer;
+    use era_yul::yul::parser::error::Error;
+    use era_yul::yul::parser::statement::object::Object;
 
     #[test]
     fn error_invalid_number_of_arguments_near_call_abi() {
@@ -683,7 +346,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<EraDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidNumberOfArguments {
@@ -720,7 +383,7 @@ object "Test" {
     "#;
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<EraDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidNumberOfArguments {
@@ -728,41 +391,6 @@ object "Test" {
                 identifier: "ZKSYNC_CATCH_NEAR_CALL".to_owned(),
                 expected: 0,
                 found: 1,
-            }
-            .into())
-        );
-    }
-
-    #[test]
-    fn error_reserved_identifier() {
-        let input = r#"
-object "Test" {
-    code {
-        {
-            return(0, 0)
-        }
-    }
-    object "Test_deployed" {
-        code {
-            {
-                return(0, 0)
-            }
-
-            function basefee() -> result {
-                result := 42
-            }
-        }
-    }
-}
-    "#;
-
-        let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
-        assert_eq!(
-            result,
-            Err(Error::ReservedIdentifier {
-                location: Location::new(14, 22),
-                identifier: "basefee".to_owned()
             }
             .into())
         );
@@ -794,7 +422,7 @@ object "Test" {
         invalid_attributes.insert("UnknownAttribute".to_owned());
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<EraDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidAttributes {
@@ -832,7 +460,7 @@ object "Test" {
         invalid_attributes.insert("UnknownAttribute2".to_owned());
 
         let mut lexer = Lexer::new(input.to_owned());
-        let result = Object::parse(&mut lexer, None);
+        let result = Object::<EraDialect>::parse(&mut lexer, None);
         assert_eq!(
             result,
             Err(Error::InvalidAttributes {
