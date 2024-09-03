@@ -561,6 +561,7 @@ dependencies = [
  "era-compiler-common",
  "era-compiler-downloader",
  "era-compiler-llvm-context",
+ "era-yul",
  "hex",
  "inkwell",
  "mimalloc",
@@ -582,6 +583,16 @@ dependencies = [
  "tempfile",
  "thiserror",
  "which",
+]
+
+[[package]]
+name = "era-yul"
+version = "1.5.4"
+dependencies = [
+ "anyhow",
+ "regex",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]

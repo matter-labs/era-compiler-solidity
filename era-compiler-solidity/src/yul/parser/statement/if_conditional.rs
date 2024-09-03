@@ -2,58 +2,17 @@
 //! The if-conditional statement.
 //!
 
-use std::collections::HashSet;
-
 use era_compiler_llvm_context::IContext;
 
-use crate::yul::error::Error;
-use crate::yul::lexer::token::location::Location;
-use crate::yul::lexer::token::Token;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::statement::block::Block;
-use crate::yul::parser::statement::expression::Expression;
+use crate::create_wrapper;
+use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap;
 
-///
-/// The Yul if-conditional statement.
-///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct IfConditional {
-    /// The location.
-    pub location: Location,
-    /// The condition expression.
-    pub condition: Expression,
-    /// The conditional block.
-    pub block: Block,
-}
-
-impl IfConditional {
-    ///
-    /// The element parser.
-    ///
-    pub fn parse(lexer: &mut Lexer, initial: Option<Token>) -> Result<Self, Error> {
-        let token = crate::yul::parser::take_or_next(initial, lexer)?;
-        let location = token.location;
-
-        let condition = Expression::parse(lexer, Some(token))?;
-
-        let block = Block::parse(lexer, None)?;
-
-        Ok(Self {
-            location,
-            condition,
-            block,
-        })
-    }
-
-    ///
-    /// Get the list of missing deployable libraries.
-    ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = self.condition.get_missing_libraries();
-        libraries.extend(self.block.get_missing_libraries());
-        libraries
-    }
-}
+use super::expression::Expression;
+create_wrapper!(
+    era_yul::yul::parser::statement::if_conditional::IfConditional<EraDialect>,
+    IfConditional
+);
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
 where
@@ -63,8 +22,8 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        let condition = self
-            .condition
+        let term = self.0;
+        let condition = Expression(term.condition)
             .into_llvm(context)?
             .expect("Always exists")
             .to_llvm()
@@ -84,7 +43,7 @@ where
         let join_block = context.append_basic_block("if_join");
         context.build_conditional_branch(condition, main_block, join_block)?;
         context.set_basic_block(main_block);
-        self.block.into_llvm(context)?;
+        term.block.wrap().into_llvm(context)?;
         context.build_unconditional_branch(join_block)?;
         context.set_basic_block(join_block);
 
@@ -101,7 +60,9 @@ where
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
         let condition = self
+            .0
             .condition
+            .wrap()
             .into_llvm_evm(context)?
             .expect("Always exists")
             .to_llvm()
@@ -121,7 +82,7 @@ where
         let join_block = context.append_basic_block("if_join");
         context.build_conditional_branch(condition, main_block, join_block)?;
         context.set_basic_block(main_block);
-        self.block.into_llvm(context)?;
+        self.0.block.wrap().into_llvm(context)?;
         context.build_unconditional_branch(join_block)?;
         context.set_basic_block(join_block);
 

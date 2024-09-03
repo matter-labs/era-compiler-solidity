@@ -4,7 +4,8 @@
 
 use std::collections::HashSet;
 
-use crate::yul::parser::statement::object::Object;
+use crate::yul::parser::dialect::era::EraDialect;
+use era_yul::yul::parser::statement::object::Object;
 
 ///
 /// The contract Yul source code.
@@ -12,29 +13,29 @@ use crate::yul::parser::statement::object::Object;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Yul {
     /// The Yul AST object.
-    pub object: Object,
+    pub object: crate::yul::parser::statement::object::Object,
 }
 
 impl Yul {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(object: Object) -> Self {
+    pub fn new(object: crate::yul::parser::statement::object::Object) -> Self {
         Self { object }
     }
 
     ///
     /// Extracts the runtime code from the Yul object.
     ///
-    pub fn take_runtime_code(&mut self) -> Option<Object> {
-        self.object.inner_object.take().map(|object| *object)
+    pub fn take_runtime_code(&mut self) -> Option<Object<EraDialect>> {
+        self.object.0.inner_object.take().map(|object| *object)
     }
 
     ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
-        self.object.get_missing_libraries()
+        self.object.0.get_missing_libraries()
     }
 }
 

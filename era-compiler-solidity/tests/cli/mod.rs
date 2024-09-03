@@ -23,38 +23,36 @@ mod standard_json;
 mod yul;
 
 /// The solidity contract name
-pub const TEST_SOLIDITY_CONTRACT_NAME: &'static str = "contract.sol";
+pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "contract.sol";
 /// The solidity contract full path
-pub const TEST_SOLIDITY_CONTRACT_PATH: &'static str =
-    "tests/examples/contracts/solidity/contract.sol";
+pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/contract.sol";
 
 /// The solidity binary artifact output name
-pub const SOLIDITY_BIN_OUTPUT_NAME: &'static str = "C.zbin";
+pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 
 /// The solidity assembly artifact output name
-pub const SOLIDITY_ASM_OUTPUT_NAME: &'static str = "C.zasm";
+pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
 /// The yul contract for testing
-pub const TEST_YUL_CONTRACT_PATH: &'static str = "tests/examples/contracts/yul/contract.yul";
+pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
 
 /// The era assembly contract path
-pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &'static str =
-    "tests/examples/contracts/eravm/contract.zasm";
+pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
 
 /// The LLVM contract path
-pub const TEST_LLVM_CONTRACT_PATH: &'static str = "tests/examples/contracts/llvm/contract.ll";
+pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
 
 /// The standard JSON contract path
-pub const TEST_JSON_CONTRACT_PATH: &'static str = "tests/examples/contracts/json/contract.json";
+pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
 
 /// The binary bytecode sample path
-pub const TEST_BINARY_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.zbin";
+pub const TEST_BINARY_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.zbin";
 
 /// The hexadecimal string bytecode sample path
-pub const TEST_HEXADECIMAL_BYTECODE_PATH: &'static str = "tests/examples/bytecodes/bytecode.hex";
+pub const TEST_HEXADECIMAL_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.hex";
 
 /// Shared library path and address
-pub const LIBRARY_DEFAULT_PATH: &'static str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+pub const LIBRARY_DEFAULT_PATH: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
 ///
 /// Execute zksolc with the given arguments and return the result
@@ -64,7 +62,7 @@ pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Asser
     Ok(cmd
         .env(
             "PATH",
-            fs::canonicalize(&PathBuf::from(common::SOLC_DOWNLOAD_DIR))?,
+            fs::canonicalize(PathBuf::from(common::SOLC_DOWNLOAD_DIR))?,
         )
         .args(args)
         .assert())

@@ -10,7 +10,7 @@ use crate::yul::lexer::token::Token;
 ///
 /// The integer literal lexeme.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub enum Integer {
     /// An integer literal, like `42`.
     Decimal {
@@ -25,6 +25,12 @@ pub enum Integer {
 }
 
 impl Integer {
+    /// Base for decimal numbers.
+    const BASE_DECIMAL: u32 = 10;
+
+    /// Base for hexadecimal numbers.
+    const BASE_HEXADECIMAL: u32 = 16;
+
     ///
     /// Creates a decimal value.
     ///
@@ -80,7 +86,7 @@ impl Integer {
     /// Checks whether the character can continue a decimal number.
     ///
     pub fn can_continue_decimal(character: char) -> bool {
-        character.is_digit(era_compiler_common::BASE_DECIMAL)
+        character.is_digit(Self::BASE_DECIMAL)
     }
 
     ///
@@ -94,7 +100,7 @@ impl Integer {
     /// Checks whether the character can continue a hexadecimal number.
     ///
     pub fn can_continue_hexadecimal(character: char) -> bool {
-        character.is_digit(era_compiler_common::BASE_HEXADECIMAL)
+        character.is_digit(Self::BASE_HEXADECIMAL)
     }
 
     ///

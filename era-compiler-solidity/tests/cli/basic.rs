@@ -49,7 +49,7 @@ fn default_run_of_zksolc_from_the_help() -> anyhow::Result<()> {
         .join(cli::SOLIDITY_BIN_OUTPUT_NAME);
 
     assert!(bin_output_file.exists());
-    assert!(!cli::is_file_empty(&bin_output_file.to_str().unwrap())?);
+    assert!(!cli::is_file_empty(bin_output_file.to_str().unwrap())?);
 
     Ok(())
 }
@@ -85,8 +85,8 @@ fn run_zksolc_with_multiple_output_options() -> anyhow::Result<()> {
 
     assert!(bin_output_file.exists());
     assert!(asm_output_file.exists());
-    assert!(!cli::is_file_empty(&bin_output_file.to_str().unwrap())?);
-    assert!(!cli::is_file_empty(&asm_output_file.to_str().unwrap())?);
+    assert!(!cli::is_file_empty(bin_output_file.to_str().unwrap())?);
+    assert!(!cli::is_file_empty(asm_output_file.to_str().unwrap())?);
 
     Ok(())
 }
@@ -121,8 +121,8 @@ fn bin_output_is_the_same_in_file_and_cli() -> anyhow::Result<()> {
         String::from_utf8(cli_result.get_output().clone().stdout).expect("Invalid UTF-8 sequence");
 
     assert!(cli::is_output_same_as_file(
-        &bin_output_file.to_str().unwrap(),
-        &stderr.as_str()
+        bin_output_file.to_str().unwrap(),
+        stderr.as_str()
     )?);
 
     Ok(())

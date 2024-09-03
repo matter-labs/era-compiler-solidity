@@ -29,8 +29,8 @@ use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputEr
 use crate::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use crate::solc::version::Version as SolcVersion;
 use crate::solc::Compiler as SolcCompiler;
-use crate::yul::lexer::Lexer;
-use crate::yul::parser::statement::object::Object;
+use era_yul::yul::lexer::Lexer;
+use era_yul::yul::parser::statement::object::Object;
 
 use self::contract::ir::IR as ContractIR;
 use self::contract::Contract;
