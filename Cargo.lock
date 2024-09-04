@@ -240,9 +240,9 @@ checksum = "8318a53db07bb3f8dca91a600466bdb3f2eaadeedfdbcf02e1accbad9271ba50"
 
 [[package]]
 name = "cc"
-version = "1.1.15"
+version = "1.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57b6a275aa2903740dc87da01c62040406b8812552e97129a63ea8850a17c6e6"
+checksum = "e9d013ecb737093c0e86b151a7b837993cf9ec6c502946cfb44bedc392421e0b"
 dependencies = [
  "shlex",
 ]
@@ -512,7 +512,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#be47c80014b3519f4b4f428852952232bd240f53"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9894ba60ae6ba428cb18d8bee00a9a1a2e4e1147"
 dependencies = [
  "anyhow",
  "base58",
@@ -527,7 +527,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-downloader"
 version = "0.1.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#be47c80014b3519f4b4f428852952232bd240f53"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#9894ba60ae6ba428cb18d8bee00a9a1a2e4e1147"
 dependencies = [
  "anyhow",
  "colored",
@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1727-implement-the-ipfs-hash-algorithm#68444a7f87dc9291a62ec684004cb9ce8376234e"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1727-implement-the-ipfs-hash-algorithm#d04cd26850398e3d2ecfc72fae9d3480957176cf"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1415,9 +1415,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-src"
-version = "300.3.1+3.3.1"
+version = "300.3.2+3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7259953d42a81bf137fbbd73bd30a8e1914d6dce43c2b90ed575783a22608b91"
+checksum = "a211a18d945ef7e648cc6e0058f4c548ee46aab922ea203e0d30e966ea23647b"
 dependencies = [
  "cc",
 ]
@@ -1650,9 +1650,9 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b1f9bf148c15500d44581654fb9260bc9d82970f3ef777a79a40534f6aa784f"
+checksum = "aa37f80ca58604976033fae9515a8a2989fc13797d953f7c04fb8fa36a11f205"
 dependencies = [
  "cc",
 ]
