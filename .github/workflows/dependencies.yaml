@@ -3,6 +3,11 @@ name: Dependencies test
 on:
   workflow_dispatch:
     inputs:
+      dependencies_list:
+        description: 'Space-separated list of dependencies to update. Example: "era-compiler-common era-compiler-llvm-context"'
+        required: true
+        default: ''
+        type: string
       dependencies_branch:
         description: 'Branch of testing dependencies'
         required: true
@@ -16,20 +21,29 @@ jobs:
       image: ghcr.io/matter-labs/zksync-llvm-runner:latest
 
     steps:
+      # Ref to checkout will be defined automatically from the event that triggered the workflow
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.dependencies_branch }}
 
-      - name: Patch era-compiler-common
+      - name: Patch dependencies
+        shell: bash -ex {0}
+        env:
+          CARGO_TOML: Cargo.toml
+          GH_ML_URL: https://github.com
+          # `www.github.com` is a workaround for Cargo issue with `patch` section from `git` source
+          # https://github.com/rust-lang/cargo/issues/5478
+          GH_ML_PATCHED_URL: https://www.github.com
         run: |
-          echo "[patch.\"https://github.com/matter-labs/era-compiler-common\"]" >> "Cargo.toml"
-          echo "era-compiler-common = { git = 'https://www.github.com/matter-labs/era-compiler-common', branch = '${{ inputs.dependencies_branch }}' }" >> "Cargo.toml"
-
-      - name: Patch era-compiler-llvm-context
-        run: |
-          echo "[patch.\"https://github.com/matter-labs/era-compiler-llvm-context\"]" >> "Cargo.toml"
-          echo "era-compiler-common = { git = 'https://www.github.com/matter-labs/era-compiler-llvm-context', branch = '${{ inputs.dependencies_branch }}' }" >> "Cargo.toml"
+          for DEP in ${{ inputs.dependencies_list }}; do
+            CRATE=$(echo "${DEP}" | cut -d'/' -f2)
+            # Handle special cases
+            if [ ${DEP} == "matter-labs-forks/llvm-sys.rs" ]; then
+              CRATE="llvm-sys-170" # Update this to 180, etc. with each LLVM update
+            fi
+            echo "[patch.\"${GH_ML_URL}/${DEP}\"]" >> "${CARGO_TOML}"
+            echo "${CRATE} = { git = '${GH_ML_PATCHED_URL}/${DEP}', branch = '${{ inputs.dependencies_branch }}' }" >> "${CARGO_TOML}"
+          done
+          cat "${CARGO_TOML}"
 
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
