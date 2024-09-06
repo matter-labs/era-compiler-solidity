@@ -11,7 +11,7 @@ fn run_zksolc_with_bin_by_default() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     let result_status_code = result
         .success()
-        .stdout(predicate::str::contains("bytecode: 0x"))
+        .stdout(predicate::str::contains("Binary:\n0x"))
         .get_output()
         .status
         .code()

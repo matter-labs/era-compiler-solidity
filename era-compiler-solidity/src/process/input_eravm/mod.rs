@@ -21,8 +21,8 @@ pub struct Input {
     pub dependency_data: DependencyData,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
-    /// Whether to append the metadata hash.
-    pub include_metadata_hash: bool,
+    /// The metadata hash type.
+    pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -41,7 +41,7 @@ impl Input {
         contract: Option<Contract>,
         dependency_data: DependencyData,
         enable_eravm_extensions: bool,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -51,7 +51,7 @@ impl Input {
             contract,
             dependency_data,
             enable_eravm_extensions,
-            include_metadata_hash,
+            metadata_hash_type,
             optimizer_settings,
             llvm_options,
             output_assembly,

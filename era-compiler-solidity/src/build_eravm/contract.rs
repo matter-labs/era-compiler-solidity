@@ -51,17 +51,23 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to terminal.
     ///
-    pub fn write_to_terminal(self, path: String, output_binary: bool) -> anyhow::Result<()> {
+    pub fn write_to_terminal(
+        self,
+        path: String,
+        output_metadata: bool,
+        output_binary: bool,
+    ) -> anyhow::Result<()> {
+        writeln!(std::io::stdout(), "======= {path} =======",)?;
         if let Some(assembly) = self.build.assembly {
-            writeln!(
-                std::io::stdout(),
-                "Contract `{path}` assembly:\n\n{assembly}",
-            )?;
+            writeln!(std::io::stdout(), "EraVM assembly:\n{assembly}")?;
+        }
+        if output_metadata {
+            writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
         }
         if output_binary {
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` bytecode: 0x{}",
+                "Binary:\n0x{}",
                 hex::encode(self.build.bytecode)
             )?;
         }
@@ -75,10 +81,34 @@ impl Contract {
     pub fn write_to_directory(
         self,
         path: &Path,
+        output_metadata: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
         let (file_name, contract_name) = Self::split_path(self.path.as_str());
+
+        if output_metadata {
+            let output_name = format!(
+                "{}_meta.{}",
+                contract_name,
+                era_compiler_common::EXTENSION_JSON,
+            );
+            let mut file_path = path.to_owned();
+            file_path.push(file_name.as_str());
+            std::fs::create_dir_all(file_path.as_path())?;
+            file_path.push(output_name.as_str());
+
+            if file_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
+                );
+            } else {
+                File::create(&file_path)
+                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
+                    .write_all(self.metadata_json.to_string().as_bytes())
+                    .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+            }
+        }
 
         if let Some(assembly) = self.build.assembly {
             let output_name = format!(

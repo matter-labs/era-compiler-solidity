@@ -19,8 +19,8 @@ pub struct Input {
     pub contract: Option<Contract>,
     /// The dependency data.
     pub dependency_data: DependencyData,
-    /// Whether to append the metadata hash.
-    pub include_metadata_hash: bool,
+    /// The metadata hash type.
+    pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -36,7 +36,7 @@ impl Input {
     pub fn new(
         contract: Option<Contract>,
         dependency_data: DependencyData,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -44,7 +44,7 @@ impl Input {
         Self {
             contract,
             dependency_data,
-            include_metadata_hash,
+            metadata_hash_type,
             optimizer_settings,
             llvm_options,
             debug_config,

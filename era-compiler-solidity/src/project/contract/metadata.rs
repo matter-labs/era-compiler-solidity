@@ -36,6 +36,13 @@ impl<'a> Metadata<'a> {
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: &'a [String],
     ) -> Self {
+        let source_metadata = match source_metadata {
+            serde_json::Value::String(inner) => {
+                let value = serde_json::from_str(inner.as_str()).expect("Always valid");
+                serde_json::Value::Object(value)
+            }
+            value => value,
+        };
         Self {
             source_metadata,
             solc_version,

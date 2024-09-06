@@ -4,6 +4,7 @@
 
 ### Added
 
+- The support for IPFS metadata hash type
 - The EraVM disassembler
 
 ## [1.5.3] - 2024-08-27

@@ -49,6 +49,7 @@ impl Build {
     ///
     pub fn write_to_terminal(
         mut self,
+        output_metadata: bool,
         output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
@@ -56,9 +57,12 @@ impl Build {
         self.exit_on_error();
 
         for (path, build) in self.contracts.into_iter() {
-            build
-                .expect("Always valid")
-                .write_to_terminal(path, output_assembly, output_binary)?;
+            build.expect("Always valid").write_to_terminal(
+                path,
+                output_metadata,
+                output_assembly,
+                output_binary,
+            )?;
         }
 
         Ok(())

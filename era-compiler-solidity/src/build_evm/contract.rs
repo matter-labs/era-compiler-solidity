@@ -55,6 +55,7 @@ impl Contract {
     pub fn write_to_terminal(
         self,
         path: String,
+        _output_metadata: bool,
         _output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {

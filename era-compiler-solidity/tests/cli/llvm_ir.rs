@@ -11,7 +11,7 @@ fn run_zksolc_with_llvm_ir_by_default() -> anyhow::Result<()> {
     let invalid_result = cli::execute_zksolc(invalid_args)?;
 
     result.success().stderr(predicate::str::contains(
-        "Compiler run successful. No output requested. Use --asm and --bin flags.",
+        "Compiler run successful. No output requested.",
     ));
     invalid_result.failure();
 

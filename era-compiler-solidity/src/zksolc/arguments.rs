@@ -84,7 +84,7 @@ pub struct Arguments {
     #[structopt(long = "solc")]
     pub solc: Option<String>,
 
-    /// The EVM target version to generate IR for.
+    /// The EVM version to generate IR for.
     /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
     #[structopt(long = "evm-version")]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
@@ -163,22 +163,26 @@ pub struct Arguments {
     #[structopt(long = "enable-eravm-extensions")]
     pub enable_eravm_extensions: bool,
 
-    /// Set metadata hash mode.
-    /// The only supported value is `none` that disables appending the metadata hash.
-    /// Is enabled by default.
+    /// Set the metadata hash type.
+    /// Available types: `none`, `keccak256`, `ipfs`.
+    /// The default is `keccak256`.
     #[structopt(long = "metadata-hash")]
-    pub metadata_hash: Option<String>,
+    pub metadata_hash_type: Option<era_compiler_common::HashType>,
 
     /// Sets the literal content flag for contract metadata.
     /// If enabled, the metadata will contain the literal content of the source files.
     #[structopt(long = "metadata-literal")]
     pub metadata_literal: bool,
 
-    /// Output EraVM assembly of the contracts.
+    /// Output assembly of the compiled contracts.
     #[structopt(long = "asm")]
     pub output_assembly: bool,
 
-    /// Output EraVM bytecode of the contracts.
+    /// Output metadata of the compiled project.
+    #[structopt(long = "metadata")]
+    pub output_metadata: bool,
+
+    /// Output bytecode of the compiled contracts.
     #[structopt(long = "bin")]
     pub output_binary: bool,
 
@@ -386,9 +390,11 @@ impl Arguments {
             ));
         }
 
-        if self.combined_json.is_some() && (self.output_assembly || self.output_binary) {
+        if self.combined_json.is_some()
+            && (self.output_assembly || self.output_metadata || self.output_binary)
+        {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "Cannot output assembly or binary outside of JSON in combined JSON mode.",
+                "Cannot output data outside of JSON in combined JSON mode.",
                 None,
                 None,
             ));
@@ -401,9 +407,9 @@ impl Arguments {
         }
 
         if self.standard_json.is_some() {
-            if self.output_assembly || self.output_binary {
+            if self.output_assembly || self.output_metadata || self.output_binary {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "Cannot output assembly or binary outside of JSON in standard JSON mode.",
+                    "Cannot output data outside of JSON in standard JSON mode.",
                     None,
                     None,
                 ));
@@ -471,7 +477,7 @@ impl Arguments {
                     None,
                 ));
             }
-            if self.metadata_hash.is_some() {
+            if self.metadata_hash_type.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "Metadata hash mode must be specified in standard JSON input settings.",
                     None,

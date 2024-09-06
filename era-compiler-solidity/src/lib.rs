@@ -72,7 +72,7 @@ pub fn yul_to_eravm(
     solc_path: Option<String>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     enable_eravm_extensions: bool,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -104,7 +104,7 @@ pub fn yul_to_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        include_metadata_hash,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -122,7 +122,7 @@ pub fn yul_to_evm(
     libraries: Vec<String>,
     solc_path: Option<String>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     threads: Option<usize>,
@@ -151,7 +151,7 @@ pub fn yul_to_evm(
         messages,
         optimizer_settings,
         llvm_options,
-        include_metadata_hash,
+        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -164,7 +164,7 @@ pub fn yul_to_evm(
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -176,7 +176,7 @@ pub fn llvm_ir_to_eravm(
     let build = project.compile_to_eravm(
         messages,
         false,
-        include_metadata_hash,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -192,7 +192,7 @@ pub fn llvm_ir_to_eravm(
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     threads: Option<usize>,
@@ -204,7 +204,7 @@ pub fn llvm_ir_to_evm(
         messages,
         optimizer_settings,
         llvm_options,
-        include_metadata_hash,
+        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -217,7 +217,7 @@ pub fn llvm_ir_to_evm(
 pub fn eravm_assembly(
     paths: &[PathBuf],
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     llvm_options: Vec<String>,
     output_assembly: bool,
     threads: Option<usize>,
@@ -229,7 +229,7 @@ pub fn eravm_assembly(
     let build = project.compile_to_eravm(
         messages,
         false,
-        include_metadata_hash,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -251,7 +251,7 @@ pub fn standard_output_eravm(
     solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -318,7 +318,7 @@ pub fn standard_output_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        include_metadata_hash,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -339,7 +339,7 @@ pub fn standard_output_evm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -404,7 +404,7 @@ pub fn standard_output_evm(
         messages,
         optimizer_settings,
         llvm_options,
-        include_metadata_hash,
+        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -449,10 +449,12 @@ pub fn standard_json_eravm(
         .detect_missing_libraries
         .unwrap_or_default()
         || detect_missing_libraries;
-    let include_metadata_hash = match solc_input.settings.metadata {
-        Some(ref metadata) => metadata.bytecode_hash != Some(era_compiler_common::HashType::None),
-        None => true,
-    };
+    let metadata_hash_type = solc_input
+        .settings
+        .metadata
+        .as_ref()
+        .and_then(|metadata| metadata.bytecode_hash)
+        .unwrap_or(era_compiler_common::HashType::Keccak256);
     let output_assembly = solc_input
         .settings
         .output_selection
@@ -572,7 +574,7 @@ pub fn standard_json_eravm(
         let build = project.compile_to_eravm(
             messages,
             enable_eravm_extensions,
-            include_metadata_hash,
+            metadata_hash_type,
             optimizer_settings,
             llvm_options,
             output_assembly,
@@ -609,10 +611,12 @@ pub fn standard_json_evm(
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
 
-    let include_metadata_hash = match solc_input.settings.metadata {
-        Some(ref metadata) => metadata.bytecode_hash != Some(era_compiler_common::HashType::None),
-        None => true,
-    };
+    let metadata_hash_type = solc_input
+        .settings
+        .metadata
+        .as_ref()
+        .and_then(|metadata| metadata.bytecode_hash)
+        .unwrap_or(era_compiler_common::HashType::Keccak256);
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
@@ -706,7 +710,7 @@ pub fn standard_json_evm(
         messages,
         optimizer_settings,
         llvm_options,
-        include_metadata_hash,
+        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -727,7 +731,7 @@ pub fn combined_json_eravm(
     solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -754,7 +758,7 @@ pub fn combined_json_eravm(
         solc_optimizer_enabled,
         force_evmla,
         enable_eravm_extensions,
-        include_metadata_hash,
+        metadata_hash_type,
         use_literal_content,
         base_path,
         include_paths,
@@ -796,7 +800,7 @@ pub fn combined_json_evm(
     evm_version: Option<era_compiler_common::EVMVersion>,
     solc_optimizer_enabled: bool,
     force_evmla: bool,
-    include_metadata_hash: bool,
+    metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
@@ -819,7 +823,7 @@ pub fn combined_json_evm(
         evm_version,
         solc_optimizer_enabled,
         force_evmla,
-        include_metadata_hash,
+        metadata_hash_type,
         use_literal_content,
         base_path,
         include_paths,

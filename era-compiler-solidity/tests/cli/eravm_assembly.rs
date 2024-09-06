@@ -13,7 +13,7 @@ fn run_zksolc_with_eravm_assembly_by_default() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result
         .success()
-        .stdout(predicate::str::contains("bytecode"));
+        .stdout(predicate::str::contains("Binary:\n0x"));
 
     Ok(())
 }

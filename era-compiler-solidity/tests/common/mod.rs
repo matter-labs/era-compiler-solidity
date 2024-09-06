@@ -143,7 +143,7 @@ pub fn build_solidity(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        true,
+        era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
         false,
@@ -254,7 +254,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        true,
+        era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
         false,
@@ -308,7 +308,7 @@ pub fn build_yul_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         solc_compiler.is_none(),
-        true,
+        era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
         false,
@@ -343,7 +343,7 @@ pub fn build_llvm_ir_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        true,
+        era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
         false,
@@ -378,7 +378,7 @@ pub fn build_eravm_assembly_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        true,
+        era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
         false,

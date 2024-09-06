@@ -101,14 +101,6 @@ fn main_inner(
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
-    let include_metadata_hash = match arguments.metadata_hash {
-        Some(metadata_hash) => {
-            let metadata = era_compiler_common::HashType::from_str(metadata_hash.as_str())?;
-            metadata != era_compiler_common::HashType::None
-        }
-        None => true,
-    };
-
     let mut optimizer_settings = match arguments.optimization {
         Some(mode) => era_compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
         None => era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -144,6 +136,10 @@ fn main_inner(
 
     let enable_eravm_extensions = arguments.enable_eravm_extensions || arguments.system_mode;
 
+    let metadata_hash_type = arguments
+        .metadata_hash_type
+        .unwrap_or(era_compiler_common::HashType::Keccak256);
+
     match target {
         era_compiler_common::Target::EraVM => {
             let build = if arguments.yul {
@@ -153,7 +149,7 @@ fn main_inner(
                     arguments.solc,
                     messages,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -164,7 +160,7 @@ fn main_inner(
                 era_compiler_solidity::llvm_ir_to_eravm(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -175,7 +171,7 @@ fn main_inner(
                 era_compiler_solidity::eravm_assembly(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     llvm_options,
                     arguments.output_assembly,
                     arguments.threads,
@@ -220,7 +216,7 @@ fn main_inner(
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -253,7 +249,7 @@ fn main_inner(
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
                     enable_eravm_extensions,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -274,6 +270,7 @@ fn main_inner(
 
                 build.write_to_directory(
                     &output_directory,
+                    arguments.output_metadata,
                     arguments.output_binary,
                     arguments.overwrite,
                 )?;
@@ -282,12 +279,15 @@ fn main_inner(
                     std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
-            } else if arguments.output_assembly || arguments.output_binary {
-                build.write_to_terminal(arguments.output_binary)?;
+            } else if arguments.output_metadata
+                || arguments.output_assembly
+                || arguments.output_binary
+            {
+                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
             } else {
                 writeln!(
                     std::io::stderr(),
-                    "Compiler run successful. No output requested. Use --asm and --bin flags."
+                    "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
                 )?;
             }
         }
@@ -298,7 +298,7 @@ fn main_inner(
                     arguments.libraries,
                     arguments.solc,
                     messages,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.threads,
@@ -308,7 +308,7 @@ fn main_inner(
                 era_compiler_solidity::llvm_ir_to_evm(
                     input_files.as_slice(),
                     messages,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
                     arguments.threads,
@@ -349,7 +349,7 @@ fn main_inner(
                     arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -378,7 +378,7 @@ fn main_inner(
                     arguments.evm_version,
                     !arguments.disable_solc_optimizer,
                     arguments.force_evmla,
-                    include_metadata_hash,
+                    metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_paths,
@@ -405,12 +405,19 @@ fn main_inner(
                     std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
-            } else if arguments.output_assembly || arguments.output_binary {
-                build.write_to_terminal(arguments.output_assembly, arguments.output_binary)?;
+            } else if arguments.output_metadata
+                || arguments.output_assembly
+                || arguments.output_binary
+            {
+                build.write_to_terminal(
+                    arguments.output_metadata,
+                    arguments.output_assembly,
+                    arguments.output_binary,
+                )?;
             } else {
                 writeln!(
                     std::io::stderr(),
-                    "Compiler run successful. No output requested. Use --asm and --bin flags."
+                    "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
                 )?;
             }
         }

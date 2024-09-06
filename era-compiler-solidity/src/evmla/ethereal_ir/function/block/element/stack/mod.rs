@@ -4,8 +4,6 @@
 
 pub mod element;
 
-use sha3::Digest;
-
 use self::element::Element;
 
 ///
@@ -52,14 +50,17 @@ impl Stack {
     /// Each block clone has its own initial stack state, which uniquely identifies the block.
     ///
     pub fn hash(&self) -> [u8; era_compiler_common::BYTE_LENGTH_FIELD] {
-        let mut hasher = sha3::Sha3_256::new();
+        let mut preimages = Vec::with_capacity(self.elements.len());
         for element in self.elements.iter() {
             match element {
-                Element::Tag(tag) => hasher.update(tag.to_bytes_be()),
-                _ => hasher.update([0]),
+                Element::Tag(tag) => preimages.push(tag.to_bytes_be()),
+                _ => preimages.push(vec![0]),
             }
         }
-        hasher.finalize().into()
+        era_compiler_common::Hash::keccak256_multiple(preimages.as_slice())
+            .as_bytes()
+            .try_into()
+            .expect("Always valid")
     }
 
     ///

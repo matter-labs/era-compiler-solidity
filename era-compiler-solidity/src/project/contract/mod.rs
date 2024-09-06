@@ -8,8 +8,6 @@ pub mod metadata;
 
 use std::collections::HashSet;
 
-use sha3::Digest;
-
 use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
@@ -69,7 +67,7 @@ impl Contract {
         mut self,
         dependency_data: EraVMProcessInputDependencyData,
         enable_eravm_extensions: bool,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -98,10 +96,15 @@ impl Contract {
             llvm_options.as_slice(),
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-        let metadata_hash = if include_metadata_hash {
-            Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
-        } else {
-            None
+        let metadata_bytes = serde_json::to_vec(&metadata_json).expect("Always valid");
+        let metadata_hash = match metadata_hash_type {
+            era_compiler_common::HashType::None => None,
+            era_compiler_common::HashType::Keccak256 => Some(era_compiler_common::Hash::keccak256(
+                metadata_bytes.as_slice(),
+            )),
+            era_compiler_common::HashType::Ipfs => {
+                Some(era_compiler_common::Hash::ipfs(metadata_bytes.as_slice()))
+            }
         };
 
         let module = match self.ir {
@@ -202,7 +205,7 @@ impl Contract {
     pub fn compile_to_evm(
         self,
         dependency_data: EVMProcessInputDependencyData,
-        include_metadata_hash: bool,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -228,10 +231,15 @@ impl Contract {
             llvm_options.as_slice(),
         );
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
-        let metadata_hash = if include_metadata_hash {
-            Some(sha3::Keccak256::digest(metadata_json.to_string().as_bytes()).into())
-        } else {
-            None
+        let metadata_bytes = serde_json::to_vec(&metadata_json).expect("Always valid");
+        let metadata_hash = match metadata_hash_type {
+            era_compiler_common::HashType::None => None,
+            era_compiler_common::HashType::Keccak256 => Some(era_compiler_common::Hash::keccak256(
+                metadata_bytes.as_slice(),
+            )),
+            era_compiler_common::HashType::Ipfs => {
+                Some(era_compiler_common::Hash::ipfs(metadata_bytes.as_slice()))
+            }
         };
 
         match self.ir {
@@ -270,7 +278,7 @@ impl Contract {
                     code.into_llvm(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
                     })?;
-                    let build = context.build(self.path.as_str(), metadata_hash)?;
+                    let build = context.build(self.path.as_str(), metadata_hash.clone())?;
                     Ok(build)
                 })
                 .collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>()
@@ -335,7 +343,7 @@ impl Contract {
                     code.into_llvm(&mut context).map_err(|error| {
                         anyhow::anyhow!("deploy code LLVM IR generator definition pass: {error}")
                     })?;
-                    let build = context.build(self.path.as_str(), metadata_hash)?;
+                    let build = context.build(self.path.as_str(), metadata_hash.clone())?;
                     Ok(build)
                 })
                 .collect::<Vec<anyhow::Result<era_compiler_llvm_context::EVMBuild>>>()
