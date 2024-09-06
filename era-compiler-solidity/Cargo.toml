@@ -35,7 +35,7 @@ num = "0.4"
 sha3 = "0.10"
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-1727-implement-the-ipfs-hash-algorithm" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
 era-yul = { path = "../era-yul" }
 
 [dev-dependencies]
