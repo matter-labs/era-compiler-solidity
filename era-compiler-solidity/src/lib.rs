@@ -894,3 +894,77 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
     }
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
+
+///
+/// Runs the linker for EraVM bytecode file, modifying it in place.
+///
+pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
+    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?
+        .into_iter()
+        .flat_map(|(path, addresses)| {
+            addresses
+                .into_iter()
+                .map(|(name, address)| {
+                    let full_path = format!("{path}:{name}");
+                    let full_path_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
+                        era_compiler_common::Hash::keccak256(full_path.as_bytes())
+                            .as_bytes()
+                            .try_into()
+                            .expect("Always valid");
+                    let address: [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS] =
+                        hex::decode(address.strip_prefix("0x").unwrap_or(address.as_str()))
+                            .map_err(|error| {
+                                anyhow::anyhow!("Invalid address of library `{full_path}`: {error}")
+                            })
+                            .and_then(|address| {
+                                address.try_into().map_err(|address: Vec<u8>| {
+                                    anyhow::anyhow!(
+                                        "Invalid address size of library `{full_path}`: expected {}, found {}",
+                                        era_compiler_common::BYTE_LENGTH_ETH_ADDRESS,
+                                        address.len(),
+                                    )
+                                })
+                            })?;
+                    Ok((full_path_hash, address))
+                })
+                .collect::<Vec<
+                    anyhow::Result<(
+                        [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+                        [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
+                    )>,
+                >>()
+        })
+        .collect::<anyhow::Result<
+            Vec<(
+                [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+                [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
+            )>,
+        >>()?;
+
+    paths
+        .into_iter()
+        .try_for_each(|path| -> anyhow::Result<()> {
+            let bytecode_string = std::fs::read_to_string(path.as_str())?;
+            let bytecode = hex::decode(
+                bytecode_string
+                    .strip_prefix("0x")
+                    .unwrap_or(bytecode_string.as_str()),
+            )?;
+
+            let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                bytecode.as_slice(),
+                "bytecode",
+                false,
+            );
+            let memory_buffer_linked =
+                era_compiler_llvm_context::eravm_link(memory_buffer, libraries.as_slice())?;
+
+            let bytecode_linked = memory_buffer_linked.as_slice().to_vec();
+            let bytecode_linked_string = format!("0x{}", hex::encode(bytecode_linked));
+            std::fs::write(path.as_str(), bytecode_linked_string)?;
+
+            Ok(())
+        })?;
+
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+}

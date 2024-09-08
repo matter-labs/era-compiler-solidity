@@ -146,6 +146,12 @@ pub struct Arguments {
     #[structopt(long = "disassemble")]
     pub disassemble: bool,
 
+    /// Specify the bytecode file to link.
+    /// Only `--libraries` is allowed as an additional argument.
+    /// The bytecode files are modified in place.
+    #[structopt(long = "link")]
+    pub link: bool,
+
     /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
@@ -267,6 +273,7 @@ impl Arguments {
             self.llvm_ir,
             self.eravm_assembly,
             self.disassemble,
+            self.link,
             self.combined_json.is_some(),
             self.standard_json.is_some(),
         ]
@@ -388,6 +395,23 @@ impl Arguments {
                 None,
                 None,
             ));
+        }
+
+        if self.link {
+            if self.libraries.is_empty() {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "No libraries provided for linking.",
+                    None,
+                    None,
+                ));
+            }
+            if std::env::args().count() > self.inputs.len() + 3 {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "No other options except `--libraries` are allowed in linker mode.",
+                    None,
+                    None,
+                ));
+            }
         }
 
         if self.combined_json.is_some()

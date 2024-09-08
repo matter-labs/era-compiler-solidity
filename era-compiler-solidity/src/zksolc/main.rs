@@ -180,6 +180,9 @@ fn main_inner(
             } else if arguments.disassemble {
                 era_compiler_solidity::disassemble_eravm(arguments.inputs)?;
                 return Ok(());
+            } else if arguments.link {
+                era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries)?;
+                return Ok(());
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
