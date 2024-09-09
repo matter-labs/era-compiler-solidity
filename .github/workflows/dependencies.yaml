@@ -16,7 +16,7 @@ on:
 
 jobs:
   dependencies-check:
-    runs-on: matterlabs-ci-runner
+    runs-on: matterlabs-ci-runner-high-performance
     container:
       image: ghcr.io/matter-labs/zksync-llvm-runner:latest
 
