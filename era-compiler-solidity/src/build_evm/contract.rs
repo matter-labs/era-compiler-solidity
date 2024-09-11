@@ -62,12 +62,12 @@ impl Contract {
         if output_binary {
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` deploy bytecode: 0x{}",
+                "Contract `{path}` deploy bytecode: {}",
                 hex::encode(self.deploy_build.bytecode)
             )?;
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` runtime bytecode: 0x{}",
+                "Contract `{path}` runtime bytecode: {}",
                 hex::encode(self.runtime_build.bytecode)
             )?;
         }
@@ -117,7 +117,7 @@ impl Contract {
                         .map_err(|error| {
                             anyhow::anyhow!("File {:?} creating: {}", file_path, error)
                         })?
-                        .write_all(format!("0x{}", hex::encode(bytecode.as_slice())).as_bytes())
+                        .write_all(hex::encode(bytecode.as_slice()).as_bytes())
                         .map_err(|error| {
                             anyhow::anyhow!("File {:?} writing: {}", file_path, error)
                         })?;

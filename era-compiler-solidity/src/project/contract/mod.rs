@@ -6,6 +6,7 @@ pub mod factory_dependency;
 pub mod ir;
 pub mod metadata;
 
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
@@ -136,7 +137,7 @@ impl Contract {
                 };
                 let build = era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
-                    &[],
+                    &BTreeMap::new(),
                     metadata_hash,
                     assembly_text,
                 )?;
@@ -191,7 +192,7 @@ impl Contract {
 
         let build = context.build(
             self.path.as_str(),
-            &[],
+            &BTreeMap::new(),
             metadata_hash,
             output_assembly,
             false,

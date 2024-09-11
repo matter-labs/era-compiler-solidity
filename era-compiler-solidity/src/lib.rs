@@ -56,6 +56,7 @@ pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
@@ -899,18 +900,13 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 /// Runs the linker for EraVM bytecode file, modifying it in place.
 ///
 pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?
+    let linker_symbols = SolcStandardJsonInputSettings::parse_libraries(libraries)?
         .into_iter()
         .flat_map(|(path, addresses)| {
             addresses
                 .into_iter()
                 .map(|(name, address)| {
                     let full_path = format!("{path}:{name}");
-                    let full_path_hash: [u8; era_compiler_common::BYTE_LENGTH_FIELD] =
-                        era_compiler_common::Hash::keccak256(full_path.as_bytes())
-                            .as_bytes()
-                            .try_into()
-                            .expect("Always valid");
                     let address: [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS] =
                         hex::decode(address.strip_prefix("0x").unwrap_or(address.as_str()))
                             .map_err(|error| {
@@ -925,21 +921,25 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                                     )
                                 })
                             })?;
-                    Ok((full_path_hash, address))
+                    Ok((full_path, address))
                 })
                 .collect::<Vec<
                     anyhow::Result<(
-                        [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+                        String,
                         [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
                     )>,
                 >>()
         })
         .collect::<anyhow::Result<
-            Vec<(
-                [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+        BTreeMap<
+                String,
                 [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
-            )>,
+            >,
         >>()?;
+
+    let mut linked_objects = serde_json::Map::new();
+    let mut unlinked_objects = serde_json::Map::new();
+    let mut ignored_objects = serde_json::Map::new();
 
     paths
         .into_iter()
@@ -956,15 +956,48 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                 "bytecode",
                 false,
             );
-            let memory_buffer_linked =
-                era_compiler_llvm_context::eravm_link(memory_buffer, libraries.as_slice())?;
+            let already_linked = !memory_buffer.is_elf();
 
-            let bytecode_linked = memory_buffer_linked.as_slice().to_vec();
-            let bytecode_linked_string = format!("0x{}", hex::encode(bytecode_linked));
-            std::fs::write(path.as_str(), bytecode_linked_string)?;
+            let (memory_buffer_linked, bytecode_hash) =
+                era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
 
+            if let Some(bytecode_hash) = bytecode_hash {
+                if already_linked {
+                    ignored_objects.insert(
+                        path.clone(),
+                        serde_json::Value::String(hex::encode(bytecode_hash)),
+                    );
+                } else {
+                    linked_objects.insert(
+                        path.clone(),
+                        serde_json::Value::String(hex::encode(bytecode_hash)),
+                    );
+                }
+            }
+            if memory_buffer_linked.is_elf() {
+                unlinked_objects.insert(
+                    path.clone(),
+                    serde_json::Value::Array(
+                        memory_buffer_linked
+                            .get_undefined_symbols_eravm()
+                            .iter()
+                            .map(|symbol| serde_json::Value::String(symbol.to_string()))
+                            .collect(),
+                    ),
+                );
+            }
+
+            std::fs::write(path.as_str(), hex::encode(memory_buffer_linked.as_slice()))?;
             Ok(())
         })?;
 
+    serde_json::to_writer(
+        std::io::stdout(),
+        &serde_json::json!({
+            "linked": linked_objects,
+            "unlinked": unlinked_objects,
+            "ignored": ignored_objects,
+        }),
+    )?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }

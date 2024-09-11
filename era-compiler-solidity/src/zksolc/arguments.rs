@@ -397,21 +397,17 @@ impl Arguments {
             ));
         }
 
-        if self.link {
-            if self.libraries.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "No libraries provided for linking.",
-                    None,
-                    None,
-                ));
-            }
-            if std::env::args().count() > self.inputs.len() + 3 {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "No other options except `--libraries` are allowed in linker mode.",
-                    None,
-                    None,
-                ));
-            }
+        if self.link
+            && std::env::args().count()
+                > 2 + self.inputs.len()
+                    + ((!self.libraries.is_empty()) as usize)
+                    + self.libraries.len()
+        {
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "No other options except `--libraries` are allowed in linker mode.",
+                None,
+                None,
+            ));
         }
 
         if self.combined_json.is_some()

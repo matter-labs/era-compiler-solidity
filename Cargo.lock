@@ -541,7 +541,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#d8592355691ec45e8ba5900b2c3e2557ddb0dd7b"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#1199cbbe4d011df100381abe0771f39929b6434e"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1012,7 +1012,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#78b25ccb1e77ff5bc49a152a170383daf1e56a18"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#2eaf4273d6b47187a0e133f57a057acaa878c29a"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1027,7 +1027,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#78b25ccb1e77ff5bc49a152a170383daf1e56a18"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#2eaf4273d6b47187a0e133f57a057acaa878c29a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1152,7 +1152,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#de855f19d52973d9d9003b319d1a08efa77ab39c"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#7dc170a025e971e41c53685d69c875bfbf20dc6a"
 dependencies = [
  "anyhow",
  "cc",
@@ -2410,9 +2410,9 @@ checksum = "08f95100a766bf4f8f28f90d77e0a5461bbdb219042e7679bebe79004fed8d75"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.12"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "unicode-normalization"

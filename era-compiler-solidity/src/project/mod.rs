@@ -441,8 +441,12 @@ impl Project {
 
         let mut hashes = HashMap::with_capacity(results.len());
         for (path, result) in results.iter() {
-            if let Ok(ref contract) = result {
-                hashes.insert(path.to_owned(), contract.build.bytecode_hash.to_owned());
+            if let Some(bytecode_hash) = result
+                .as_ref()
+                .ok()
+                .and_then(|contract| contract.build.bytecode_hash)
+            {
+                hashes.insert(path.to_owned(), bytecode_hash.to_owned());
             }
         }
 
@@ -457,16 +461,12 @@ impl Project {
                             .unwrap_or_else(|| {
                                 panic!("dependency `{dependency}` full path not found")
                             });
-                        let hash = hashes
-                            .get(dependency_path.as_str())
-                            .cloned()
-                            .unwrap_or_else(|| {
-                                panic!("dependency `{dependency_path}` not found in the project")
-                            });
-                        contract
-                            .build
-                            .factory_dependencies
-                            .insert(hex::encode(hash), dependency_path);
+                        if let Some(hash) = hashes.get(dependency_path.as_str()) {
+                            contract
+                                .build
+                                .factory_dependencies
+                                .insert(hex::encode(hash), dependency_path);
+                        }
                     }
                 }
                 (path, result)

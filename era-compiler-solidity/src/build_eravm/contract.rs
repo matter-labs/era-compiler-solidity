@@ -67,7 +67,7 @@ impl Contract {
         if output_binary {
             writeln!(
                 std::io::stdout(),
-                "Binary:\n0x{}",
+                "Binary:\n{}",
                 hex::encode(self.build.bytecode)
             )?;
         }
@@ -151,9 +151,7 @@ impl Contract {
             } else {
                 File::create(&file_path)
                     .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
-                    .write_all(
-                        format!("0x{}", hex::encode(self.build.bytecode.as_slice())).as_bytes(),
-                    )
+                    .write_all(hex::encode(self.build.bytecode.as_slice()).as_bytes())
                     .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
             }
         }
@@ -200,7 +198,7 @@ impl Contract {
             .get_or_insert_with(StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
         standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
-        standard_json_contract.hash = Some(hex::encode(self.build.bytecode_hash));
+        standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
 
         Ok(())
     }
