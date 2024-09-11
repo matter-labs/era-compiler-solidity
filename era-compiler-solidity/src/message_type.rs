@@ -8,6 +8,7 @@ use std::str::FromStr;
 /// The compiler message type.
 ///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum MessageType {
     /// The error for eponymous feature.
     SendTransfer,
