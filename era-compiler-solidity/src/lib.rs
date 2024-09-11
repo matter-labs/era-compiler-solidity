@@ -60,6 +60,11 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
+use std::sync::Arc;
+use std::sync::Mutex;
+
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 
 /// The default error compatible with `solc` standard JSON output.
 pub type Result<T> = std::result::Result<T, SolcStandardJsonOutputError>;
@@ -937,12 +942,12 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
             >,
         >>()?;
 
-    let mut linked_objects = serde_json::Map::new();
-    let mut unlinked_objects = serde_json::Map::new();
-    let mut ignored_objects = serde_json::Map::new();
+    let linked_objects = Arc::new(Mutex::new(serde_json::Map::new()));
+    let unlinked_objects = Arc::new(Mutex::new(serde_json::Map::new()));
+    let ignored_objects = Arc::new(Mutex::new(serde_json::Map::new()));
 
     paths
-        .into_iter()
+        .into_par_iter()
         .try_for_each(|path| -> anyhow::Result<()> {
             let bytecode_string = std::fs::read_to_string(path.as_str())?;
             let bytecode = hex::decode(
@@ -963,19 +968,19 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
 
             if let Some(bytecode_hash) = bytecode_hash {
                 if already_linked {
-                    ignored_objects.insert(
+                    ignored_objects.lock().expect("Sync").insert(
                         path.clone(),
                         serde_json::Value::String(hex::encode(bytecode_hash)),
                     );
                 } else {
-                    linked_objects.insert(
+                    linked_objects.lock().expect("Sync").insert(
                         path.clone(),
                         serde_json::Value::String(hex::encode(bytecode_hash)),
                     );
                 }
             }
             if memory_buffer_linked.is_elf() {
-                unlinked_objects.insert(
+                unlinked_objects.lock().expect("Sync").insert(
                     path.clone(),
                     serde_json::Value::Array(
                         memory_buffer_linked
@@ -994,9 +999,9 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
     serde_json::to_writer(
         std::io::stdout(),
         &serde_json::json!({
-            "linked": linked_objects,
-            "unlinked": unlinked_objects,
-            "ignored": ignored_objects,
+            "linked": Arc::try_unwrap(linked_objects).expect("Sync").into_inner().expect("Sync"),
+            "unlinked": Arc::try_unwrap(unlinked_objects).expect("Sync").into_inner().expect("Sync"),
+            "ignored": Arc::try_unwrap(ignored_objects).expect("Sync").into_inner().expect("Sync"),
         }),
     )?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);

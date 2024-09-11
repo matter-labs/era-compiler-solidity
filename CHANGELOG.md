@@ -5,6 +5,7 @@
 ### Added
 
 - The support for IPFS metadata hash type
+- The support for deploy-time library linking
 - The EraVM disassembler
 
 ## [1.5.3] - 2024-08-27
