@@ -6,7 +6,6 @@ pub mod factory_dependency;
 pub mod ir;
 pub mod metadata;
 
-use std::collections::BTreeMap;
 use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
@@ -137,7 +136,6 @@ impl Contract {
                 };
                 let build = era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
-                    &BTreeMap::new(),
                     metadata_hash,
                     assembly_text,
                 )?;
@@ -190,13 +188,7 @@ impl Contract {
             .into_llvm(&mut context)
             .map_err(|error| anyhow::anyhow!("LLVM IR generator definition pass: {error}"))?;
 
-        let build = context.build(
-            self.path.as_str(),
-            &BTreeMap::new(),
-            metadata_hash,
-            output_assembly,
-            false,
-        )?;
+        let build = context.build(self.path.as_str(), metadata_hash, output_assembly, false)?;
 
         Ok(EraVMContractBuild::new(
             self.path,

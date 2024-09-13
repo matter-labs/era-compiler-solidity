@@ -1,6 +1,7 @@
 mod factory_dependency;
 mod ir_artifacts;
 mod libraries;
+mod linker;
 mod messages;
 mod optimizer;
 mod remappings;

@@ -541,7 +541,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#1199cbbe4d011df100381abe0771f39929b6434e"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#d0e80c4b8c70a003f195829fe6e5eb33f665f147"
 dependencies = [
  "anyhow",
  "era-compiler-common",
