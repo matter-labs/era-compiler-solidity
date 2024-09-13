@@ -11,20 +11,36 @@ use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use crate::common;
 
 #[test]
-fn library_not_passed_08_evmla() {
-    library_not_passed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+fn library_not_passed_compile_time_08_evmla() {
+    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
 }
 #[test]
-fn library_not_passed_08_yul() {
-    library_not_passed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+fn library_not_passed_compile_time_08_yul() {
+    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
 }
 #[test]
-fn library_passed_08_evmla() {
-    library_passed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+fn library_not_passed_post_compile_time_08_evmla() {
+    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
 }
 #[test]
-fn library_passed_08_yul() {
-    library_passed(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+fn library_not_passed_post_compile_time_08_yul() {
+    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+#[test]
+fn library_passed_compile_time_08_evmla() {
+    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn library_passed_compile_time_08_yul() {
+    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+}
+#[test]
+fn library_passed_post_compile_time_08_evmla() {
+    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+}
+#[test]
+fn library_passed_post_compile_time_08_yul() {
+    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
 }
 
 pub const SOURCE_CODE: &str = r#"
@@ -61,7 +77,7 @@ contract Greeter {
 }
 "#;
 
-fn library_not_passed(version: semver::Version, pipeline: SolcPipeline) {
+fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcPipeline) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
@@ -91,6 +107,7 @@ fn library_not_passed(version: semver::Version, pipeline: SolcPipeline) {
         .object
         .as_str();
     let bytecode = hex::decode(bytecode_hexadecimal).expect("Invalid bytecode");
+
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
         "bytecode",
@@ -99,7 +116,52 @@ fn library_not_passed(version: semver::Version, pipeline: SolcPipeline) {
     assert!(memory_buffer.is_elf(), "The bytecode is not an ELF file");
 }
 
-fn library_passed(version: semver::Version, pipeline: SolcPipeline) {
+fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
+
+    let build = common::build_solidity(
+        sources,
+        BTreeMap::new(),
+        None,
+        &version,
+        pipeline,
+        era_compiler_llvm_context::OptimizerSettings::none(),
+    )
+    .expect("Build failure");
+    let bytecode_hexadecimal = build
+        .contracts
+        .as_ref()
+        .expect("Missing field `contracts`")
+        .get("test.sol")
+        .expect("Missing file `test.sol`")
+        .get("Greeter")
+        .expect("Missing contract `test.sol:Greeter`")
+        .evm
+        .as_ref()
+        .expect("Missing EVM data")
+        .bytecode
+        .as_ref()
+        .expect("Missing bytecode")
+        .object
+        .as_str();
+    let bytecode = hex::decode(bytecode_hexadecimal).expect("Invalid bytecode");
+
+    let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+        bytecode.as_slice(),
+        "bytecode",
+        false,
+    );
+    let memory_buffer_linked = memory_buffer
+        .link_module_eravm(&BTreeMap::new())
+        .expect("Link failure");
+    assert!(
+        memory_buffer_linked.is_elf(),
+        "The bytecode is not an ELF file"
+    );
+}
+
+fn library_passed_compile_time(version: semver::Version, pipeline: SolcPipeline) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
@@ -134,10 +196,61 @@ fn library_passed(version: semver::Version, pipeline: SolcPipeline) {
         .object
         .as_str();
     let bytecode = hex::decode(bytecode_hexadecimal).expect("Invalid bytecode");
+
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
         "bytecode",
         false,
     );
     assert!(!memory_buffer.is_elf(), "The bytecode is an ELF file");
+}
+
+fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+    let mut sources = BTreeMap::new();
+    sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
+
+    let libraries = Libraries::into_linker(vec![
+        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
+    ])
+    .expect("Always valid");
+
+    let build = common::build_solidity(
+        sources,
+        BTreeMap::new(),
+        None,
+        &version,
+        pipeline,
+        era_compiler_llvm_context::OptimizerSettings::none(),
+    )
+    .expect("Build failure");
+    let bytecode_hexadecimal = build
+        .contracts
+        .as_ref()
+        .expect("Missing field `contracts`")
+        .get("test.sol")
+        .expect("Missing file `test.sol`")
+        .get("Greeter")
+        .expect("Missing contract `test.sol:Greeter`")
+        .evm
+        .as_ref()
+        .expect("Missing EVM data")
+        .bytecode
+        .as_ref()
+        .expect("Missing bytecode")
+        .object
+        .as_str();
+    let bytecode = hex::decode(bytecode_hexadecimal).expect("Invalid bytecode");
+
+    let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+        bytecode.as_slice(),
+        "bytecode",
+        false,
+    );
+    let memory_buffer_linked = memory_buffer
+        .link_module_eravm(&libraries)
+        .expect("Link failure");
+    assert!(
+        !memory_buffer_linked.is_elf(),
+        "The bytecode is an ELF file"
+    );
 }
