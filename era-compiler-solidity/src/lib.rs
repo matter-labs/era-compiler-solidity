@@ -13,8 +13,8 @@ pub mod build_eravm;
 pub mod build_evm;
 pub mod r#const;
 pub mod evmla;
+pub mod libraries;
 pub mod message_type;
-pub mod missing_libraries;
 pub mod process;
 pub mod project;
 pub mod solc;
@@ -24,6 +24,7 @@ pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
+pub use self::libraries::Libraries;
 pub use self::message_type::MessageType;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
@@ -56,7 +57,6 @@ pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
@@ -85,7 +85,7 @@ pub fn yul_to_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+    let libraries = Libraries::into_standard_json(libraries)?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -134,7 +134,7 @@ pub fn yul_to_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+    let libraries = Libraries::into_standard_json(libraries)?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -905,42 +905,7 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 /// Runs the linker for EraVM bytecode file, modifying it in place.
 ///
 pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
-    let linker_symbols = SolcStandardJsonInputSettings::parse_libraries(libraries)?
-        .into_iter()
-        .flat_map(|(path, addresses)| {
-            addresses
-                .into_iter()
-                .map(|(name, address)| {
-                    let full_path = format!("{path}:{name}");
-                    let address: [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS] =
-                        hex::decode(address.strip_prefix("0x").unwrap_or(address.as_str()))
-                            .map_err(|error| {
-                                anyhow::anyhow!("Invalid address of library `{full_path}`: {error}")
-                            })
-                            .and_then(|address| {
-                                address.try_into().map_err(|address: Vec<u8>| {
-                                    anyhow::anyhow!(
-                                        "Invalid address size of library `{full_path}`: expected {}, found {}",
-                                        era_compiler_common::BYTE_LENGTH_ETH_ADDRESS,
-                                        address.len(),
-                                    )
-                                })
-                            })?;
-                    Ok((full_path, address))
-                })
-                .collect::<Vec<
-                    anyhow::Result<(
-                        String,
-                        [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
-                    )>,
-                >>()
-        })
-        .collect::<anyhow::Result<
-        BTreeMap<
-                String,
-                [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS],
-            >,
-        >>()?;
+    let linker_symbols = Libraries::into_linker(libraries)?;
 
     let linked_objects = Arc::new(Mutex::new(serde_json::Map::new()));
     let unlinked_objects = Arc::new(Mutex::new(serde_json::Map::new()));

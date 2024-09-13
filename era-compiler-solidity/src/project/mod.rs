@@ -17,7 +17,7 @@ use rayon::iter::ParallelIterator;
 
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
-use crate::missing_libraries::MissingLibraries;
+use crate::libraries::Libraries;
 use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
@@ -510,7 +510,7 @@ impl Project {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> MissingLibraries {
+    pub fn get_missing_libraries(&self) -> Libraries {
         let deployed_libraries = self
             .libraries
             .iter()
@@ -531,6 +531,6 @@ impl Project {
                 .collect::<HashSet<String>>();
             missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
         }
-        MissingLibraries::new(missing_deployable_libraries)
+        Libraries::new(missing_deployable_libraries)
     }
 }

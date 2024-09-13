@@ -15,6 +15,7 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::libraries::Libraries;
 use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
@@ -87,7 +88,7 @@ impl Input {
         language: Language,
         evm_version: Option<era_compiler_common::EVMVersion>,
         paths: &[PathBuf],
-        library_map: Vec<String>,
+        libraries: Vec<String>,
         remappings: Option<BTreeSet<String>>,
         output_selection: SolcStandardJsonInputSettingsSelection,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
@@ -101,7 +102,7 @@ impl Input {
         suppressed_warnings: Vec<MessageType>,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
-        let libraries = Settings::parse_libraries(library_map)?;
+        let libraries = Libraries::into_standard_json(libraries)?;
         for library_file in libraries.keys() {
             paths.insert(PathBuf::from(library_file));
         }
