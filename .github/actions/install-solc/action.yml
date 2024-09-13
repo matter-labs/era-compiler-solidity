@@ -8,11 +8,11 @@ inputs:
   solc-version-latest:
     description: 'The latest version of solc.'
     required: false
-    default: '0.8.26-1.0.1'
+    default: '0.8.27-1.0.1'
   solc-zksync-versions:
     description: 'Space-separated list of ZKsync solc versions to download.'
     required: false
-    default: '0.4.26-1.0.1 0.5.17-1.0.1 0.6.12-1.0.1 0.7.6-1.0.1 0.8.26-1.0.1'
+    default: '0.4.26-1.0.1 0.5.17-1.0.1 0.6.12-1.0.1 0.7.6-1.0.1 0.8.27-1.0.1'
   solc-upstream-versions:
     description: 'Space-separated list of upstream solc versions to download (on Windows only).'
     required: false
