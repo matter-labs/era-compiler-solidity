@@ -1,17 +1,16 @@
 //!
-//! The YUL source code type.
+//! The Yul source code type.
 //!
 
 use era_yul::yul::parser::r#type::Type as YulType;
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 
-create_wrapper!(era_yul::yul::parser::r#type::Type, Type);
+declare_wrapper!(era_yul::yul::parser::r#type::Type, Type);
 
 ///
-/// The YUL source code type.
+/// The Yul source code type.
 ///
-
 impl Type {
     ///
     /// Converts the type into its LLVM.

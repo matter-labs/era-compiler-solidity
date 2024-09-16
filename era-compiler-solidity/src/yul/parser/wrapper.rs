@@ -1,9 +1,9 @@
 //!
-//! Proxy trait for `era_compiler_llvm_context::EraVMWriteLLVM`
+//! Proxy trait for `era_compiler_llvm_context::EraVMWriteLLVM`.
 //!
 
 ///
-/// Allows wrapping some type in the type `Self::Wrapper`
+/// Wraps a type in `Self::Wrapper`.
 ///
 pub trait Wrap {
     /// Type to wrap in.
@@ -16,11 +16,11 @@ pub trait Wrap {
 }
 
 ///
-/// Creates a wrapper structure for a YUL syntax tree node type
+/// Creates a wrapper structure for a Yul syntax tree node type
 /// [`unwrapped_type`] and implements [`Wrap`] trait for it.
 ///
 #[macro_export]
-macro_rules! create_wrapper {
+macro_rules! declare_wrapper {
     ($unwrapped_type:ty, $wrapped_type:ident) => {
         #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
         #[doc = concat!("Wrapper for [`", stringify!($unwrapped_type), "`].")]

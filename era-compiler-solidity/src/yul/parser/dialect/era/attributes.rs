@@ -77,6 +77,7 @@ mod tests {
             "Internal error in test: trying to create an instance of `era_compiler_llvm_context::Attribute` from an invalid string representation.",
         )
     }
+
     fn immediate_attributes(
         representations: &[&str],
     ) -> BTreeSet<era_compiler_llvm_context::Attribute> {
@@ -112,6 +113,7 @@ $llvm_Hot_Cold_MinSize_llvm$
         });
         assert_eq!(result, expected)
     }
+
     #[test]
     fn parse_malformed_attributes() {
         let input = r#"

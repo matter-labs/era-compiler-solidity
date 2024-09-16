@@ -16,7 +16,9 @@ use era_yul::yul::lexer::Lexer;
 
 use era_yul::yul::parser::identifier::Identifier;
 
+///
 /// Describes a pragmatic, target-specific part of the parser.
+///
 pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clone + Debug {
     /// Type of function attributes parsed from their identifiers.
     type FunctionAttribute: for<'de> Deserialize<'de>
@@ -27,14 +29,18 @@ pub trait Dialect: for<'de> Deserialize<'de> + Serialize + Eq + PartialEq + Clon
         + Serialize
         + Ord;
 
+    ///
     /// Extractor for the function attributes.
+    ///
     fn extract_attributes(
         identifier: &Identifier,
         lexer: &mut Lexer,
     ) -> Result<BTreeSet<Self::FunctionAttribute>, Error>;
 
+    ///
     /// Check the dialect-specific function invariants and potentially modify
     /// their arguments list.
+    ///
     fn sanitize_function(
         identifier: &Identifier,
         arguments: &mut Vec<Identifier>,

@@ -9,15 +9,16 @@ use std::collections::BTreeSet;
 use era_yul::yul::error::Error;
 use era_yul::yul::lexer::token::location::Location;
 use era_yul::yul::lexer::Lexer;
+use era_yul::yul::parser::dialect::Dialect;
 use era_yul::yul::parser::error::Error as ParserError;
 use era_yul::yul::parser::identifier::Identifier;
 
 use self::attributes::get_llvm_attributes;
 
-use era_yul::yul::parser::dialect::Dialect;
-
+///
 /// Era-specific part of the parser.
-#[derive(serde::Serialize, serde::Deserialize, PartialEq, Eq, Clone, Debug)]
+///
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct EraDialect {}
 
 impl Dialect for EraDialect {
@@ -52,6 +53,7 @@ impl Dialect for EraDialect {
 
             arguments.remove(0);
         }
+
         if identifier.inner.contains(
             era_compiler_llvm_context::EraVMFunction::ZKSYNC_NEAR_CALL_ABI_EXCEPTION_HANDLER,
         ) && !arguments.is_empty()
