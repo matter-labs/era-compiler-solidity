@@ -71,7 +71,7 @@ fn library_passed_post_compile_time_redundant_args_08_yul() {
     );
 }
 #[test]
-#[should_panic(expected = "Assertion failed")]
+#[should_panic(expected = "Input binary is not an EraVM ELF file")]
 fn library_passed_post_compile_time_non_elf_08_evmla() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
@@ -79,7 +79,7 @@ fn library_passed_post_compile_time_non_elf_08_evmla() {
     );
 }
 #[test]
-#[should_panic(expected = "Assertion failed")]
+#[should_panic(expected = "Input binary is not an EraVM ELF file")]
 fn library_passed_post_compile_time_non_elf_08_yul() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
