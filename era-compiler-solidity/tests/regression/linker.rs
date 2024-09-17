@@ -165,7 +165,10 @@ fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcPipel
         "bytecode",
         false,
     );
-    assert!(memory_buffer.is_elf(), "The bytecode is not an ELF file");
+    assert!(
+        memory_buffer.is_elf_eravm(),
+        "The bytecode is not an ELF file"
+    );
 }
 
 fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
@@ -180,7 +183,7 @@ fn library_not_passed_post_compile_time(version: semver::Version, pipeline: Solc
         .link_module_eravm(&BTreeMap::new())
         .expect("Link failure");
     assert!(
-        memory_buffer_linked.is_elf(),
+        memory_buffer_linked.is_elf_eravm(),
         "The bytecode is not an ELF file"
     );
 }
@@ -198,7 +201,7 @@ fn library_passed_compile_time(version: semver::Version, pipeline: SolcPipeline)
         "bytecode",
         false,
     );
-    assert!(!memory_buffer.is_elf(), "The bytecode is an ELF file");
+    assert!(!memory_buffer.is_elf_eravm(), "The bytecode is an ELF file");
 }
 
 fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
@@ -218,7 +221,7 @@ fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcPipe
         .link_module_eravm(&libraries)
         .expect("Link failure");
     assert!(
-        !memory_buffer_linked.is_elf(),
+        !memory_buffer_linked.is_elf_eravm(),
         "The bytecode is an ELF file"
     );
 }
@@ -243,7 +246,7 @@ fn library_passed_post_compile_time_second_call(version: semver::Version, pipeli
         .link_module_eravm(&libraries)
         .expect("Link failure");
     assert!(
-        !memory_buffer_linked.is_elf(),
+        !memory_buffer_linked.is_elf_eravm(),
         "The bytecode is an ELF file"
     );
 }
@@ -270,7 +273,7 @@ fn library_passed_post_compile_time_redundant_args(
         .link_module_eravm(&libraries)
         .expect("Link failure");
     assert!(
-        !memory_buffer_linked.is_elf(),
+        !memory_buffer_linked.is_elf_eravm(),
         "The bytecode is an ELF file"
     );
 }
@@ -295,7 +298,7 @@ fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: 
         .link_module_eravm(&libraries)
         .expect("Link failure");
     assert!(
-        !memory_buffer_linked_non_elf.is_elf(),
+        !memory_buffer_linked_non_elf.is_elf_eravm(),
         "The bytecode is an ELF file"
     );
 }

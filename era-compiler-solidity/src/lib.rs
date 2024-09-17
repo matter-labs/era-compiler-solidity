@@ -926,7 +926,7 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                 "bytecode",
                 false,
             );
-            let already_linked = !memory_buffer.is_elf();
+            let already_linked = !memory_buffer.is_elf_eravm();
 
             let (memory_buffer_linked, bytecode_hash) =
                 era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
@@ -944,7 +944,7 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                     );
                 }
             }
-            if memory_buffer_linked.is_elf() {
+            if memory_buffer_linked.is_elf_eravm() {
                 unlinked_objects.lock().expect("Sync").insert(
                     path.clone(),
                     serde_json::Value::Array(
