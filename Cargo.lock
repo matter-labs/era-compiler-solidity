@@ -234,15 +234,15 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "bytes"
-version = "1.7.1"
+version = "1.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8318a53db07bb3f8dca91a600466bdb3f2eaadeedfdbcf02e1accbad9271ba50"
+checksum = "428d9aa8fbc0670b7b8d6030a7fadd0f86151cae55e4dbbece15f3780a3dfaf3"
 
 [[package]]
 name = "cc"
-version = "1.1.20"
+version = "1.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45bcde016d64c21da4be18b655631e5ab6d3107607e71a73a9f53eb48aae23fb"
+checksum = "07b1695e2c7e8fc85310cde85aeaab7e3097f593c91d209d3f9df76c928100f0"
 dependencies = [
  "shlex",
 ]
@@ -541,7 +541,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#b51b8b99d29bcdf09680b5c52a1c4eef17721be4"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#5115154ce6f5de89105cd8b7d6af51ee83acab48"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1012,7 +1012,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#a978f657e1fc940ff24ce5b010633172befe48e7"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b14cce489f226f0f5fa3b02ad13ecd52ea7a4d41"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1027,7 +1027,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#a978f657e1fc940ff24ce5b010633172befe48e7"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b14cce489f226f0f5fa3b02ad13ecd52ea7a4d41"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1152,7 +1152,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1805-supporting-post-compiler-time-library-linkage-in-eravm#3fb02148f113b76ae6a7a2f15eac26f45ed53e21"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#c0c0d150e465f901854b566f82adbb9b83146d79"
 dependencies = [
  "anyhow",
  "cc",
@@ -2416,9 +2416,9 @@ checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "unicode-normalization"
-version = "0.1.23"
+version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a56d1686db2308d901306f92a263857ef59ea39678a5458e7cb17f01415101f5"
+checksum = "5033c97c4262335cded6d6fc3e5c18ab755e1a3dc96376350f3d8e9f009ad956"
 dependencies = [
  "tinyvec",
 ]
@@ -2431,9 +2431,9 @@ checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 
 [[package]]
 name = "unicode-width"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0336d538f7abc86d282a4189614dfaa90810dfc2c6f6427eaf88e16311dd225d"
+checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
 name = "unsigned-varint"

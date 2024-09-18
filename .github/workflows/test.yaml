@@ -91,7 +91,7 @@ jobs:
           enable-assertions: 'false'
 
       - name: Run tests
-        uses: ./.github/actions/unit-tests
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
         with:
           target: ${{ matrix.target || '' }}
           enable-coverage: ${{ matrix.enable-coverage || 'false' }}

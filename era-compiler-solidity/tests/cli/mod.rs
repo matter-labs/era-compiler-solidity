@@ -46,13 +46,21 @@ pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contrac
 /// The standard JSON contract path
 pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
 
-/// The disassembler binary bytecode sample path
-pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str =
-    "tests/examples/bytecodes/disassembler.zbin";
+/// The standard JSON contract path with suppressed errors and warnings
+pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
+    "tests/examples/standard_json_input/contract_suppressed_warnings_and_errors.json";
+
+/// The standard JSON contract path with incorrect suppressed errors and warnings
+pub const TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
+    "tests/examples/standard_json_input/contract_incorrect_suppressed_warnings_and_errors.json";
 
 /// The disassembler hexadecimal string bytecode sample path
 pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
     "tests/examples/bytecodes/disassembler.hex";
+
+/// The disassembler binary bytecode sample path
+pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str =
+    "tests/examples/bytecodes/disassembler.zbin";
 
 /// The linker hexadecimal string bytecode sample path
 pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/examples/bytecodes/linker.hex";

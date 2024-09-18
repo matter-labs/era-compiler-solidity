@@ -7,6 +7,7 @@
 - The support for IPFS metadata hash type
 - The support for deploy-time library linking
 - The EraVM disassembler
+- The solc v0.8.27 support
 
 ## [1.5.3] - 2024-08-27
 
