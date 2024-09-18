@@ -84,8 +84,9 @@ jobs:
         if: runner.os == 'Windows'
         uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@v1
 
+
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@abalias-cpr-1396-run-compiler-tester-lit-tests-in-github-action-on-macos
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
