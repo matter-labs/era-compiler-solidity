@@ -47,11 +47,8 @@ jobs:
           sanitizer: ${{ inputs.rust-sanitizer || 'address' }}
           build-type: 'debug'
 
-      - name: Install solc compiler
-        uses: ./.github/actions/install-solc
-
       - name: Run tests
-        uses: ./.github/actions/unit-tests
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
         with:
           target: ${{ env.TARGET }}
           sanitizer: ${{ inputs.rust-sanitizer || 'address' }}
