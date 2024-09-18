@@ -57,11 +57,10 @@ pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::Arc;
-use std::sync::Mutex;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
@@ -907,20 +906,26 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
     let linker_symbols = Libraries::into_linker(libraries)?;
 
-    let linked_objects = Arc::new(Mutex::new(serde_json::Map::new()));
-    let unlinked_objects = Arc::new(Mutex::new(serde_json::Map::new()));
-    let ignored_objects = Arc::new(Mutex::new(serde_json::Map::new()));
+    let mut linked_objects = serde_json::Map::new();
+    let mut unlinked_objects = serde_json::Map::new();
+    let mut ignored_objects = serde_json::Map::new();
 
-    paths
+    let bytecodes = paths
         .into_par_iter()
-        .try_for_each(|path| -> anyhow::Result<()> {
+        .map(|path| {
             let bytecode_string = std::fs::read_to_string(path.as_str())?;
             let bytecode = hex::decode(
                 bytecode_string
                     .strip_prefix("0x")
                     .unwrap_or(bytecode_string.as_str()),
             )?;
+            Ok((path, bytecode))
+        })
+        .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
+    let memory_buffers = bytecodes
+        .into_iter()
+        .map(|(path, bytecode)| {
             let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                 bytecode.as_slice(),
                 "bytecode",
@@ -933,19 +938,19 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
 
             if let Some(bytecode_hash) = bytecode_hash {
                 if already_linked {
-                    ignored_objects.lock().expect("Sync").insert(
+                    ignored_objects.insert(
                         path.clone(),
                         serde_json::Value::String(hex::encode(bytecode_hash)),
                     );
                 } else {
-                    linked_objects.lock().expect("Sync").insert(
+                    linked_objects.insert(
                         path.clone(),
                         serde_json::Value::String(hex::encode(bytecode_hash)),
                     );
                 }
             }
             if memory_buffer_linked.is_elf_eravm() {
-                unlinked_objects.lock().expect("Sync").insert(
+                unlinked_objects.insert(
                     path.clone(),
                     serde_json::Value::Array(
                         memory_buffer_linked
@@ -957,16 +962,25 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                 );
             }
 
-            std::fs::write(path.as_str(), hex::encode(memory_buffer_linked.as_slice()))?;
-            Ok(())
+            Ok((path, memory_buffer_linked))
+        })
+        .collect::<anyhow::Result<BTreeMap<String, inkwell::memory_buffer::MemoryBuffer>>>()?;
+
+    memory_buffers
+        .iter()
+        .map(|(path, memory_buffer)| (path.as_str(), memory_buffer.as_slice()))
+        .collect::<Vec<(&str, &[u8])>>()
+        .into_par_iter()
+        .try_for_each(|(path, bytecode)| -> anyhow::Result<()> {
+            std::fs::write(path, hex::encode(bytecode)).map_err(anyhow::Error::from)
         })?;
 
     serde_json::to_writer(
         std::io::stdout(),
         &serde_json::json!({
-            "linked": Arc::try_unwrap(linked_objects).expect("Sync").into_inner().expect("Sync"),
-            "unlinked": Arc::try_unwrap(unlinked_objects).expect("Sync").into_inner().expect("Sync"),
-            "ignored": Arc::try_unwrap(ignored_objects).expect("Sync").into_inner().expect("Sync"),
+            "linked": linked_objects,
+            "unlinked": unlinked_objects,
+            "ignored": ignored_objects,
         }),
     )?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
