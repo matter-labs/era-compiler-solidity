@@ -88,7 +88,8 @@ jobs:
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
-          enable-assertions: 'false'
+          enable-assertions: 'true'
+          build-type: RelWithDebInfo
 
       - name: Run tests
         uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1

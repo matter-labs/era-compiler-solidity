@@ -5,12 +5,12 @@
 pub mod function_call;
 pub mod literal;
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 use era_compiler_llvm_context::IContext;
 
 use crate::yul::parser::wrapper::Wrap;
 
-create_wrapper!(
+declare_wrapper!(
     era_yul::yul::parser::statement::expression::Expression,
     Expression
 );

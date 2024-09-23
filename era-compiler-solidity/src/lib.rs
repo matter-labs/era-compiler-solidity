@@ -13,8 +13,8 @@ pub mod build_eravm;
 pub mod build_evm;
 pub mod r#const;
 pub mod evmla;
+pub mod libraries;
 pub mod message_type;
-pub mod missing_libraries;
 pub mod process;
 pub mod project;
 pub mod solc;
@@ -24,6 +24,7 @@ pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
+pub use self::libraries::Libraries;
 pub use self::message_type::MessageType;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
@@ -56,9 +57,13 @@ pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
 
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::PathBuf;
+
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 
 /// The default error compatible with `solc` standard JSON output.
 pub type Result<T> = std::result::Result<T, SolcStandardJsonOutputError>;
@@ -79,7 +84,7 @@ pub fn yul_to_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+    let libraries = Libraries::into_standard_json(libraries)?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -128,7 +133,7 @@ pub fn yul_to_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let libraries = SolcStandardJsonInputSettings::parse_libraries(libraries)?;
+    let libraries = Libraries::into_standard_json(libraries)?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -892,5 +897,82 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "{disassembly}")?;
         writeln!(std::io::stderr(), "\n\n")?;
     }
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+}
+
+///
+/// Runs the linker for EraVM bytecode file, modifying it in place.
+///
+pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
+    let bytecodes = paths
+        .into_par_iter()
+        .map(|path| {
+            let bytecode_string = std::fs::read_to_string(path.as_str())?;
+            let bytecode = hex::decode(
+                bytecode_string
+                    .strip_prefix("0x")
+                    .unwrap_or(bytecode_string.as_str()),
+            )?;
+            Ok((path, bytecode))
+        })
+        .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
+
+    let linker_symbols = Libraries::into_linker(libraries)?;
+    let mut linked_objects = serde_json::Map::new();
+    let mut unlinked_objects = serde_json::Map::new();
+    let mut ignored_objects = serde_json::Map::new();
+
+    bytecodes
+        .into_iter()
+        .try_for_each(|(path, bytecode)| -> anyhow::Result<()> {
+            let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                bytecode.as_slice(),
+                "bytecode",
+                false,
+            );
+            let already_linked = !memory_buffer.is_elf_eravm();
+
+            let (memory_buffer_linked, bytecode_hash) =
+                era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
+
+            if let Some(bytecode_hash) = bytecode_hash {
+                if already_linked {
+                    ignored_objects.insert(
+                        path.clone(),
+                        serde_json::Value::String(hex::encode(bytecode_hash)),
+                    );
+                } else {
+                    linked_objects.insert(
+                        path.clone(),
+                        serde_json::Value::String(hex::encode(bytecode_hash)),
+                    );
+                }
+            }
+            if memory_buffer_linked.is_elf_eravm() {
+                unlinked_objects.insert(
+                    path.clone(),
+                    serde_json::Value::Array(
+                        memory_buffer_linked
+                            .get_undefined_symbols_eravm()
+                            .iter()
+                            .map(|symbol| serde_json::Value::String(symbol.to_string()))
+                            .collect(),
+                    ),
+                );
+            }
+
+            std::fs::write(path, hex::encode(memory_buffer_linked.as_slice()))?;
+
+            Ok(())
+        })?;
+
+    serde_json::to_writer(
+        std::io::stdout(),
+        &serde_json::json!({
+            "linked": linked_objects,
+            "unlinked": unlinked_objects,
+            "ignored": ignored_objects,
+        }),
+    )?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }

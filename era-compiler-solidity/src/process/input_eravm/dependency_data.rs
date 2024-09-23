@@ -48,7 +48,12 @@ impl era_compiler_llvm_context::Dependency for DependencyData {
             .get(path.as_str())
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("dependency `{path}` not found in the project"))?;
-        Ok(hex::encode(contract.build.bytecode_hash))
+        match contract.build.bytecode_hash {
+            Some(bytecode_hash) => Ok(hex::encode(bytecode_hash)),
+            None => anyhow::bail!(
+                "dependency `{path}` has no bytecode hash, as it may require library linkage"
+            ),
+        }
     }
 
     fn resolve_path(&self, identifier: &str) -> anyhow::Result<String> {
@@ -63,16 +68,16 @@ impl era_compiler_llvm_context::Dependency for DependencyData {
             })
     }
 
-    fn resolve_library(&self, path: &str) -> anyhow::Result<String> {
+    fn resolve_library(&self, path: &str) -> Option<String> {
         for (file_path, contracts) in self.libraries.iter() {
             for (contract_name, address) in contracts.iter() {
                 let key = format!("{file_path}:{contract_name}");
                 if key.as_str() == path {
-                    return Ok(address["0x".len()..].to_owned());
+                    return Some(address["0x".len()..].to_owned());
                 }
             }
         }
 
-        anyhow::bail!("library `{path}` not found in the project");
+        None
     }
 }

@@ -7,12 +7,12 @@ use era_compiler_llvm_context::IContext;
 use era_yul::yul::parser::statement::expression::function_call::name::Name;
 use inkwell::values::BasicValue;
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 use crate::yul::parser::wrapper::Wrap;
 
 pub mod verbatim;
 
-create_wrapper!(
+declare_wrapper!(
     era_yul::yul::parser::statement::expression::function_call::FunctionCall,
     FunctionCall
 );

@@ -7,7 +7,7 @@ fn run_zksolc_with_sol_and_libraries() -> anyhow::Result<()> {
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_DEFAULT_PATH,
+        cli::LIBRARY_DEFAULT,
     ];
 
     let result = cli::execute_zksolc(args)?;

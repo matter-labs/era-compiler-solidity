@@ -4,7 +4,7 @@ use predicates::prelude::*;
 #[test]
 fn run_zksolc_with_disassemble_binary() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli::TEST_BINARY_BYTECODE_PATH, "--disassemble"];
+    let args = &[cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH, "--disassemble"];
     let invalid_args = &["--disassemble", "anyarg"];
 
     let result = cli::execute_zksolc(args)?;
@@ -21,7 +21,10 @@ fn run_zksolc_with_disassemble_binary() -> anyhow::Result<()> {
 #[test]
 fn run_zksolc_with_disassemble_hexadecimal() -> anyhow::Result<()> {
     let _ = common::setup();
-    let args = &[cli::TEST_HEXADECIMAL_BYTECODE_PATH, "--disassemble"];
+    let args = &[
+        cli::TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH,
+        "--disassemble",
+    ];
     let invalid_args = &["--disassemble", "anyarg"];
 
     let result = cli::execute_zksolc(args)?;

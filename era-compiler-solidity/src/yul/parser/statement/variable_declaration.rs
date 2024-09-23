@@ -6,11 +6,11 @@ use era_compiler_llvm_context::IContext;
 use inkwell::types::BasicType;
 use inkwell::values::BasicValue;
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 use crate::yul::parser::wrapper::Wrap;
 
 use super::expression::Expression;
-create_wrapper!(
+declare_wrapper!(
     era_yul::yul::parser::statement::variable_declaration::VariableDeclaration,
     VariableDeclaration
 );

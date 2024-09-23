@@ -133,34 +133,4 @@ impl Settings {
             .map(|selection| selection.get_unset_required())
             .unwrap_or_else(|| Selection::default().get_unset_required())
     }
-
-    ///
-    /// Parses the library list and returns their double hashmap with path and name as keys.
-    ///
-    pub fn parse_libraries(
-        input: Vec<String>,
-    ) -> anyhow::Result<BTreeMap<String, BTreeMap<String, String>>> {
-        let mut libraries = BTreeMap::new();
-        for (index, library) in input.into_iter().enumerate() {
-            let mut path_and_address = library.split('=');
-            let path = path_and_address
-                .next()
-                .ok_or_else(|| anyhow::anyhow!("The library #{} path is missing", index))?;
-            let mut file_and_contract = path.split(':');
-            let file = file_and_contract
-                .next()
-                .ok_or_else(|| anyhow::anyhow!("The library `{}` file name is missing", path))?;
-            let contract = file_and_contract.next().ok_or_else(|| {
-                anyhow::anyhow!("The library `{}` contract name is missing", path)
-            })?;
-            let address = path_and_address
-                .next()
-                .ok_or_else(|| anyhow::anyhow!("The library `{}` address is missing", path))?;
-            libraries
-                .entry(file.to_owned())
-                .or_insert_with(BTreeMap::new)
-                .insert(contract.to_owned(), address.to_owned());
-        }
-        Ok(libraries)
-    }
 }

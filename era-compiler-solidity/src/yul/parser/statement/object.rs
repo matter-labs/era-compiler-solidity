@@ -1,13 +1,13 @@
 //!
-//! The YUL object.
+//! The Yul object.
 //!
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::wrapper::Wrap;
 use era_compiler_llvm_context::IContext;
 
-create_wrapper!(
+declare_wrapper!(
     era_yul::yul::parser::statement::object::Object<EraDialect>,
     Object
 );

@@ -13,6 +13,7 @@ mod combined_json;
 mod disassembler;
 mod eravm_assembly;
 mod libraries;
+mod linker;
 mod llvm_ir;
 mod metadata_hash;
 mod missing_lib;
@@ -53,14 +54,27 @@ pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
 pub const TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
     "tests/examples/standard_json_input/contract_incorrect_suppressed_warnings_and_errors.json";
 
-/// The binary bytecode sample path
-pub const TEST_BINARY_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.zbin";
+/// The disassembler hexadecimal string bytecode sample path
+pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
+    "tests/examples/bytecodes/disassembler.hex";
 
-/// The hexadecimal string bytecode sample path
-pub const TEST_HEXADECIMAL_BYTECODE_PATH: &str = "tests/examples/bytecodes/bytecode.hex";
+/// The disassembler binary bytecode sample path
+pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str =
+    "tests/examples/bytecodes/disassembler.zbin";
 
-/// Shared library path and address
-pub const LIBRARY_DEFAULT_PATH: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+/// The linker hexadecimal string bytecode sample path
+pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/examples/bytecodes/linker.hex";
+
+/// The linker hexadecimal string bytecode sample path
+/// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards
+pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/examples/bytecodes/linker_copy.hex";
+
+/// Default library path and address
+pub const LIBRARY_DEFAULT: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+
+/// Linker library path and address
+pub const LIBRARY_LINKER: &str =
+    "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
 
 ///
 /// Execute zksolc with the given arguments and return the result

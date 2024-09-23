@@ -1,8 +1,8 @@
 //!
-//! The YUL source code literal.
+//! The Yul source code literal.
 //!
 
-use crate::create_wrapper;
+use crate::declare_wrapper;
 use crate::yul::parser::wrapper::Wrap;
 use era_yul::yul::lexer::token::lexeme::literal::boolean::Boolean as BooleanLiteral;
 use era_yul::yul::lexer::token::lexeme::literal::integer::Integer as IntegerLiteral;
@@ -12,7 +12,7 @@ use num::Num;
 use num::One;
 use num::Zero;
 
-create_wrapper!(
+declare_wrapper!(
     era_yul::yul::parser::statement::expression::literal::Literal,
     Literal
 );
