@@ -904,12 +904,6 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 /// Runs the linker for EraVM bytecode file, modifying it in place.
 ///
 pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
-    let linker_symbols = Libraries::into_linker(libraries)?;
-
-    let mut linked_objects = serde_json::Map::new();
-    let mut unlinked_objects = serde_json::Map::new();
-    let mut ignored_objects = serde_json::Map::new();
-
     let bytecodes = paths
         .into_par_iter()
         .map(|path| {
@@ -923,9 +917,14 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
         })
         .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
-    let memory_buffers = bytecodes
+    let linker_symbols = Libraries::into_linker(libraries)?;
+    let mut linked_objects = serde_json::Map::new();
+    let mut unlinked_objects = serde_json::Map::new();
+    let mut ignored_objects = serde_json::Map::new();
+
+    bytecodes
         .into_iter()
-        .map(|(path, bytecode)| {
+        .try_for_each(|(path, bytecode)| -> anyhow::Result<()> {
             let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                 bytecode.as_slice(),
                 "bytecode",
@@ -962,17 +961,9 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
                 );
             }
 
-            Ok((path, memory_buffer_linked))
-        })
-        .collect::<anyhow::Result<BTreeMap<String, inkwell::memory_buffer::MemoryBuffer>>>()?;
+            std::fs::write(path, hex::encode(memory_buffer_linked.as_slice()))?;
 
-    memory_buffers
-        .iter()
-        .map(|(path, memory_buffer)| (path.as_str(), memory_buffer.as_slice()))
-        .collect::<Vec<(&str, &[u8])>>()
-        .into_par_iter()
-        .try_for_each(|(path, bytecode)| -> anyhow::Result<()> {
-            std::fs::write(path, hex::encode(bytecode)).map_err(anyhow::Error::from)
+            Ok(())
         })?;
 
     serde_json::to_writer(
