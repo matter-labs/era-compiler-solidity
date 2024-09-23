@@ -27,6 +27,7 @@ rustc-link-lib = ["clang_rt.builtins"]
 strip = true
 
 [env]
+RUST_BACKTRACE = "full"
 LLVM_SYS_170_PREFIX = { value = "./target-llvm/target-final/", relative = true, force = false }
 
 [tools.clippy]
