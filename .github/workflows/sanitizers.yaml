@@ -37,7 +37,8 @@ jobs:
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
           target-env: 'gnu'
-          enable-assertions: 'false'
+          enable-assertions: 'true'
+          build-type: debug
           sanitizer: ${{ inputs.llvm-sanitizer || 'Address' }}
 
       - name: Build zksolc
