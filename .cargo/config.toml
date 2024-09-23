@@ -24,7 +24,7 @@ rustc-link-search = ["./target-llvm/target-host/lib/clang/17/lib/aarch64-unknown
 rustc-link-lib = ["clang_rt.builtins"]
 
 [profile.release]
-strip = true
+strip = false
 
 [env]
 RUST_BACKTRACE = "full"
