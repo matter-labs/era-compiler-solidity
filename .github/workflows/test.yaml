@@ -89,7 +89,7 @@ jobs:
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'true'
-          build-type: debug
+          build-type: RelWithDebInfo
 
       - name: Run tests
         uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1

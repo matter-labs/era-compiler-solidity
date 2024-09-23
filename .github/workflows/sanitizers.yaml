@@ -38,7 +38,7 @@ jobs:
         with:
           target-env: 'gnu'
           enable-assertions: 'true'
-          build-type: debug
+          build-type: RelWithDebInfo
           sanitizer: ${{ inputs.llvm-sanitizer || 'Address' }}
 
       - name: Build zksolc
