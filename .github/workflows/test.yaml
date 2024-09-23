@@ -97,3 +97,4 @@ jobs:
           target: ${{ matrix.target || '' }}
           enable-coverage: ${{ matrix.enable-coverage || 'false' }}
           coverage-token: ${{ secrets.CODECOV_TOKEN }}
+          build-type: release
