@@ -1012,7 +1012,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#a1e18e2ba9c66d9889a16a80a9ff9bb92b6b226c"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#993d3832f97b5e4127ab9c9cd2fc00b06d24d9fc"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1027,7 +1027,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#a1e18e2ba9c66d9889a16a80a9ff9bb92b6b226c"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#993d3832f97b5e4127ab9c9cd2fc00b06d24d9fc"
 dependencies = [
  "proc-macro2",
  "quote",
