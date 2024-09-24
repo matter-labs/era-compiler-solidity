@@ -1,6 +1,114 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.4] - 2024-09-24
+
+### Added
+
+- The support for IPFS metadata hash type
+- The support for deploy-time library linking
+- The EraVM disassembler
+- The solc v0.8.27 support
+- More optimizations
+
+## [1.5.3] - 2024-08-27
+
+### Added
+
+- More LLVM optimizations
+
+### Changed
+
+- Migrated to the LLVM-based assembler and linker
+- Updated to Rust v1.80.1
+
+### Fixed
+
+- The complex bitwise operations misoptimization
+
+## [1.5.2] - 2024-07-31
+
+### Added
+
+- The support for multiple `urls` to local files in standard JSON input
+
+### Removed
+
+- The source code loading mechanism leading to file system errors
+- The Solidity source code part of the metadata hash preimage
+- Some duplicate fields in the metadata hash preimage
+
+### Fixed
+
+- Errors with imports of files not included into the initial input
+
+## [1.5.1] - 2024-06-27
+
+### Added
+
+- Parallelization in AST and IR parsing
+- More LLVM optimizations
+- Location resolution for EraVM-specific messages in standard JSON output
+- The `suppress-errors` parameter to disable some compilation errors
+
+### Changed
+
+- All messages are now written to JSON output in standard JSON mode
+- AST and IRs are not emitted anymore if not explicitly requested
+- Empty files and contracts are pruned from standard JSON output
+- Message formats are made more compatible with original messages of solc
+- `<address payable>.send/transfer(<X>)` now triggers a compilation error
+- Updated to Rust v1.79.0
+
+### Removed
+
+- Obsolete warnings for `extcodesize` and `ecrecover`
+- EVM-specific warnings which solc has been emitting unconditionally
+
+### Fixed
+
+- Dependency graph inefficiency that caused excessive compilation time
+- Removed JSON stream readers which are much slower than strings and vectors
+- Missing output with non-canonical input paths in combined JSON output
+- Missing warnings with solc v0.4.x and v0.5.x due to differences in AST
+- Cryptic error on `type(T).runtimeCode` usage with EVM assembly codegen
+- The unknown `bytecodeHash` error in standard JSON mode with solc v0.5.x
+
+## [1.5.0] - 2024-06-10
+
+### Added
+
+- The support for compiling multiple files in Yul, LLVM IR, and EraVM assembly modes
+- The support for Yul, LLVM IR, and EraVM assembly languages in standard JSON mode
+- The support for `urls` to local files in standard JSON input
+- The solc v0.8.26 support
+- More LLVM optimizations
+- The `--llvm-options` parameter to pass arbitrary options to LLVM
+- The `--threads` parameter to control the number of threads
+- Caching of the underlying compiler's metadata, including `--version`
+
+### Changed
+
+- Updated to EraVM v1.5.0
+- Renamed the `system-mode` flag to `enable-eravm-extensions`
+- Renamed the `zkasm` flag to `eravm-assembly`
+- Added all missing CLI flags to standard JSON input
+- Updated to Rust v1.78.0
+
+### Deprecated
+
+- `force-evmla`, `detect-missing-libraries`, `system-mode` CLI flags in standard JSON mode
+- `system-mode` alias of `enable-eravm-extension` flag
+- `zkasm` alias of `eravm` flag
+
+### Fixed
+
+- The bytes-to-cells LLVM misoptimization
+- LLVM IR generator errors are now written to JSON in standard JSON mode
+- Removed `:` from output filenames, as it is not allowed on Windows
+- Excessive RAM usage and compilation time with some projects
+- Redundancy in error printing
+
+## [1.4.1] - 2024-04-24
 
 ### Added
 
@@ -9,6 +117,7 @@
 - Simulations to forward return data pointers
 - Simulations to manipulate multiple active pointers
 - The solc v0.8.25 support
+- The support for `useLiteralContent` flag in metadata
 
 ### Changed
 
@@ -16,6 +125,7 @@
 
 ### Fixed
 
+- The `xor(zext(cmp), -1)` optimization bug
 - Libraries passed with `--libraries` and now added to input files
 - Printing `--help` if not arguments are provided
 - Missing `--overwrite` flag now triggers an error

@@ -5,14 +5,23 @@ inputs:
     description: 'Specific build target triplet.'
     required: false
     default: ''
-  rustflags:
-    description: 'Additional compilation flags to use for building.'
+  sanitizer:
+    description: 'Sanitizer to use for build.'
     required: false
     default: ''
   release-suffix:
     description: 'Suffix to use for release name.'
     required: false
     default: ''
+  build-type:
+    description: 'Type of build: release or debug.'
+    required: false
+    default: 'release'
+  enable-coverage:
+    description: 'Enable code coverage.'
+    required: false
+    default: 'false'
+
 runs:
   using: "composite"
   steps:
@@ -25,22 +34,32 @@ runs:
         echo "target=--target ${{ inputs.target }}" >> $GITHUB_OUTPUT
 
     - name: Build zksolc
-      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       env:
-        RUSTFLAGS: ${{ inputs.rustflags }}
+        RUSTC_BOOTSTRAP: 1
+        RUSTFLAGS: '-C target-feature=+crt-static'
+      shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash -ex {0}' }}
       run: |
-        cargo build --release ${{ steps.build-target.outputs.target }}
-        echo "${PWD}/target/${{ inputs.target }}/release" >> "${GITHUB_PATH}"
+        if [ '${{ inputs.sanitizer }}' != '' ]; then
+          rustup component add rust-src --toolchain "$(rustc --version | cut -d ' ' -f2)-${TARGET}"
+          export RUSTFLAGS="-Z sanitizer=${{ inputs.sanitizer }}"
+          BUILD_STD_LIB='-Zbuild-std'
+        fi
+        [ ${{ inputs.build-type }} = 'release' ] && RELEASE="--release"
+        if [ '${{ inputs.enable-coverage }}' = 'true' ]; then
+          export RUSTFLAGS="${RUSTFLAGS} -C instrument-coverage"
+        fi
+        cargo ${BUILD_STD_LIB} build ${RELEASE} ${{ steps.build-target.outputs.target }}
+        echo "${PWD}/target/${{ inputs.target }}/${{ inputs.build-type }}" >> "${GITHUB_PATH}"
 
     - name: Prepare binary
       if: inputs.release-suffix != ''
       shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
       run: |
         mkdir -p ./releases/${{ inputs.release-suffix }}
-        [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="-${GITHUB_REF_NAME}"
+        [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="-v${GITHUB_REF_NAME}"
         [ "$RUNNER_OS" = "Windows" ] && WIN_SUFFIX=".exe"
-        strip "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}"
-        mv "./target/${{ matrix.target }}/release/zksolc${WIN_SUFFIX}" \
+        strip "./target/${{ matrix.target }}/${{ inputs.build-type }}/zksolc${WIN_SUFFIX}"
+        mv "./target/${{ matrix.target }}/${{ inputs.build-type }}/zksolc${WIN_SUFFIX}" \
           "./releases/${{ inputs.release-suffix }}/zksolc-${{ inputs.release-suffix }}${TAG_SUFFIX}${WIN_SUFFIX}"
 
     - name: Upload binary

@@ -20,3 +20,6 @@
 
 # Accidentally created backup files
 *.bak
+
+# Test solc versions
+solc-bin/

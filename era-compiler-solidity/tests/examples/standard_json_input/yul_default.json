@@ -1,0 +1,1 @@
+{"language":"Yul","sources":{"Test":{"content":"object \"Test\" { code { { return(0, 0) } } object \"Test_deployed\" { code { { return(0, 0) } } } }"}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}
