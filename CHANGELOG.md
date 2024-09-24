@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.4] - 2024-09-24
 
 ### Added
 
@@ -8,6 +8,7 @@
 - The support for deploy-time library linking
 - The EraVM disassembler
 - The solc v0.8.27 support
+- More optimizations
 
 ## [1.5.3] - 2024-08-27
 
