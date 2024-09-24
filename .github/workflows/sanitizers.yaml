@@ -41,19 +41,11 @@ jobs:
           build-type: RelWithDebInfo
           sanitizer: ${{ inputs.llvm-sanitizer || 'Address' }}
 
-      - name: Build zksolc
-        uses: ./.github/actions/build
-        with:
-          target: ${{ env.TARGET }}
-          sanitizer: ${{ inputs.rust-sanitizer || 'address' }}
-          build-type: 'debug'
-
       - name: Run tests
         uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
         with:
           target: ${{ env.TARGET }}
           sanitizer: ${{ inputs.rust-sanitizer || 'address' }}
-          build-type: 'debug'
 
       - name: Send Slack notification
         uses: 8398a7/action-slack@v3

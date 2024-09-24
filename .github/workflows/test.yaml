@@ -72,6 +72,7 @@ jobs:
             target: "aarch64-unknown-linux-musl"
           - name: "Windows"
             runner: windows-2022-github-hosted-16core
+            target: "x86_64-pc-windows-gnu"
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
