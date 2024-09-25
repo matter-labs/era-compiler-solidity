@@ -23,56 +23,60 @@ mod solc;
 mod standard_json;
 mod yul;
 
-/// The solidity contract name
+/// The Solidity contract name.
 pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "contract.sol";
-/// The solidity contract full path
+
+/// The Solidity contract full path.
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/contract.sol";
 
-/// The solidity binary artifact output name
+/// The Solidity binary artifact output name.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 
-/// The solidity assembly artifact output name
+/// The Solidity assembly artifact output name.
 pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
-/// The yul contract for testing
+/// The Yul contract for testing.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
 
-/// The era assembly contract path
+/// The EraVM assembly contract path.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
 
-/// The LLVM contract path
+/// The LLVM IR contract path.
 pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
 
-/// The standard JSON contract path
+/// The standard JSON contract path.
 pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
 
-/// The standard JSON contract path with suppressed errors and warnings
+/// The standard JSON contract path with suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
     "tests/examples/standard_json_input/contract_suppressed_warnings_and_errors.json";
 
-/// The standard JSON contract path with incorrect suppressed errors and warnings
+/// The standard JSON contract path with incorrect suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
     "tests/examples/standard_json_input/contract_incorrect_suppressed_warnings_and_errors.json";
 
-/// The disassembler hexadecimal string bytecode sample path
+/// The disassembler hexadecimal string bytecode sample path.
 pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
     "tests/examples/bytecodes/disassembler.hex";
 
-/// The disassembler binary bytecode sample path
+/// The disassembler binary bytecode sample path.
 pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str =
     "tests/examples/bytecodes/disassembler.zbin";
 
-/// The linker hexadecimal string bytecode sample path
+/// The linker hexadecimal string bytecode sample path.
 pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/examples/bytecodes/linker.hex";
 
-/// The linker hexadecimal string bytecode sample path
+/// The linker hexadecimal string bytecode sample path.
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards
 pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/examples/bytecodes/linker_copy.hex";
 
-/// Default library path and address
+/// The broken input file path.
+pub const TEST_BROKEN_INPUT_PATH: &str = "tests/examples/contracts/broken.bad";
+
+/// Default library path and address.
 pub const LIBRARY_DEFAULT: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
-/// Linker library path and address
+/// Linker library path and address.
 pub const LIBRARY_LINKER: &str =
     "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
 
