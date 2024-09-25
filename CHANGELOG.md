@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Fixed
+
+- The compilation pipeline that was not run without output parameters
+
 ## [1.5.4] - 2024-09-24
 
 ### Added
@@ -9,6 +15,10 @@
 - The EraVM disassembler
 - The solc v0.8.27 support
 - More optimizations
+
+### Fixed
+
+- Incorrect serialization of suppressed warnings and errors
 
 ## [1.5.3] - 2024-08-27
 
