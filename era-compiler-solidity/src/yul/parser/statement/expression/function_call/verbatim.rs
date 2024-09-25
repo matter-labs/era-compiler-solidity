@@ -954,13 +954,19 @@ where
             }
 
             let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            context
-                .build_exit(
-                    context.llvm_runtime().r#return,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                )
-                .map(|_| None)
+            context.build_call(
+                context.llvm_runtime().r#return,
+                &[
+                    arguments[0],
+                    arguments[1],
+                    context
+                        .field_const(zkevm_opcode_defs::RetForwardPageType::UseHeap as u64)
+                        .as_basic_value_enum(),
+                ],
+                "return_deployed",
+            )?;
+            context.build_unreachable()?;
+            Ok(None)
         }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",
