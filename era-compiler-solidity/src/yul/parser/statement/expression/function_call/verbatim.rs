@@ -941,6 +941,27 @@ where
             )
             .map(Some)
         }
+        identifier @ "return_deployed" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            context
+                .build_exit(
+                    context.llvm_runtime().r#return,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
+                )
+                .map(|_| None)
+        }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",
             call.0.location,
