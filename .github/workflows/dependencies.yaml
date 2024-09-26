@@ -38,7 +38,7 @@ jobs:
             CRATE=$(echo "${DEP}" | cut -d'/' -f2)
             # Handle special cases
             if [ ${DEP} == "matter-labs-forks/llvm-sys.rs" ]; then
-              CRATE="llvm-sys-170" # Update this to 180, etc. with each LLVM update
+              CRATE="llvm-sys"
             fi
             echo "[patch.\"${GH_ML_URL}/${DEP}\"]" >> "${CARGO_TOML}"
             echo "${CRATE} = { git = '${GH_ML_PATCHED_URL}/${DEP}', branch = '${{ inputs.dependencies_branch }}' }" >> "${CARGO_TOML}"
