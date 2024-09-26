@@ -112,7 +112,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target }}
-          release-suffix: ${{ matrix.release-suffix }}
+          release-suffix: ${{ format('{0}-{1}', matrix.release-suffix, inputs.prerelease_suffix || format('v{0}', github.ref_name)) }}
 
   prepare-release:
     name: Prepare release
