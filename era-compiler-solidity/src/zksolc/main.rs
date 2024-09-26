@@ -95,9 +95,6 @@ fn main_inner(
         era_compiler_solidity::run_recursive(target);
         return Ok(());
     }
-    if let era_compiler_common::Target::EVM = target {
-        anyhow::bail!("The EVM target is under development and not available yet.")
-    }
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 
