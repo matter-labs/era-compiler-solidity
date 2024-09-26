@@ -50,6 +50,8 @@ jobs:
         with:
           enable-assertions: 'true'
           build-type: RelWithDebInfo
+          ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}
+          save-ccache: 'false'
 
       - name: Run tests
         uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
