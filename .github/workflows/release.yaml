@@ -107,6 +107,9 @@ jobs:
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
+          build-type: Release
+          ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, contains(matrix.target, 'musl') && 'musl' || 'gnu') }}
+          save-ccache: 'false'
 
       - name: Build zksolc
         uses: ./.github/actions/build
