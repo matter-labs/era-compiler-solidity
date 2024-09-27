@@ -584,6 +584,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "which",
+ "zkevm_opcode_defs",
 ]
 
 [[package]]
