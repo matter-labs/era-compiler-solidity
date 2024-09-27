@@ -38,7 +38,7 @@ jobs:
             CRATE=$(echo "${DEP}" | cut -d'/' -f2)
             # Handle special cases
             if [ ${DEP} == "matter-labs-forks/llvm-sys.rs" ]; then
-              CRATE="llvm-sys-170" # Update this to 180, etc. with each LLVM update
+              CRATE="llvm-sys"
             fi
             echo "[patch.\"${GH_ML_URL}/${DEP}\"]" >> "${CARGO_TOML}"
             echo "${CRATE} = { git = '${GH_ML_PATCHED_URL}/${DEP}', branch = '${{ inputs.dependencies_branch }}' }" >> "${CARGO_TOML}"
@@ -48,7 +48,10 @@ jobs:
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          enable-assertions: false
+          enable-assertions: 'true'
+          build-type: RelWithDebInfo
+          ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}
+          save-ccache: 'false'
 
       - name: Run tests
         uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1

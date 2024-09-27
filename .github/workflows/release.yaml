@@ -107,12 +107,15 @@ jobs:
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
+          build-type: Release
+          ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, contains(matrix.target, 'musl') && 'musl' || 'gnu') }}
+          save-ccache: 'false'
 
       - name: Build zksolc
         uses: ./.github/actions/build
         with:
           target: ${{ matrix.target }}
-          release-suffix: ${{ matrix.release-suffix }}
+          release-suffix: ${{ format('{0}-{1}', matrix.release-suffix, inputs.prerelease_suffix || format('v{0}', github.ref_name)) }}
 
   prepare-release:
     name: Prepare release

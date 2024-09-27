@@ -279,16 +279,17 @@ fn main_inner(
                     std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
-            } else if arguments.output_metadata
-                || arguments.output_assembly
-                || arguments.output_binary
-            {
-                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
             } else {
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                )?;
+                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
+                if !arguments.output_metadata
+                    && !arguments.output_assembly
+                    && !arguments.output_binary
+                {
+                    writeln!(
+                        std::io::stderr(),
+                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
+                    )?;
+                }
             }
         }
         era_compiler_common::Target::EVM => {
@@ -405,20 +406,21 @@ fn main_inner(
                     std::io::stderr(),
                     "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
-            } else if arguments.output_metadata
-                || arguments.output_assembly
-                || arguments.output_binary
-            {
+            } else {
                 build.write_to_terminal(
                     arguments.output_metadata,
                     arguments.output_assembly,
                     arguments.output_binary,
                 )?;
-            } else {
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                )?;
+                if !arguments.output_metadata
+                    && !arguments.output_assembly
+                    && !arguments.output_binary
+                {
+                    writeln!(
+                        std::io::stderr(),
+                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
+                    )?;
+                }
             }
         }
     }

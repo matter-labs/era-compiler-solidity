@@ -34,6 +34,8 @@ hex = "0.4"
 num = "0.4"
 sha3 = "0.10"
 
+zkevm_opcode_defs = { git = "https://github.com/matter-labs/era-zkevm_opcode_defs", branch = "v1.5.0" }
+
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
 era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-cpr-1664-support-linking-deploy-and-runtime-code" }
 era-yul = { path = "../era-yul" }

@@ -941,6 +941,33 @@ where
             )
             .map(Some)
         }
+        identifier @ "return_deployed" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            context.build_call(
+                context.llvm_runtime().r#return,
+                &[
+                    arguments[0],
+                    arguments[1],
+                    context
+                        .field_const(zkevm_opcode_defs::RetForwardPageType::UseHeap as u64)
+                        .as_basic_value_enum(),
+                ],
+                "return_deployed",
+            )?;
+            context.build_unreachable()?;
+            Ok(None)
+        }
         identifier => anyhow::bail!(
             "{} Found unknown internal function `{}`",
             call.0.location,
