@@ -57,7 +57,7 @@ impl Contract {
         output_metadata: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
-        writeln!(std::io::stdout(), "======= {path} =======",)?;
+        writeln!(std::io::stdout(), "\n======= {path} =======",)?;
         if let Some(assembly) = self.build.assembly {
             writeln!(std::io::stdout(), "EraVM assembly:\n{assembly}")?;
         }

@@ -63,15 +63,12 @@ impl Contract {
         _output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
+        writeln!(std::io::stdout(), "\n======= {path} =======")?;
         if output_binary {
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` deploy bytecode: {}",
+                "Binary:\n{}{}",
                 hex::encode(self.deploy_build),
-            )?;
-            writeln!(
-                std::io::stdout(),
-                "Contract `{path}` runtime bytecode: {}",
                 hex::encode(self.runtime_build),
             )?;
         }

@@ -240,9 +240,9 @@ checksum = "428d9aa8fbc0670b7b8d6030a7fadd0f86151cae55e4dbbece15f3780a3dfaf3"
 
 [[package]]
 name = "cc"
-version = "1.1.21"
+version = "1.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07b1695e2c7e8fc85310cde85aeaab7e3097f593c91d209d3f9df76c928100f0"
+checksum = "9540e661f81799159abee814118cc139a2004b3a3aa3ea37724a1b66530b90e0"
 dependencies = [
  "shlex",
 ]
@@ -541,7 +541,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#c222fbf7c51da4cffaa8ef4ebb7244545924fe86"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#988e87f039bf10632a0eb416a071fe1b7ab6d96e"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1012,7 +1012,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#dcb730ce6a5497589ff296fc330075097e8ea058"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#aebf3f706f9d5289140600de1ee34f4aa3bbc481"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1027,7 +1027,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#dcb730ce6a5497589ff296fc330075097e8ea058"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1664-support-linking-deploy-and-runtime-code#aebf3f706f9d5289140600de1ee34f4aa3bbc481"
 dependencies = [
  "proc-macro2",
  "quote",
