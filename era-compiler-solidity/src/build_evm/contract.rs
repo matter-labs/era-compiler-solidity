@@ -16,11 +16,8 @@ use crate::solc::standard_json::output::contract::Contract as StandardJsonOutput
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
-    /// The absolute file path.
-    pub path: String,
     /// The contract name.
-    /// Is set for Solidity contracts only. Otherwise it would be equal to the file name.
-    pub name: Option<String>,
+    pub name: era_compiler_common::ContractName,
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
     /// The LLVM deploy code module build.
@@ -36,15 +33,13 @@ impl Contract {
     /// A shortcut constructor.
     ///
     pub fn new(
-        path: String,
-        name: Option<String>,
+        name: era_compiler_common::ContractName,
         identifier: String,
         deploy_build: era_compiler_llvm_context::EVMBuild,
         runtime_build: era_compiler_llvm_context::EVMBuild,
         metadata_json: serde_json::Value,
     ) -> Self {
         Self {
-            path,
             name,
             identifier,
             deploy_build,
@@ -93,7 +88,7 @@ impl Contract {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let file_path = PathBuf::from(self.path);
+        let file_path = PathBuf::from(self.name.path);
         let file_name = file_path
             .file_name()
             .expect("Always exists")
@@ -114,7 +109,7 @@ impl Contract {
             {
                 let output_name = format!(
                     "{}.{}.{}",
-                    self.name.as_deref().unwrap_or(file_name),
+                    self.name.name.as_deref().unwrap_or(file_name),
                     code_type,
                     era_compiler_common::EXTENSION_EVM_BINARY
                 );

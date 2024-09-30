@@ -17,11 +17,8 @@ use crate::solc::standard_json::output::contract::Contract as StandardJsonOutput
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
-    /// The absolute file path.
-    pub path: String,
     /// The contract name.
-    /// Is set for Solidity contracts only. Otherwise it would be equal to the file name.
-    pub name: Option<String>,
+    pub name: era_compiler_common::ContractName,
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
     /// The LLVM module build.
@@ -37,15 +34,13 @@ impl Contract {
     /// A shortcut constructor.
     ///
     pub fn new(
-        path: String,
-        name: Option<String>,
+        name: era_compiler_common::ContractName,
         identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
     ) -> Self {
         Self {
-            path,
             name,
             identifier,
             build,
@@ -91,7 +86,7 @@ impl Contract {
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let file_path = PathBuf::from(self.path);
+        let file_path = PathBuf::from(self.name.path);
         let file_name = file_path
             .file_name()
             .expect("Always exists")
@@ -105,7 +100,7 @@ impl Contract {
         if output_metadata {
             let output_name = format!(
                 "{}_meta.{}",
-                self.name.as_deref().unwrap_or(file_name),
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_JSON,
             );
             let mut output_path = output_path.clone();
@@ -128,7 +123,7 @@ impl Contract {
         if let Some(assembly) = self.build.assembly {
             let output_name = format!(
                 "{}.{}",
-                self.name.as_deref().unwrap_or(file_name),
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_ERAVM_ASSEMBLY
             );
             let mut output_path = output_path.clone();
@@ -151,7 +146,7 @@ impl Contract {
         if output_binary {
             let output_name = format!(
                 "{}.{}",
-                self.name.as_deref().unwrap_or(file_name),
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_ERAVM_BINARY
             );
             let mut output_path = output_path.clone();

@@ -38,11 +38,11 @@ pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 /// The Yul contract for testing.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
 
+/// The LLVM IR contract path.
+pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
+
 /// The EraVM assembly contract path.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
-
-/// The LLVM IR contract path.
-pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
 
 /// The standard JSON contract path.
 pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
