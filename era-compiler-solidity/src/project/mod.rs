@@ -157,7 +157,8 @@ impl Project {
                     };
 
                     let contract = Contract::new(
-                        full_path.clone(),
+                        (*path).to_owned(),
+                        Some((*name).to_owned()),
                         source,
                         contract.metadata.to_owned().expect("Always exists"),
                     );
@@ -241,6 +242,7 @@ impl Project {
 
                 let contract = Contract::new(
                     path.clone(),
+                    None,
                     ContractIR::new_yul(object),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),
@@ -308,6 +310,7 @@ impl Project {
 
                 let contract = Contract::new(
                     path.clone(),
+                    None,
                     ContractIR::new_llvm_ir(path.clone(), source_code),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),
@@ -374,6 +377,7 @@ impl Project {
 
                 let contract = Contract::new(
                     path.clone(),
+                    None,
                     ContractIR::new_eravm_assembly(path.clone(), source_code),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),
