@@ -1,5 +1,6 @@
 use crate::{cli, common};
 use predicates::prelude::*;
+use std::path::PathBuf;
 use tempfile::TempDir;
 
 #[test]
@@ -37,6 +38,111 @@ fn run_zksolc_with_output_dir_by_default() -> anyhow::Result<()> {
     // Compare with solc
     let solc_result = cli::execute_solc(solc_args)?;
     solc_result.code(zksolc_status);
+
+    Ok(())
+}
+
+#[test]
+fn run_zksolc_with_output_dir_yul() -> anyhow::Result<()> {
+    let _ = common::setup();
+    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
+
+    let input_path = PathBuf::from(cli::TEST_YUL_CONTRACT_PATH);
+    let input_file = input_path
+        .file_name()
+        .expect("Always exists")
+        .to_str()
+        .expect("Always valid");
+    let zksolc_args = &[
+        input_path.to_str().expect("Always valid"),
+        "--yul",
+        "--bin",
+        "--output-dir",
+        tmp_dir_zksolc.path().to_str().unwrap(),
+    ];
+
+    // Execute zksolc command
+    let result = cli::execute_zksolc(zksolc_args)?;
+    result
+        .success()
+        .stderr(predicate::str::contains("Compiler run successful"));
+
+    // Ensure the directory is created
+    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
+        "{input_file}.{}",
+        era_compiler_common::EXTENSION_ERAVM_BINARY
+    ));
+    assert!(output_file.exists());
+
+    Ok(())
+}
+
+#[test]
+fn run_zksolc_with_output_dir_llvm_ir() -> anyhow::Result<()> {
+    let _ = common::setup();
+    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
+
+    let input_path = PathBuf::from(cli::TEST_LLVM_IR_CONTRACT_PATH);
+    let input_file = input_path
+        .file_name()
+        .expect("Always exists")
+        .to_str()
+        .expect("Always valid");
+    let zksolc_args = &[
+        input_path.to_str().expect("Always valid"),
+        "--llvm-ir",
+        "--bin",
+        "--output-dir",
+        tmp_dir_zksolc.path().to_str().unwrap(),
+    ];
+
+    // Execute zksolc command
+    let result = cli::execute_zksolc(zksolc_args)?;
+    result
+        .success()
+        .stderr(predicate::str::contains("Compiler run successful"));
+
+    // Ensure the directory is created
+    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
+        "{input_file}.{}",
+        era_compiler_common::EXTENSION_ERAVM_BINARY
+    ));
+    assert!(output_file.exists());
+
+    Ok(())
+}
+
+#[test]
+fn run_zksolc_with_output_dir_eravm_assembly() -> anyhow::Result<()> {
+    let _ = common::setup();
+    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
+
+    let input_path = PathBuf::from(cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH);
+    let input_file = input_path
+        .file_name()
+        .expect("Always exists")
+        .to_str()
+        .expect("Always valid");
+    let zksolc_args = &[
+        input_path.to_str().expect("Always valid"),
+        "--eravm-assembly",
+        "--bin",
+        "--output-dir",
+        tmp_dir_zksolc.path().to_str().unwrap(),
+    ];
+
+    // Execute zksolc command
+    let result = cli::execute_zksolc(zksolc_args)?;
+    result
+        .success()
+        .stderr(predicate::str::contains("Compiler run successful"));
+
+    // Ensure the directory is created
+    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
+        "{input_file}.{}",
+        era_compiler_common::EXTENSION_ERAVM_BINARY
+    ));
+    assert!(output_file.exists());
 
     Ok(())
 }
