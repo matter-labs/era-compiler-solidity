@@ -173,20 +173,29 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare universal macos binary
-        if: github.ref_type == 'tag' || (inputs.release_macos_amd64 && inputs.release_macos_arm64)
+      - name: Prepare universal MacOS binary (pre-release)
+        if: github.ref_type != 'tag' && github.event_name == 'workflow_dispatch' && inputs.release_macos_amd64 && inputs.release_macos_arm64
         env:
           MACOSX_UNIVERSAL_SUFFIX: "macosx"
         run: |
           OUTDIR="./releases/release-${MACOSX_UNIVERSAL_SUFFIX}/${MACOSX_UNIVERSAL_SUFFIX}"
           mkdir -p "${OUTDIR}"
-          echo "${GITHUB_REF_NAME} ${TAG_SUFFIX} ${MACOSX_UNIVERSAL_SUFFIX}"
-          [ ! -z "$GITHUB_REF_NAME" ] && TAG_SUFFIX="v${GITHUB_REF_NAME}"
-          OUTPUT="${OUTDIR}/zksolc-${MACOSX_UNIVERSAL_SUFFIX}-${TAG_SUFFIX}"
-          ls -lAR './releases/'
+          OUTPUT="${OUTDIR}/zksolc-${MACOSX_UNIVERSAL_SUFFIX}-${{ github.event.inputs.prerelease_suffix }}"
           llvm-lipo -create -output "${OUTPUT}" \
-            ./releases/release-macosx-amd64/macosx-amd64/zksolc-macosx-amd64-${TAG_SUFFIX} \
-            ./releases/release-macosx-arm64/macosx-arm64/zksolc-macosx-arm64-${TAG_SUFFIX}
+            ./releases/release-macosx-amd64/macosx-amd64/zksolc-macosx-amd64-${{ github.event.inputs.prerelease_suffix }} \
+            ./releases/release-macosx-arm64/macosx-arm64/zksolc-macosx-arm64-${{ github.event.inputs.prerelease_suffix }}
+
+      - name: Prepare universal MacOS binary (release)
+        if: github.ref_type == 'tag'
+        env:
+          MACOSX_UNIVERSAL_SUFFIX: "macosx"
+        run: |
+          OUTDIR="./releases/release-${MACOSX_UNIVERSAL_SUFFIX}/${MACOSX_UNIVERSAL_SUFFIX}"
+          mkdir -p "${OUTDIR}"
+          OUTPUT="${OUTDIR}/zksolc-${MACOSX_UNIVERSAL_SUFFIX}-v${GITHUB_REF_NAME}"
+          llvm-lipo -create -output "${OUTPUT}" \
+            ./releases/release-macosx-amd64/macosx-amd64/zksolc-macosx-amd64-v${GITHUB_REF_NAME} \
+            ./releases/release-macosx-arm64/macosx-arm64/zksolc-macosx-arm64-v${GITHUB_REF_NAME}
 
       - name: Prepare release
         uses: softprops/action-gh-release@v2
