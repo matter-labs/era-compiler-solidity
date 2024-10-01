@@ -182,8 +182,8 @@ jobs:
           mkdir -p "${OUTDIR}"
           OUTPUT="${OUTDIR}/zksolc-${MACOSX_UNIVERSAL_SUFFIX}-${{ github.event.inputs.prerelease_suffix }}"
           llvm-lipo -create -output "${OUTPUT}" \
-            ./releases/release-macosx-amd64/macosx-amd64/zksolc-macosx-amd64-${{ github.event.inputs.prerelease_suffix }} \
-            ./releases/release-macosx-arm64/macosx-arm64/zksolc-macosx-arm64-${{ github.event.inputs.prerelease_suffix }}
+            ./releases/release-macosx-amd64-${{ github.event.inputs.prerelease_suffix }}/macosx-amd64-${{ github.event.inputs.prerelease_suffix }}/zksolc-macosx-amd64-${{ github.event.inputs.prerelease_suffix }} \
+            ./releases/release-macosx-arm64-${{ github.event.inputs.prerelease_suffix }}/macosx-arm64-${{ github.event.inputs.prerelease_suffix }}/zksolc-macosx-arm64-${{ github.event.inputs.prerelease_suffix }}
 
       - name: Prepare universal MacOS binary (release)
         if: github.ref_type == 'tag'
