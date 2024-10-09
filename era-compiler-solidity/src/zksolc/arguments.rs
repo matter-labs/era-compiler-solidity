@@ -80,9 +80,10 @@ pub struct Arguments {
     #[structopt(long = "disable-solc-optimizer")]
     pub disable_solc_optimizer: bool,
 
-    /// Specify the path to the `solc` executable. By default, the one in `${PATH}` is used.
-    /// Yul mode: `solc` is used for source code validation, as `zksolc` itself assumes that the input Yul is valid.
-    /// LLVM IR mode: `solc` is unused.
+    /// Specify the path to a `solc` executable.
+    /// Solidity mode: if not provided, `solc` is also searched in `${PATH}`.
+    /// Yul mode: `solc` is optional for additional Yul validation, as `zksolc` has limited Yul verification capabilities.
+    /// LLVM IR and EraVM assembly modes: `solc` is unused.
     #[structopt(long = "solc")]
     pub solc: Option<String>,
 

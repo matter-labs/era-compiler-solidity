@@ -20,7 +20,7 @@ use std::str::FromStr;
 use std::sync::Once;
 use std::time::Duration;
 
-/// Synchronization for solc downloads.
+/// Synchronization for `solc` downloads.
 static DOWNLOAD_SOLC: Once = Once::new();
 
 /// Download directory for `solc` binaries
@@ -52,14 +52,17 @@ pub fn download_binaries() -> anyhow::Result<()> {
     http_client_builder = http_client_builder.pool_idle_timeout(Duration::from_secs(60));
     http_client_builder = http_client_builder.timeout(Duration::from_secs(60));
     let http_client = http_client_builder.build()?;
+
     let config_path = Path::new(SOLC_BIN_CONFIG);
     era_compiler_downloader::Downloader::new(http_client.clone()).download(config_path)?;
+
     // Copy the latest `solc-*` binary to `solc` for CLI tests
     let latest_solc =
         PathBuf::from(get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)?.executable);
     let mut solc = latest_solc.clone();
     solc.set_file_name(format!("solc{}", std::env::consts::EXE_SUFFIX));
     std::fs::copy(latest_solc, solc)?;
+
     Ok(())
 }
 

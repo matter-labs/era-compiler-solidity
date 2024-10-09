@@ -420,7 +420,7 @@ pub fn standard_output_evm(
 /// Runs the standard JSON mode for EVM.
 ///
 pub fn standard_json_eravm(
-    solc_compiler: Option<&SolcCompiler>,
+    solc_compiler: Option<SolcCompiler>,
     force_evmla: bool,
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
@@ -468,7 +468,10 @@ pub fn standard_json_eravm(
         .unwrap_or_default();
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
-        (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
+        (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
+            let solc_compiler =
+                solc_compiler.unwrap_or(SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?);
+
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
 
@@ -488,17 +491,14 @@ pub fn standard_json_eravm(
                 libraries,
                 solc_pipeline,
                 &mut solc_output,
-                solc_compiler,
+                &solc_compiler,
                 debug_config.as_ref(),
             )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
-            (solc_output, Some(&solc_compiler.version), project)
-        }
-        (SolcStandardJsonInputLanguage::Solidity, None) => {
-            anyhow::bail!("Compiling Solidity without `solc` is not supported")
+            (solc_output, Some(solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
             let mut solc_output =
@@ -518,7 +518,7 @@ pub fn standard_json_eravm(
                 solc_output.write_and_exit(prune_output);
             }
 
-            (solc_output, Some(&solc_compiler.version), project)
+            (solc_output, Some(solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
             let mut solc_output = SolcStandardJsonOutput::new(&solc_input.sources, messages);
@@ -572,7 +572,7 @@ pub fn standard_json_eravm(
         let missing_libraries = project.get_missing_libraries();
         missing_libraries.write_to_standard_json(
             &mut solc_output,
-            solc_version,
+            solc_version.as_ref(),
             &zksolc_version,
         )?;
     } else {
@@ -586,7 +586,7 @@ pub fn standard_json_eravm(
             threads,
             debug_config,
         )?;
-        build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
     }
     solc_output.write_and_exit(prune_output);
 }
@@ -595,7 +595,7 @@ pub fn standard_json_eravm(
 /// Runs the standard JSON mode for EVM.
 ///
 pub fn standard_json_evm(
-    solc_compiler: Option<&SolcCompiler>,
+    solc_compiler: Option<SolcCompiler>,
     force_evmla: bool,
     json_path: Option<PathBuf>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
@@ -624,7 +624,10 @@ pub fn standard_json_evm(
         .unwrap_or(era_compiler_common::HashType::Keccak256);
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
-        (SolcStandardJsonInputLanguage::Solidity, Some(solc_compiler)) => {
+        (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
+            let solc_compiler =
+                solc_compiler.unwrap_or(SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?);
+
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
 
@@ -644,17 +647,14 @@ pub fn standard_json_evm(
                 libraries,
                 solc_pipeline,
                 &mut solc_output,
-                solc_compiler,
+                &solc_compiler,
                 debug_config.as_ref(),
             )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
 
-            (solc_output, Some(&solc_compiler.version), project)
-        }
-        (SolcStandardJsonInputLanguage::Solidity, None) => {
-            anyhow::bail!("Compiling Solidity without `solc` is not supported")
+            (solc_output, Some(solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
             let mut solc_output =
@@ -674,7 +674,7 @@ pub fn standard_json_evm(
                 solc_output.write_and_exit(prune_output);
             }
 
-            (solc_output, Some(&solc_compiler.version), project)
+            (solc_output, Some(solc_compiler.version), project)
         }
         (SolcStandardJsonInputLanguage::Yul, None) => {
             let mut solc_output = SolcStandardJsonOutput::new(&solc_input.sources, messages);
@@ -719,7 +719,7 @@ pub fn standard_json_evm(
         threads,
         debug_config,
     )?;
-    build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
     solc_output.write_and_exit(prune_output);
 }
 
