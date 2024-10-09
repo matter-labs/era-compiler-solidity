@@ -31,7 +31,10 @@ fn call_zksolc_without_solc_argument() -> anyhow::Result<()> {
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
 
-    let assert = zksolc.arg(cli::TEST_SOLIDITY_CONTRACT_PATH).assert();
+    let assert = zksolc
+        .arg(cli::TEST_SOLIDITY_CONTRACT_PATH)
+        .env("PATH", "./solc-bin")
+        .assert();
 
     assert
         .success()
