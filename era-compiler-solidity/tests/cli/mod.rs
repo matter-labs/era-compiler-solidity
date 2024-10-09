@@ -15,6 +15,7 @@ mod eravm_assembly;
 mod libraries;
 mod linker;
 mod llvm_ir;
+mod llvm_options;
 mod metadata_hash;
 mod missing_lib;
 mod optimization;

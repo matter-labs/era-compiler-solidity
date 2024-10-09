@@ -114,7 +114,12 @@ fn main_inner(
     let llvm_options: Vec<String> = arguments
         .llvm_options
         .as_ref()
-        .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
+        .map(|options| {
+            options
+                .split_whitespace()
+                .map(|option| option.to_owned())
+                .collect()
+        })
         .unwrap_or_default();
 
     let suppressed_errors = era_compiler_solidity::MessageType::try_from_strings(
