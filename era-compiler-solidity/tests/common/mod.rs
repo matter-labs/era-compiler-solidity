@@ -76,7 +76,7 @@ pub fn setup() -> anyhow::Result<()> {
     });
 
     // Set the `zksolc` binary path
-    let zksolc_bin = Command::cargo_bin("zksolc")?;
+    let zksolc_bin = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
     let _ = era_compiler_solidity::process::EXECUTABLE.set(PathBuf::from(zksolc_bin.get_program()));
 
     // Enable LLVM pretty stack trace

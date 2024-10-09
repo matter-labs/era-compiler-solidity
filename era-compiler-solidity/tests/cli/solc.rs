@@ -7,7 +7,7 @@ use predicates::prelude::predicate;
 fn call_zksolc_with_solc_argument() -> anyhow::Result<()> {
     let _ = common::setup();
 
-    let mut zksolc = Command::cargo_bin("zksolc")?;
+    let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
             .executable;
@@ -29,7 +29,7 @@ fn call_zksolc_with_solc_argument() -> anyhow::Result<()> {
 fn call_zksolc_without_solc_argument() -> anyhow::Result<()> {
     let _ = common::setup();
 
-    let mut zksolc = Command::cargo_bin("zksolc")?;
+    let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
 
     let assert = zksolc.arg(cli::TEST_SOLIDITY_CONTRACT_PATH).assert();
 

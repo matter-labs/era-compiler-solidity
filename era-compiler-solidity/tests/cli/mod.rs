@@ -85,7 +85,7 @@ pub const LIBRARY_LINKER: &str =
 /// Execute zksolc with the given arguments and return the result
 ///
 pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
-    let mut cmd = Command::cargo_bin("zksolc")?;
+    let mut cmd = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
     Ok(cmd
         .env(
             "PATH",
