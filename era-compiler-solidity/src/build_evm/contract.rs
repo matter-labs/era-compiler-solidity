@@ -20,10 +20,12 @@ pub struct Contract {
     pub name: era_compiler_common::ContractName,
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
-    /// The LLVM deploy code module build.
-    pub deploy_build: era_compiler_llvm_context::EVMBuild,
-    /// The LLVM runtime code module build.
-    pub runtime_build: era_compiler_llvm_context::EVMBuild,
+    /// The deploy bytecode.
+    pub deploy_build: Vec<u8>,
+    /// The runtime bytecode.
+    pub runtime_build: Vec<u8>,
+    /// The metadata hash.
+    pub metadata_hash: Option<era_compiler_common::Hash>,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
 }
@@ -35,8 +37,9 @@ impl Contract {
     pub fn new(
         name: era_compiler_common::ContractName,
         identifier: String,
-        deploy_build: era_compiler_llvm_context::EVMBuild,
-        runtime_build: era_compiler_llvm_context::EVMBuild,
+        deploy_build: Vec<u8>,
+        runtime_build: Vec<u8>,
+        metadata_hash: Option<era_compiler_common::Hash>,
         metadata_json: serde_json::Value,
     ) -> Self {
         Self {
@@ -44,6 +47,7 @@ impl Contract {
             identifier,
             deploy_build,
             runtime_build,
+            metadata_hash,
             metadata_json,
         }
     }
@@ -60,16 +64,13 @@ impl Contract {
         _output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
+        writeln!(std::io::stdout(), "\n======= {path} =======")?;
         if output_binary {
             writeln!(
                 std::io::stdout(),
-                "Contract `{path}` deploy bytecode: {}",
-                hex::encode(self.deploy_build.bytecode)
-            )?;
-            writeln!(
-                std::io::stdout(),
-                "Contract `{path}` runtime bytecode: {}",
-                hex::encode(self.runtime_build.bytecode)
+                "Binary:\n{}{}",
+                hex::encode(self.deploy_build),
+                hex::encode(self.runtime_build),
             )?;
         }
 
@@ -105,7 +106,7 @@ impl Contract {
                 era_compiler_llvm_context::CodeType::Runtime,
             ]
             .into_iter()
-            .zip([self.deploy_build.bytecode, self.runtime_build.bytecode].into_iter())
+            .zip([self.deploy_build, self.runtime_build].into_iter())
             {
                 let output_name = format!(
                     "{}.{}.{}",
@@ -149,8 +150,8 @@ impl Contract {
             *metadata = self.metadata_json.to_string();
         }
 
-        let hexadecimal_deploy_bytecode = hex::encode(self.deploy_build.bytecode);
-        let hexadecimal_runtime_bytecode = hex::encode(self.runtime_build.bytecode);
+        let hexadecimal_deploy_bytecode = hex::encode(self.deploy_build);
+        let hexadecimal_runtime_bytecode = hex::encode(self.runtime_build);
         match (
             combined_json_contract.bin.as_mut(),
             combined_json_contract.bin_runtime.as_mut(),
@@ -180,8 +181,8 @@ impl Contract {
         self,
         standard_json_contract: &mut StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
-        let deploy_bytecode = hex::encode(self.deploy_build.bytecode.as_slice());
-        let runtime_bytecode = hex::encode(self.runtime_build.bytecode.as_slice());
+        let deploy_bytecode = hex::encode(self.deploy_build.as_slice());
+        let runtime_bytecode = hex::encode(self.runtime_build.as_slice());
 
         standard_json_contract.metadata = Some(self.metadata_json);
         standard_json_contract

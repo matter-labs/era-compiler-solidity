@@ -24,7 +24,7 @@ impl Expression {
         context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         match self.0 {
             era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal
@@ -85,7 +85,7 @@ impl Expression {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         match self.0 {
             era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal

@@ -79,7 +79,7 @@ impl IR {
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IR
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,
@@ -108,7 +108,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IR
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,

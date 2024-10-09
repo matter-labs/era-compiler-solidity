@@ -18,7 +18,7 @@ pub fn verbatim<'ctx, D>(
     output_size: usize,
 ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     if output_size > 1 {
         anyhow::bail!(

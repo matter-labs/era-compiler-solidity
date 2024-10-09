@@ -26,7 +26,7 @@ impl FunctionCall {
         context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let location = self.0.location;
 
@@ -1426,7 +1426,7 @@ impl FunctionCall {
         context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.0.arguments.drain(0..N).rev() {
@@ -1451,7 +1451,7 @@ impl FunctionCall {
         context: &mut EraVMContext<'ctx, D>,
     ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.0.arguments.drain(0..N).rev() {
@@ -1477,7 +1477,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let location = self.0.location;
 
@@ -2065,8 +2065,23 @@ impl FunctionCall {
                 )
                 .map(Some)
             }
-            Name::DataOffset => Ok(Some(context.field_const(0).as_basic_value_enum())),
-            Name::DataSize => Ok(Some(context.field_const(0).as_basic_value_enum())),
+            Name::DataOffset => {
+                let mut arguments = self.pop_arguments_evm::<D, 1>(context)?;
+                let object_name = arguments[0].original.take().ok_or_else(|| {
+                    anyhow::anyhow!("{} `dataoffset` literal is missing", location)
+                })?;
+                era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
+                    .map(Some)
+            }
+            Name::DataSize => {
+                let mut arguments = self.pop_arguments_evm::<D, 1>(context)?;
+                let object_name = arguments[0]
+                    .original
+                    .take()
+                    .ok_or_else(|| anyhow::anyhow!("{} `datasize` literal is missing", location))?;
+                era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
+                    .map(Some)
+            }
             Name::DataCopy => Ok(None),
 
             Name::LinkerSymbol => Ok(Some(context.field_const(0).as_basic_value_enum())),
@@ -2154,7 +2169,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<[inkwell::values::BasicValueEnum<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.0.arguments.drain(0..N).rev() {
@@ -2181,7 +2196,7 @@ impl FunctionCall {
         context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
     ) -> anyhow::Result<[era_compiler_llvm_context::Value<'ctx>; N]>
     where
-        D: era_compiler_llvm_context::Dependency,
+        D: era_compiler_llvm_context::Dependency + Clone,
     {
         let mut arguments = Vec::with_capacity(N);
         for expression in self.0.arguments.drain(0..N).rev() {

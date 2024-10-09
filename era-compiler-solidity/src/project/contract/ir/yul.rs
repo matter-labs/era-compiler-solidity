@@ -41,7 +41,7 @@ impl Yul {
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Yul
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,
@@ -60,7 +60,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Yul
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,

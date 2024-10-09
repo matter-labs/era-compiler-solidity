@@ -14,7 +14,7 @@ declare_wrapper!(
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Object
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,
@@ -83,7 +83,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn declare(
         &mut self,

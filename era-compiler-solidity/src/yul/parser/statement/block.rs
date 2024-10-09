@@ -16,7 +16,7 @@ declare_wrapper!(
 
 impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Block
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(
         self,
@@ -88,7 +88,7 @@ where
 
 impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block
 where
-    D: era_compiler_llvm_context::Dependency,
+    D: era_compiler_llvm_context::Dependency + Clone,
 {
     fn into_llvm(
         self,
