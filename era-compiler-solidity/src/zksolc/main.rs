@@ -194,7 +194,7 @@ fn main_inner(
                     None => None,
                 };
                 era_compiler_solidity::standard_json_eravm(
-                    solc_compiler.as_ref(),
+                    solc_compiler,
                     arguments.force_evmla,
                     enable_eravm_extensions,
                     arguments.detect_missing_libraries,
@@ -331,7 +331,7 @@ fn main_inner(
                     None => None,
                 };
                 era_compiler_solidity::standard_json_evm(
-                    solc_compiler.as_ref(),
+                    solc_compiler,
                     arguments.force_evmla,
                     standard_json.map(PathBuf::from),
                     messages,
