@@ -35,7 +35,8 @@ pub fn run(target: era_compiler_common::Target) {
                 .expect("Stdin reading error");
 
             let contract = input.contract.expect("Always exists");
-            let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
+            let source_location =
+                SolcStandardJsonOutputSourceLocation::new(contract.name.path.clone());
             let result = contract
                 .compile_to_eravm(
                     input.dependency_data,
@@ -59,7 +60,8 @@ pub fn run(target: era_compiler_common::Target) {
                 .expect("Stdin reading error");
 
             let contract = input.contract.expect("Always exists");
-            let source_location = SolcStandardJsonOutputSourceLocation::new(contract.path.clone());
+            let source_location =
+                SolcStandardJsonOutputSourceLocation::new(contract.name.path.clone());
             let result = contract
                 .compile_to_evm(
                     input.dependency_data,

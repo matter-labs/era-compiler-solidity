@@ -15,6 +15,7 @@ mod eravm_assembly;
 mod libraries;
 mod linker;
 mod llvm_ir;
+mod llvm_options;
 mod metadata_hash;
 mod missing_lib;
 mod optimization;
@@ -38,11 +39,11 @@ pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 /// The Yul contract for testing.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
 
+/// The LLVM IR contract path.
+pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
+
 /// The EraVM assembly contract path.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
-
-/// The LLVM IR contract path.
-pub const TEST_LLVM_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
 
 /// The standard JSON contract path.
 pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
@@ -84,7 +85,7 @@ pub const LIBRARY_LINKER: &str =
 /// Execute zksolc with the given arguments and return the result
 ///
 pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
-    let mut cmd = Command::cargo_bin("zksolc")?;
+    let mut cmd = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
     Ok(cmd
         .env(
             "PATH",

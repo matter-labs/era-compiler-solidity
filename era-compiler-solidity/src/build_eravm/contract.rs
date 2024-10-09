@@ -6,6 +6,7 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
@@ -16,8 +17,8 @@ use crate::solc::standard_json::output::contract::Contract as StandardJsonOutput
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
-    /// The contract path.
-    pub path: String,
+    /// The contract name.
+    pub name: era_compiler_common::ContractName,
     /// The auxiliary identifier. Used to identify Yul objects.
     pub identifier: String,
     /// The LLVM module build.
@@ -33,14 +34,14 @@ impl Contract {
     /// A shortcut constructor.
     ///
     pub fn new(
-        path: String,
+        name: era_compiler_common::ContractName,
         identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
     ) -> Self {
         Self {
-            path,
+            name,
             identifier,
             build,
             metadata_json,
@@ -80,79 +81,88 @@ impl Contract {
     ///
     pub fn write_to_directory(
         self,
-        path: &Path,
+        output_path: &Path,
         output_metadata: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
-        let (file_name, contract_name) = Self::split_path(self.path.as_str());
+        let file_path = PathBuf::from(self.name.path);
+        let file_name = file_path
+            .file_name()
+            .expect("Always exists")
+            .to_str()
+            .expect("Always valid");
+
+        let mut output_path = output_path.to_owned();
+        output_path.push(file_name);
+        std::fs::create_dir_all(output_path.as_path())?;
 
         if output_metadata {
             let output_name = format!(
                 "{}_meta.{}",
-                contract_name,
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_JSON,
             );
-            let mut file_path = path.to_owned();
-            file_path.push(file_name.as_str());
-            std::fs::create_dir_all(file_path.as_path())?;
-            file_path.push(output_name.as_str());
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
 
-            if file_path.exists() && !overwrite {
+            if output_path.exists() && !overwrite {
                 anyhow::bail!(
-                    "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&file_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
+                File::create(&output_path)
+                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
                     .write_all(self.metadata_json.to_string().as_bytes())
-                    .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+                    .map_err(|error| {
+                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
+                    })?;
             }
         }
 
         if let Some(assembly) = self.build.assembly {
             let output_name = format!(
                 "{}.{}",
-                contract_name,
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_ERAVM_ASSEMBLY
             );
-            let mut file_path = path.to_owned();
-            file_path.push(file_name.as_str());
-            std::fs::create_dir_all(file_path.as_path())?;
-            file_path.push(output_name.as_str());
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
 
-            if file_path.exists() && !overwrite {
+            if output_path.exists() && !overwrite {
                 anyhow::bail!(
-                    "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&file_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
+                File::create(&output_path)
+                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
                     .write_all(assembly.as_bytes())
-                    .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+                    .map_err(|error| {
+                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
+                    })?;
             }
         }
 
         if output_binary {
             let output_name = format!(
                 "{}.{}",
-                contract_name,
+                self.name.name.as_deref().unwrap_or(file_name),
                 era_compiler_common::EXTENSION_ERAVM_BINARY
             );
-            let mut file_path = path.to_owned();
-            file_path.push(file_name.as_str());
-            std::fs::create_dir_all(file_path.as_path())?;
-            file_path.push(output_name.as_str());
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
 
-            if file_path.exists() && !overwrite {
+            if output_path.exists() && !overwrite {
                 anyhow::bail!(
-                    "Refusing to overwrite an existing file {file_path:?} (use --overwrite to force)."
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&file_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
+                File::create(&output_path)
+                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
                     .write_all(hex::encode(self.build.bytecode.as_slice()).as_bytes())
-                    .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+                    .map_err(|error| {
+                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
+                    })?;
             }
         }
 
@@ -201,16 +211,5 @@ impl Contract {
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
 
         Ok(())
-    }
-
-    ///
-    /// Extracts the file and contract names from the full path.
-    ///
-    pub fn split_path(path: &str) -> (String, String) {
-        let path = path.trim().replace(['\\', ':'], "/");
-        let mut path_iterator = path.split('/').rev();
-        let contract_name = path_iterator.next().expect("Always exists");
-        let file_name = path_iterator.next().expect("Always exists");
-        (file_name.to_owned(), contract_name.to_owned())
     }
 }

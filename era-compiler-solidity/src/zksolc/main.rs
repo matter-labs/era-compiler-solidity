@@ -111,7 +111,12 @@ fn main_inner(
     let llvm_options: Vec<String> = arguments
         .llvm_options
         .as_ref()
-        .map(|options| options.split(' ').map(|option| option.to_owned()).collect())
+        .map(|options| {
+            options
+                .split_whitespace()
+                .map(|option| option.to_owned())
+                .collect()
+        })
         .unwrap_or_default();
 
     let suppressed_errors = era_compiler_solidity::MessageType::try_from_strings(
@@ -186,7 +191,7 @@ fn main_inner(
                     None => None,
                 };
                 era_compiler_solidity::standard_json_eravm(
-                    solc_compiler.as_ref(),
+                    solc_compiler,
                     arguments.force_evmla,
                     enable_eravm_extensions,
                     arguments.detect_missing_libraries,
@@ -323,7 +328,7 @@ fn main_inner(
                     None => None,
                 };
                 era_compiler_solidity::standard_json_evm(
-                    solc_compiler.as_ref(),
+                    solc_compiler,
                     arguments.force_evmla,
                     standard_json.map(PathBuf::from),
                     messages,

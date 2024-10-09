@@ -109,7 +109,10 @@ impl Project {
             .par_iter()
             .filter_map(
                 |(path, name, contract)| -> Option<(String, anyhow::Result<Contract>)> {
-                    let full_path = format!("{path}:{name}");
+                    let name = era_compiler_common::ContractName::new(
+                        (*path).to_owned(),
+                        Some((*name).to_owned()),
+                    );
 
                     let source = match pipeline {
                         SolcPipeline::Yul => {
@@ -123,11 +126,11 @@ impl Project {
 
                             if let Some(debug_config) = debug_config {
                                 if let Err(error) = debug_config.dump_yul(
-                                    full_path.as_str(),
+                                    name.full_path.as_str(),
                                     None,
                                     ir_optimized.as_str(),
                                 ) {
-                                    return Some((full_path, Err(error)));
+                                    return Some((name.full_path, Err(error)));
                                 }
                             }
 
@@ -136,7 +139,7 @@ impl Project {
                                 .map_err(|error| anyhow::anyhow!("Yul parsing: {error:?}"))
                             {
                                 Ok(object) => object,
-                                Err(error) => return Some((full_path, Err(error))),
+                                Err(error) => return Some((name.full_path, Err(error))),
                             };
 
                             ContractIR::new_yul(object)
@@ -156,8 +159,9 @@ impl Project {
                         }
                     };
 
+                    let full_path = name.full_path.clone();
                     let contract = Contract::new(
-                        full_path.clone(),
+                        name,
                         source,
                         contract.metadata.to_owned().expect("Always exists"),
                     );
@@ -240,7 +244,7 @@ impl Project {
                 };
 
                 let contract = Contract::new(
-                    path.clone(),
+                    era_compiler_common::ContractName::new(path.clone(), None),
                     ContractIR::new_yul(object),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),
@@ -307,7 +311,7 @@ impl Project {
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let contract = Contract::new(
-                    path.clone(),
+                    era_compiler_common::ContractName::new(path.clone(), None),
                     ContractIR::new_llvm_ir(path.clone(), source_code),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),
@@ -373,7 +377,7 @@ impl Project {
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let contract = Contract::new(
-                    path.clone(),
+                    era_compiler_common::ContractName::new(path.clone(), None),
                     ContractIR::new_eravm_assembly(path.clone(), source_code),
                     serde_json::json!({
                         "source_hash": source_hash.to_string(),

@@ -25,8 +25,8 @@ use self::metadata::Metadata;
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Contract {
-    /// The absolute file path.
-    pub path: String,
+    /// The contract name.
+    pub name: era_compiler_common::ContractName,
     /// The IR source code data.
     pub ir: IR,
     /// The metadata JSON.
@@ -37,9 +37,13 @@ impl Contract {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(path: String, ir: IR, source_metadata: serde_json::Value) -> Self {
+    pub fn new(
+        name: era_compiler_common::ContractName,
+        ir: IR,
+        source_metadata: serde_json::Value,
+    ) -> Self {
         Self {
-            path,
+            name,
             ir,
             source_metadata,
         }
@@ -112,7 +116,7 @@ impl Contract {
                 let memory_buffer =
                     inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
                         llvm_ir.source.as_bytes(),
-                        self.path.as_str(),
+                        self.name.full_path.as_str(),
                     );
                 llvm.create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?
@@ -125,7 +129,7 @@ impl Contract {
                 )?;
                 let bytecode_buffer = era_compiler_llvm_context::eravm_assemble(
                     &target_machine,
-                    self.path.as_str(),
+                    self.name.full_path.as_str(),
                     eravm_assembly.source.as_str(),
                     debug_config.as_ref(),
                 )?;
@@ -140,14 +144,14 @@ impl Contract {
                     assembly_text,
                 )?;
                 return Ok(EraVMContractBuild::new(
-                    self.path,
+                    self.name,
                     identifier,
                     build,
                     metadata_json,
                     HashSet::new(),
                 ));
             }
-            _ => llvm.create_module(self.path.as_str()),
+            _ => llvm.create_module(self.name.full_path.as_str()),
         };
         let mut context = era_compiler_llvm_context::EraVMContext::new(
             &llvm,
@@ -188,10 +192,15 @@ impl Contract {
             .into_llvm(&mut context)
             .map_err(|error| anyhow::anyhow!("LLVM IR generator definition pass: {error}"))?;
 
-        let build = context.build(self.path.as_str(), metadata_hash, output_assembly, false)?;
+        let build = context.build(
+            self.name.full_path.as_str(),
+            metadata_hash,
+            output_assembly,
+            false,
+        )?;
 
         Ok(EraVMContractBuild::new(
-            self.path,
+            self.name,
             identifier,
             build,
             metadata_json,
@@ -256,7 +265,7 @@ impl Contract {
                 let runtime_code_type = era_compiler_llvm_context::CodeType::Runtime;
                 let runtime_llvm = inkwell::context::Context::create();
                 let runtime_module = runtime_llvm
-                    .create_module(format!("{}.{runtime_code_type}", self.path).as_str());
+                    .create_module(format!("{}.{runtime_code_type}", self.name.path).as_str());
                 let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
@@ -280,12 +289,12 @@ impl Contract {
                             "{runtime_code_type} code LLVM IR generator definition pass: {error}",
                         )
                     })?;
-                let runtime_buffer = runtime_context.build(self.path.as_str())?;
+                let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
 
                 let deploy_code_type = era_compiler_llvm_context::CodeType::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
                 let deploy_module = deploy_llvm
-                    .create_module(format!("{}.{}", self.path, deploy_code_type).as_str());
+                    .create_module(format!("{}.{deploy_code_type}", self.name.path).as_str());
                 let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
@@ -307,7 +316,7 @@ impl Contract {
                             "{deploy_code_type} code LLVM IR generator definition pass: {error}",
                         )
                     })?;
-                let deploy_buffer = deploy_context.build(self.path.as_str())?;
+                let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
                 let (deploy_buffer_linked, runtime_buffer_linked) =
                     inkwell::memory_buffer::MemoryBuffer::link_module_evm(
@@ -320,7 +329,7 @@ impl Contract {
                     .map_err(|error| anyhow::anyhow!("linking: {error}"))?;
 
                 Ok(EVMContractBuild::new(
-                    self.path,
+                    self.name,
                     identifier,
                     deploy_buffer_linked.as_slice().to_owned(),
                     runtime_buffer_linked.as_slice().to_owned(),
@@ -336,7 +345,7 @@ impl Contract {
                 let runtime_code_type = era_compiler_llvm_context::CodeType::Runtime;
                 let runtime_llvm = inkwell::context::Context::create();
                 let runtime_module = runtime_llvm
-                    .create_module(format!("{}.{}", self.path, runtime_code_type).as_str());
+                    .create_module(format!("{}.{runtime_code_type}", self.name.path).as_str());
                 let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
@@ -365,12 +374,12 @@ impl Contract {
                             "{runtime_code_type} code LLVM IR generator definition pass: {error}",
                         )
                     })?;
-                let runtime_buffer = runtime_context.build(self.path.as_str())?;
+                let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
 
                 let deploy_code_type = era_compiler_llvm_context::CodeType::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
-                let deploy_module =
-                    deploy_llvm.create_module(format!("{}.{deploy_code_type}", self.path).as_str());
+                let deploy_module = deploy_llvm
+                    .create_module(format!("{}.{deploy_code_type}", self.name.path).as_str());
                 let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
@@ -394,20 +403,20 @@ impl Contract {
                             "{deploy_code_type} code LLVM IR generator definition pass: {error}",
                         )
                     })?;
-                let deploy_buffer = deploy_context.build(self.path.as_str())?;
+                let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
                 let (deploy_buffer_linked, runtime_buffer_linked) =
                     inkwell::memory_buffer::MemoryBuffer::link_module_evm(
                         &[&deploy_buffer, &runtime_buffer],
                         &[
-                            self.path.as_str(),
-                            format!("{}.deployed", self.path.as_str()).as_str(),
+                            self.name.path.as_str(),
+                            format!("{}.deployed", self.name.path.as_str()).as_str(),
                         ],
                     )
                     .map_err(|error| anyhow::anyhow!("linking: {error}"))?;
 
                 Ok(EVMContractBuild::new(
-                    self.path,
+                    self.name,
                     identifier,
                     deploy_buffer_linked.as_slice().to_owned(),
                     runtime_buffer_linked.as_slice().to_owned(),
@@ -420,7 +429,7 @@ impl Contract {
                 let memory_buffer =
                     inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
                         llvm_ir.source.as_bytes(),
-                        self.path.as_str(),
+                        self.name.full_path.as_str(),
                     );
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
@@ -434,9 +443,9 @@ impl Contract {
                     Some(dependency_data),
                     debug_config,
                 );
-                let deploy_buffer = context.build(self.path.as_str())?;
+                let deploy_buffer = context.build(self.name.path.as_str())?;
                 Ok(EVMContractBuild::new(
-                    self.path,
+                    self.name,
                     identifier,
                     deploy_buffer.as_slice().to_owned(),
                     vec![],

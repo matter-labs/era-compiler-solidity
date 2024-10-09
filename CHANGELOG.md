@@ -5,6 +5,9 @@
 ### Fixed
 
 - The compilation pipeline that was not run without output parameters
+- Broken `--output-dir` output paths for non-Solidity contracts
+- `solc` that was not picked up from `${PATH}` in standard JSON mode
+- Several issues with fragile parsing of `--llvm-options`
 
 ## [1.5.4] - 2024-09-24
 
