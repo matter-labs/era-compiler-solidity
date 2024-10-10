@@ -550,7 +550,7 @@ dependencies = [
  "num",
  "semver",
  "serde",
- "zkevm_opcode_defs",
+ "zkevm_opcode_defs 0.150.0",
 ]
 
 [[package]]
@@ -584,7 +584,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "which",
- "zkevm_opcode_defs",
+ "zkevm_opcode_defs 0.150.5",
 ]
 
 [[package]]
@@ -2229,9 +2229,9 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "tempfile"
-version = "3.13.0"
+version = "3.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0f2c9fc62d0beef6951ccffd757e241266a2c833136efbe35af6cd2567dca5b"
+checksum = "04cbcdd0c794ebb0d4cf35e88edd2f7d2c4c3e9a5a6dab322839b321c6a87a64"
 dependencies = [
  "cfg-if",
  "fastrand",
@@ -2797,6 +2797,22 @@ checksum = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde"
 name = "zkevm_opcode_defs"
 version = "0.150.0"
 source = "git+https://github.com/matter-labs/era-zkevm_opcode_defs?branch=v1.5.0#cf5f9c18c580f845b32fc2a4d565a77380fd15bc"
+dependencies = [
+ "bitflags 2.6.0",
+ "blake2",
+ "ethereum-types",
+ "k256",
+ "lazy_static",
+ "p256",
+ "serde",
+ "sha2 0.10.8",
+ "sha3 0.10.8",
+]
+
+[[package]]
+name = "zkevm_opcode_defs"
+version = "0.150.5"
+source = "git+https://github.com/matter-labs/zksync-protocol#9bf5cf839f76a19f7c21981d8c56a7f8bbe03d7e"
 dependencies = [
  "bitflags 2.6.0",
  "blake2",
