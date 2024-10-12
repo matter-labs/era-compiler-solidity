@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- The solc v0.8.28 support
+
 ### Fixed
 
 - The compilation pipeline that was not run without output parameters
