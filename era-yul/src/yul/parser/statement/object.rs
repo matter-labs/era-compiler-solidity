@@ -1,5 +1,5 @@
 //!
-//! The YUL object.
+//! The Yul object.
 //!
 
 use std::collections::HashSet;
@@ -17,7 +17,7 @@ use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::code::Code;
 
 ///
-/// The upper-level YUL object, representing the deploy code.
+/// The upper-level Yul object, representing the deploy code.
 ///
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 #[serde(bound = "P: serde::de::DeserializeOwned")]

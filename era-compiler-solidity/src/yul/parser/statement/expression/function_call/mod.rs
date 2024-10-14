@@ -1911,9 +1911,9 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm_evm::<D, 2>(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
-                    vec![],
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
+                    vec![],
                 )?;
                 Ok(None)
             }
@@ -1921,12 +1921,12 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm_evm::<D, 3>(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -1934,12 +1934,12 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm_evm::<D, 4>(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -1947,12 +1947,12 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm_evm::<D, 5>(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -1960,12 +1960,12 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm_evm::<D, 6>(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }

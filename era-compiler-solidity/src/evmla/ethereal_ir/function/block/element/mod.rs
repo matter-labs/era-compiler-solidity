@@ -2145,9 +2145,9 @@ where
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
-                    vec![],
                     arguments[0].into_int_value(),
                     arguments[1].into_int_value(),
+                    vec![],
                 )?;
                 Ok(None)
             }
@@ -2155,12 +2155,12 @@ where
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -2168,12 +2168,12 @@ where
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -2181,12 +2181,12 @@ where
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }
@@ -2194,12 +2194,12 @@ where
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_event::log(
                     context,
+                    arguments[0].into_int_value(),
+                    arguments[1].into_int_value(),
                     arguments[2..]
                         .iter()
                         .map(|argument| argument.into_int_value())
                         .collect(),
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
                 )?;
                 Ok(None)
             }

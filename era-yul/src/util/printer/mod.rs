@@ -1,12 +1,12 @@
 //!
-//! YUL pretty printer.
+//! Yul pretty printer.
 //!
 
 use anyhow::Result;
 pub mod write_printer;
 
 ///
-/// Interface to YUL pretty printer.
+/// Interface to Yul pretty printer.
 ///
 pub trait IPrinter {
     ///

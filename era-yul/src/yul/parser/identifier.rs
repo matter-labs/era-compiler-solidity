@@ -1,5 +1,5 @@
 //!
-//! The YUL source code identifier.
+//! The Yul source code identifier.
 //!
 
 use crate::yul::error::Error;
@@ -11,7 +11,7 @@ use crate::yul::lexer::Lexer;
 use crate::yul::parser::r#type::Type;
 
 ///
-/// The YUL source code identifier.
+/// The Yul source code identifier.
 ///
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Identifier {

@@ -4,7 +4,7 @@ authors.workspace = true
 license.workspace = true
 edition.workspace = true
 version.workspace = true
-description = "YUL parser and syntax manipulation facilities required by `era-solidity-compiler` and other crates."
+description = "Yul parser and syntax manipulation facilities required by `era-solidity-compiler` and other crates."
 
 [lib]
 doctest = false

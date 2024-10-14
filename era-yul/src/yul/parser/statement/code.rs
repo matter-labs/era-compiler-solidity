@@ -1,5 +1,5 @@
 //!
-//! The YUL code.
+//! The Yul code.
 //!
 
 use std::collections::HashSet;
@@ -15,7 +15,7 @@ use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::statement::block::Block;
 
 ///
-/// The YUL code entity, which is the first block of the object.
+/// The Yul code entity, which is the first block of the object.
 ///
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 #[serde(bound = "P: serde::de::DeserializeOwned")]

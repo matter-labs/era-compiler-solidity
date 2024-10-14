@@ -1,5 +1,5 @@
 //!
-//! Tests for the YUL pretty printer.
+//! Tests for the Yul pretty printer.
 //!
 
 #![cfg(test)]
