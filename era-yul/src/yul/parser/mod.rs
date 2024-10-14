@@ -1,5 +1,5 @@
 //!
-//! The YUL code block.
+//! The Yul code block.
 //!
 
 pub mod dialect;

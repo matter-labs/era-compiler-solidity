@@ -1,5 +1,5 @@
 //!
-//! Printers for all YUL AST node types
+//! Printers for all Yul AST node types
 //!
 
 use crate::util::printer::print_list_comma_separated;
@@ -191,7 +191,7 @@ where
     }
 }
 
-/// Shows how an instance of [`Name`] is displayed in YUL code.
+/// Shows how an instance of [`Name`] is displayed in Yul code.
 pub fn name_identifier(name: &Name) -> String {
     if let Name::Verbatim {
         input_size,

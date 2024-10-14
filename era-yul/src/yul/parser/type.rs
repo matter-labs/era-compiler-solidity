@@ -1,5 +1,5 @@
 //!
-//! The YUL source code type.
+//! The Yul source code type.
 //!
 
 use crate::yul::error::Error;
@@ -10,7 +10,7 @@ use crate::yul::lexer::Lexer;
 use crate::yul::parser::error::Error as ParserError;
 
 ///
-/// The YUL source code type.
+/// The Yul source code type.
 ///
 /// The type is not currently in use, so all values have the `uint256` type by default.
 ///

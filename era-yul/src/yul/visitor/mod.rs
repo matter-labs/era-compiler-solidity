@@ -1,5 +1,5 @@
 //!
-//! Implementation of a visitor pattern for YUL syntax tree.
+//! Implementation of a visitor pattern for Yul syntax tree.
 //!
 
 use std::collections::BTreeSet;
@@ -47,7 +47,7 @@ where
 
 #[allow(unused_variables)]
 ///
-/// Visitor for YUL syntax tree.
+/// Visitor for Yul syntax tree.
 ///
 pub trait Visitor<P>
 where
@@ -60,98 +60,98 @@ where
     const MSG_METHOD_NOT_IMPLEMENTED: &'static str = "Method not implemented for this visitor.";
 
     ///
-    /// Visit `switch` statement in YUL syntax tree.
+    /// Visit `switch` statement in Yul syntax tree.
     ///
     fn visit_switch(&mut self, switch: &Switch<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit YUL object in YUL syntax tree.
+    /// Visit Yul object in Yul syntax tree.
     ///
     fn visit_object(&mut self, object: &Object<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit `for` statement in YUL syntax tree.
+    /// Visit `for` statement in Yul syntax tree.
     ///
     fn visit_for_loop(&mut self, for_loop: &ForLoop<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a variable declaration in YUL syntax tree: `var x` or `var x = <initializer>`.
+    /// Visit a variable declaration in Yul syntax tree: `var x` or `var x = <initializer>`.
     ///
     fn visit_variable_declaration(&mut self, variable_declaration: &VariableDeclaration) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a function definition in YUL syntax tree.
+    /// Visit a function definition in Yul syntax tree.
     ///
     fn visit_function_definition(&mut self, function_definition: &FunctionDefinition<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit an identifier in YUL syntax tree: a user defined one, or one of the predefined set like `lt`.
+    /// Visit an identifier in Yul syntax tree: a user defined one, or one of the predefined set like `lt`.
     ///
     fn visit_name(&mut self, name: &Name) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a function call in YUL syntax tree.
+    /// Visit a function call in Yul syntax tree.
     ///
     fn visit_function_call(&mut self, call: &FunctionCall) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit an `if` statement in YUL syntax tree.
+    /// Visit an `if` statement in Yul syntax tree.
     ///
     fn visit_if_conditional(&mut self, if_conditional: &IfConditional<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a literal (e.g. integer) in YUL syntax tree.
+    /// Visit a literal (e.g. integer) in Yul syntax tree.
     ///
     fn visit_literal(&mut self, lit: &Literal) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit an arbitrary YUL expression in YUL syntax tree.
+    /// Visit an arbitrary Yul expression in Yul syntax tree.
     ///
     fn visit_expression(&mut self, expr: &Expression) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit an assignment in YUL syntax tree.
+    /// Visit an assignment in Yul syntax tree.
     ///
     fn visit_assignment(&mut self, assignment: &Assignment) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit an arbitrary statement in YUL syntax tree.
+    /// Visit an arbitrary statement in Yul syntax tree.
     ///
     fn visit_statement(&mut self, stmt: &Statement<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a block of statements in YUL syntax tree.
+    /// Visit a block of statements in Yul syntax tree.
     ///
     fn visit_block(&mut self, block: &Block<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)
     }
 
     ///
-    /// Visit a `code` block of an object in YUL syntax tree.
+    /// Visit a `code` block of an object in Yul syntax tree.
     ///
     fn visit_code(&mut self, code: &Code<P>) {
         unreachable!("{}", Self::MSG_METHOD_NOT_IMPLEMENTED)

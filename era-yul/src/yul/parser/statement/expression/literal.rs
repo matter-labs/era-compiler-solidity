@@ -1,5 +1,5 @@
 //!
-//! The YUL source code literal.
+//! The Yul source code literal.
 //!
 
 use crate::yul::error::Error;
@@ -13,7 +13,7 @@ use crate::yul::parser::error::Error as ParserError;
 use crate::yul::parser::r#type::Type;
 
 ///
-/// Represents a literal in YUL without differentiating its type.
+/// Represents a literal in Yul without differentiating its type.
 ///
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Literal {

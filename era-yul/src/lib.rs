@@ -1,5 +1,5 @@
 //!
-//! YUL parser.
+//! Yul parser.
 //!
 
 #![allow(non_camel_case_types)]
