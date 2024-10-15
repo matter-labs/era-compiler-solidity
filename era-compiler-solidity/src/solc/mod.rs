@@ -133,21 +133,29 @@ impl Compiler {
         let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
-        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+
+        if !result.status.success() {
+            anyhow::bail!(
+                "{} subprocess failed with exit code {:?}:\n{}\n{}",
+                self.executable,
+                result.status.code(),
+                String::from_utf8_lossy(result.stdout.as_slice()),
+                String::from_utf8_lossy(result.stderr.as_slice()),
+            );
+        }
+
         let mut solc_output = match era_compiler_common::deserialize_from_slice::<StandardJsonOutput>(
             result.stdout.as_slice(),
         ) {
             Ok(solc_output) => solc_output,
             Err(error) => {
                 anyhow::bail!(
-                    "{} subprocess stdout parsing: {error:?} (stderr: {stderr_message})",
-                    self.executable
+                    "{} subprocess stdout parsing: {error:?} (stderr: {})",
+                    self.executable,
+                    String::from_utf8_lossy(result.stderr.as_slice()),
                 );
             }
         };
-        if !result.status.success() {
-            anyhow::bail!("{} subprocess: {stderr_message}", self.executable);
-        }
 
         let errors = solc_output.errors.get_or_insert_with(Vec::new);
         errors.retain(|error| match error.error_code.as_deref() {
@@ -211,21 +219,29 @@ impl Compiler {
         let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
-        let stderr_message = String::from_utf8_lossy(result.stderr.as_slice());
+
+        if !result.status.success() {
+            anyhow::bail!(
+                "{} subprocess failed with exit code {:?}:\n{}\n{}",
+                self.executable,
+                result.status.code(),
+                String::from_utf8_lossy(result.stdout.as_slice()),
+                String::from_utf8_lossy(result.stderr.as_slice()),
+            );
+        }
+
         let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
             result.stdout.as_slice(),
         ) {
             Ok(combined_json) => combined_json,
             Err(error) => {
                 anyhow::bail!(
-                    "{} subprocess stdout parsing: {error:?} (stderr: {stderr_message})",
-                    self.executable
+                    "{} subprocess stdout parsing: {error:?} (stderr: {})",
+                    self.executable,
+                    String::from_utf8_lossy(result.stderr.as_slice()),
                 );
             }
         };
-        if !result.status.success() {
-            anyhow::bail!("{} subprocess: {stderr_message}", self.executable);
-        }
 
         for filtered_flag in filtered_flags.into_iter() {
             for (_path, contract) in combined_json.contracts.iter_mut() {
