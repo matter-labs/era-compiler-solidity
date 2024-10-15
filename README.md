@@ -11,11 +11,13 @@ This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
 
 ## Installation
 
-To install the *zksolc* compiler, visit the [installation guide](./docs/01-installation.md).
+In order to install the *zksolc* compiler, visit the [installation guide](./docs/01-installation.md).
+
+For local development, [build zksolc from sources](./docs/01-installation.md#building-from-source).
 
 ## Testing
 
-To run the unit and CLI tests, run this command from the repository root:
+In order to run the unit and CLI tests, run this command from the repository root:
 
 ```shell
 cargo test
@@ -23,7 +25,7 @@ cargo test
 
 ## Troubleshooting
 
-During development, it can be tricky to get the `LLVM_SYS_<version>_PREFIX` variable to point to the correct LLVM build.
+During development, it can be tricky to get the `LLVM_SYS_{version}_PREFIX` variable to point to the correct LLVM build if multiple builds are present in the system.
 If you suspect that the compiler is not using the correct LLVM build, check `set | grep LLVM` and reset all LLVM-related environment variables.
 
 For the reference, see [llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration).
