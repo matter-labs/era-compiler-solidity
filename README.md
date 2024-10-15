@@ -1,32 +1,32 @@
-# ZKsync Era: Solidity Compiler
+# ZKsync Era: Solidity Compiler Toolchain
 
 [![Logo](eraLogo.svg)](https://zksync.io/)
 
-ZKsync Era is a layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security
-or decentralization. As it’s EVM-compatible (with Solidity/Vyper), 99% of Ethereum projects can redeploy without
-needing to refactor or re-audit any code. ZKsync Era also uses an LLVM-based compiler that will eventually enable
-developers to write smart contracts in popular languages such as C++ and Rust.
+ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security
+or decentralization. As it is EVM-compatible (with Solidity/Vyper), the majority of Ethereum projects can be redeployed without
+refactoring and re-auditing. ZKsync Era uses an LLVM-based compiler toolchain that allows developers to design, implement, and optimize
+efficient language-specific features while benefiting from the extensive LLVM ecosystem.
 
-This repository contains the ZKsync Solidity compiler.
+This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
 
 ## Installation
 
 To install the *zksolc* compiler, visit the [installation guide](./docs/01-installation.md).
 
-1. **Install via npm**:
-   - Use [ZKsync CLI](https://docs.zksync.io/build/tooling/zksync-cli/) to obtain a compiler package and prepare a project environment. After the installation you can modify a hardhat configuration file in the project and specify `zksolc` version there. Use `npx hardhat compile` or `yarn hardhat compile` to compile. [@matterlabs/hardhat-zksync-solc](https://docs.zksync.io/build/tooling/hardhat/getting-started) package will be used from npm repo.
-2. **Download prebuilt binaries**:
-   - Download [solc](https://github.com/matter-labs/era-solidity/releases) and [zksolc](https://github.com/matter-labs/zksolc-bin) binaries directly from GitHub. Use the CLI or Hardhat to compile contracts.
-3. **Build binaries from sources**:
-   - Build binaries using the guide below. Use the CLI or Hardhat to compile contracts.
+## Testing
 
-## Unit and e2e/CLI testing
+To run the unit and CLI tests, run this command from the repository root:
 
-Run `cargo test` from the repository root.
+```shell
+cargo test
+```
 
 ## Troubleshooting
 
-- Unset any LLVM-related environment variables you may have set, especially `LLVM_SYS_<version>_PREFIX` (see e.g. [llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration)). To make sure: `set | grep LLVM`
+During development, it can be tricky to get the `LLVM_SYS_<version>_PREFIX` variable to point to the correct LLVM build.
+If you suspect that the compiler is not using the correct LLVM build, check `set | grep LLVM` and reset all LLVM-related environment variables.
+
+For the reference, see [llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration).
 
 ## License
 
