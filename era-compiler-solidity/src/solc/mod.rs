@@ -70,7 +70,7 @@ impl Compiler {
         let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
-            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}");
+            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}. Please add it to ${{PATH}} or provide it explicitly with the `--solc` option.");
         }
         let version = Self::parse_version(executable)?;
         let compiler = Self {
