@@ -6,7 +6,7 @@ To compile contracts for ZKsync, you need the ZKsync compiler toolchain. The mai
 
 It is recommended to have at least 4 GB of RAM to compile large projects. The compilation process is parallelized by default, so the number of threads is equal to the number of CPU cores.
 
-> [!NOTE]
+> [!IMPORTANT]
 > Large projects can consume a lot of RAM during compilation on machines with high number of cores.
 > If you encounter memory issues, consider reducing the number of `--threads`.
 
@@ -17,6 +17,10 @@ The table below describes the supported platforms and architectures:
 | x86_64 |   ✅   |   ✅   |    ✅    |
 | arm64  |   ✅   |   ✅   |    ❌    |
 
+> [!IMPORTANT]
+> Please avoid using old distributions of operating systems, as they may lack the necessary dependencies or have outdated versions of them.
+> *zksolc* is only tested on recent versions of popular distributions, such as MacOS 11.0 and Windows 10.
+
 > [!WARNING]
 > [musl](https://musl.libc.org)-based builds are deprecated, but still supported to preserve tooling compatibility.
 
@@ -24,7 +28,7 @@ The table below describes the supported platforms and architectures:
 
 The *zksolc* versioning scheme does not follow the [Semantic Versioning](https://semver.org) specification yet. Instead, its major and minor version match those of the EraVM protocol *zksolc* produces bytecode for. The patch version is incremented with every release, regardless of the introduction of breaking changes, so please track the changelog before updating the compiler.
 
-> [!TIP]
+> [!IMPORTANT]
 > We recommend to always use the latest version of *zksolc* to benefit from the latest features and bug fixes.
 
 ## Installing the *solc* compiler
@@ -37,7 +41,7 @@ When *solc* is downloaded, add it to `${PATH}` or pass its full path to *zksolc*
 zksolc --solc './solc' --bin 'Greeter.sol'
 ```
 
-> [!TIP]
+> [!IMPORTANT]
 > We recommend to always use the latest version of *solc* to benefit from the latest features and bug fixes.
 
 ## Ethereum Development Toolkits
@@ -67,24 +71,41 @@ We ship *zksolc* binaries at [the releases page](https://github.com/matter-labs/
 
 ## Building from Source
 
-### Install the system prerequisites
+> [!IMPORTANT]
+> Please consider using the pre-built executables before building from source.
+> Building from source is only necessary for development, research, and debugging purposes.
+> Deployment and production use cases should only rely on [the officially released executables](#static-executables).
 
-**Linux (Debian)**:
+### Linux (Debian)
+
+* Install the necessary system-wide dependencies:
+
 ```shell
 apt install cmake ninja-build curl git libssl-dev pkg-config clang lld
 ```
 
-**Linux (Arch)**:
+### Linux (Arch)
+
+* Install the necessary system-wide dependencies:
+
 ```shell
 pacman -Syu which cmake ninja curl git pkg-config clang lld
 ```
 
-**MacOS (brew)**:
+### MacOS
+
+* Install the *Homebrew* package manager by following the instructions at [brew.sh](https://brew.sh).
+
+* Install the necessary system-wide dependencies:
+
 ```shell
 brew install cmake ninja coreutils
 ```
 
-For MacOS you also need to install a recent LLVM/[Clang](https://clang.llvm.org) compiler, e.g. via [Xcode](https://developer.apple.com/xcode/), [Apple’s Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html), or your preferred package manager.
+* Install a recent build of the LLVM/[Clang](https://clang.llvm.org) compiler with one of the following tools:
+    * [Xcode](https://developer.apple.com/xcode/)
+    * [Apple’s Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
+    * The preferred package manager of your choice
 
 ### Install Rust
 
@@ -103,24 +124,28 @@ cd era-compiler-solidity
 
 ### Install the ZKsync LLVM framework builder
 
+> [!IMPORTANT]
+> We recommend to always use the latest version of the builder to benefit from the latest features and bug fixes.
+> To check for updates, simply run the command again even if you already have the builder installed.
+
 ```shell
 cargo install compiler-llvm-builder
 ```
 
-> [!IMPORTANT]
+> [!TIP]
 > The builder is not the ZKsync LLVM framework itself, but a tool that clones its repository and runs a sequence of build commands. By default it is installed in `~/.cargo/bin/`, which is usually added to your `${PATH}` in the process of Rust installation.
 
 ### Build the ZKsync LLVM framework
+
+> [!TIP]
+> The LLVM branch is pinned in the `LLVM.lock` file at the repository root.
+> If you need a specific branch of ZKsync LLVM framework, change it before proceeding to the next steps.
 
 Clone and build the ZKsync LLVM framework using the `zksync-llvm` tool:
 ```shell
 zksync-llvm clone
 zksync-llvm build
 ```
-
-> [!IMPORTANT]
-> The LLVM branch is pinned in the `LLVM.lock` file at the repository root.
-> If you need a specific branch of ZKsync LLVM framework, change it before proceeding to the next steps.
 
 > [!TIP]
 > Use `--use-ccache` option to speed up the build process if you have [ccache](https://ccache.dev) installed.
@@ -133,4 +158,4 @@ cargo build --release
 ```
 
 > [!TIP]
-> The built executable will appear at `./target/release/zksolc` directory, where you can run it directly or move to another place.
+> The *zksolc* executable will appear at `./target/release/zksolc`, where you can run it directly or move to another place.
