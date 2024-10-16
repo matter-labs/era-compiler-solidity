@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.5.6] - 2024-10-16
+
+### Fixed
+
+- An error about `solc` discovery when it is not present in `${PATH}`
+
 ## [1.5.5] - 2024-10-14
 
 ### Added

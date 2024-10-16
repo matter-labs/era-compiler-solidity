@@ -469,9 +469,10 @@ pub fn standard_json_eravm(
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
-            let solc_compiler = solc_compiler.unwrap_or_else(|| {
-                SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME).expect("Error")
-            });
+            let solc_compiler = match solc_compiler {
+                Some(solc_compiler) => solc_compiler,
+                None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
+            };
 
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
@@ -626,9 +627,10 @@ pub fn standard_json_evm(
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
-            let solc_compiler = solc_compiler.unwrap_or_else(|| {
-                SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME).expect("Error")
-            });
+            let solc_compiler = match solc_compiler {
+                Some(solc_compiler) => solc_compiler,
+                None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
+            };
 
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
             solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
