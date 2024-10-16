@@ -34,7 +34,7 @@ hex = "=0.4.3"
 num = "=0.4.3"
 sha3 = "=0.10.8"
 
-zkevm_opcode_defs = { git = "https://github.com/matter-labs/zksync-protocol", version = "=0.150.5" }
+zkevm_opcode_defs = "=0.150.6"
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
 era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
