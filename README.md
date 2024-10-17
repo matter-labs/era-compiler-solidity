@@ -2,7 +2,8 @@
 
 [![Logo](eraLogo.svg)](https://zksync.io/)
 
-ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security
+ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum
+without compromising on security
 or decentralization. As it is EVM-compatible (with Solidity/Vyper), the majority of Ethereum projects can be redeployed without
 refactoring and re-auditing. ZKsync Era uses an LLVM-based compiler toolchain that allows developers to design, implement, and optimize
 efficient language-specific features while benefiting from the extensive LLVM ecosystem.
@@ -11,13 +12,13 @@ This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
 
 ## Installation
 
-In order to install the *zksolc* compiler, visit the [installation guide](./docs/01-installation.md).
+To install the *zksolc* compiler, follow the [installation guide](./docs/01-installation.md).
 
 For local development, [build zksolc from sources](./docs/01-installation.md#building-from-source).
 
 ## Testing
 
-In order to run the unit and CLI tests, run this command from the repository root:
+To run the unit and CLI tests, execute the following command from the repository root:
 
 ```shell
 cargo test
@@ -25,16 +26,26 @@ cargo test
 
 ## Troubleshooting
 
-During development, it can be tricky to get the `LLVM_SYS_{version}_PREFIX` variable to point to the correct LLVM build if multiple builds are present in the system.
-If you suspect that the compiler is not using the correct LLVM build, check `set | grep LLVM` and reset all LLVM-related environment variables.
+If you have multiple LLVM builds in your system, ensure that you choose the
+correct one to build the compiler.
+The environment variable `LLVM_SYS_{version}_PREFIX` sets the path to the
+directory with LLVM build artifacts, which typically ends with
+`target-llvm/build-final`.
+For example:
 
-For the reference, see [llvm-sys](https://crates.io/crates/llvm-sys) and [https://llvm.org/docs/GettingStarted.html#local-llvm-configuration](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration).
+```shell
+export LLVM_SYS_170_PREFIX=~/repositories/era-llvm/target-llvm/build-final 
+```
+
+If you suspect that the compiler is not using the correct LLVM build, check by running `set | grep LLVM`, and reset all LLVM-related environment variables.
+
+For reference, see [llvm-sys](https://crates.io/crates/llvm-sys) and [Local LLVM Configuration Guide](https://llvm.org/docs/GettingStarted.html#local-llvm-configuration).
 
 ## License
 
 The Solidity compiler is distributed under the terms of either
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.

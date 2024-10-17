@@ -1,16 +1,36 @@
 # Installing the ZKsync Solidity Compiler Toolchain
 
-To compile contracts for ZKsync, you need the ZKsync compiler toolchain. The main component of this toolchain is [the zksolc executable](https://github.com/matter-labs/era-compiler-solidity/releases). However, this executable is not a complete Solidity compiler. It operates on artifacts provided by [the underlying solc compiler](https://docs.soliditylang.org/en/latest), that must be made visible to *zksolc*.
+
+To compile contracts for ZKsync, you need the ZKsync Solidity compiler toolchain.
+It consists of two components:
+
+1. The main component is [`zksolc` executable](https://github.com/matter-labs/era-compiler-solidity/releases). 
+2. Internally, `zksolc` uses some functionality provided by the Solidity compiler, [`solc`](https://docs.soliditylang.org/en/latest).
+
+
+The Solidity compiler `solc` must be installed separately and made visible to `zksolc` in one of two ways:
+
+1. Add the full path to `solc` to the environment variable `$PATH`.
+2. Alternatively, provide the full path to `solc` through the `--solc` option, for example:
+
+    ```shell
+    zksolc --solc './solc' --bin 'Greeter.sol'
+    ```
+
+Refer to the section [Installation](#Installation) for more detailed instructions.
 
 ## System Requirements
 
-It is recommended to have at least 4 GB of RAM to compile large projects. The compilation process is parallelized by default, so the number of threads is equal to the number of CPU cores.
+It is recommended to have at least 4 GB of RAM to compile large projects. The
+compilation process is parallelized by default, so the number of threads used is
+equal to the number of CPU cores.
 
 > [!IMPORTANT]
-> Large projects can consume a lot of RAM during compilation on machines with high number of cores.
-> If you encounter memory issues, consider reducing the number of `--threads`.
+> Large projects can consume a lot of RAM during compilation on machines with a
+> high number of cores. If you encounter memory issues, consider reducing the
+> number of threads using the `--threads` option.
 
-The table below describes the supported platforms and architectures:
+The table below outlines the supported platforms and architectures:
 
 | CPU/OS | MacOS | Linux | Windows |
 |:------:|:-----:|:-----:|:-------:|
@@ -18,20 +38,28 @@ The table below describes the supported platforms and architectures:
 | arm64  |   ✅   |   ✅   |    ❌    |
 
 > [!IMPORTANT]
-> Please avoid using old distributions of operating systems, as they may lack the necessary dependencies or have outdated versions of them.
+> Please avoid using outdated distributions of operating systems, as they may lack the necessary dependencies or include outdated versions of them.
 > *zksolc* is only tested on recent versions of popular distributions, such as MacOS 11.0 and Windows 10.
 
 > [!WARNING]
-> [musl](https://musl.libc.org)-based builds are deprecated, but still supported to preserve tooling compatibility.
+> [musl](https://musl.libc.org)-based builds are deprecated, but they are still
+> supported to preserve tooling compatibility.
 
 ## Versioning
 
-The *zksolc* versioning scheme does not follow the [Semantic Versioning](https://semver.org) specification yet. Instead, its major and minor version match those of the EraVM protocol *zksolc* produces bytecode for. The patch version is incremented with every release, regardless of the introduction of breaking changes, so please track the changelog before updating the compiler.
+The *zksolc* versioning scheme does not follow the [Semantic
+Versioning](https://semver.org) specification yet. Instead, its major and minor
+versions match those of the EraVM protocol for which *zksolc* produces bytecode.
+The patch version is incremented with each release, regardless of whether the
+breaking changes are introduced. Therefore, please consult the changelog before
+updating the compiler.
 
 > [!IMPORTANT]
-> We recommend to always use the latest version of *zksolc* to benefit from the latest features and bug fixes.
+> We recommend always using the latest version of *zksolc* to benefit from the newest features and bug fixes.
 
-## Installing the *solc* compiler
+## Installation
+
+### Installing the *solc* compiler
 
 You can download *solc* from [the Solidity releases](https://github.com/matter-labs/era-solidity/releases).
 
