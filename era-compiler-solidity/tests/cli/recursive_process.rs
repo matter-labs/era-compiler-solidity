@@ -8,7 +8,9 @@ fn with_recursive_process_without_target() -> anyhow::Result<()> {
     let args = &["--recursive-process"];
 
     let result = cli::execute_zksolc(args)?;
-    result.success();
+    result
+        .failure()
+        .stderr(predicate::str::contains("Error: Stdin parsing error"));
 
     Ok(())
 }
@@ -21,7 +23,9 @@ fn with_recursive_process() -> anyhow::Result<()> {
     let args = &["--recursive-process", "--target", target.as_str()];
 
     let result = cli::execute_zksolc(args)?;
-    result.success();
+    result
+        .failure()
+        .stderr(predicate::str::contains("Error: Stdin parsing error"));
 
     Ok(())
 }

@@ -92,8 +92,7 @@ fn main_inner(
     era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        era_compiler_solidity::run_recursive(target);
-        return Ok(());
+        return era_compiler_solidity::run_recursive(target);
     }
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
@@ -198,7 +197,7 @@ fn main_inner(
                     standard_json.map(PathBuf::from),
                     messages,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
@@ -224,7 +223,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     arguments.output_directory,
@@ -257,7 +256,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
@@ -333,7 +332,7 @@ fn main_inner(
                     standard_json.map(PathBuf::from),
                     messages,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
@@ -358,7 +357,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     arguments.output_directory,
@@ -387,7 +386,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,

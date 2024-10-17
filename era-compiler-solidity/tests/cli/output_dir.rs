@@ -292,3 +292,23 @@ fn run_zksolc_with_output_dir_specific_symbols() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_output_dir_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_STANDARD_JSON_PATH,
+        "--output-dir",
+        "output",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.success().stdout(predicate::str::contains(
+        "Output directory cannot be used in standard JSON mode.",
+    ));
+
+    Ok(())
+}

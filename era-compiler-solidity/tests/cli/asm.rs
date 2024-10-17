@@ -85,3 +85,38 @@ fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_asm_combined_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--asm",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        "asm",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "Cannot output data outside of JSON in combined JSON mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_asm_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--standard-json", cli::TEST_STANDARD_JSON_PATH, "--asm"];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.success().stdout(predicate::str::contains(
+        "Cannot output data outside of JSON in standard JSON mode.",
+    ));
+
+    Ok(())
+}

@@ -2,9 +2,10 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_metadata_hash_default() -> anyhow::Result<()> {
-    let _ = common::setup();
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--metadata-hash=none"];
+fn with_metadata_hash_default() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--metadata-hash", "none"];
 
     let result = cli::execute_zksolc(args)?;
     let zksolc_result = result
@@ -22,8 +23,9 @@ fn run_zksolc_with_metadata_hash_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_metadata_hash_no_arg() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_metadata_hash_no_argument() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--metadata-hash"];
 
     let result = cli::execute_zksolc(args)?;
@@ -44,9 +46,10 @@ fn run_zksolc_with_metadata_hash_no_arg() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_metadata_hash_no_input_file() -> anyhow::Result<()> {
-    let _ = common::setup();
-    let args = &["--metadata-hash=none"];
+fn with_metadata_hash_no_input_file() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--metadata-hash", "none"];
 
     let result = cli::execute_zksolc(args)?;
     let zksolc_result = result
@@ -59,6 +62,25 @@ fn run_zksolc_with_metadata_hash_no_input_file() -> anyhow::Result<()> {
 
     let solc_result = cli::execute_solc(args)?;
     solc_result.code(zksolc_result);
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_STANDARD_JSON_PATH,
+        "--metadata-hash",
+        "none",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Metadata hash mode must be specified in standard JSON input settings.",
+    ));
 
     Ok(())
 }

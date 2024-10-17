@@ -8,26 +8,42 @@ use std::process::Command;
 use assert_cmd::assert::OutputAssertExt;
 use assert_cmd::cargo::CommandCargoExt;
 
+mod allow_paths;
 mod asm;
+mod base_path;
 mod basic;
 mod bin;
 mod combined_json;
-mod disassembler;
+mod detect_missing_libraries;
+mod disable_solc_optimizer;
+mod disassemble;
+mod enable_eravm_extensions;
 mod eravm_assembly;
-mod eravm_extensions;
+mod evm_version;
+mod fallback_oz;
+mod force_evmla;
+mod include_path;
 mod libraries;
-mod linker;
+mod link;
 mod llvm_ir;
 mod llvm_options;
+mod metadata;
 mod metadata_hash;
+mod metadata_literal;
 mod missing_lib;
 mod optimization;
 mod output_dir;
+mod overwrite;
 mod recursive_process;
 mod solc;
 mod standard_json;
+mod suppress_errors;
+mod suppress_warnings;
 mod version;
 mod yul;
+
+/// The contracts directory full path.
+pub const TEST_CONTRACTS_PATH: &str = "tests/examples/contracts/";
 
 /// The Solidity contract name.
 pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "contract.sol";
@@ -51,7 +67,7 @@ pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/cont
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
 
 /// The standard JSON contract path.
-pub const TEST_JSON_CONTRACT_PATH: &str = "tests/examples/contracts/json/contract.json";
+pub const TEST_STANDARD_JSON_PATH: &str = "tests/examples/contracts/json/contract.json";
 
 /// The standard JSON contract path with suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =

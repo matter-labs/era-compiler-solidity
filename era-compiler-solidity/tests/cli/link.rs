@@ -2,8 +2,8 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_libraries() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_libraries() -> anyhow::Result<()> {
+    common::setup()?;
 
     std::fs::copy(
         cli::TEST_LINKER_BYTECODE_PATH,
@@ -33,13 +33,34 @@ fn run_zksolc_with_libraries() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_without_libraries() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn without_libraries() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &["--link", cli::TEST_LINKER_BYTECODE_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "\"unlinked\":{\"tests/examples/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_and_extra_args() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_COPY_PATH,
+        "--libraries",
+        cli::LIBRARY_LINKER,
+        "--bin",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Error: No other options except files with bytecode and `--libraries` are allowed in linker mode.",
     ));
 
     Ok(())

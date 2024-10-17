@@ -40,3 +40,12 @@ impl FromStr for MessageType {
         }
     }
 }
+
+impl std::fmt::Display for MessageType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::SendTransfer => write!(f, "sendtransfer"),
+            Self::TxOrigin => write!(f, "txorigin"),
+        }
+    }
+}

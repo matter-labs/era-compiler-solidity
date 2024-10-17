@@ -44,3 +44,17 @@ fn run_zksolc_with_invalid_optimization_option() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_optimization_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--standard-json", cli::TEST_STANDARD_JSON_PATH, "-O", "3"];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "LLVM optimizations must be specified in standard JSON input settings.",
+    ));
+
+    Ok(())
+}

@@ -11,9 +11,9 @@ fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_JSON_CONTRACT_PATH,
+        cli::TEST_STANDARD_JSON_PATH,
     ];
-    let args_solc = &["--standard-json", cli::TEST_JSON_CONTRACT_PATH];
+    let args_solc = &["--standard-json", cli::TEST_STANDARD_JSON_PATH];
 
     let result = cli::execute_zksolc(args)?;
     let zksolc_exit_code = result

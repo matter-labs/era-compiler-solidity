@@ -2,35 +2,39 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_llvm_options() -> anyhow::Result<()> {
+fn with_metadata_combined_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
+        "--metadata",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
-        "--llvm-options='-eravm-disable-system-request-memoization 10'",
+        "--combined-json",
+        "metadata",
     ];
 
     let result = cli::execute_zksolc(args)?;
-    result.success().stderr(predicate::str::contains(
-        "Compiler run successful. No output requested.",
+
+    result.failure().stderr(predicate::str::contains(
+        "Cannot output data outside of JSON in combined JSON mode.",
     ));
 
     Ok(())
 }
 
 #[test]
-fn with_llvm_options_standard_json_mode() -> anyhow::Result<()> {
+fn with_asm_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
         "--standard-json",
         cli::TEST_STANDARD_JSON_PATH,
-        "--llvm-options='-eravm-disable-system-request-memoization 10'",
+        "--metadata",
     ];
 
     let result = cli::execute_zksolc(args)?;
+
     result.success().stdout(predicate::str::contains(
-        "LLVM options must be specified in standard JSON input settings.",
+        "Cannot output data outside of JSON in standard JSON mode.",
     ));
 
     Ok(())

@@ -2,6 +2,8 @@
 //! The Solidity compiler unit tests.
 //!
 
+#![allow(dead_code)]
+
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::path::Path;
