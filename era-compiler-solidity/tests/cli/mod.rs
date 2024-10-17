@@ -73,6 +73,14 @@ pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_
 pub const TEST_SOLIDITY_STANDARD_JSON_PATH: &str =
     "tests/data/standard_json_input/solidity_default.json";
 
+/// The Solidity standard JSON invalid by `solc` path.
+pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH: &str =
+    "tests/data/standard_json_input/solidity_invalid_by_solc.json";
+
+/// The Solidity standard JSON invalid by `zksolc` path.
+pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH: &str =
+    "tests/data/standard_json_input/solidity_invalid_by_zksolc.json";
+
 /// The Yul standard JSON path.
 pub const TEST_YUL_STANDARD_JSON_PATH: &str = "tests/data/standard_json_input/yul_default.json";
 

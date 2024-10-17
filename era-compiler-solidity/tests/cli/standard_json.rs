@@ -54,6 +54,72 @@ fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "ParserError: Expected identifier but got",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "You are using \'<address payable>.send/transfer(<X>)\' without providing the gas amount.",
+    ));
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.success();
+
+    Ok(())
+}
+
+#[test]
 fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
     common::setup()?;
 
@@ -196,6 +262,23 @@ fn with_standard_json_llvm_ir_with_solc() -> anyhow::Result<()> {
     result.success().stdout(predicate::str::contains(
         "LLVM IR projects cannot be compiled with `solc`",
     ));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_eravm_assembly() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("bytecode"));
 
     Ok(())
 }
