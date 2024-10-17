@@ -179,17 +179,15 @@ fn main_inner(
                     debug_config,
                 )
             } else if arguments.disassemble {
-                era_compiler_solidity::disassemble_eravm(arguments.inputs)?;
-                return Ok(());
+                return era_compiler_solidity::disassemble_eravm(arguments.inputs);
             } else if arguments.link {
-                era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries)?;
-                return Ok(());
+                return era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries);
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
-                era_compiler_solidity::standard_json_eravm(
+                return era_compiler_solidity::standard_json_eravm(
                     solc_compiler,
                     arguments.force_evmla,
                     enable_eravm_extensions,
@@ -201,8 +199,7 @@ fn main_inner(
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else if let Some(format) = arguments.combined_json {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -210,7 +207,7 @@ fn main_inner(
                         .as_deref()
                         .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
                 )?;
-                era_compiler_solidity::combined_json_eravm(
+                return era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -235,8 +232,7 @@ fn main_inner(
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -321,6 +317,8 @@ fn main_inner(
                 )
             } else if arguments.disassemble {
                 anyhow::bail!("The EVM target does not support disassembling yet.");
+            } else if arguments.link {
+                anyhow::bail!("The EVM target does not support linking yet.");
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
