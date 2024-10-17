@@ -1,1 +1,0 @@
-{"language":"EraVM Assembly","sources":{"Test":{"urls":["tests/examples/contracts/eravm_assembly/Test.zasm"]}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}

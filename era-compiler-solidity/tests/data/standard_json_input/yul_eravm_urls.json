@@ -1,0 +1,34 @@
+{
+    "language": "Yul",
+    "sources": {
+      "EventWriter.yul": {
+        "urls": [
+          "tests/data/contracts/yul/EventWriter.yul"
+        ]
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "mode": "3",
+        "details": null,
+        "fallbackToOptimizingForSize": false,
+        "disableSystemRequestMemoization": true
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "metadata"
+          ],
+          "*": [
+            "abi",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "libraries": {},
+      "isSystem": false,
+      "forceEvmla": false,
+      "areLibrariesMissing": false
+    }
+  }

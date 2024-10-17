@@ -46,13 +46,13 @@ mod version;
 mod yul;
 
 /// The contracts directory full path.
-pub const TEST_CONTRACTS_PATH: &str = "tests/examples/contracts/";
+pub const TEST_CONTRACTS_PATH: &str = "tests/data/contracts/";
 
 /// The Solidity contract name.
 pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 
 /// The Solidity contract full path.
-pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/Test.sol";
+pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Test.sol";
 
 /// The Solidity binary artifact output name.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
@@ -61,46 +61,56 @@ pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
 /// The Yul contract for testing.
-pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/Default.yul";
+pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 
 /// The LLVM IR contract path.
-pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm_ir/Test.ll";
+pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.ll";
 
 /// The EraVM assembly contract path.
-pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str =
-    "tests/examples/contracts/eravm_assembly/Test.zasm";
+pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
 /// The Solidity standard JSON path.
-pub const TEST_SOLIDITY_STANDARD_JSON_PATH: &str = "tests/examples/contracts/json/contract.json";
+pub const TEST_SOLIDITY_STANDARD_JSON_PATH: &str =
+    "tests/data/standard_json_input/solidity_default.json";
+
+/// The Yul standard JSON path.
+pub const TEST_YUL_STANDARD_JSON_PATH: &str = "tests/data/standard_json_input/yul_default.json";
+
+/// The LLVM IR standard JSON path.
+pub const TEST_LLVM_IR_STANDARD_JSON_PATH: &str =
+    "tests/data/standard_json_input/llvm_ir_default_urls.json";
+
+/// The EraVM assembly standard JSON path.
+pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH: &str =
+    "tests/data/standard_json_input/eravm_assembly_default_urls.json";
 
 /// The standard JSON contract path with suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
-    "tests/examples/standard_json_input/contract_suppressed_warnings_and_errors.json";
+    "tests/data/standard_json_input/suppressed_messages.json";
 
 /// The standard JSON contract path with incorrect suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
-    "tests/examples/standard_json_input/contract_incorrect_suppressed_warnings_and_errors.json";
+    "tests/data/standard_json_input/suppressed_messages_invalid.json";
 
 /// The disassembler hexadecimal string bytecode sample path.
 pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
-    "tests/examples/bytecodes/disassembler.hex";
+    "tests/data/bytecodes/disassembler.hex";
 
 /// The disassembler binary bytecode sample path.
-pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str =
-    "tests/examples/bytecodes/disassembler.zbin";
+pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str = "tests/data/bytecodes/disassembler.zbin";
 
 /// The linker hexadecimal string bytecode sample path.
-pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/examples/bytecodes/linker.hex";
+pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.hex";
 
 /// The linker hexadecimal string bytecode sample path.
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards
-pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/examples/bytecodes/linker_copy.hex";
+pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_copy.hex";
 
 /// The broken input file path.
-pub const TEST_BROKEN_INPUT_PATH: &str = "tests/examples/broken.bad";
+pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
 /// Default library path and address.
-pub const LIBRARY_DEFAULT: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
 /// Linker library path and address.
 pub const LIBRARY_LINKER: &str =

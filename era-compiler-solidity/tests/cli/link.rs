@@ -19,12 +19,12 @@ fn with_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"linked\":{\"tests/examples/bytecodes/linker_copy.hex\":",
+        "\"linked\":{\"tests/data/bytecodes/linker_copy.hex\":",
     ));
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"ignored\":{\"tests/examples/bytecodes/linker_copy.hex\":",
+        "\"ignored\":{\"tests/data/bytecodes/linker_copy.hex\":",
     ));
 
     std::fs::remove_file(cli::TEST_LINKER_BYTECODE_COPY_PATH)?;
@@ -40,7 +40,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/examples/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+        "\"unlinked\":{\"tests/data/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
     ));
 
     Ok(())
