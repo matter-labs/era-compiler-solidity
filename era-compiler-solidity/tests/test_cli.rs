@@ -4,5 +4,5 @@
 
 #![cfg(test)]
 
-pub(crate) mod cli;
-pub(crate) mod common;
+mod cli;
+mod common;
