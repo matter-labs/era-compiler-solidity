@@ -35,6 +35,7 @@ mod optimization;
 mod output_dir;
 mod overwrite;
 mod recursive_process;
+mod remappings;
 mod solc;
 mod standard_json;
 mod suppress_errors;
