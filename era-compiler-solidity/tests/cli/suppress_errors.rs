@@ -28,7 +28,7 @@ fn with_suppressed_errors_standard_json_mode() -> anyhow::Result<()> {
     let error_type = era_compiler_solidity::MessageType::SendTransfer.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--suppress-errors",
         error_type.as_str(),
     ];

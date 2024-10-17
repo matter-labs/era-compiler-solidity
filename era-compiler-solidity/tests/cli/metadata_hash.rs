@@ -72,7 +72,7 @@ fn with_metadata_hash_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--metadata-hash",
         "none",
     ];

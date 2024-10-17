@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn with_llvm_ir_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir"];
     let invalid_args = &["--llvm-ir", "anyarg"];
 
@@ -20,7 +20,7 @@ fn with_llvm_ir_by_default() -> anyhow::Result<()> {
 
 #[test]
 fn with_same_llvm_ir_flags() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
 
     let result = cli::execute_zksolc(args)?;
@@ -33,7 +33,7 @@ fn with_same_llvm_ir_flags() -> anyhow::Result<()> {
 
 #[test]
 fn with_wrong_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
 
     let result = cli::execute_zksolc(args)?;
@@ -46,7 +46,7 @@ fn with_wrong_input_format() -> anyhow::Result<()> {
 
 #[test]
 fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[
         cli::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
@@ -64,7 +64,7 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
 
 #[test]
 fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--llvm-ir", "--standard-json"];
 
     let result = cli::execute_zksolc(args)?;

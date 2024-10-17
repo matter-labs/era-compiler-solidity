@@ -49,10 +49,10 @@ mod yul;
 pub const TEST_CONTRACTS_PATH: &str = "tests/examples/contracts/";
 
 /// The Solidity contract name.
-pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "contract.sol";
+pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 
 /// The Solidity contract full path.
-pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/contract.sol";
+pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/examples/contracts/solidity/Test.sol";
 
 /// The Solidity binary artifact output name.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
@@ -61,16 +61,17 @@ pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
 /// The Yul contract for testing.
-pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/contract.yul";
+pub const TEST_YUL_CONTRACT_PATH: &str = "tests/examples/contracts/yul/Default.yul";
 
 /// The LLVM IR contract path.
-pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm/contract.ll";
+pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/examples/contracts/llvm_ir/Test.ll";
 
 /// The EraVM assembly contract path.
-pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/examples/contracts/eravm/contract.zasm";
+pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str =
+    "tests/examples/contracts/eravm_assembly/Test.zasm";
 
-/// The standard JSON contract path.
-pub const TEST_STANDARD_JSON_PATH: &str = "tests/examples/contracts/json/contract.json";
+/// The Solidity standard JSON path.
+pub const TEST_SOLIDITY_STANDARD_JSON_PATH: &str = "tests/examples/contracts/json/contract.json";
 
 /// The standard JSON contract path with suppressed errors and warnings.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
@@ -96,7 +97,7 @@ pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/examples/bytecodes/linker.hex
 pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/examples/bytecodes/linker_copy.hex";
 
 /// The broken input file path.
-pub const TEST_BROKEN_INPUT_PATH: &str = "tests/examples/contracts/broken.bad";
+pub const TEST_BROKEN_INPUT_PATH: &str = "tests/examples/broken.bad";
 
 /// Default library path and address.
 pub const LIBRARY_DEFAULT: &str = "tests/examples/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";

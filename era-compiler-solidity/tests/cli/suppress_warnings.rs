@@ -28,7 +28,7 @@ fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
     let warning_type = era_compiler_solidity::MessageType::TxOrigin.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--suppress-warnings",
         warning_type.as_str(),
     ];

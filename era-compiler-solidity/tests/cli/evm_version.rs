@@ -91,7 +91,7 @@ fn with_evm_version_standard_json_mode() -> anyhow::Result<()> {
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--evm-version",
         evm_version.as_str(),
     ];

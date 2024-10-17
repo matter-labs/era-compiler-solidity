@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn with_sol_detect_missing_libraries() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--detect-missing-libraries",
@@ -19,7 +19,7 @@ fn with_sol_detect_missing_libraries() -> anyhow::Result<()> {
 
 #[test]
 fn without_sol_detect_missing_libraries() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &["--detect-missing-libraries"];
 
     let result = cli::execute_zksolc(args)?;

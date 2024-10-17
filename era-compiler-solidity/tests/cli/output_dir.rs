@@ -153,11 +153,11 @@ fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let mut asm_path = tmp_dir_zksolc.path().to_path_buf();
-    asm_path.push("contract.sol");
+    asm_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
     asm_path.push("C.zasm");
 
     let mut metadata_path = tmp_dir_zksolc.path().to_path_buf();
-    metadata_path.push("contract.sol");
+    metadata_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
     metadata_path.push("C_meta.json");
 
     let args = &[
@@ -330,7 +330,7 @@ fn with_output_dir_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--output-dir",
         "output",
     ];

@@ -78,7 +78,7 @@ fn with_force_evmla_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--force-evmla",
     ];
 

@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn with_input() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--libraries",
@@ -20,7 +20,7 @@ fn with_input() -> anyhow::Result<()> {
 
 #[test]
 fn without_input() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &["--libraries"];
 
     let result = cli::execute_zksolc(args)?;
@@ -75,7 +75,7 @@ fn with_libraries_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
         "--libraries",
         cli::LIBRARY_DEFAULT,
     ];

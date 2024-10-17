@@ -2,21 +2,23 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_standard_json_contract() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
             .executable;
+
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
     ];
-    let args_solc = &["--standard-json", cli::TEST_STANDARD_JSON_PATH];
+    let args_solc = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_PATH];
 
     let result = cli::execute_zksolc(args)?;
-    let zksolc_exit_code = result
+    let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
         .get_output()
@@ -25,18 +27,19 @@ fn with_standard_json_contract() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     let solc_result = cli::execute_solc(args_solc)?;
-    solc_result.code(zksolc_exit_code);
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
 fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
+
     let args = &["--standard-json", cli::TEST_YUL_CONTRACT_PATH];
 
     let result = cli::execute_zksolc(args)?;
-    let zksolc_exit_code = result
+    let status = result
         .success()
         .stdout(predicate::str::contains("parsing: expected value"))
         .get_output()
@@ -45,17 +48,19 @@ fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     let solc_result = cli::execute_solc(args)?;
-    solc_result.code(zksolc_exit_code);
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
-fn with_standard_json_suppressed_errors_and_warnings_deserialization() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
+    common::setup()?;
+
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
             .executable;
+
     let args = &[
         "--solc",
         solc_compiler.as_str(),
@@ -68,7 +73,7 @@ fn with_standard_json_suppressed_errors_and_warnings_deserialization() -> anyhow
     ];
 
     let result = cli::execute_zksolc(args)?;
-    let zksolc_exit_code = result
+    let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
         .get_output()
@@ -77,18 +82,19 @@ fn with_standard_json_suppressed_errors_and_warnings_deserialization() -> anyhow
         .expect("No exit code.");
 
     let solc_result = cli::execute_solc(args_solc)?;
-    solc_result.code(zksolc_exit_code);
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
-fn with_incorrect_standard_json_suppressed_errors_and_warnings_deserialization(
-) -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_standard_json_with_suppressed_messages_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
             .executable;
+
     let args = &[
         "--solc",
         solc_compiler.as_str(),

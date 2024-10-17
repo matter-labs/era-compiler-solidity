@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn with_asm_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
 
@@ -43,7 +43,7 @@ fn with_asm_by_default() -> anyhow::Result<()> {
 
 #[test]
 fn with_two_same_flags_asm_asm() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
     let result = cli::execute_zksolc(args)?;
@@ -65,7 +65,7 @@ fn with_two_same_flags_asm_asm() -> anyhow::Result<()> {
 
 #[test]
 fn with_asm_with_wrong_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 
     let result = cli::execute_zksolc(args)?;
@@ -110,7 +110,11 @@ fn with_asm_combined_json_mode() -> anyhow::Result<()> {
 fn with_asm_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--standard-json", cli::TEST_STANDARD_JSON_PATH, "--asm"];
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        "--asm",
+    ];
 
     let result = cli::execute_zksolc(args)?;
 

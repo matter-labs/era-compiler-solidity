@@ -3,7 +3,7 @@ use predicates::prelude::*;
 
 #[test]
 fn with_bin_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
     let invalid_args = &["--bin"];
 
@@ -43,7 +43,7 @@ fn with_bin_by_default() -> anyhow::Result<()> {
 
 #[test]
 fn with_two_same_flags_bin_bin() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--bin"];
 
     let result = cli::execute_zksolc(args)?;
@@ -65,7 +65,7 @@ fn with_two_same_flags_bin_bin() -> anyhow::Result<()> {
 
 #[test]
 fn with_bin_with_wrong_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+    common::setup()?;
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--bin"];
 
     let result = cli::execute_zksolc(args)?;
@@ -110,7 +110,11 @@ fn with_bin_combined_json_mode() -> anyhow::Result<()> {
 fn with_bin_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--standard-json", cli::TEST_STANDARD_JSON_PATH, "--bin"];
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        "--bin",
+    ];
 
     let result = cli::execute_zksolc(args)?;
 
