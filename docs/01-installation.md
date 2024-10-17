@@ -33,7 +33,7 @@ The *zksolc* versioning scheme does not follow the [Semantic Versioning](https:/
 
 ## Installing the *solc* compiler
 
-You can download *solc* from [the Solidity releases](https://github.com/ethereum/solc-bin), or install it another way following [the Solidity installation instructions](https://docs.soliditylang.org/en/latest/installing-solidity.html).
+You can download *solc* from [the Solidity releases](https://github.com/matter-labs/era-solidity/releases).
 
 When *solc* is downloaded, add it to `${PATH}` or pass its full path to *zksolc*:
 
