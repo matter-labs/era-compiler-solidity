@@ -2,7 +2,16 @@
 //! The Solidity compiler unit tests.
 //!
 
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+use std::path::Path;
+use std::path::PathBuf;
+use std::str::FromStr;
+use std::sync::Once;
+use std::time::Duration;
+
 use assert_cmd::Command;
+
 use era_compiler_solidity::message_type::MessageType;
 use era_compiler_solidity::project::Project;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
@@ -13,30 +22,23 @@ use era_compiler_solidity::solc::standard_json::input::Input as SolcStandardJson
 use era_compiler_solidity::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 use era_compiler_solidity::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::collections::BTreeMap;
-use std::collections::BTreeSet;
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-use std::sync::Once;
-use std::time::Duration;
 
 /// Synchronization for `solc` downloads.
 static DOWNLOAD_SOLC: Once = Once::new();
 
-/// Download directory for `solc` binaries
-pub const SOLC_DOWNLOAD_DIR: &str = "solc-bin";
+/// Download directory for `solc` binaries.
+pub const SOLC_DOWNLOAD_DIRECTORY: &str = "solc-bin";
 
-/// Path to the `solc` binary configuration file
-pub const SOLC_BIN_CONFIG: &str = "tests/solc-bin.json";
+/// Path to the `solc` binary configuration file.
+pub const SOLC_BIN_CONFIG_PATH: &str = "tests/solc-bin.json";
 
 ///
 /// Returns the `solc` compiler for the given version.
 ///
 pub fn get_solc_compiler(solc_version: &semver::Version) -> anyhow::Result<SolcCompiler> {
-    let solc_path = PathBuf::from(SOLC_DOWNLOAD_DIR).join(format!(
-        "{}-{}{}",
+    let solc_path = PathBuf::from(SOLC_DOWNLOAD_DIRECTORY).join(format!(
+        "{}-{solc_version}{}",
         SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-        solc_version,
         std::env::consts::EXE_SUFFIX,
     ));
 
@@ -53,7 +55,7 @@ pub fn download_binaries() -> anyhow::Result<()> {
     http_client_builder = http_client_builder.timeout(Duration::from_secs(60));
     let http_client = http_client_builder.build()?;
 
-    let config_path = Path::new(SOLC_BIN_CONFIG);
+    let config_path = Path::new(SOLC_BIN_CONFIG_PATH);
     era_compiler_downloader::Downloader::new(http_client.clone()).download(config_path)?;
 
     // Copy the latest `solc-*` binary to `solc` for CLI tests
@@ -95,7 +97,7 @@ pub fn build_solidity(
     solc_pipeline: SolcPipeline,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
     let solc_compiler = get_solc_compiler(solc_version)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -173,7 +175,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     solc_version: &semver::Version,
     solc_pipeline: SolcPipeline,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
     let solc_compiler = get_solc_compiler(solc_version)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -233,7 +235,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 /// Builds the Yul `sources` and returns the standard JSON output.
 ///
 pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -280,7 +282,7 @@ pub fn build_yul_standard_json(
     mut solc_input: SolcStandardJsonInput,
     solc_compiler: Option<&SolcCompiler>,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -331,7 +333,7 @@ pub fn build_yul_standard_json(
 pub fn build_llvm_ir_standard_json(
     input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -366,7 +368,7 @@ pub fn build_llvm_ir_standard_json(
 pub fn build_eravm_assembly_standard_json(
     input: SolcStandardJsonInput,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
-    setup()?;
+    self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -407,7 +409,7 @@ pub fn check_solidity_message(
     skip_for_zksync_edition: bool,
     suppressed_warnings: Vec<MessageType>,
 ) -> anyhow::Result<bool> {
-    setup()?;
+    self::setup()?;
 
     let solc_compiler = get_solc_compiler(solc_version)?;
 

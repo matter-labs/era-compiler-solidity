@@ -1,10 +1,12 @@
-use crate::common;
-use assert_cmd::assert::OutputAssertExt;
-use assert_cmd::cargo::CommandCargoExt;
-use era_compiler_solidity::SolcCompiler;
-use std::fs;
+//!
+//! The CLI/e2e tests entry module.
+//!
+
 use std::path::PathBuf;
 use std::process::Command;
+
+use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::cargo::CommandCargoExt;
 
 mod asm;
 mod basic;
@@ -12,6 +14,7 @@ mod bin;
 mod combined_json;
 mod disassembler;
 mod eravm_assembly;
+mod eravm_extensions;
 mod libraries;
 mod linker;
 mod llvm_ir;
@@ -20,8 +23,10 @@ mod metadata_hash;
 mod missing_lib;
 mod optimization;
 mod output_dir;
+mod recursive_process;
 mod solc;
 mod standard_json;
+mod version;
 mod yul;
 
 /// The Solidity contract name.
@@ -89,7 +94,7 @@ pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Asser
     Ok(cmd
         .env(
             "PATH",
-            fs::canonicalize(PathBuf::from(common::SOLC_DOWNLOAD_DIR))?,
+            std::fs::canonicalize(PathBuf::from(crate::common::SOLC_DOWNLOAD_DIRECTORY))?,
         )
         .args(args)
         .assert())
@@ -99,8 +104,10 @@ pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Asser
 /// Execute solc with the given arguments and return the result
 ///
 pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
-    let solc_compiler =
-        common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)?.executable;
+    let solc_compiler = crate::common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+    )?
+    .executable;
     let mut cmd = Command::new(solc_compiler);
     Ok(cmd.args(args).assert())
 }
@@ -109,7 +116,7 @@ pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert>
 /// Check if the file at the given path is empty
 ///
 pub fn is_file_empty(file_path: &str) -> anyhow::Result<bool> {
-    let metadata = fs::metadata(file_path)?;
+    let metadata = std::fs::metadata(file_path)?;
     Ok(metadata.len() == 0)
 }
 
@@ -117,6 +124,6 @@ pub fn is_file_empty(file_path: &str) -> anyhow::Result<bool> {
 /// Check if the output is the same as the file content
 ///
 pub fn is_output_same_as_file(file_path: &str, output: &str) -> anyhow::Result<bool> {
-    let file_content = fs::read_to_string(file_path)?;
+    let file_content = std::fs::read_to_string(file_path)?;
     Ok(file_content.trim().contains(output.trim()) || output.trim().contains(file_content.trim()))
 }

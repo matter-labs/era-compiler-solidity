@@ -1,3 +1,7 @@
+//!
+//! The unit tests entry module.
+//!
+
 mod factory_dependency;
 mod ir_artifacts;
 mod libraries;
