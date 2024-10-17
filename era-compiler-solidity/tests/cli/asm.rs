@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
+fn with_asm_by_default() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
@@ -42,7 +42,7 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
+fn with_two_same_flags_asm_asm() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
@@ -64,7 +64,7 @@ fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
+fn with_asm_with_wrong_input_format() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 

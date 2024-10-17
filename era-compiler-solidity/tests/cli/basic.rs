@@ -3,7 +3,7 @@ use predicates::prelude::*;
 use tempfile::TempDir;
 
 #[test]
-fn run_zksolc_without_any_args() -> anyhow::Result<()> {
+fn without_any_args() -> anyhow::Result<()> {
     let _ = common::setup();
     let args: &[&str] = &[];
 
@@ -55,7 +55,7 @@ fn default_run_of_zksolc_from_the_help() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_multiple_output_options() -> anyhow::Result<()> {
+fn with_multiple_output_options() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir = TempDir::new()?;
     let args = &[
@@ -92,7 +92,7 @@ fn run_zksolc_with_multiple_output_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_broken_input_and_no_output_options() -> anyhow::Result<()> {
+fn with_broken_input_and_no_output_options() -> anyhow::Result<()> {
     let _ = common::setup();
 
     let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];

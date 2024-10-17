@@ -14,6 +14,7 @@ mod base_path;
 mod basic;
 mod bin;
 mod combined_json;
+mod debug_output_dir;
 mod detect_missing_libraries;
 mod disable_solc_optimizer;
 mod disassemble;
@@ -40,6 +41,7 @@ mod solc;
 mod standard_json;
 mod suppress_errors;
 mod suppress_warnings;
+mod threads;
 mod version;
 mod yul;
 

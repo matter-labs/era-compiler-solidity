@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_optimization_levels() -> anyhow::Result<()> {
+fn with_optimization_levels() -> anyhow::Result<()> {
     let _ = common::setup();
     let optimization_args = ["0", "1", "2", "3", "s", "z"];
 
@@ -19,7 +19,7 @@ fn run_zksolc_with_optimization_levels() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_optimization_no_input_file() -> anyhow::Result<()> {
+fn with_optimization_no_input_file() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &["-O0"];
 
@@ -32,7 +32,7 @@ fn run_zksolc_with_optimization_no_input_file() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_invalid_optimization_option() -> anyhow::Result<()> {
+fn with_invalid_optimization_option() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "-O99"];
 

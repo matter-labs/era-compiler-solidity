@@ -22,7 +22,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// The application entry point.
 ///
 fn main() -> anyhow::Result<()> {
-    let arguments = Arguments::new();
+    let arguments = Arguments::default();
     let is_standard_json = arguments.standard_json.is_some();
     let mut messages = arguments.validate();
     if messages.iter().all(|error| error.severity != "error") {

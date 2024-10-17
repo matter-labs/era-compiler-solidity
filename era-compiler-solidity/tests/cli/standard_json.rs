@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
+fn with_standard_json_contract() -> anyhow::Result<()> {
     let _ = common::setup();
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
@@ -31,7 +31,7 @@ fn run_zksolc_with_standard_json_contract() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_standard_json_incompatible_input() -> anyhow::Result<()> {
+fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &["--standard-json", cli::TEST_YUL_CONTRACT_PATH];
 
@@ -51,8 +51,7 @@ fn run_zksolc_with_standard_json_incompatible_input() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_standard_json_suppressed_errors_and_warnings_deserialization(
-) -> anyhow::Result<()> {
+fn with_standard_json_suppressed_errors_and_warnings_deserialization() -> anyhow::Result<()> {
     let _ = common::setup();
     let solc_compiler =
         common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
@@ -84,7 +83,7 @@ fn run_zksolc_with_standard_json_suppressed_errors_and_warnings_deserialization(
 }
 
 #[test]
-fn run_zksolc_with_incorrect_standard_json_suppressed_errors_and_warnings_deserialization(
+fn with_incorrect_standard_json_suppressed_errors_and_warnings_deserialization(
 ) -> anyhow::Result<()> {
     let _ = common::setup();
     let solc_compiler =

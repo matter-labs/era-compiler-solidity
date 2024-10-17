@@ -863,17 +863,10 @@ pub fn combined_json_evm(
 /// Runs the disassembler for EraVM bytecode file and prints the output to stdout.
 ///
 pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
-    let target_machine = era_compiler_llvm_context::TargetMachine::new(
-        era_compiler_common::Target::EraVM,
-        &era_compiler_llvm_context::OptimizerSettings::cycles(),
-        &[],
-    )?;
-
-    let disassemblies: Vec<(String, String)> = paths
-        .into_iter()
+    let bytecodes = paths
+        .into_par_iter()
         .map(|path| {
             let pathbuf = PathBuf::from(path.as_str());
-
             let bytecode = match pathbuf.extension().and_then(|extension| extension.to_str()) {
                 Some("hex") => {
                     let string = std::fs::read_to_string(pathbuf)?;
@@ -889,7 +882,19 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
                     anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin")
                 }
             };
+            Ok((path, bytecode))
+        })
+        .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
+    let target_machine = era_compiler_llvm_context::TargetMachine::new(
+        era_compiler_common::Target::EraVM,
+        &era_compiler_llvm_context::OptimizerSettings::cycles(),
+        &[],
+    )?;
+
+    let disassemblies: Vec<(String, String)> = bytecodes
+        .into_iter()
+        .map(|(path, bytecode)| {
             let disassembly =
                 era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
             Ok((path, disassembly))

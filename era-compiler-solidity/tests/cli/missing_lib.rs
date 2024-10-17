@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_sol_detect_missing_libraries() -> anyhow::Result<()> {
+fn with_sol_detect_missing_libraries() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -18,7 +18,7 @@ fn run_zksolc_with_sol_detect_missing_libraries() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_without_sol_detect_missing_libraries() -> anyhow::Result<()> {
+fn without_sol_detect_missing_libraries() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &["--detect-missing-libraries"];
 

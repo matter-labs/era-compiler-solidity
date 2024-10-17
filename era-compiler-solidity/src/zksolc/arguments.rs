@@ -228,18 +228,11 @@ pub struct Arguments {
 
 impl Default for Arguments {
     fn default() -> Self {
-        Self::new()
+        Self::from_args()
     }
 }
 
 impl Arguments {
-    ///
-    /// A shortcut constructor.
-    ///
-    pub fn new() -> Self {
-        Self::from_args()
-    }
-
     ///
     /// Validates the arguments.
     ///

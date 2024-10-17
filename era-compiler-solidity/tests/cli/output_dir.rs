@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use tempfile::TempDir;
 
 #[test]
-fn run_zksolc_with_output_dir_by_default() -> anyhow::Result<()> {
+fn with_output_dir_by_default() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
@@ -43,7 +43,7 @@ fn run_zksolc_with_output_dir_by_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_yul() -> anyhow::Result<()> {
+fn with_output_dir_yul() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
@@ -78,7 +78,7 @@ fn run_zksolc_with_output_dir_yul() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_llvm_ir() -> anyhow::Result<()> {
+fn with_output_dir_llvm_ir() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
@@ -113,7 +113,7 @@ fn run_zksolc_with_output_dir_llvm_ir() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_eravm_assembly() -> anyhow::Result<()> {
+fn with_output_dir_eravm_assembly() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
@@ -148,7 +148,7 @@ fn run_zksolc_with_output_dir_eravm_assembly() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
+fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
@@ -202,7 +202,7 @@ fn run_zksolc_with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_invalid_arg_no_path() -> anyhow::Result<()> {
+fn with_output_dir_invalid_arg_no_path() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--output-dir"];
 
@@ -221,7 +221,7 @@ fn run_zksolc_with_output_dir_invalid_arg_no_path() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
+fn with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
@@ -255,7 +255,7 @@ fn run_zksolc_with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_output_dir_specific_symbols() -> anyhow::Result<()> {
+fn with_output_dir_specific_symbols() -> anyhow::Result<()> {
     let _ = common::setup();
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
     let tmp_dir_solc = TempDir::with_prefix("File!and#$%-XXXXXX")?;

@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_yul_by_default() -> anyhow::Result<()> {
+fn with_yul_by_default() -> anyhow::Result<()> {
     let _ = common::setup();
     let zksolc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul"];
     let solc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
@@ -41,7 +41,7 @@ fn run_zksolc_with_yul_by_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_double_yul_options() -> anyhow::Result<()> {
+fn with_double_yul_options() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
 
@@ -65,7 +65,7 @@ fn run_zksolc_with_double_yul_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_incompatible_input_format_solidity_contract() -> anyhow::Result<()> {
+fn with_incompatible_input_format_solidity_contract() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
@@ -87,7 +87,7 @@ fn run_zksolc_with_incompatible_input_format_solidity_contract() -> anyhow::Resu
 }
 
 #[test]
-fn run_zksolc_with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
+fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[
         cli::TEST_YUL_CONTRACT_PATH,
@@ -116,7 +116,7 @@ fn run_zksolc_with_incompatible_json_modes_combined_json() -> anyhow::Result<()>
 }
 
 #[test]
-fn run_zksolc_with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
+fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
     let _ = common::setup();
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
 
