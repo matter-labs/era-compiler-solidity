@@ -54,6 +54,7 @@ impl Contract {
     /// - the Yul object identifier for Yul
     /// - the full contract path for EVM legacy assembly
     /// - the module name for LLVM IR
+    /// - the full file path for EraVM assembly
     ///
     pub fn identifier(&self) -> &str {
         match self.ir {

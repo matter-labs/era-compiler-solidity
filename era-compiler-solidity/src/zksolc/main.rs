@@ -22,7 +22,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// The application entry point.
 ///
 fn main() -> anyhow::Result<()> {
-    let arguments = Arguments::new();
+    let arguments = Arguments::default();
     let is_standard_json = arguments.standard_json.is_some();
     let mut messages = arguments.validate();
     if messages.iter().all(|error| error.severity != "error") {
@@ -92,8 +92,7 @@ fn main_inner(
     era_compiler_llvm_context::initialize_target(target);
 
     if arguments.recursive_process {
-        era_compiler_solidity::run_recursive(target);
-        return Ok(());
+        return era_compiler_solidity::run_recursive(target);
     }
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
@@ -180,17 +179,15 @@ fn main_inner(
                     debug_config,
                 )
             } else if arguments.disassemble {
-                era_compiler_solidity::disassemble_eravm(arguments.inputs)?;
-                return Ok(());
+                return era_compiler_solidity::disassemble_eravm(arguments.inputs);
             } else if arguments.link {
-                era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries)?;
-                return Ok(());
+                return era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries);
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
-                era_compiler_solidity::standard_json_eravm(
+                return era_compiler_solidity::standard_json_eravm(
                     solc_compiler,
                     arguments.force_evmla,
                     enable_eravm_extensions,
@@ -198,12 +195,11 @@ fn main_inner(
                     standard_json.map(PathBuf::from),
                     messages,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else if let Some(format) = arguments.combined_json {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -211,7 +207,7 @@ fn main_inner(
                         .as_deref()
                         .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
                 )?;
-                era_compiler_solidity::combined_json_eravm(
+                return era_compiler_solidity::combined_json_eravm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -224,7 +220,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     arguments.output_directory,
@@ -236,8 +232,7 @@ fn main_inner(
                     suppressed_warnings,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -257,7 +252,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
@@ -271,30 +266,18 @@ fn main_inner(
             }?;
 
             if let Some(output_directory) = arguments.output_directory {
-                std::fs::create_dir_all(&output_directory)?;
-
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_metadata,
                     arguments.output_binary,
                     arguments.overwrite,
                 )?;
-
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
-                )?;
             } else {
-                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
-                if !arguments.output_metadata
-                    && !arguments.output_assembly
-                    && !arguments.output_binary
-                {
-                    writeln!(
-                        std::io::stderr(),
-                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                    )?;
-                }
+                build.write_to_terminal(
+                    arguments.output_metadata,
+                    arguments.output_assembly,
+                    arguments.output_binary,
+                )?;
             }
         }
         era_compiler_common::Target::EVM => {
@@ -322,23 +305,24 @@ fn main_inner(
                 )
             } else if arguments.disassemble {
                 anyhow::bail!("The EVM target does not support disassembling yet.");
+            } else if arguments.link {
+                anyhow::bail!("The EVM target does not support linking yet.");
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
-                era_compiler_solidity::standard_json_evm(
+                return era_compiler_solidity::standard_json_evm(
                     solc_compiler,
                     arguments.force_evmla,
                     standard_json.map(PathBuf::from),
                     messages,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else if let Some(format) = arguments.combined_json {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -346,7 +330,7 @@ fn main_inner(
                         .as_deref()
                         .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
                 )?;
-                era_compiler_solidity::combined_json_evm(
+                return era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -358,7 +342,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     arguments.output_directory,
@@ -367,8 +351,7 @@ fn main_inner(
                     llvm_options,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else {
                 let solc = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -387,7 +370,7 @@ fn main_inner(
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
-                    arguments.include_paths,
+                    arguments.include_path,
                     arguments.allow_paths,
                     remappings,
                     optimizer_settings,
@@ -398,18 +381,11 @@ fn main_inner(
             }?;
 
             if let Some(output_directory) = arguments.output_directory {
-                std::fs::create_dir_all(&output_directory)?;
-
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_assembly,
                     arguments.output_binary,
                     arguments.overwrite,
-                )?;
-
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
             } else {
                 build.write_to_terminal(
@@ -417,15 +393,6 @@ fn main_inner(
                     arguments.output_assembly,
                     arguments.output_binary,
                 )?;
-                if !arguments.output_metadata
-                    && !arguments.output_assembly
-                    && !arguments.output_binary
-                {
-                    writeln!(
-                        std::io::stderr(),
-                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                    )?;
-                }
             }
         }
     }

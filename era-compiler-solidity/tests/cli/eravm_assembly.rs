@@ -2,12 +2,12 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_eravm_assembly_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_eravm_assembly_by_default() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--eravm-assembly",
         "--bin",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -19,12 +19,12 @@ fn run_zksolc_with_eravm_assembly_by_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_double_eravm_options() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_double_eravm_options() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[
+        "--eravm-assembly",
+        "--eravm-assembly",
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
-        "--eravm-assembly",
-        "--eravm-assembly",
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -36,12 +36,12 @@ fn run_zksolc_with_double_eravm_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_incompatible_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_incompatible_input_format() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--eravm-assembly",
         "--bin",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -53,8 +53,8 @@ fn run_zksolc_with_incompatible_input_format() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_incompatible_json_modes() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_incompatible_json_modes() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--eravm-assembly",
@@ -66,6 +66,63 @@ fn run_zksolc_with_incompatible_json_modes() -> anyhow::Result<()> {
     result
         .failure()
         .stderr(predicate::str::contains("Only one mode is allowed"));
+
+    Ok(())
+}
+
+#[test]
+fn with_target_evm() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let target = era_compiler_common::Target::EVM.to_string();
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--target",
+        target.as_str(),
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Error: EraVM assembly cannot be compiled to EVM bytecode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_optimization() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "-O",
+        "3",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "LLVM optimizations are not supported in EraVM assembly mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_fallback_to_optimizing_for_size() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--fallback-Oz",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Falling back to -Oz is not supported in EraVM assembly mode.",
+    ));
 
     Ok(())
 }

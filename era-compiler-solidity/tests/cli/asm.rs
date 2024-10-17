@@ -2,8 +2,8 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_asm_by_default() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
 
@@ -42,8 +42,8 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_two_same_flags_asm_asm() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
     let result = cli::execute_zksolc(args)?;
@@ -64,8 +64,8 @@ fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_asm_with_wrong_input_format() -> anyhow::Result<()> {
+    common::setup()?;
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 
     let result = cli::execute_zksolc(args)?;
@@ -82,6 +82,45 @@ fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     solc_result.code(result_exit_code);
+
+    Ok(())
+}
+
+#[test]
+fn with_asm_combined_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--asm",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        "asm",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "Cannot output data outside of JSON in combined JSON mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_asm_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        "--asm",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.success().stdout(predicate::str::contains(
+        "Cannot output data outside of JSON in standard JSON mode.",
+    ));
 
     Ok(())
 }
