@@ -266,30 +266,18 @@ fn main_inner(
             }?;
 
             if let Some(output_directory) = arguments.output_directory {
-                std::fs::create_dir_all(&output_directory)?;
-
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_metadata,
                     arguments.output_binary,
                     arguments.overwrite,
                 )?;
-
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
-                )?;
             } else {
-                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
-                if !arguments.output_metadata
-                    && !arguments.output_assembly
-                    && !arguments.output_binary
-                {
-                    writeln!(
-                        std::io::stderr(),
-                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                    )?;
-                }
+                build.write_to_terminal(
+                    arguments.output_metadata,
+                    arguments.output_assembly,
+                    arguments.output_binary,
+                )?;
             }
         }
         era_compiler_common::Target::EVM => {
@@ -324,7 +312,7 @@ fn main_inner(
                     Some(executable) => Some(era_compiler_solidity::SolcCompiler::new(executable)?),
                     None => None,
                 };
-                era_compiler_solidity::standard_json_evm(
+                return era_compiler_solidity::standard_json_evm(
                     solc_compiler,
                     arguments.force_evmla,
                     standard_json.map(PathBuf::from),
@@ -334,8 +322,7 @@ fn main_inner(
                     arguments.allow_paths,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else if let Some(format) = arguments.combined_json {
                 let solc_compiler = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -343,7 +330,7 @@ fn main_inner(
                         .as_deref()
                         .unwrap_or(era_compiler_solidity::SolcCompiler::DEFAULT_EXECUTABLE_NAME),
                 )?;
-                era_compiler_solidity::combined_json_evm(
+                return era_compiler_solidity::combined_json_evm(
                     format,
                     input_files.as_slice(),
                     arguments.libraries,
@@ -364,8 +351,7 @@ fn main_inner(
                     llvm_options,
                     arguments.threads,
                     debug_config,
-                )?;
-                return Ok(());
+                );
             } else {
                 let solc = era_compiler_solidity::SolcCompiler::new(
                     arguments
@@ -395,18 +381,11 @@ fn main_inner(
             }?;
 
             if let Some(output_directory) = arguments.output_directory {
-                std::fs::create_dir_all(&output_directory)?;
-
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_assembly,
                     arguments.output_binary,
                     arguments.overwrite,
-                )?;
-
-                writeln!(
-                    std::io::stderr(),
-                    "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
                 )?;
             } else {
                 build.write_to_terminal(
@@ -414,15 +393,6 @@ fn main_inner(
                     arguments.output_assembly,
                     arguments.output_binary,
                 )?;
-                if !arguments.output_metadata
-                    && !arguments.output_assembly
-                    && !arguments.output_binary
-                {
-                    writeln!(
-                        std::io::stderr(),
-                        "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
-                    )?;
-                }
             }
         }
     }

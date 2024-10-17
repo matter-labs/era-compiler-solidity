@@ -17,6 +17,7 @@ const JSON_ARGS: &[&str] = &[
 #[test]
 fn with_just_combined_json() -> anyhow::Result<()> {
     let _ = common::setup();
+
     let args = &["--combined-json"];
 
     let result = cli::execute_zksolc(args)?;
@@ -39,6 +40,7 @@ fn with_just_combined_json() -> anyhow::Result<()> {
 #[test]
 fn with_sol_contract_and_combined_json() -> anyhow::Result<()> {
     let _ = common::setup();
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json"];
 
     let result = cli::execute_zksolc(args)?;
@@ -61,6 +63,7 @@ fn with_sol_contract_and_combined_json() -> anyhow::Result<()> {
 #[test]
 fn with_combined_json_and_valid_args() -> anyhow::Result<()> {
     let _ = common::setup();
+
     for &arg in JSON_ARGS {
         let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
 
@@ -83,6 +86,7 @@ fn with_combined_json_and_valid_args() -> anyhow::Result<()> {
 #[test]
 fn with_combined_json_and_invalid_args() -> anyhow::Result<()> {
     let _ = common::setup();
+
     for &arg in JSON_ARGS {
         let args = &[
             cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -111,6 +115,7 @@ fn with_combined_json_and_invalid_args() -> anyhow::Result<()> {
 #[test]
 fn with_combined_json_and_duplicate_args() -> anyhow::Result<()> {
     let _ = common::setup();
+
     for &arg in JSON_ARGS {
         let args = &[
             cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -141,6 +146,7 @@ fn with_combined_json_and_duplicate_args() -> anyhow::Result<()> {
 #[test]
 fn with_multiple_combined_json_flags() -> anyhow::Result<()> {
     let _ = common::setup();
+
     for &arg in JSON_ARGS {
         let args = &[
             cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -169,6 +175,7 @@ fn with_multiple_combined_json_flags() -> anyhow::Result<()> {
 #[test]
 fn with_yul_and_combined_json() -> anyhow::Result<()> {
     let _ = common::setup();
+
     for &arg in JSON_ARGS {
         let args = &[cli::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
 

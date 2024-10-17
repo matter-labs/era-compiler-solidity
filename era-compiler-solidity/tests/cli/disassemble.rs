@@ -65,3 +65,18 @@ fn with_bytecode_and_extra_args() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_invalid_file_extensions() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--disassemble", cli::TEST_SOLIDITY_CONTRACT_PATH];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result
+        .failure()
+        .stderr(predicate::str::contains("Invalid file extension"));
+
+    Ok(())
+}

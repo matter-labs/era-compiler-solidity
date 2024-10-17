@@ -789,6 +789,11 @@ pub fn combined_json_eravm(
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
+
+            writeln!(
+                std::io::stderr(),
+                "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+            )?;
         }
         None => {
             serde_json::to_writer(std::io::stdout(), &combined_json)?;
@@ -851,6 +856,11 @@ pub fn combined_json_evm(
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
+
+            writeln!(
+                std::io::stderr(),
+                "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+            )?;
         }
         None => {
             serde_json::to_writer(std::io::stdout(), &combined_json)?;

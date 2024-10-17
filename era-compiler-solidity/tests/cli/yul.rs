@@ -2,30 +2,37 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_yul_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_yul_against_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
     let zksolc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul"];
     let solc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
-    let invalid_args = &["--yul", "anyarg"];
 
-    // Valid command
     let result = cli::execute_zksolc(zksolc_args)?;
     let zksolc_status = result
         .success()
-        .stderr(predicate::str::contains("Compiler run successful"))
-        .stderr(predicate::str::contains("No output requested"))
+        .stderr(predicate::str::contains(
+            "Compiler run successful. No output requested",
+        ))
         .get_output()
         .status
         .code()
         .expect("No exit code.");
 
-    // solc exit code comparison
     let solc_result = cli::execute_solc(solc_args)?;
     solc_result.code(zksolc_status);
 
-    // Invalid command
-    let invalid_result = cli::execute_zksolc(invalid_args)?;
-    let invalid_status = invalid_result
+    Ok(())
+}
+
+#[test]
+fn with_yul_invalid_against_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--yul", "anyarg"];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
         .failure()
         .stderr(predicate::str::contains("Error"))
         .get_output()
@@ -33,21 +40,20 @@ fn with_yul_by_default() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    // Invalid solc vs zksolc exit code comparison
-    let solc_invalid_result = cli::execute_solc(invalid_args)?;
-    solc_invalid_result.code(invalid_status);
+    let solc_result = cli::execute_solc(args)?;
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
-fn with_double_yul_options() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_yul_double_against_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
 
-    // Execute zksolc with duplicate --yul
     let result = cli::execute_zksolc(args)?;
-    let zksolc_status = result
+    let status = result
         .failure()
         .stderr(predicate::str::contains(
             "The argument '--yul' was provided more than once",
@@ -57,19 +63,18 @@ fn with_double_yul_options() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    // Compare with solc
     let solc_result = cli::execute_solc(args)?;
-    solc_result.code(zksolc_status);
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
-fn with_incompatible_input_format_solidity_contract() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_yul_invalid_input_file() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
-    // Execute zksolc with incompatible Solidity contract and --yul flag
     let result = cli::execute_zksolc(args)?;
     let zksolc_status = result
         .failure()
@@ -79,7 +84,6 @@ fn with_incompatible_input_format_solidity_contract() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    // Compare with solc
     let solc_result = cli::execute_solc(args)?;
     solc_result.code(zksolc_status);
 
@@ -87,8 +91,9 @@ fn with_incompatible_input_format_solidity_contract() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_yul_and_combined_json() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[
         cli::TEST_YUL_CONTRACT_PATH,
         "--yul",
@@ -96,9 +101,8 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
         "anyarg",
     ];
 
-    // Execute zksolc with incompatible --yul and --combined-json flags
     let result = cli::execute_zksolc(args)?;
-    let zksolc_status = result
+    let status = result
         .failure()
         .stderr(predicate::str::contains(
             "Only one mode is allowed at the same time:",
@@ -108,29 +112,69 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    // Compare with solc
     let solc_result = cli::execute_solc(args)?;
-    solc_result.code(zksolc_status);
+    solc_result.code(status);
 
     Ok(())
 }
 
 #[test]
-fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_yul_and_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
 
-    // Execute zksolc with incompatible --yul and --standard-json flags
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Only one mode is allowed at the same time:",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_yul_and_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        cli::TEST_YUL_CONTRACT_PATH,
+        "--yul",
+        "--solc",
+        solc_compiler.as_str(),
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stderr(predicate::str::contains(
+        "Compiler run successful. No output requested",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_yul_and_solc_and_eravm_extensions() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        cli::TEST_YUL_CONTRACT_PATH,
+        "--yul",
+        "--solc",
+        solc_compiler.as_str(),
+        "--enable-eravm-extensions",
+    ];
+
     let result = cli::execute_zksolc(args)?;
     result
-        .success()
-        .stdout(predicate::str::contains(
-            "Only one mode is allowed at the same time:",
-        ))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
+        .failure()
+        .stderr(predicate::str::contains("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`."));
 
     Ok(())
 }

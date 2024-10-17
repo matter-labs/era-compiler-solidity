@@ -347,14 +347,12 @@ impl Arguments {
             }
         }
 
-        if self.llvm_ir || self.eravm_assembly || self.disassemble {
-            if !self.libraries.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "Libraries are only supported in Solidity, Yul, and linker modes.",
-                    None,
-                    None,
-                ));
-            }
+        if (self.llvm_ir || self.eravm_assembly || self.disassemble) && !self.libraries.is_empty() {
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "Libraries are only supported in Solidity, Yul, and linker modes.",
+                None,
+                None,
+            ));
         }
 
         if self.eravm_assembly {
