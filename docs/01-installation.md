@@ -4,20 +4,20 @@
 To compile contracts for ZKsync, you need the ZKsync Solidity compiler toolchain.
 It consists of two components:
 
-1. The main component is [*zksolc* executable](https://github.com/matter-labs/era-compiler-solidity/releases). 
+1. [*zksolc* executable](https://github.com/matter-labs/era-compiler-solidity/releases). This is the main component.
 2. Internally, *zksolc* uses some functionality provided by the Solidity compiler, [*solc*](https://docs.soliditylang.org/en/latest). Note that we are using a [fork](https://github.com/matter-labs/era-solidity) of the original *solc* compiler.
 
 
 The [fork of the Solidity compiler *solc*](https://github.com/matter-labs/era-solidity/releases) must be installed separately and made visible to *zksolc* in one of two ways:
 
-1. Add the full path to *solc* to the environment variable `PATH`.
+1. Add the full path to the location of *solc* to the environment variable `PATH`.
 2. Alternatively, provide the full path to *solc* through the `--solc` option, for example:
 
     ```shell
     zksolc --solc './solc' --bin 'Greeter.sol'
     ```
 
-Refer to the section [Installation](#Installation) for more detailed instructions.
+Refer to the section [Installation](#Installation) for detailed instructions.
 
 ## System Requirements
 
@@ -69,8 +69,8 @@ You can install the ZKsync Solidity compiler toolchain using the following metho
 3. You can build *zksolc* from sources. See [Building from Source](#building-from-source).
 
 
-For small projects, learning, and research purposes, *zksolc* and *solc*
-executables are sufficient without a toolkit.
+For small projects, learning and research purposes, *zksolc* and *solc*
+executables without a toolkit are sufficient.
 
 > [!IMPORTANT]
 > We recommend always using the latest version of *zksolc* and *solc* to benefit from the latest features and bug fixes.
@@ -95,7 +95,6 @@ Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://git
     ```shell
     zksolc --solc './solc' --bin 'Greeter.sol'
     ```
-
 
 
 ### Ethereum Development Toolkits
@@ -133,7 +132,7 @@ binaries from this repository and cache them locally.
 > Building from source is only necessary for development, research, and debugging purposes.
 > Deployment and production use cases should rely only on [the officially released executables](#static-executables).
 
-1. First, install the necessary system-wide dependencies:
+1. Install the necessary system-wide dependencies:
 
    * For Linux (Debian):
 
@@ -182,6 +181,7 @@ binaries from this repository and cache them locally.
     cargo install compiler-llvm-builder
     ```
 
+    To fine-tune your build of ZKsync LLVM framework, refer to the section [Fine tuning ZKsync LLVM build](#fine-tuning-zksync-llvm-build) 
 > [!IMPORTANT]
 > - Always use the latest version of the builder to benefit from the latest features and bug fixes.
 >   To check for new versions and update the builder, simply run `cargo install compiler-llvm-builder`
@@ -201,6 +201,8 @@ binaries from this repository and cache them locally.
    zksync-llvm build
    ```
   
+   For more information and available build options, run `zksync-llvm build --help`.
+   
    You can also clone and build LLVM framework outside of the repository root.
    In this case:
    
@@ -216,9 +218,6 @@ binaries from this repository and cache them locally.
      export LLVM_SYS_170_PREFIX=~/repositories/era-llvm/target-llvm/build-final 
      ```
 
-> [!TIP]
-> Use the `--use-ccache` option to speed up the build process if you have [ccache](https://ccache.dev) installed.
-> For more information and available build options, run `zksync-llvm build --help`.
 
 6. Build the *zksolc* executable.
 
@@ -230,3 +229,20 @@ binaries from this repository and cache them locally.
     can run it directly or move it to another location.
 
     If *cargo* can't find the LLVM build artifacts, return to the previous step and ensure that the `LLVM_SYS_{version}_PREFIX` environment variable is set to the absolute path of the directory `build-final`.
+
+
+## Fine tuning ZKsync LLVM build
+
+* For more information and available build options, run `zksync-llvm build --help`.
+* Use the `--use-ccache` option to speed up the build process if you have [ccache](https://ccache.dev) installed.
+* To build ZKsync LLVM framework using specific C and C++ compilers, pass additional arguments to CMake using the `--extra-args` option, for example:
+
+  ```shell
+  zksync-llvm build --use-ccache \
+                    --extra-args \
+                        '\-DCMAKE_C_COMPILER=/opt/homebrew/Cellar/llvm@18/18.1.8/bin/clang' \
+                        '\-DCMAKE_BUILD_TYPE=Release' \
+                        '\-DCMAKE_CXX_COMPILER=/opt/homebrew/Cellar/llvm@18/18.1.8/bin/clang++' 
+  ```
+  
+  Pay special attention to character escaping.
