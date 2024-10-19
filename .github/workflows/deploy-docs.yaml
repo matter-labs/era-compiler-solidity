@@ -33,7 +33,7 @@ jobs:
       - name: Install latest mdbook
         run: |
           TAG=$(curl 'https://api.github.com/repos/rust-lang/mdbook/releases/latest' | jq -r '.tag_name')
-          URL="https://github.com/rust-lang/mdbook/releases/download/${tag}/mdbook-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
+          URL="https://github.com/rust-lang/mdbook/releases/download/${TAG}/mdbook-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
           MDBOOK_DIR=mdbook
           mkdir -p "${MDBOOK_DIR}"
           curl -sSL ${URL} | tar -xz --directory=${MDBOOK_DIR}
