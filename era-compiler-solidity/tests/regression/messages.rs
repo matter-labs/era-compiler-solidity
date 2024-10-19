@@ -3,9 +3,10 @@
 //!
 
 use crate::common;
-use era_compiler_solidity::message_type::MessageType;
+use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
+use era_compiler_solidity::warning_type::WarningType;
 use std::collections::BTreeMap;
 
 #[test]
@@ -447,6 +448,7 @@ fn send(version: semver::Version, pipeline: SolcPipeline, source_code: &str) {
         pipeline,
         false,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -459,7 +461,8 @@ fn send_suppressed(version: semver::Version, pipeline: SolcPipeline, source_code
         &version,
         pipeline,
         false,
-        vec![MessageType::SendTransfer],
+        vec![ErrorType::SendTransfer],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -500,6 +503,7 @@ fn transfer(version: semver::Version, pipeline: SolcPipeline, source_code: &str)
         pipeline,
         false,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -512,7 +516,8 @@ fn transfer_suppressed(version: semver::Version, pipeline: SolcPipeline, source_
         &version,
         pipeline,
         false,
-        vec![MessageType::SendTransfer],
+        vec![ErrorType::SendTransfer],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -538,6 +543,7 @@ fn runtime_code(version: semver::Version, pipeline: SolcPipeline) {
         &version,
         pipeline,
         false,
+        vec![],
         vec![],
     )
     .expect("Test failure"));
@@ -583,6 +589,7 @@ contract InternalFunctionPointerExample {
         SolcPipeline::EVMLA,
         true,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -620,6 +627,7 @@ contract StackFunctionPointerExample {
         &version,
         SolcPipeline::EVMLA,
         true,
+        vec![],
         vec![],
     )
     .expect("Test failure"));
@@ -666,6 +674,7 @@ contract StorageFunctionPointerExample {
         SolcPipeline::EVMLA,
         true,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -687,6 +696,7 @@ fn tx_origin(version: semver::Version, pipeline: SolcPipeline) {
         pipeline,
         false,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -699,7 +709,8 @@ fn tx_origin_suppressed(version: semver::Version, pipeline: SolcPipeline) {
         &version,
         pipeline,
         false,
-        vec![MessageType::TxOrigin],
+        vec![],
+        vec![WarningType::TxOrigin],
     )
     .expect("Test failure"));
 }
@@ -723,6 +734,7 @@ fn tx_origin_assembly(version: semver::Version, pipeline: SolcPipeline) {
         pipeline,
         false,
         vec![],
+        vec![],
     )
     .expect("Test failure"));
 }
@@ -735,7 +747,8 @@ fn tx_origin_assembly_suppressed(version: semver::Version, pipeline: SolcPipelin
         &version,
         pipeline,
         false,
-        vec![MessageType::TxOrigin],
+        vec![],
+        vec![WarningType::TxOrigin],
     )
     .expect("Test failure"));
 }

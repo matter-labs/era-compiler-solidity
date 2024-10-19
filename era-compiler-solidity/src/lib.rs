@@ -12,20 +12,21 @@
 pub mod build_eravm;
 pub mod build_evm;
 pub mod r#const;
+pub mod error_type;
 pub mod evmla;
 pub mod libraries;
-pub mod message_type;
 pub mod process;
 pub mod project;
 pub mod solc;
+pub mod warning_type;
 pub mod yul;
 
 pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
+pub use self::error_type::ErrorType;
 pub use self::libraries::Libraries;
-pub use self::message_type::MessageType;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
 pub use self::process::output_eravm::Output as EraVMProcessOutput;
@@ -56,6 +57,7 @@ pub use self::solc::standard_json::output::error::Error as SolcStandardJsonOutpu
 pub use self::solc::standard_json::output::Output as SolcStandardJsonOutput;
 pub use self::solc::version::Version as SolcVersion;
 pub use self::solc::Compiler as SolcCompiler;
+pub use self::warning_type::WarningType;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
@@ -265,8 +267,8 @@ pub fn standard_output_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    suppressed_errors: Vec<MessageType>,
-    suppressed_warnings: Vec<MessageType>,
+    suppressed_errors: Vec<ErrorType>,
+    suppressed_warnings: Vec<WarningType>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
@@ -751,8 +753,8 @@ pub fn combined_json_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    suppressed_errors: Vec<MessageType>,
-    suppressed_warnings: Vec<MessageType>,
+    suppressed_errors: Vec<ErrorType>,
+    suppressed_warnings: Vec<WarningType>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {

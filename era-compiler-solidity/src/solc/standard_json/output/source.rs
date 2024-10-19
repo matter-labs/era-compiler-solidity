@@ -4,11 +4,12 @@
 
 use std::collections::BTreeMap;
 
-use crate::message_type::MessageType;
+use crate::error_type::ErrorType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
+use crate::warning_type::WarningType;
 
 ///
 /// The `solc --standard-json` output source.
@@ -220,10 +221,11 @@ impl Source {
         sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &SolcVersion,
         solc_pipeline: SolcPipeline,
-        suppressed_messages: &[MessageType],
+        suppressed_errors: &[ErrorType],
+        suppressed_warnings: &[WarningType],
     ) -> Vec<SolcStandardJsonOutputError> {
         let mut messages = Vec::new();
-        if !suppressed_messages.contains(&MessageType::SendTransfer) {
+        if !suppressed_errors.contains(&ErrorType::SendTransfer) {
             if let Some(message) =
                 Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
             {
@@ -238,7 +240,7 @@ impl Source {
                 messages.push(message);
             }
         }
-        if !suppressed_messages.contains(&MessageType::TxOrigin) {
+        if !suppressed_warnings.contains(&WarningType::TxOrigin) {
             if let Some(message) = Self::check_assembly_origin(solc_version, ast, id_paths, sources)
             {
                 messages.push(message);
@@ -257,7 +259,8 @@ impl Source {
                         sources,
                         solc_version,
                         solc_pipeline,
-                        suppressed_messages,
+                        suppressed_errors,
+                        suppressed_warnings,
                     ));
                 }
             }
@@ -269,7 +272,8 @@ impl Source {
                         sources,
                         solc_version,
                         solc_pipeline,
-                        suppressed_messages,
+                        suppressed_errors,
+                        suppressed_warnings,
                     ));
                 }
             }

@@ -1,25 +1,22 @@
 //!
-//! The compiler message type.
+//! The compiler error type.
 //!
 
 use std::str::FromStr;
 
 ///
-/// The compiler message type.
+/// The compiler error type.
 ///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum MessageType {
-    /// The error for eponymous feature.
+pub enum ErrorType {
+    /// The eponymous feature.
     SendTransfer,
-
-    /// The warning for eponymous feature.
-    TxOrigin,
 }
 
-impl MessageType {
+impl ErrorType {
     ///
-    /// Converts string arguments into an array of messages.
+    /// Converts string arguments into an array of errors.
     ///
     pub fn try_from_strings(strings: &[String]) -> Result<Vec<Self>, anyhow::Error> {
         strings
@@ -29,13 +26,12 @@ impl MessageType {
     }
 }
 
-impl FromStr for MessageType {
+impl FromStr for ErrorType {
     type Err = anyhow::Error;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "sendtransfer" => Ok(Self::SendTransfer),
-            "txorigin" => Ok(Self::TxOrigin),
             r#type => Err(anyhow::anyhow!("Invalid suppressed message type: {type}")),
         }
     }

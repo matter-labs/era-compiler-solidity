@@ -3,7 +3,7 @@
 //!
 
 use assert_cmd::Command;
-use era_compiler_solidity::message_type::MessageType;
+use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
@@ -13,6 +13,7 @@ use era_compiler_solidity::solc::standard_json::input::Input as SolcStandardJson
 use era_compiler_solidity::solc::standard_json::output::error::collectable::Collectable as CollectableError;
 use era_compiler_solidity::solc::standard_json::output::Output as SolcStandardJsonOutput;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
+use era_compiler_solidity::warning_type::WarningType;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -405,7 +406,8 @@ pub fn check_solidity_message(
     solc_version: &semver::Version,
     solc_pipeline: SolcPipeline,
     skip_for_zksync_edition: bool,
-    suppressed_warnings: Vec<MessageType>,
+    suppressed_errors: Vec<ErrorType>,
+    suppressed_warnings: Vec<WarningType>,
 ) -> anyhow::Result<bool> {
     setup()?;
 
@@ -430,7 +432,7 @@ pub fn check_solidity_message(
         false,
         false,
         vec![],
-        vec![],
+        suppressed_errors,
         suppressed_warnings,
     )?;
 
