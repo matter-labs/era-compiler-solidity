@@ -99,7 +99,7 @@ fn run_zksolc_with_incorrect_standard_json_suppressed_errors_and_warnings_deseri
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "unknown variant `INVALID_SUPPRESSED_MESSAGE_TYPE`",
+        "unknown variant `INVALID_SUPPRESSED_ERROR_TYPE`",
     ));
 
     Ok(())
