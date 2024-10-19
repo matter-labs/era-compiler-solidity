@@ -15,12 +15,13 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::error_type::ErrorType;
 use crate::libraries::Libraries;
-use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
+use crate::warning_type::WarningType;
 
 use self::language::Language;
 use self::settings::Settings;
@@ -40,11 +41,11 @@ pub struct Input {
     pub settings: Settings,
 
     /// The suppressed errors.
-    #[serde(skip_serializing)]
-    pub suppressed_errors: Option<Vec<MessageType>>,
+    #[serde(default, skip_serializing)]
+    pub suppressed_errors: Option<Vec<ErrorType>>,
     /// The suppressed warnings.
-    #[serde(skip_serializing)]
-    pub suppressed_warnings: Option<Vec<MessageType>>,
+    #[serde(default, skip_serializing)]
+    pub suppressed_warnings: Option<Vec<WarningType>>,
 }
 
 impl Input {
@@ -98,8 +99,8 @@ impl Input {
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         llvm_options: Vec<String>,
-        suppressed_errors: Vec<MessageType>,
-        suppressed_warnings: Vec<MessageType>,
+        suppressed_errors: Vec<ErrorType>,
+        suppressed_warnings: Vec<WarningType>,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
         let libraries = Libraries::into_standard_json(libraries)?;
@@ -130,6 +131,8 @@ impl Input {
                 optimizer,
                 llvm_options,
                 metadata,
+                suppressed_errors.clone(),
+                suppressed_warnings.clone(),
             ),
             suppressed_errors: Some(suppressed_errors),
             suppressed_warnings: Some(suppressed_warnings),
@@ -152,8 +155,8 @@ impl Input {
         enable_eravm_extensions: bool,
         detect_missing_libraries: bool,
         llvm_options: Vec<String>,
-        suppressed_errors: Vec<MessageType>,
-        suppressed_warnings: Vec<MessageType>,
+        suppressed_errors: Vec<ErrorType>,
+        suppressed_warnings: Vec<WarningType>,
     ) -> anyhow::Result<Self> {
         let sources = sources
             .into_iter()
@@ -175,6 +178,8 @@ impl Input {
                 optimizer,
                 llvm_options,
                 metadata,
+                suppressed_errors.clone(),
+                suppressed_warnings.clone(),
             ),
             suppressed_errors: Some(suppressed_errors),
             suppressed_warnings: Some(suppressed_warnings),
@@ -211,6 +216,8 @@ impl Input {
                 optimizer,
                 llvm_options,
                 None,
+                vec![],
+                vec![],
             ),
             suppressed_errors: None,
             suppressed_warnings: None,
@@ -252,6 +259,8 @@ impl Input {
                 optimizer,
                 llvm_options,
                 None,
+                vec![],
+                vec![],
             ),
             suppressed_errors: None,
             suppressed_warnings: None,

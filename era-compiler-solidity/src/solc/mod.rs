@@ -164,16 +164,35 @@ impl Compiler {
         });
         errors.append(messages);
 
+        if input.suppressed_errors.is_some() {
+            errors.push(StandardJsonOutputError::new_warning(
+                "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
+                None,
+                None,
+            ));
+        }
+        if input.suppressed_warnings.is_some() {
+            errors.push(StandardJsonOutputError::new_warning(
+                "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
+                None,
+                None,
+            ));
+        }
+
         if let Some(pipeline) = pipeline {
-            let mut suppressed_messages = input.suppressed_errors.to_owned().unwrap_or_default();
-            suppressed_messages.extend(input.suppressed_warnings.to_owned().unwrap_or_default());
+            let mut suppressed_errors = input.suppressed_errors.clone().unwrap_or_default();
+            suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
+
+            let mut suppressed_warnings = input.suppressed_warnings.clone().unwrap_or_default();
+            suppressed_warnings.extend_from_slice(input.settings.suppressed_warnings.as_slice());
 
             input.resolve_sources();
             solc_output.preprocess_ast(
                 &input.sources,
                 &self.version,
                 pipeline,
-                suppressed_messages.as_slice(),
+                suppressed_errors.as_slice(),
+                suppressed_warnings.as_slice(),
             )?;
         }
         solc_output.remove_evm();

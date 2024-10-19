@@ -11,6 +11,6 @@
       "runs": 200
     }
   },
-  "suppressedErrors": ["INVALID_SUPPRESSED_MESSAGE_TYPE"],
-  "suppressedWarnings": ["INVALID_SUPPRESSED_MESSAGE_TYPE"]
+  "suppressedErrors": ["INVALID_SUPPRESSED_ERROR_TYPE"],
+  "suppressedWarnings": ["INVALID_SUPPRESSED_WARNING_TYPE"]
 }
