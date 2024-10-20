@@ -56,7 +56,7 @@ fn with_solc_standard_json_mode() -> anyhow::Result<()> {
         .arg("--solc")
         .arg(solc_compiler)
         .arg("--standard-json")
-        .arg(cli::TEST_SOLIDITY_STANDARD_JSON_PATH)
+        .arg(cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH)
         .assert();
 
     assert
@@ -74,7 +74,7 @@ fn without_solc_standard_json_mode() -> anyhow::Result<()> {
 
     let assert = zksolc
         .arg("--standard-json")
-        .arg(cli::TEST_SOLIDITY_STANDARD_JSON_PATH)
+        .arg(cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH)
         .assert();
 
     assert.success().stdout(predicate::str::contains(

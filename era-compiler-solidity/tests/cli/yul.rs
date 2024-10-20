@@ -178,3 +178,66 @@ fn with_yul_and_solc_and_eravm_extensions() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_standard_json_and_solc_invalid_by_solc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "DeclarationError: Function \\\"mdelete\\\" not found.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "The `SELFDESTRUCT` instruction is not supported",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_and_solc_invalid_by_zksolc() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
+            .executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "The `SELFDESTRUCT` instruction is not supported",
+    ));
+
+    Ok(())
+}

@@ -46,7 +46,7 @@ fn with_remappings_standard_json_mode() -> anyhow::Result<()> {
     let args = &[
         "./path/to/1.sol=./path/to/2.sol",
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;

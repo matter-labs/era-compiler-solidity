@@ -8,7 +8,7 @@ fn with_detect_missing_libraries() -> anyhow::Result<()> {
     let args = &[
         "--detect-missing-libraries",
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -63,7 +63,7 @@ fn with_detect_missing_libraries_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--detect-missing-libraries",
     ];
 

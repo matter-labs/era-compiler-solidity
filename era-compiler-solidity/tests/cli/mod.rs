@@ -45,73 +45,94 @@ mod threads;
 mod version;
 mod yul;
 
-/// The contracts directory full path.
+/// A test input file.
 pub const TEST_CONTRACTS_PATH: &str = "tests/data/contracts/";
 
-/// The Solidity contract name.
+/// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 
-/// The Solidity contract full path.
+/// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Test.sol";
 
-/// The Solidity binary artifact output name.
+/// A test input file.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 
-/// The Solidity assembly artifact output name.
+/// A test input file.
 pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
 
-/// The Yul contract for testing.
+/// A test input file.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 
-/// The LLVM IR contract path.
+/// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.ll";
 
-/// The EraVM assembly contract path.
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
-/// The Solidity standard JSON path.
-pub const TEST_SOLIDITY_STANDARD_JSON_PATH: &str =
-    "tests/data/standard_json_input/solidity_default.json";
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc.json";
 
-/// The Solidity standard JSON invalid by `solc` path.
-pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH: &str =
-    "tests/data/standard_json_input/solidity_invalid_by_solc.json";
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_invalid.json";
 
-/// The Solidity standard JSON invalid by `zksolc` path.
+/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH: &str =
-    "tests/data/standard_json_input/solidity_invalid_by_zksolc.json";
+    "tests/data/standard_json_input/solidity_zksolc_invalid.json";
 
-/// The Yul standard JSON path.
-pub const TEST_YUL_STANDARD_JSON_PATH: &str = "tests/data/standard_json_input/yul_default.json";
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_SOLC_PATH: &str = "tests/data/standard_json_input/yul_solc.json";
 
-/// The LLVM IR standard JSON path.
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH: &str =
+    "tests/data/standard_json_input/yul_solc_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
+    "tests/data/standard_json_input/yul_zksolc_urls_invalid.json";
+
+/// A test input file.
 pub const TEST_LLVM_IR_STANDARD_JSON_PATH: &str =
-    "tests/data/standard_json_input/llvm_ir_default_urls.json";
+    "tests/data/standard_json_input/llvm_ir_urls.json";
 
-/// The EraVM assembly standard JSON path.
+/// A test input file.
+pub const TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH: &str =
+    "tests/data/standard_json_input/llvm_ir_urls_invalid.json";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH: &str =
-    "tests/data/standard_json_input/eravm_assembly_default_urls.json";
+    "tests/data/standard_json_input/eravm_assembly_urls.json";
 
-/// The standard JSON contract path with suppressed errors and warnings.
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH: &str =
+    "tests/data/standard_json_input/eravm_assembly_urls_invalid.json";
+
+/// A test input file.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
-    "tests/data/standard_json_input/suppressed_messages.json";
+    "tests/data/standard_json_input/suppressed_errors_and_warnings.json";
 
-/// The standard JSON contract path with incorrect suppressed errors and warnings.
-pub const TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
-    "tests/data/standard_json_input/suppressed_messages_invalid.json";
+/// A test input file.
+pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_INVALID: &str =
+    "tests/data/standard_json_input/suppressed_errors_invalid.json";
 
-/// The disassembler hexadecimal string bytecode sample path.
+/// A test input file.
+pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID: &str =
+    "tests/data/standard_json_input/suppressed_warnings_invalid.json";
+
+/// A test input file.
 pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
     "tests/data/bytecodes/disassembler.hex";
 
-/// The disassembler binary bytecode sample path.
+/// A test input file.
 pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str = "tests/data/bytecodes/disassembler.zbin";
 
-/// The linker hexadecimal string bytecode sample path.
+/// A test input file.
 pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.hex";
 
+/// A test input file.
 /// The linker hexadecimal string bytecode sample path.
-/// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards
+/// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards.
 pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_copy.hex";
 
 /// The broken input file path.

@@ -8,9 +8,9 @@ use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use std::path::PathBuf;
 
 #[test]
-fn standard_json_yul_default() {
+fn standard_json_yul_solc() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_default.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_solc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
@@ -33,9 +33,9 @@ fn standard_json_yul_default() {
 }
 
 #[test]
-fn standard_json_yul_default_validated() {
+fn standard_json_yul_solc_validated() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_default.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_solc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
 
@@ -62,9 +62,9 @@ fn standard_json_yul_default_validated() {
 }
 
 #[test]
-fn standard_json_yul_default_urls() {
+fn standard_json_yul_solc_urls() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_default_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_solc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
@@ -87,9 +87,9 @@ fn standard_json_yul_default_urls() {
 }
 
 #[test]
-fn standard_json_yul_default_urls_validated() {
+fn standard_json_yul_solc_urls_validated() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_default_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_solc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
 
@@ -116,9 +116,9 @@ fn standard_json_yul_default_urls_validated() {
 }
 
 #[test]
-fn standard_json_yul_eravm() {
+fn standard_json_yul_zksolc() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_eravm.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_zksolc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
@@ -141,9 +141,9 @@ fn standard_json_yul_eravm() {
 }
 
 #[test]
-fn standard_json_yul_eravm_validated() {
+fn standard_json_yul_zksolc_validated() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_eravm.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_zksolc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
 
@@ -170,9 +170,9 @@ fn standard_json_yul_eravm_validated() {
 }
 
 #[test]
-fn standard_json_yul_eravm_urls() {
+fn standard_json_yul_zksolc_urls() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_eravm_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
@@ -195,9 +195,9 @@ fn standard_json_yul_eravm_urls() {
 }
 
 #[test]
-fn standard_json_yul_eravm_urls_validated() {
+fn standard_json_yul_zksolc_urls_validated() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/yul_eravm_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)
@@ -223,9 +223,9 @@ fn standard_json_yul_eravm_urls_validated() {
 }
 
 #[test]
-fn standard_json_llvm_ir_default_urls() {
+fn standard_json_llvm_ir_urls() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/llvm_ir_default_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/llvm_ir_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_llvm_ir_standard_json(solc_input).expect("Test failure");
@@ -248,9 +248,9 @@ fn standard_json_llvm_ir_default_urls() {
 }
 
 #[test]
-fn standard_json_eravm_assembly_default_urls() {
+fn standard_json_eravm_assembly_urls() {
     let solc_input = SolcStandardJsonInput::try_from(Some(
-        PathBuf::from("tests/data/standard_json_input/eravm_assembly_default_urls.json").as_path(),
+        PathBuf::from("tests/data/standard_json_input/eravm_assembly_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
     let solc_output = common::build_eravm_assembly_standard_json(solc_input).expect("Test failure");

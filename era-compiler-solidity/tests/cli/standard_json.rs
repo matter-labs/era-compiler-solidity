@@ -13,9 +13,12 @@ fn with_standard_json() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
-    let args_solc = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_PATH];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+    ];
 
     let result = cli::execute_zksolc(args)?;
     let status = result
@@ -65,11 +68,11 @@ fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
     let args_solc = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_SOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -154,34 +157,11 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_with_suppressed_messages_invalid() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
-
-    let args = &[
-        "--solc",
-        solc_compiler.as_str(),
-        "--standard-json",
-        cli::TEST_JSON_CONTRACT_PATH_INCORRECT_SUPPRESSED_ERRORS_AND_WARNINGS,
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result.success().stdout(predicate::str::contains(
-        "unknown variant `INVALID_SUPPRESSED_ERROR_TYPE`",
-    ));
-
-    Ok(())
-}
-
-#[test]
 fn with_standard_json_yul() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_PATH];
-    let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_PATH];
+    let args = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
+    let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
 
     let result = cli::execute_zksolc(args)?;
     let status = result
@@ -210,9 +190,9 @@ fn with_standard_json_yul_with_solc() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_YUL_STANDARD_JSON_PATH,
+        cli::TEST_YUL_STANDARD_JSON_SOLC_PATH,
     ];
-    let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_PATH];
+    let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
 
     let result = cli::execute_zksolc(args)?;
     let status = result

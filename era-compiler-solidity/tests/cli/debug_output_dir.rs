@@ -9,7 +9,7 @@ fn with_debug_output_dir_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--debug-output-dir",
         tmp_dir_debug.path().to_str().unwrap(),
     ];

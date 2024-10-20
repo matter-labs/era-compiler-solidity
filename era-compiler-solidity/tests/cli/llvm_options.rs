@@ -24,7 +24,7 @@ fn with_llvm_options_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--llvm-options='-eravm-disable-system-request-memoization 10'",
     ];
 

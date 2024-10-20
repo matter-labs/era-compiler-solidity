@@ -126,3 +126,20 @@ fn with_fallback_to_optimizing_for_size() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_standard_json_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}

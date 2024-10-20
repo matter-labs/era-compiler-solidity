@@ -12,5 +12,5 @@
     }
   },
   "suppressedErrors": ["INVALID_SUPPRESSED_ERROR_TYPE"],
-  "suppressedWarnings": ["INVALID_SUPPRESSED_WARNING_TYPE"]
+  "suppressedWarnings": ["txorigin"]
 }

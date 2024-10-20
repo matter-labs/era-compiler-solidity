@@ -74,3 +74,20 @@ fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_standard_json_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("error: use of undefined value"));
+
+    Ok(())
+}
