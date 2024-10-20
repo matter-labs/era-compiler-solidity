@@ -1,25 +1,22 @@
 //!
-//! The compiler message type.
+//! The compiler warning type.
 //!
 
 use std::str::FromStr;
 
 ///
-/// The compiler message type.
+/// The compiler warning type.
 ///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum MessageType {
-    /// The error for eponymous feature.
-    SendTransfer,
-
-    /// The warning for eponymous feature.
+pub enum WarningType {
+    /// The eponymous feature.
     TxOrigin,
 }
 
-impl MessageType {
+impl WarningType {
     ///
-    /// Converts string arguments into an array of messages.
+    /// Converts string arguments into an array of warnings.
     ///
     pub fn try_from_strings(strings: &[String]) -> Result<Vec<Self>, anyhow::Error> {
         strings
@@ -29,22 +26,20 @@ impl MessageType {
     }
 }
 
-impl FromStr for MessageType {
+impl FromStr for WarningType {
     type Err = anyhow::Error;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
-            "sendtransfer" => Ok(Self::SendTransfer),
             "txorigin" => Ok(Self::TxOrigin),
-            r#type => Err(anyhow::anyhow!("Invalid suppressed message type: {type}")),
+            r#type => Err(anyhow::anyhow!("Invalid suppressed warning type: {type}")),
         }
     }
 }
 
-impl std::fmt::Display for MessageType {
+impl std::fmt::Display for WarningType {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::SendTransfer => write!(f, "sendtransfer"),
             Self::TxOrigin => write!(f, "txorigin"),
         }
     }

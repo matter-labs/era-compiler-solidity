@@ -428,7 +428,7 @@ impl FunctionCall {
                 )?;
 
                 context.build_memcpy(
-                    context.intrinsics().memory_move,
+                    context.intrinsics().memory_move_heap,
                     destination,
                     source,
                     arguments[2].into_int_value(),
@@ -1788,6 +1788,32 @@ impl FunctionCall {
                     arguments[1].into_int_value(),
                 )
                 .map(|_| None)
+            }
+            Name::MCopy => {
+                let arguments = self.pop_arguments_llvm_evm::<D, 3>(context)?;
+                let destination = era_compiler_llvm_context::Pointer::new_with_offset(
+                    context,
+                    era_compiler_llvm_context::EVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[0].into_int_value(),
+                    "mcopy_destination",
+                )?;
+                let source = era_compiler_llvm_context::Pointer::new_with_offset(
+                    context,
+                    era_compiler_llvm_context::EVMAddressSpace::Heap,
+                    context.byte_type(),
+                    arguments[1].into_int_value(),
+                    "mcopy_source",
+                )?;
+
+                context.build_memcpy(
+                    context.intrinsics().memory_move_heap,
+                    destination,
+                    source,
+                    arguments[2].into_int_value(),
+                    "mcopy_size",
+                )?;
+                Ok(None)
             }
 
             Name::SLoad => {

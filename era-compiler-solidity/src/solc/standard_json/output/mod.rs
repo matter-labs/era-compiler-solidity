@@ -13,14 +13,15 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::error_type::ErrorType;
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
-use crate::message_type::MessageType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::solc::version::Version as SolcVersion;
+use crate::warning_type::WarningType;
 
 use self::contract::Contract;
 use self::error::collectable::Collectable as CollectableError;
@@ -221,7 +222,8 @@ impl Output {
         sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &SolcVersion,
         pipeline: SolcPipeline,
-        suppressed_messages: &[MessageType],
+        suppressed_errors: &[ErrorType],
+        suppressed_warnings: &[WarningType],
     ) -> anyhow::Result<()> {
         let source_asts = match self.sources.as_ref() {
             Some(sources) => sources,
@@ -245,7 +247,8 @@ impl Output {
                             sources,
                             version,
                             pipeline,
-                            suppressed_messages,
+                            suppressed_errors,
+                            suppressed_warnings,
                         )
                     })
                     .unwrap_or_default()

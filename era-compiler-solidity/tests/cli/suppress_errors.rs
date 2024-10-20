@@ -5,7 +5,7 @@ use predicates::prelude::*;
 fn with_suppressed_errors() -> anyhow::Result<()> {
     common::setup()?;
 
-    let error_type = era_compiler_solidity::MessageType::SendTransfer.to_string();
+    let error_type = era_compiler_solidity::ErrorType::SendTransfer.to_string();
     let args = &[
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -25,7 +25,7 @@ fn with_suppressed_errors() -> anyhow::Result<()> {
 fn with_suppressed_errors_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let error_type = era_compiler_solidity::MessageType::SendTransfer.to_string();
+    let error_type = era_compiler_solidity::ErrorType::SendTransfer.to_string();
     let args = &[
         "--standard-json",
         cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
@@ -49,13 +49,13 @@ fn with_suppressed_errors_invalid() -> anyhow::Result<()> {
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-errors",
-        "meta-ultra-error",
+        "mega-ultra-error",
     ];
 
     let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("Invalid suppressed message type"));
+    result.failure().stderr(predicate::str::contains(
+        "Invalid suppressed error type: mega-ultra-error",
+    ));
 
     Ok(())
 }

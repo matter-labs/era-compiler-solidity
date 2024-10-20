@@ -118,10 +118,10 @@ fn main_inner(
         })
         .unwrap_or_default();
 
-    let suppressed_errors = era_compiler_solidity::MessageType::try_from_strings(
+    let suppressed_errors = era_compiler_solidity::ErrorType::try_from_strings(
         arguments.suppressed_errors.unwrap_or_default().as_slice(),
     )?;
-    let suppressed_warnings = era_compiler_solidity::MessageType::try_from_strings(
+    let suppressed_warnings = era_compiler_solidity::WarningType::try_from_strings(
         arguments.suppressed_warnings.unwrap_or_default().as_slice(),
     )?;
 

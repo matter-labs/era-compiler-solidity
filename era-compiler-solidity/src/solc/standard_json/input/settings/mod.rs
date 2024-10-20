@@ -10,7 +10,9 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashSet;
 
+use crate::error_type::ErrorType;
 use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::warning_type::WarningType;
 
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
@@ -59,6 +61,12 @@ pub struct Settings {
     /// The metadata settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<Metadata>,
+    /// The suppressed errors.
+    #[serde(default, skip_serializing)]
+    pub suppressed_errors: Vec<ErrorType>,
+    /// The suppressed warnings.
+    #[serde(default, skip_serializing)]
+    pub suppressed_warnings: Vec<WarningType>,
 }
 
 impl Settings {
@@ -77,6 +85,8 @@ impl Settings {
         optimizer: Optimizer,
         llvm_options: Vec<String>,
         metadata: Option<Metadata>,
+        suppressed_errors: Vec<ErrorType>,
+        suppressed_warnings: Vec<WarningType>,
     ) -> Self {
         Self {
             evm_version,
@@ -98,6 +108,8 @@ impl Settings {
             optimizer,
             llvm_options: Some(llvm_options),
             metadata,
+            suppressed_errors,
+            suppressed_warnings,
         }
     }
 

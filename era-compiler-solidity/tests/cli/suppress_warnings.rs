@@ -5,7 +5,7 @@ use predicates::prelude::*;
 fn with_suppressed_warnings() -> anyhow::Result<()> {
     common::setup()?;
 
-    let warning_type = era_compiler_solidity::MessageType::TxOrigin.to_string();
+    let warning_type = era_compiler_solidity::WarningType::TxOrigin.to_string();
     let args = &[
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -25,7 +25,7 @@ fn with_suppressed_warnings() -> anyhow::Result<()> {
 fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let warning_type = era_compiler_solidity::MessageType::TxOrigin.to_string();
+    let warning_type = era_compiler_solidity::WarningType::TxOrigin.to_string();
     let args = &[
         "--standard-json",
         cli::TEST_SOLIDITY_STANDARD_JSON_PATH,
@@ -49,13 +49,13 @@ fn with_suppressed_warnings_invalid() -> anyhow::Result<()> {
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-warnings",
-        "meta-ultra-error",
+        "mega-ultra-warning",
     ];
 
     let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("Invalid suppressed message type"));
+    result.failure().stderr(predicate::str::contains(
+        "Invalid suppressed warning type: mega-ultra-warning",
+    ));
 
     Ok(())
 }
