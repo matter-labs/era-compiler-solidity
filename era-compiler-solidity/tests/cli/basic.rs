@@ -25,7 +25,7 @@ fn without_any_args() -> anyhow::Result<()> {
 }
 
 #[test]
-fn default_run_of_zksolc_from_the_help() -> anyhow::Result<()> {
+fn with_args_from_help_example() -> anyhow::Result<()> {
     common::setup()?;
     let tmp_dir = TempDir::new()?;
     let args = &[
@@ -92,22 +92,9 @@ fn with_multiple_output_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_broken_input_and_no_output_options() -> anyhow::Result<()> {
+fn with_bin_output_same_file_and_cli() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("error: cannot parse operand"));
-
-    Ok(())
-}
-
-#[test]
-fn bin_output_is_the_same_in_file_and_cli() -> anyhow::Result<()> {
-    common::setup()?;
     let tmp_dir = TempDir::new()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,

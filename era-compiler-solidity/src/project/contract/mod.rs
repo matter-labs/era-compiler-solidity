@@ -83,17 +83,17 @@ impl Contract {
         let identifier = self.identifier().to_owned();
         let factory_dependencies = self.drain_factory_dependencies();
 
-        let solc_version = dependency_data.solc_version.clone();
-
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
         let metadata = Metadata::new(
             self.source_metadata,
-            solc_version
+            dependency_data
+                .solc_version
                 .as_ref()
                 .map(|version| version.default.to_owned()),
-            solc_version
+            dependency_data
+                .solc_version
                 .as_ref()
                 .and_then(|version| version.l2_revision.to_owned()),
             semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid"),
@@ -130,9 +130,7 @@ impl Contract {
                     era_compiler_llvm_context::EraVMContextYulData::new(enable_eravm_extensions);
                 context.set_yul_data(yul_data);
 
-                yul.declare(&mut context).map_err(|error| {
-                    anyhow::anyhow!("LLVM IR generator declaration pass: {error}")
-                })?;
+                yul.declare(&mut context)?;
                 yul.into_llvm(&mut context).map_err(|error| {
                     anyhow::anyhow!("LLVM IR generator definition pass: {error}")
                 })?;
@@ -142,17 +140,13 @@ impl Contract {
                     metadata_hash,
                     output_assembly,
                     false,
-                )
+                )?
             }
             IR::EVMLA(mut evmla) => {
-                let solc_version = match solc_version {
-                    Some(solc_version) => solc_version,
-                    None => {
-                        anyhow::bail!(
-                            "The EVM assembly pipeline cannot be executed without `solc`"
-                        );
-                    }
-                };
+                let solc_version = dependency_data
+                    .solc_version
+                    .clone()
+                    .expect("The EVM assembly pipeline cannot be executed without `solc`");
 
                 let module = llvm.create_module(self.name.full_path.as_str());
                 let mut context = era_compiler_llvm_context::EraVMContext::new(
@@ -170,9 +164,7 @@ impl Contract {
                     era_compiler_llvm_context::EraVMContextEVMLAData::new(solc_version.default);
                 context.set_evmla_data(evmla_data);
 
-                evmla.declare(&mut context).map_err(|error| {
-                    anyhow::anyhow!("LLVM IR generator declaration pass: {error}")
-                })?;
+                evmla.declare(&mut context)?;
                 evmla.into_llvm(&mut context).map_err(|error| {
                     anyhow::anyhow!("LLVM IR generator definition pass: {error}")
                 })?;
@@ -182,7 +174,7 @@ impl Contract {
                     metadata_hash,
                     output_assembly,
                     false,
-                )
+                )?
             }
             IR::LLVMIR(ref llvm_ir) => {
                 let memory_buffer =
@@ -206,7 +198,7 @@ impl Contract {
                     metadata_hash,
                     output_assembly,
                     false,
-                )
+                )?
             }
             IR::EraVMAssembly(eravm_assembly) => {
                 let target_machine = era_compiler_llvm_context::TargetMachine::new(
@@ -229,9 +221,9 @@ impl Contract {
                     bytecode_buffer,
                     metadata_hash,
                     assembly_text,
-                )
+                )?
             }
-        }?;
+        };
 
         Ok(EraVMContractBuild::new(
             self.name,

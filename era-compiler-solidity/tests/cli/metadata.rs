@@ -22,7 +22,7 @@ fn with_metadata_combined_json_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_asm_standard_json_mode() -> anyhow::Result<()> {
+fn with_metadata_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

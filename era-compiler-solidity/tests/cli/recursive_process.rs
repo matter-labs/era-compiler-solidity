@@ -16,7 +16,7 @@ fn with_recursive_process_without_target() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_recursive_process() -> anyhow::Result<()> {
+fn with_recursive_process_no_stdin() -> anyhow::Result<()> {
     common::setup()?;
 
     let target = era_compiler_common::Target::EraVM.to_string();

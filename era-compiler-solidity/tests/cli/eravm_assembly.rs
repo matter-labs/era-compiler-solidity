@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_eravm_assembly_by_default() -> anyhow::Result<()> {
+fn with_eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         "--eravm-assembly",
@@ -43,6 +43,20 @@ fn with_incompatible_input_format() -> anyhow::Result<()> {
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}
+
+#[test]
+fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result

@@ -67,7 +67,64 @@ fn with_metadata_hash_no_input_file() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_metadata_hash_standard_json_mode() -> anyhow::Result<()> {
+fn with_metadata_hash_none() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--metadata-hash",
+        "none",
+        "--bin",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("Binary:\n"));
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_keccak256() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--metadata-hash",
+        "keccak256",
+        "--bin",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("Binary:\n"));
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_ipfs() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--metadata-hash",
+        "ipfs",
+        "--bin",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("Binary:\n"));
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_none_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -75,6 +132,44 @@ fn with_metadata_hash_standard_json_mode() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--metadata-hash",
         "none",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Metadata hash mode must be specified in standard JSON input settings.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_keccak256_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        "--metadata-hash",
+        "keccak256",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Metadata hash mode must be specified in standard JSON input settings.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_metadata_hash_ipfs_standard_json_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        "--metadata-hash",
+        "ipfs",
     ];
 
     let result = cli::execute_zksolc(args)?;

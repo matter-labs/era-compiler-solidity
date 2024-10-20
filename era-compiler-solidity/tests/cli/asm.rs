@@ -87,6 +87,22 @@ fn with_asm_with_wrong_input_format() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_asm_eravm_assembly_mode() -> anyhow::Result<()> {
+    common::setup()?;
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--bin",
+        "--asm",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains("entry:"));
+
+    Ok(())
+}
+
+#[test]
 fn with_asm_combined_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
