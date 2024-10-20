@@ -112,15 +112,101 @@ impl Contract {
             }
         };
 
-        let module = match self.ir {
+        let build = match self.ir {
+            IR::Yul(mut yul) => {
+                let module = llvm.create_module(self.name.full_path.as_str());
+                let mut context = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    Some(dependency_data),
+                    debug_config,
+                );
+                context.set_solidity_data(
+                    era_compiler_llvm_context::EraVMContextSolidityData::default(),
+                );
+                let yul_data =
+                    era_compiler_llvm_context::EraVMContextYulData::new(enable_eravm_extensions);
+                context.set_yul_data(yul_data);
+
+                yul.declare(&mut context).map_err(|error| {
+                    anyhow::anyhow!("LLVM IR generator declaration pass: {error}")
+                })?;
+                yul.into_llvm(&mut context).map_err(|error| {
+                    anyhow::anyhow!("LLVM IR generator definition pass: {error}")
+                })?;
+
+                context.build(
+                    self.name.full_path.as_str(),
+                    metadata_hash,
+                    output_assembly,
+                    false,
+                )
+            }
+            IR::EVMLA(mut evmla) => {
+                let solc_version = match solc_version {
+                    Some(solc_version) => solc_version,
+                    None => {
+                        anyhow::bail!(
+                            "The EVM assembly pipeline cannot be executed without `solc`"
+                        );
+                    }
+                };
+
+                let module = llvm.create_module(self.name.full_path.as_str());
+                let mut context = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    Some(dependency_data),
+                    debug_config,
+                );
+                context.set_solidity_data(
+                    era_compiler_llvm_context::EraVMContextSolidityData::default(),
+                );
+                let evmla_data =
+                    era_compiler_llvm_context::EraVMContextEVMLAData::new(solc_version.default);
+                context.set_evmla_data(evmla_data);
+
+                evmla.declare(&mut context).map_err(|error| {
+                    anyhow::anyhow!("LLVM IR generator declaration pass: {error}")
+                })?;
+                evmla.into_llvm(&mut context).map_err(|error| {
+                    anyhow::anyhow!("LLVM IR generator definition pass: {error}")
+                })?;
+
+                context.build(
+                    self.name.full_path.as_str(),
+                    metadata_hash,
+                    output_assembly,
+                    false,
+                )
+            }
             IR::LLVMIR(ref llvm_ir) => {
                 let memory_buffer =
                     inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
                         llvm_ir.source.as_bytes(),
                         self.name.full_path.as_str(),
                     );
-                llvm.create_module_from_ir(memory_buffer)
-                    .map_err(|error| anyhow::anyhow!(error.to_string()))?
+                let module = llvm
+                    .create_module_from_ir(memory_buffer)
+                    .map_err(|error| anyhow::anyhow!(error.to_string()))?;
+                let context = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    Some(dependency_data),
+                    debug_config,
+                );
+                context.build(
+                    self.name.full_path.as_str(),
+                    metadata_hash,
+                    output_assembly,
+                    false,
+                )
             }
             IR::EraVMAssembly(eravm_assembly) => {
                 let target_machine = era_compiler_llvm_context::TargetMachine::new(
@@ -139,66 +225,13 @@ impl Contract {
                 } else {
                     None
                 };
-                let build = era_compiler_llvm_context::eravm_build(
+                era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
                     metadata_hash,
                     assembly_text,
-                )?;
-                return Ok(EraVMContractBuild::new(
-                    self.name,
-                    identifier,
-                    build,
-                    metadata_json,
-                    HashSet::new(),
-                ));
+                )
             }
-            _ => llvm.create_module(self.name.full_path.as_str()),
-        };
-        let mut context = era_compiler_llvm_context::EraVMContext::new(
-            &llvm,
-            module,
-            llvm_options,
-            optimizer,
-            Some(dependency_data),
-            debug_config,
-        );
-        context.set_solidity_data(era_compiler_llvm_context::EraVMContextSolidityData::default());
-        match self.ir {
-            IR::Yul(_) => {
-                let yul_data =
-                    era_compiler_llvm_context::EraVMContextYulData::new(enable_eravm_extensions);
-                context.set_yul_data(yul_data);
-            }
-            IR::EVMLA(_) => {
-                let solc_version = match solc_version {
-                    Some(solc_version) => solc_version,
-                    None => {
-                        anyhow::bail!(
-                            "The EVM assembly pipeline cannot be executed without `solc`"
-                        );
-                    }
-                };
-
-                let evmla_data =
-                    era_compiler_llvm_context::EraVMContextEVMLAData::new(solc_version.default);
-                context.set_evmla_data(evmla_data);
-            }
-            _ => {}
-        }
-
-        self.ir
-            .declare(&mut context)
-            .map_err(|error| anyhow::anyhow!("LLVM IR generator declaration pass: {error}"))?;
-        self.ir
-            .into_llvm(&mut context)
-            .map_err(|error| anyhow::anyhow!("LLVM IR generator definition pass: {error}"))?;
-
-        let build = context.build(
-            self.name.full_path.as_str(),
-            metadata_hash,
-            output_assembly,
-            false,
-        )?;
+        }?;
 
         Ok(EraVMContractBuild::new(
             self.name,
