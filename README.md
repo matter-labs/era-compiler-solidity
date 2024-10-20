@@ -2,11 +2,7 @@
 
 [![Logo](eraLogo.svg)](https://zksync.io/)
 
-ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum
-without compromising on security
-or decentralization. As it is EVM-compatible (with Solidity/Vyper), the majority of Ethereum projects can be redeployed without
-refactoring and re-auditing. ZKsync Era uses an LLVM-based compiler toolchain that allows developers to design, implement, and optimize
-efficient language-specific features while benefiting from the extensive LLVM ecosystem.
+ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security or decentralization. As it is EVM-compatible (with Solidity/Vyper), the majority of Ethereum projects can be redeployed without refactoring and re-auditing. ZKsync Era uses an LLVM-based compiler toolchain that allows developers to design, implement, and optimize efficient language-specific features while benefiting from the extensive LLVM ecosystem.
 
 This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
 
@@ -26,11 +22,8 @@ cargo test
 
 ## Troubleshooting
 
-If you have multiple LLVM builds in your system, ensure that you choose the
-correct one to build the compiler.
-The environment variable `LLVM_SYS_{version}_PREFIX` sets the path to the
-directory with LLVM build artifacts, which typically ends with
-`target-llvm/build-final`.
+If you have multiple LLVM builds in your system, ensure that you choose the correct one to build the compiler.
+The environment variable `LLVM_SYS_{version}_PREFIX` sets the path to the directory with LLVM build artifacts, which typically ends with `target-llvm/build-final`.
 For example:
 
 ```shell
