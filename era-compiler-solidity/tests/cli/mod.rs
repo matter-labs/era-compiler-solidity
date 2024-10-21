@@ -142,10 +142,21 @@ pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_co
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
-/// Default library path and address.
+/// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
-/// Linker library path and address.
+/// A test constant.
+pub const LIBRARY_CONTRACT_NAME_MISSING: &str =
+    "tests/data/contracts/solidity/MiniMath.sol=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+
+/// A test constant.
+pub const LIBRARY_ADDRESS_MISSING: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath";
+
+/// A test constant.
+pub const LIBRARY_ADDRESS_INVALID: &str =
+    "tests/data/contracts/solidity/MiniMath.sol:MiniMath=INVALID";
+
+/// A test constant.
 pub const LIBRARY_LINKER: &str =
     "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
 

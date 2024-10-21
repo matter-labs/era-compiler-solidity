@@ -69,17 +69,17 @@ impl Libraries {
             let mut path_and_address = library.split('=');
             let path = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("The library #{} path is missing", index))?;
+                .ok_or_else(|| anyhow::anyhow!("The library #{} path is missing.", index))?;
             let mut file_and_contract = path.split(':');
             let file = file_and_contract
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("The library `{}` file name is missing", path))?;
+                .ok_or_else(|| anyhow::anyhow!("The library `{}` file name is missing.", path))?;
             let contract = file_and_contract.next().ok_or_else(|| {
-                anyhow::anyhow!("The library `{}` contract name is missing", path)
+                anyhow::anyhow!("The library `{}` contract name is missing.", path)
             })?;
             let address = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("The library `{}` address is missing", path))?;
+                .ok_or_else(|| anyhow::anyhow!("The library `{}` address is missing.", path))?;
             result
                 .entry(file.to_owned())
                 .or_insert_with(BTreeMap::new)
@@ -99,11 +99,11 @@ impl Libraries {
             let mut path_and_address = library.split('=');
             let path = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("The library #{} path is missing", index))?;
+                .ok_or_else(|| anyhow::anyhow!("The library #{} path is missing.", index))?;
 
             let address = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("The library `{}` address is missing", path))?;
+                .ok_or_else(|| anyhow::anyhow!("The library `{}` address is missing.", path))?;
             let address: [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS] =
                 hex::decode(address.strip_prefix("0x").unwrap_or(address))
                     .map_err(|error| {
@@ -112,7 +112,7 @@ impl Libraries {
                     .and_then(|address| {
                         address.try_into().map_err(|address: Vec<u8>| {
                             anyhow::anyhow!(
-                                "Invalid address size of library `{path}`: expected {}, found {}",
+                                "Invalid address size of library `{path}`: expected {}, found {}.",
                                 era_compiler_common::BYTE_LENGTH_ETH_ADDRESS,
                                 address.len(),
                             )
