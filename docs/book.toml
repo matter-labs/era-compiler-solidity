@@ -1,9 +1,10 @@
 [book]
 authors = [
     "Oleksandr Zarudnyi",
+    "Igor Zhirkov",
     "Anton Baliasnikov",
 ]
-   language = "en"
-   multilingual = false
-   src = "src"
-   title = "ZKsync Solidity compiler documentation"
+language = "en"
+multilingual = false
+src = "src"
+title = "ZKsync Solidity Compiler Toolchain Documentation"
