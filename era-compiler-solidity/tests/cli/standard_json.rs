@@ -160,8 +160,14 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
 fn with_standard_json_empty() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH];
-    let args_solc = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH];
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
+    ];
 
     let result = cli::execute_zksolc(args)?;
     let status = result
