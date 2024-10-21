@@ -1,1 +1,0 @@
-{"language":"LLVM IR","sources":{"Test":{"urls":["tests/examples/Test.ll"]}},"settings":{"optimizer":{"enabled":true},"outputSelection":{"*":{"":["metadata"],"*":["abi","evm.methodIdentifiers"]}},"libraries":{}}}

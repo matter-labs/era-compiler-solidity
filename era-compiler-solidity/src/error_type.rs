@@ -32,7 +32,15 @@ impl FromStr for ErrorType {
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "sendtransfer" => Ok(Self::SendTransfer),
-            r#type => Err(anyhow::anyhow!("Invalid suppressed message type: {type}")),
+            r#type => Err(anyhow::anyhow!("Invalid suppressed error type: {type}")),
+        }
+    }
+}
+
+impl std::fmt::Display for ErrorType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::SendTransfer => write!(f, "sendtransfer"),
         }
     }
 }

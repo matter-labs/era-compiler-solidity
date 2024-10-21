@@ -3,8 +3,8 @@ use predicates::prelude::*;
 use tempfile::TempDir;
 
 #[test]
-fn run_zksolc_without_any_args() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn without_any_args() -> anyhow::Result<()> {
+    common::setup()?;
     let args: &[&str] = &[];
 
     let result = cli::execute_zksolc(args)?;
@@ -25,8 +25,8 @@ fn run_zksolc_without_any_args() -> anyhow::Result<()> {
 }
 
 #[test]
-fn default_run_of_zksolc_from_the_help() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_args_from_help_example() -> anyhow::Result<()> {
+    common::setup()?;
     let tmp_dir = TempDir::new()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -55,8 +55,8 @@ fn default_run_of_zksolc_from_the_help() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_multiple_output_options() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_multiple_output_options() -> anyhow::Result<()> {
+    common::setup()?;
     let tmp_dir = TempDir::new()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -92,22 +92,9 @@ fn run_zksolc_with_multiple_output_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_zksolc_with_broken_input_and_no_output_options() -> anyhow::Result<()> {
-    let _ = common::setup();
+fn with_bin_output_same_file_and_cli() -> anyhow::Result<()> {
+    common::setup()?;
 
-    let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("error: cannot parse operand"));
-
-    Ok(())
-}
-
-#[test]
-fn bin_output_is_the_same_in_file_and_cli() -> anyhow::Result<()> {
-    let _ = common::setup();
     let tmp_dir = TempDir::new()?;
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,

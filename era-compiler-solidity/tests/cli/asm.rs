@@ -1,14 +1,18 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
-    let _ = common::setup();
+#[test_case(Target::EraVM)]
+/// TODO: EVM
+fn with_asm(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
 
     // Valid command
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let result_status_code = result
         .success()
         .stdout(predicate::str::contains("__entry:"))
@@ -41,12 +45,14 @@ fn run_zksolc_with_asm_by_default() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
-    let _ = common::setup();
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_asm_duplicate_flag(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
@@ -63,12 +69,14 @@ fn run_zksolc_with_two_same_flags_asm_asm() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
-    let _ = common::setup();
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_asm_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let solc_result = cli::execute_solc(args)?;
 
     let result_exit_code = result
@@ -82,6 +90,64 @@ fn run_zksolc_with_asm_with_wrong_input_format() -> anyhow::Result<()> {
         .expect("No exit code.");
 
     solc_result.code(result_exit_code);
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn with_asm_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--bin",
+        "--asm",
+    ];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains("entry:"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_asm_combined_json_mode(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--asm",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        "asm",
+    ];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "Cannot output data outside of JSON in combined JSON mode.",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_asm_standard_json_mode(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        "--asm",
+    ];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+
+    result.success().stdout(predicate::str::contains(
+        "Cannot output data outside of JSON in standard JSON mode.",
+    ));
 
     Ok(())
 }

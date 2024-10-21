@@ -1,0 +1,16 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "A": {
+      "content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C {}"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    }
+  },
+  "suppressedErrors": ["INVALID_SUPPRESSED_ERROR_TYPE"],
+  "suppressedWarnings": ["txorigin"]
+}

@@ -26,13 +26,13 @@ pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.
 ///
-pub fn run(target: era_compiler_common::Target) {
+pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
     match target {
         era_compiler_common::Target::EraVM => {
-            let input_json =
-                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input_json = std::io::read_to_string(std::io::stdin())
+                .map_err(|error| anyhow::anyhow!("Stdin reading error: {error}"))?;
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
-                .expect("Stdin reading error");
+                .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
 
             let contract = input.contract.expect("Always exists");
             let source_location =
@@ -51,13 +51,14 @@ pub fn run(target: era_compiler_common::Target) {
                 .map_err(|error| {
                     SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
-            serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
+            serde_json::to_writer(std::io::stdout(), &result)
+                .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
         }
         era_compiler_common::Target::EVM => {
-            let input_json =
-                std::io::read_to_string(std::io::stdin()).expect("Stdin reading error");
+            let input_json = std::io::read_to_string(std::io::stdin())
+                .map_err(|error| anyhow::anyhow!("Stdin reading error: {error}"))?;
             let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
-                .expect("Stdin reading error");
+                .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
 
             let contract = input.contract.expect("Always exists");
             let source_location =
@@ -74,10 +75,12 @@ pub fn run(target: era_compiler_common::Target) {
                 .map_err(|error| {
                     SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
-            serde_json::to_writer(std::io::stdout(), &result).expect("Stdout writing error");
+            serde_json::to_writer(std::io::stdout(), &result)
+                .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
         }
     }
     unsafe { inkwell::support::shutdown_llvm() };
+    Ok(())
 }
 
 ///

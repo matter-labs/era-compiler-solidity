@@ -36,3 +36,11 @@ impl FromStr for WarningType {
         }
     }
 }
+
+impl std::fmt::Display for WarningType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::TxOrigin => write!(f, "txorigin"),
+        }
+    }
+}

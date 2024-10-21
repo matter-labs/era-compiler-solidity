@@ -1,0 +1,10 @@
+{
+	"language": "Solidity",
+	"sources": {},
+	"settings": {
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		}
+	}
+}

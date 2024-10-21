@@ -44,7 +44,7 @@ pub struct Arguments {
     /// Can be used multiple times. Can only be used if the base path has a non-empty value.
     /// Passed to `solc` without changes.
     #[structopt(long = "include-path")]
-    pub include_paths: Vec<String>,
+    pub include_path: Vec<String>,
 
     /// Allow a given path for imports. A list of paths can be supplied by separating them with a comma.
     /// Passed to `solc` without changes.
@@ -228,18 +228,11 @@ pub struct Arguments {
 
 impl Default for Arguments {
     fn default() -> Self {
-        Self::new()
+        Self::from_args()
     }
 }
 
 impl Arguments {
-    ///
-    /// A shortcut constructor.
-    ///
-    pub fn new() -> Self {
-        Self::from_args()
-    }
-
     ///
     /// Validates the arguments.
     ///
@@ -285,27 +278,27 @@ impl Arguments {
         .count();
         if modes_count > 1 {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM assembly, disassembler, combined JSON, standard JSON.", None, None));
+                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, linker, combined JSON, standard JSON.", None, None));
         }
 
-        if self.yul || self.llvm_ir || self.eravm_assembly {
+        if self.yul || self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
             if self.base_path.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`base-path` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    "`base-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
-            if !self.include_paths.is_empty() {
+            if !self.include_path.is_empty() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`include-paths` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    "`include-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
             if self.allow_paths.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`allow-paths` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    "`allow-paths` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
@@ -313,7 +306,7 @@ impl Arguments {
 
             if self.evm_version.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`evm-version` is not used in Yul, LLVM IR and EraVM assembly modes.",
+                    "EVM version is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
@@ -321,27 +314,25 @@ impl Arguments {
 
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                "EVM legacy assembly codegen is not supported in Yul, LLVM IR and EraVM assembly modes.", None, None));
-            }
-
-            if self.disable_solc_optimizer {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                "Disabling the solc optimizer is not supported in Yul, LLVM IR and EraVM assembly modes.", None, None));
-            }
-        }
-
-        if self.llvm_ir || self.eravm_assembly {
-            if !self.libraries.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "Libraries are not supported in LLVM IR and EraVM assembly modes.",
+                    "EVM legacy assembly codegen is only available in Solidity mode.",
                     None,
                     None,
                 ));
             }
 
+            if self.disable_solc_optimizer {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Disabling the solc optimizer is only available in Solidity mode.",
+                    None,
+                    None,
+                ));
+            }
+        }
+
+        if self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
             if self.solc.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`solc` is not used in LLVM IR and EraVM assembly modes.",
+                    "Using `solc` is only allowed in Solidity and Yul modes.",
                     None,
                     None,
                 ));
@@ -349,16 +340,19 @@ impl Arguments {
 
             if self.enable_eravm_extensions || self.system_mode {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "EraVM extensions are not supported in LLVM IR and EraVM assembly modes.",
+                    "EraVM extensions are only supported in Solidity and Yul modes.",
                     None,
                     None,
                 ));
             }
-            if self.detect_missing_libraries {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                "Missing deployable libraries detection mode is not supported in LLVM IR and EraVM assembly modes.", None, None
-                ));
-            }
+        }
+
+        if (self.llvm_ir || self.eravm_assembly || self.disassemble) && !self.libraries.is_empty() {
+            messages.push(SolcStandardJsonOutputError::new_error(
+                "Libraries are only supported in Solidity, Yul, and linker modes.",
+                None,
+                None,
+            ));
         }
 
         if self.eravm_assembly {
@@ -369,6 +363,7 @@ impl Arguments {
                     None,
                 ));
             }
+
             if self.optimization.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "LLVM optimizations are not supported in EraVM assembly mode.",
@@ -383,18 +378,14 @@ impl Arguments {
                     None,
                 ));
             }
-            if self.llvm_options.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "LLVM options are not supported in EraVM assembly mode.",
-                    None,
-                    None,
-                ));
-            }
         }
 
-        if self.disassemble && std::env::args().count() > self.inputs.len() + 2 {
+        if self.disassemble
+            && std::env::args().count()
+                > 2 + self.inputs.len() + (self.target.is_some() as usize) * 2
+        {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "No other options are allowed in disassembler mode.",
+                "No other options except input files and `--target` are allowed in disassembler mode.",
                 None,
                 None,
             ));
@@ -403,11 +394,12 @@ impl Arguments {
         if self.link
             && std::env::args().count()
                 > 2 + self.inputs.len()
+                    + (self.target.is_some() as usize) * 2
                     + ((!self.libraries.is_empty()) as usize)
                     + self.libraries.len()
         {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "No other options except `--libraries` are allowed in linker mode.",
+                "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
                 None,
                 None,
             ));
@@ -452,6 +444,7 @@ impl Arguments {
                     None,
                 ));
             }
+
             if self.evm_version.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EVM version must be passed via standard JSON input.",
@@ -509,7 +502,7 @@ impl Arguments {
             }
             if self.metadata_literal {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "Metadata literal content must be specified in standard JSON input settings.",
+                    "Metadata literal content flag must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
@@ -572,7 +565,7 @@ impl Arguments {
                 }
                 if parts.len() != 2 {
                     anyhow::bail!(
-                        "invalid remapping `{}`: expected two parts separated by '='",
+                        "Invalid remapping `{}`: expected two parts separated by '='.",
                         input
                     );
                 }
@@ -599,7 +592,7 @@ impl Arguments {
     fn path_to_posix(path: &Path) -> anyhow::Result<PathBuf> {
         let path = path
             .to_slash()
-            .ok_or_else(|| anyhow::anyhow!("input path {:?} POSIX conversion error", path))?
+            .ok_or_else(|| anyhow::anyhow!("Input path {:?} POSIX conversion error.", path))?
             .to_string();
         let path = PathBuf::from(path.as_str());
         Ok(path)

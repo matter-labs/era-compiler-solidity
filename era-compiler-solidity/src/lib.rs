@@ -247,7 +247,7 @@ pub fn eravm_assembly(
 }
 
 ///
-/// Runs the standard output mode for EraVM.
+/// Runs the standard output mode for the EraVM target.
 ///
 pub fn standard_output_eravm(
     paths: &[PathBuf],
@@ -336,7 +336,7 @@ pub fn standard_output_eravm(
 }
 
 ///
-/// Runs the standard output mode for EVM.
+/// Runs the standard output mode for the EVM target.
 ///
 pub fn standard_output_evm(
     paths: &[PathBuf],
@@ -419,7 +419,7 @@ pub fn standard_output_evm(
 }
 
 ///
-/// Runs the standard JSON mode for EVM.
+/// Runs the standard JSON mode for the EraVM target.
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<SolcCompiler>,
@@ -596,7 +596,7 @@ pub fn standard_json_eravm(
 }
 
 ///
-/// Runs the standard JSON mode for EVM.
+/// Runs the standard JSON mode for the EVM target.
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<SolcCompiler>,
@@ -730,7 +730,7 @@ pub fn standard_json_evm(
 }
 
 ///
-/// Runs the combined JSON mode for EraVM.
+/// Runs the combined JSON mode for the EraVM target.
 ///
 pub fn combined_json_eravm(
     format: String,
@@ -791,6 +791,11 @@ pub fn combined_json_eravm(
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
+
+            writeln!(
+                std::io::stderr(),
+                "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+            )?;
         }
         None => {
             serde_json::to_writer(std::io::stdout(), &combined_json)?;
@@ -800,7 +805,7 @@ pub fn combined_json_eravm(
 }
 
 ///
-/// Runs the combined JSON mode for EVM.
+/// Runs the combined JSON mode for the EVM target.
 ///
 pub fn combined_json_evm(
     format: String,
@@ -853,6 +858,11 @@ pub fn combined_json_evm(
         Some(output_directory) => {
             std::fs::create_dir_all(output_directory.as_path())?;
             combined_json.write_to_directory(output_directory.as_path(), overwrite)?;
+
+            writeln!(
+                std::io::stderr(),
+                "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+            )?;
         }
         None => {
             serde_json::to_writer(std::io::stdout(), &combined_json)?;
@@ -865,17 +875,10 @@ pub fn combined_json_evm(
 /// Runs the disassembler for EraVM bytecode file and prints the output to stdout.
 ///
 pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
-    let target_machine = era_compiler_llvm_context::TargetMachine::new(
-        era_compiler_common::Target::EraVM,
-        &era_compiler_llvm_context::OptimizerSettings::cycles(),
-        &[],
-    )?;
-
-    let disassemblies: Vec<(String, String)> = paths
-        .into_iter()
+    let bytecodes = paths
+        .into_par_iter()
         .map(|path| {
             let pathbuf = PathBuf::from(path.as_str());
-
             let bytecode = match pathbuf.extension().and_then(|extension| extension.to_str()) {
                 Some("hex") => {
                     let string = std::fs::read_to_string(pathbuf)?;
@@ -891,7 +894,19 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
                     anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin")
                 }
             };
+            Ok((path, bytecode))
+        })
+        .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
+    let target_machine = era_compiler_llvm_context::TargetMachine::new(
+        era_compiler_common::Target::EraVM,
+        &era_compiler_llvm_context::OptimizerSettings::cycles(),
+        &[],
+    )?;
+
+    let disassemblies: Vec<(String, String)> = bytecodes
+        .into_iter()
+        .map(|(path, bytecode)| {
             let disassembly =
                 era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
             Ok((path, disassembly))

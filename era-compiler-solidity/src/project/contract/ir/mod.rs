@@ -9,11 +9,12 @@ pub mod yul;
 
 use std::collections::HashSet;
 
+use era_yul::yul::parser::statement::object::Object;
+
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::wrapper::Wrap;
-use era_yul::yul::parser::statement::object::Object;
 
 use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;
@@ -73,68 +74,6 @@ impl IR {
             Self::EVMLA(inner) => inner.get_missing_libraries(),
             Self::LLVMIR(_inner) => HashSet::new(),
             Self::EraVMAssembly(_inner) => HashSet::new(),
-        }
-    }
-}
-
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IR
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn declare(
-        &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
-    ) -> anyhow::Result<()> {
-        match self {
-            Self::Yul(inner) => inner.declare(context),
-            Self::EVMLA(inner) => inner.declare(context),
-            Self::LLVMIR(_inner) => Ok(()),
-            Self::EraVMAssembly(_inner) => Ok(()),
-        }
-    }
-
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
-    ) -> anyhow::Result<()> {
-        match self {
-            Self::Yul(inner) => inner.into_llvm(context),
-            Self::EVMLA(inner) => inner.into_llvm(context),
-            Self::LLVMIR(_inner) => Ok(()),
-            Self::EraVMAssembly(_inner) => Ok(()),
-        }
-    }
-}
-
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IR
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn declare(
-        &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
-        match self {
-            Self::Yul(inner) => inner.declare(context),
-            Self::EVMLA(_inner) => todo!(),
-            Self::LLVMIR(_inner) => Ok(()),
-            Self::EraVMAssembly(_inner) => {
-                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
-            }
-        }
-    }
-
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
-        match self {
-            Self::Yul(inner) => inner.into_llvm(context),
-            Self::EVMLA(_inner) => todo!(),
-            Self::LLVMIR(_inner) => Ok(()),
-            Self::EraVMAssembly(_inner) => {
-                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
-            }
         }
     }
 }

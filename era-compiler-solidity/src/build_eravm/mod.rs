@@ -5,6 +5,7 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -50,10 +51,19 @@ impl Build {
     pub fn write_to_terminal(
         mut self,
         output_metadata: bool,
+        output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
         self.exit_on_error();
+
+        if !output_metadata && !output_assembly && !output_binary {
+            writeln!(
+                std::io::stderr(),
+                "Compiler run successful. No output requested. Use flags --metadata, --asm, --bin."
+            )?;
+            return Ok(());
+        }
 
         for (path, build) in self.contracts.into_iter() {
             build
@@ -77,6 +87,8 @@ impl Build {
         self.take_and_write_warnings();
         self.exit_on_error();
 
+        std::fs::create_dir_all(output_directory)?;
+
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
                 output_directory,
@@ -86,6 +98,10 @@ impl Build {
             )?;
         }
 
+        writeln!(
+            std::io::stderr(),
+            "Compiler run successful. Artifact(s) can be found in directory {output_directory:?}."
+        )?;
         Ok(())
     }
 
