@@ -12,7 +12,6 @@ use std::collections::BTreeMap;
 fn default_04_evmla() {
     default(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
 }
-
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_05_evmla() {

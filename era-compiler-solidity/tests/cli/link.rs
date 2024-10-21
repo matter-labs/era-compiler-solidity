@@ -1,6 +1,6 @@
 use crate::{cli, common};
-use predicates::prelude::*;
 use era_compiler_common::Target;
+use predicates::prelude::*;
 
 #[test]
 fn with_libraries() -> anyhow::Result<()> {
@@ -72,7 +72,12 @@ fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 
     let target = Target::EVM.to_string();
-    let args = &["--link", cli::TEST_LINKER_BYTECODE_PATH, "--target", target.as_str()];
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_PATH,
+        "--target",
+        target.as_str(),
+    ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(

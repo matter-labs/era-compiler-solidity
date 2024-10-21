@@ -1,6 +1,6 @@
 use crate::{cli, common};
-use predicates::prelude::*;
 use era_compiler_common::Target;
+use predicates::prelude::*;
 
 #[test]
 fn with_bytecode() -> anyhow::Result<()> {
@@ -87,7 +87,12 @@ fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 
     let target = Target::EVM.to_string();
-    let args = &["--disassemble", cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH, "--target", target.as_str()];
+    let args = &[
+        "--disassemble",
+        cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH,
+        "--target",
+        target.as_str(),
+    ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(

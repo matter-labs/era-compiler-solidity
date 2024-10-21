@@ -7,6 +7,7 @@ use test_case::test_case;
 /// TODO: EVM
 fn with_asm(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
     let invalid_args = &["--asm"];
 
@@ -48,6 +49,7 @@ fn with_asm(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_asm_duplicate_flag(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm", "--asm"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -71,6 +73,7 @@ fn with_asm_duplicate_flag(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_asm_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--asm"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -94,6 +97,7 @@ fn with_asm_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 fn with_asm_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[
         "--eravm-assembly",
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,

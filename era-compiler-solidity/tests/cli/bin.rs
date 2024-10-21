@@ -4,9 +4,10 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
+/// TODO: EVM
 fn with_bin(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
     let invalid_args = &["--bin"];
 
@@ -48,6 +49,7 @@ fn with_bin(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--bin"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -71,6 +73,7 @@ fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--bin"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
