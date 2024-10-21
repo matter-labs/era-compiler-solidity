@@ -93,11 +93,11 @@ impl Project {
         }
 
         let solc_version = solc_compiler.version.to_owned();
-        let files = match solc_output.contracts.as_ref() {
-            Some(files) => files,
-            None => anyhow::bail!("No input sources specified."),
-        };
 
+        let files = solc_output
+            .contracts
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No input sources specified."))?;
         let mut input_contracts = Vec::with_capacity(files.len());
         for (path, contracts) in files.iter() {
             for (name, contract) in contracts.iter() {

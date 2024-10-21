@@ -284,21 +284,21 @@ impl Arguments {
         if self.yul || self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
             if self.base_path.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`base-path` is only allowed in Solidity mode",
+                    "`base-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
             if !self.include_path.is_empty() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`include-path` is only allowed in Solidity mode",
+                    "`include-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
             if self.allow_paths.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "`allow-paths` is only allowed in Solidity mode",
+                    "`allow-paths` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
@@ -306,7 +306,7 @@ impl Arguments {
 
             if self.evm_version.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "EVM version is only allowed in Solidity mode",
+                    "EVM version is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
@@ -314,7 +314,7 @@ impl Arguments {
 
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "EVM legacy assembly codegen is only available in Solidity mode",
+                    "EVM legacy assembly codegen is only available in Solidity mode.",
                     None,
                     None,
                 ));
@@ -322,7 +322,7 @@ impl Arguments {
 
             if self.disable_solc_optimizer {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "Disabling the solc optimizer is only available in Solidity mode",
+                    "Disabling the solc optimizer is only available in Solidity mode.",
                     None,
                     None,
                 ));
@@ -565,7 +565,7 @@ impl Arguments {
                 }
                 if parts.len() != 2 {
                     anyhow::bail!(
-                        "invalid remapping `{}`: expected two parts separated by '='",
+                        "Invalid remapping `{}`: expected two parts separated by '='.",
                         input
                     );
                 }
@@ -592,7 +592,7 @@ impl Arguments {
     fn path_to_posix(path: &Path) -> anyhow::Result<PathBuf> {
         let path = path
             .to_slash()
-            .ok_or_else(|| anyhow::anyhow!("input path {:?} POSIX conversion error", path))?
+            .ok_or_else(|| anyhow::anyhow!("Input path {:?} POSIX conversion error.", path))?
             .to_string();
         let path = PathBuf::from(path.as_str());
         Ok(path)

@@ -247,7 +247,7 @@ pub fn eravm_assembly(
 }
 
 ///
-/// Runs the standard output mode for EraVM.
+/// Runs the standard output mode for the EraVM target.
 ///
 pub fn standard_output_eravm(
     paths: &[PathBuf],
@@ -336,7 +336,7 @@ pub fn standard_output_eravm(
 }
 
 ///
-/// Runs the standard output mode for EVM.
+/// Runs the standard output mode for the EVM target.
 ///
 pub fn standard_output_evm(
     paths: &[PathBuf],
@@ -419,7 +419,7 @@ pub fn standard_output_evm(
 }
 
 ///
-/// Runs the standard JSON mode for EVM.
+/// Runs the standard JSON mode for the EraVM target.
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<SolcCompiler>,
@@ -596,7 +596,7 @@ pub fn standard_json_eravm(
 }
 
 ///
-/// Runs the standard JSON mode for EVM.
+/// Runs the standard JSON mode for the EVM target.
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<SolcCompiler>,
@@ -730,7 +730,7 @@ pub fn standard_json_evm(
 }
 
 ///
-/// Runs the combined JSON mode for EraVM.
+/// Runs the combined JSON mode for the EraVM target.
 ///
 pub fn combined_json_eravm(
     format: String,
@@ -805,7 +805,7 @@ pub fn combined_json_eravm(
 }
 
 ///
-/// Runs the combined JSON mode for EVM.
+/// Runs the combined JSON mode for the EVM target.
 ///
 pub fn combined_json_evm(
     format: String,
