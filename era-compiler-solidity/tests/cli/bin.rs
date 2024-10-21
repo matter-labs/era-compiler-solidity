@@ -1,14 +1,17 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_bin_by_default() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_bin(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
     let invalid_args = &["--bin"];
 
     // Valid command
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let result_status_code = result
         .success()
         .stdout(predicate::str::contains("Binary:\n"))
@@ -22,7 +25,7 @@ fn with_bin_by_default() -> anyhow::Result<()> {
     solc_result.code(result_status_code);
 
     // Run invalid: zksolc --bin
-    let invalid_result = cli::execute_zksolc(invalid_args)?;
+    let invalid_result = cli::execute_zksolc_with_target(invalid_args, target)?;
     let invalid_result_status_code = invalid_result
         .failure()
         .stderr(
@@ -41,12 +44,13 @@ fn with_bin_by_default() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_two_same_flags_bin_bin() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--bin"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
@@ -63,12 +67,13 @@ fn with_two_same_flags_bin_bin() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_bin_with_wrong_input_format() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--bin"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let solc_result = cli::execute_solc(args)?;
 
     let result_exit_code = result
@@ -86,8 +91,9 @@ fn with_bin_with_wrong_input_format() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_bin_combined_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -97,7 +103,7 @@ fn with_bin_combined_json_mode() -> anyhow::Result<()> {
         "bin",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
 
     result.failure().stderr(predicate::str::contains(
         "Cannot output data outside of JSON in combined JSON mode.",
@@ -106,8 +112,9 @@ fn with_bin_combined_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_bin_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_bin_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -116,7 +123,7 @@ fn with_bin_standard_json_mode() -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
 
     result.success().stdout(predicate::str::contains(
         "Cannot output data outside of JSON in standard JSON mode.",

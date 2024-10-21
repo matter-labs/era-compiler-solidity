@@ -1,5 +1,6 @@
 use crate::{cli, common};
 use predicates::prelude::*;
+use era_compiler_common::Target;
 
 #[test]
 fn with_libraries() -> anyhow::Result<()> {
@@ -60,7 +61,22 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: No other options except files with bytecode and `--libraries` are allowed in linker mode.",
+        "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_target_evm() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let target = Target::EVM.to_string();
+    let args = &["--link", cli::TEST_LINKER_BYTECODE_PATH, "--target", target.as_str()];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "The EVM target does not support linking yet.",
     ));
 
     Ok(())

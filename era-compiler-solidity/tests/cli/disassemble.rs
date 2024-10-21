@@ -1,5 +1,6 @@
 use crate::{cli, common};
 use predicates::prelude::*;
+use era_compiler_common::Target;
 
 #[test]
 fn with_bytecode() -> anyhow::Result<()> {
@@ -60,7 +61,7 @@ fn with_bytecode_and_extra_args() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
 
     result.failure().stderr(predicate::str::contains(
-        "No other options are allowed in disassembler mode.",
+        "No other options except input files and `--target` are allowed in disassembler mode.",
     ));
 
     Ok(())
@@ -77,6 +78,21 @@ fn with_invalid_file_extensions() -> anyhow::Result<()> {
     result
         .failure()
         .stderr(predicate::str::contains("Invalid file extension"));
+
+    Ok(())
+}
+
+#[test]
+fn with_target_evm() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let target = Target::EVM.to_string();
+    let args = &["--disassemble", cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH, "--target", target.as_str()];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "The EVM target does not support disassembling yet.",
+    ));
 
     Ok(())
 }

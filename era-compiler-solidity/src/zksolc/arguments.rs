@@ -380,9 +380,9 @@ impl Arguments {
             }
         }
 
-        if self.disassemble && std::env::args().count() > self.inputs.len() + 2 {
+        if self.disassemble && std::env::args().count() > 2 + self.inputs.len() + (self.target.is_some() as usize) * 2 {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "No other options are allowed in disassembler mode.",
+                "No other options except input files and `--target` are allowed in disassembler mode.",
                 None,
                 None,
             ));
@@ -390,12 +390,12 @@ impl Arguments {
 
         if self.link
             && std::env::args().count()
-                > 2 + self.inputs.len()
+                > 2 + self.inputs.len() + (self.target.is_some() as usize) * 2
                     + ((!self.libraries.is_empty()) as usize)
                     + self.libraries.len()
         {
             messages.push(SolcStandardJsonOutputError::new_error(
-                "Error: No other options except files with bytecode and `--libraries` are allowed in linker mode.",
+                "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
                 None,
                 None,
             ));
