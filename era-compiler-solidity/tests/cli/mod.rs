@@ -74,6 +74,10 @@ pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_empty_sources.json";
 
 /// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_empty_sources.json";
+
+/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
     "tests/data/standard_json_input/solidity_solc.json";
 
@@ -159,6 +163,19 @@ pub const LIBRARY_ADDRESS_INVALID: &str =
 /// A test constant.
 pub const LIBRARY_LINKER: &str =
     "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
+
+/// A test constant.
+pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
+    "test.sol=0x1234567890abcdef1234567890abcdef12345678";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=INVALID";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";
 
 ///
 /// Execute zksolc with the given arguments and return the result.

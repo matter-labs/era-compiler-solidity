@@ -224,7 +224,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         &mut solc_output,
         Some(&solc_compiler.version),
         &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
-    )?;
+    );
 
     solc_output.collect_errors()?;
     Ok(solc_output)

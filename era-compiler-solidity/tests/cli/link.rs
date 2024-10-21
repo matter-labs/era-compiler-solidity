@@ -53,7 +53,7 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_COPY_PATH,
+        cli::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
         cli::LIBRARY_LINKER,
         "--bin",
@@ -62,6 +62,82 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_contract_name_missing() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_PATH,
+        "--libraries",
+        cli::LIBRARY_LINKER_CONTRACT_NAME_MISSING,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "{\"ignored\":{},\"linked\":{},\"unlinked\":{\"tests/data/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_address_missing() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_PATH,
+        "--libraries",
+        cli::LIBRARY_LINKER_ADDRESS_MISSING,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Address of the library `test.sol:GreaterHelper` is missing.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_address_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_PATH,
+        "--libraries",
+        cli::LIBRARY_LINKER_ADDRESS_INVALID,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Invalid address of library `test.sol:GreaterHelper`: Odd number of digits.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        cli::TEST_LINKER_BYTECODE_PATH,
+        "--libraries",
+        cli::LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Invalid address size of library `test.sol:GreaterHelper`: expected 20, found 4.",
     ));
 
     Ok(())
