@@ -9,13 +9,6 @@ pub mod yul;
 
 use std::collections::HashSet;
 
-use era_yul::yul::parser::statement::object::Object;
-
-use crate::evmla::assembly::Assembly;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
-use crate::yul::parser::dialect::era::EraDialect;
-use crate::yul::parser::wrapper::Wrap;
-
 use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;
 use self::llvm_ir::LLVMIR;
@@ -38,34 +31,6 @@ pub enum IR {
 
 impl IR {
     ///
-    /// A shortcut constructor.
-    ///
-    pub fn new_yul(object: Object<EraDialect>) -> Self {
-        Self::Yul(Yul::new(object.wrap()))
-    }
-
-    ///
-    /// A shortcut constructor.
-    ///
-    pub fn new_evmla(assembly: Assembly, extra_metadata: ExtraMetadata) -> Self {
-        Self::EVMLA(EVMLA::new(assembly, extra_metadata))
-    }
-
-    ///
-    /// A shortcut constructor.
-    ///
-    pub fn new_llvm_ir(path: String, source: String) -> Self {
-        Self::LLVMIR(LLVMIR::new(path, source))
-    }
-
-    ///
-    /// A shortcut constructor.
-    ///
-    pub fn new_eravm_assembly(path: String, source: String) -> Self {
-        Self::EraVMAssembly(EraVMAssembly::new(path, source))
-    }
-
-    ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> HashSet<String> {
@@ -75,5 +40,29 @@ impl IR {
             Self::LLVMIR(_inner) => HashSet::new(),
             Self::EraVMAssembly(_inner) => HashSet::new(),
         }
+    }
+}
+
+impl From<Yul> for IR {
+    fn from(inner: Yul) -> Self {
+        Self::Yul(inner)
+    }
+}
+
+impl From<EVMLA> for IR {
+    fn from(inner: EVMLA) -> Self {
+        Self::EVMLA(inner)
+    }
+}
+
+impl From<LLVMIR> for IR {
+    fn from(inner: LLVMIR) -> Self {
+        Self::LLVMIR(inner)
+    }
+}
+
+impl From<EraVMAssembly> for IR {
+    fn from(inner: EraVMAssembly) -> Self {
+        Self::EraVMAssembly(inner)
     }
 }

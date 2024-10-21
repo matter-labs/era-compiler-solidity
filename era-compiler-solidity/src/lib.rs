@@ -578,7 +578,7 @@ pub fn standard_json_eravm(
             &mut solc_output,
             solc_version.as_ref(),
             &zksolc_version,
-        )?;
+        );
     } else {
         let build = project.compile_to_eravm(
             messages,

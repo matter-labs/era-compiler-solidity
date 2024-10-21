@@ -76,6 +76,24 @@ fn with_detect_missing_libraries_standard_json_mode() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_detect_missing_libraries_standard_json_mode_missing_sources() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+        "--detect-missing-libraries",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "is deprecated in standard JSON mode and must be passed in JSON as",
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn with_detect_missing_libraries_standard_json_mode_llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 

@@ -4,8 +4,11 @@
 
 use std::collections::HashSet;
 
-use crate::yul::parser::dialect::era::EraDialect;
+use era_yul::yul::lexer::Lexer;
 use era_yul::yul::parser::statement::object::Object;
+
+use crate::yul::parser::dialect::era::EraDialect;
+use crate::yul::parser::wrapper::Wrap;
 
 ///
 /// The contract Yul source code.
@@ -18,10 +21,29 @@ pub struct Yul {
 
 impl Yul {
     ///
-    /// A shortcut constructor.
+    /// Transforms the `solc` standard JSON output contract into a Yul object.
     ///
-    pub fn new(object: crate::yul::parser::statement::object::Object) -> Self {
-        Self { object }
+    pub fn try_from_source(
+        name: &era_compiler_common::ContractName,
+        source_code: Option<&str>,
+        debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
+    ) -> anyhow::Result<Option<Self>> {
+        let source_code = match source_code {
+            None | Some("") => return Ok(None),
+            Some(ir_optimized) => ir_optimized,
+        };
+
+        if let Some(debug_config) = debug_config {
+            debug_config.dump_yul(name.full_path.as_str(), None, source_code)?;
+        }
+
+        let mut lexer = Lexer::new(source_code.to_owned());
+        let object = Object::parse(&mut lexer, None)
+            .map_err(|error| anyhow::anyhow!("Yul parsing: {error:?}"))?;
+
+        Ok(Some(Self {
+            object: object.wrap(),
+        }))
     }
 
     ///

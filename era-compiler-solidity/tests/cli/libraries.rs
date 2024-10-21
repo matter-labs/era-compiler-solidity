@@ -88,3 +88,60 @@ fn with_libraries_standard_json_mode() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_libraries_missing_contract_name() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--libraries",
+        cli::LIBRARY_CONTRACT_NAME_MISSING,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "The library `tests/data/contracts/solidity/MiniMath.sol` contract name is missing.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_missing_address() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--libraries",
+        cli::LIBRARY_ADDRESS_MISSING,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "The library `tests/data/contracts/solidity/MiniMath.sol:MiniMath` address is missing.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_invalid_address() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--libraries",
+        cli::LIBRARY_ADDRESS_INVALID,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+
+    result.failure().stderr(predicate::str::contains(
+        "Error: Library address is not prefixed with \"0x\"",
+    ));
+
+    Ok(())
+}

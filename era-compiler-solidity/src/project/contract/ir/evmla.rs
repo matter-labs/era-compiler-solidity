@@ -5,7 +5,7 @@
 use std::collections::HashSet;
 
 use crate::evmla::assembly::Assembly;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
+use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
 
 ///
 /// The contract EVM legacy assembly source code.
@@ -18,11 +18,16 @@ pub struct EVMLA {
 
 impl EVMLA {
     ///
-    /// A shortcut constructor.
+    /// Transforms the `solc` standard JSON output contract into an EVM legacy assembly object.
     ///
-    pub fn new(mut assembly: Assembly, extra_metadata: ExtraMetadata) -> Self {
+    pub fn try_from_contract(contract: &SolcStandardJsonOutputContract) -> Option<Self> {
+        let evm = contract.evm.as_ref()?;
+        let extra_metadata = evm.extra_metadata.clone().unwrap_or_default();
+
+        let mut assembly = evm.legacy_assembly.as_ref()?.to_owned();
         assembly.extra_metadata = Some(extra_metadata);
-        Self { assembly }
+
+        Some(Self { assembly })
     }
 
     ///
