@@ -157,6 +157,28 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_standard_json_empty() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH];
+    let args_solc = &["--standard-json", cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains("No input sources specified."))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
 fn with_standard_json_yul() -> anyhow::Result<()> {
     common::setup()?;
 

@@ -95,7 +95,7 @@ impl Project {
         let solc_version = solc_compiler.version.to_owned();
         let files = match solc_output.contracts.as_ref() {
             Some(files) => files,
-            None => anyhow::bail!("The project is empty"),
+            None => anyhow::bail!("No input sources specified."),
         };
 
         let mut input_contracts = Vec::with_capacity(files.len());

@@ -70,6 +70,10 @@ pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
 /// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_empty_sources.json";
+
+/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
     "tests/data/standard_json_input/solidity_solc.json";
 
