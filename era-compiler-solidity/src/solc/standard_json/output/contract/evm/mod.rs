@@ -41,20 +41,6 @@ pub struct EVM {
 
 impl EVM {
     ///
-    /// A shortcut constructor for EraVM.
-    ///
-    pub fn new_eravm(bytecode: String, assembly: Option<String>) -> Self {
-        Self {
-            bytecode: Some(Bytecode::new(bytecode)),
-            legacy_assembly: None,
-            method_identifiers: None,
-
-            assembly,
-            extra_metadata: None,
-        }
-    }
-
-    ///
     /// Sets the EraVM assembly and bytecode.
     ///
     pub fn modify_eravm(&mut self, bytecode: String, assembly: Option<String>) {

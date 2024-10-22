@@ -70,12 +70,28 @@ pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
 /// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
-    "tests/data/standard_json_input/solidity_solc_empty_sources.json";
+pub const TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH: &str =
+    "tests/data/standard_json_input/non_existent.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH: &str =
+    "tests/data/standard_json_input/invalid_utf8.json";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
     "tests/data/standard_json_input/solidity_solc.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_recursion.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_empty_sources.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_missing_sources.json";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH: &str =
@@ -95,6 +111,14 @@ pub const TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH: &str =
 /// A test input file.
 pub const TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/yul_zksolc_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH: &str =
+    "tests/data/standard_json_input/yul_zksolc_both_urls_and_content.json";
+
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH: &str =
+    "tests/data/standard_json_input/yul_zksolc_neither_urls_nor_content.json";
 
 /// A test input file.
 pub const TEST_LLVM_IR_STANDARD_JSON_PATH: &str =
@@ -142,12 +166,36 @@ pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_co
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
-/// Default library path and address.
+/// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
-/// Linker library path and address.
+/// A test constant.
+pub const LIBRARY_CONTRACT_NAME_MISSING: &str =
+    "tests/data/contracts/solidity/MiniMath.sol=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
+
+/// A test constant.
+pub const LIBRARY_ADDRESS_MISSING: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath";
+
+/// A test constant.
+pub const LIBRARY_ADDRESS_INVALID: &str =
+    "tests/data/contracts/solidity/MiniMath.sol:MiniMath=INVALID";
+
+/// A test constant.
 pub const LIBRARY_LINKER: &str =
     "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
+
+/// A test constant.
+pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
+    "test.sol=0x1234567890abcdef1234567890abcdef12345678";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=INVALID";
+
+/// A test constant.
+pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";
 
 ///
 /// Execute zksolc with the given arguments and return the result.

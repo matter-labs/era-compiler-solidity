@@ -1,0 +1,35 @@
+{
+	"language": "Yul",
+	"sources": {
+		"A": {
+			"urls": [
+			  "tests/data/contracts/yul/Test.yul"
+			],
+        	"content": "object \"Test\" { code { { return(0, 0) } } object \"Test_deployed\" { code { { return(0, 0) } } } }"
+		}
+	},
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "mode": "3",
+        "details": null,
+        "fallbackToOptimizingForSize": false,
+        "disableSystemRequestMemoization": true
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "metadata"
+          ],
+          "*": [
+            "abi",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "libraries": {},
+      "isSystem": false,
+      "forceEvmla": false,
+      "areLibrariesMissing": false
+    }
+}

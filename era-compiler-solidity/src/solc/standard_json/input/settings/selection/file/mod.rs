@@ -28,10 +28,9 @@ impl File {
     /// Creates the selection required by EraVM compilation process.
     ///
     pub fn new_required(pipeline: Option<SolcPipeline>) -> Self {
-        let pipeline_ir_flag = match pipeline {
-            Some(pipeline) => SelectionFlag::from(pipeline),
-            None => SelectionFlag::Yul,
-        };
+        let pipeline_ir_flag = pipeline
+            .map(SelectionFlag::from)
+            .unwrap_or(SelectionFlag::Yul);
 
         let per_file = HashSet::from_iter([SelectionFlag::AST]);
         let per_contract = HashSet::from_iter([

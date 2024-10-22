@@ -18,14 +18,3 @@ pub enum Language {
     #[serde(rename = "EraVM Assembly")]
     EraVMAssembly,
 }
-
-impl std::fmt::Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Solidity => write!(f, "Solidity"),
-            Self::Yul => write!(f, "Yul"),
-            Self::LLVMIR => write!(f, "LLVM IR"),
-            Self::EraVMAssembly => write!(f, "EraVM Assembly"),
-        }
-    }
-}

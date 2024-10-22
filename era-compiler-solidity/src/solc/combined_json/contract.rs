@@ -52,29 +52,3 @@ pub struct Contract {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub missing_libraries: Option<HashSet<String>>,
 }
-
-impl Contract {
-    ///
-    /// Returns the signature hash of the specified contract entry.
-    ///
-    /// # Panics
-    /// If the hashes have not been requested in the `solc` call.
-    ///
-    pub fn entry(&self, entry: &str) -> u32 {
-        self.hashes
-            .as_ref()
-            .expect("Always exists")
-            .iter()
-            .find_map(|(contract_entry, hash)| {
-                if contract_entry.starts_with(entry) {
-                    Some(
-                        u32::from_str_radix(hash.as_str(), era_compiler_common::BASE_HEXADECIMAL)
-                            .expect("Test hash is always valid"),
-                    )
-                } else {
-                    None
-                }
-            })
-            .unwrap_or_else(|| panic!("Entry `{entry}` not found"))
-    }
-}

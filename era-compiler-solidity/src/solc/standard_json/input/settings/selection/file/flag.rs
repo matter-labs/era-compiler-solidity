@@ -52,21 +52,3 @@ impl From<SolcPipeline> for Flag {
         }
     }
 }
-
-impl std::fmt::Display for Flag {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::ABI => write!(f, "abi"),
-            Self::Metadata => write!(f, "metadata"),
-            Self::Devdoc => write!(f, "devdoc"),
-            Self::Userdoc => write!(f, "userdoc"),
-            Self::StorageLayout => write!(f, "storageLayout"),
-            Self::AST => write!(f, "ast"),
-            Self::Yul => write!(f, "irOptimized"),
-            Self::EVM => write!(f, "evm"),
-            Self::EVMLA => write!(f, "evm.legacyAssembly"),
-            Self::MethodIdentifiers => write!(f, "evm.methodIdentifiers"),
-            Self::EraVMAssembly => write!(f, "eravm.assembly"),
-        }
-    }
-}

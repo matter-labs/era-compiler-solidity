@@ -70,8 +70,8 @@ impl Source {
                 }
                 Ok(())
             }
-            (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set"),
-            (None, None) => anyhow::bail!("Either `content` or `urls` must be set"),
+            (Some(_), Some(_)) => anyhow::bail!("Both `content` and `urls` cannot be set."),
+            (None, None) => anyhow::bail!("Either `content` or `urls` must be set."),
         }
     }
 

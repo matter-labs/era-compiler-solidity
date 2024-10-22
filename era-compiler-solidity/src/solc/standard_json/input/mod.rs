@@ -55,31 +55,20 @@ impl Input {
     /// If the `path` is `None`, the input is read from the stdin.
     ///
     pub fn try_from(path: Option<&Path>) -> anyhow::Result<Self> {
-        match path {
+        let input_json = match path {
             Some(path) => {
                 let file = std::fs::File::open(path).map_err(|error| {
                     anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
                 })?;
-                let input_json = std::io::read_to_string(file).map_err(|error| {
+                std::io::read_to_string(file).map_err(|error| {
                     anyhow::anyhow!("Standard JSON file {path:?} reading: {error}")
-                })?;
-                let input: Self = era_compiler_common::deserialize_from_str(input_json.as_str())
-                    .map_err(|error| {
-                        anyhow::anyhow!("Standard JSON file {path:?} parsing: {error}")
-                    })?;
-                Ok(input)
+                })
             }
-            None => {
-                let input_json = std::io::read_to_string(std::io::stdin()).map_err(|error| {
-                    anyhow::anyhow!("Standard JSON reading from stdin: {error}")
-                })?;
-                let input: Self = era_compiler_common::deserialize_from_str(input_json.as_str())
-                    .map_err(|error| {
-                        anyhow::anyhow!("Standard JSON parsing from stdin: {error}")
-                    })?;
-                Ok(input)
-            }
-        }
+            None => std::io::read_to_string(std::io::stdin())
+                .map_err(|error| anyhow::anyhow!("Standard JSON reading from stdin: {error}")),
+        }?;
+        era_compiler_common::deserialize_from_str::<Self>(input_json.as_str())
+            .map_err(|error| anyhow::anyhow!("Standard JSON parsing: {error}"))
     }
 
     ///
@@ -134,8 +123,16 @@ impl Input {
                 suppressed_errors.clone(),
                 suppressed_warnings.clone(),
             ),
-            suppressed_errors: Some(suppressed_errors),
-            suppressed_warnings: Some(suppressed_warnings),
+            suppressed_errors: if suppressed_errors.is_empty() {
+                None
+            } else {
+                Some(suppressed_errors)
+            },
+            suppressed_warnings: if suppressed_warnings.is_empty() {
+                None
+            } else {
+                Some(suppressed_warnings)
+            },
         })
     }
 
@@ -181,8 +178,16 @@ impl Input {
                 suppressed_errors.clone(),
                 suppressed_warnings.clone(),
             ),
-            suppressed_errors: Some(suppressed_errors),
-            suppressed_warnings: Some(suppressed_warnings),
+            suppressed_errors: if suppressed_errors.is_empty() {
+                None
+            } else {
+                Some(suppressed_errors)
+            },
+            suppressed_warnings: if suppressed_warnings.is_empty() {
+                None
+            } else {
+                Some(suppressed_warnings)
+            },
         })
     }
 
@@ -190,15 +195,11 @@ impl Input {
     /// A shortcut constructor from source code.
     ///
     pub fn from_yul_sources(
-        sources: BTreeMap<String, String>,
+        sources: BTreeMap<String, Source>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
-        let sources = sources
-            .into_iter()
-            .map(|(path, content)| (path, Source::from(content)))
-            .collect();
         let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
 
         Self {
@@ -242,29 +243,7 @@ impl Input {
                 )
             })
             .collect();
-        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
-
-        Self {
-            language: Language::Yul,
-            sources,
-            settings: Settings::new(
-                None,
-                libraries,
-                None,
-                output_selection,
-                false,
-                false,
-                false,
-                false,
-                optimizer,
-                llvm_options,
-                None,
-                vec![],
-                vec![],
-            ),
-            suppressed_errors: None,
-            suppressed_warnings: None,
-        }
+        Self::from_yul_sources(sources, libraries, optimizer, llvm_options)
     }
 
     ///
