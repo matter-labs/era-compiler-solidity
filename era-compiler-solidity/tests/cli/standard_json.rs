@@ -157,7 +157,105 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_empty() -> anyhow::Result<()> {
+fn with_standard_json_recursion() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("bytecode"));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_non_existent() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains(
+            "Standard JSON file \\\"tests/data/standard_json_input/non_existent.json\\\" opening",
+        ))
+        .code(era_compiler_common::EXIT_CODE_SUCCESS);
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(era_compiler_common::EXIT_CODE_FAILURE);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_invalid_utf8() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "Standard JSON parsing: expected value",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_stdin_missing() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--standard-json"];
+    let args_solc = &["--standard-json"];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "Standard JSON parsing: EOF while parsing",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_empty_sources() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -185,6 +283,36 @@ fn with_standard_json_empty() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_standard_json_missing_sources() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "Standard JSON parsing: missing field `sources`",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
 fn with_standard_json_yul() -> anyhow::Result<()> {
     common::setup()?;
 
@@ -195,6 +323,66 @@ fn with_standard_json_yul() -> anyhow::Result<()> {
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_both_urls_and_content() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "Both `content` and `urls` cannot be set",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args_solc)?;
+    solc_result.code(status);
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_neither_urls_nor_content() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
+    ];
+    let args_solc = &[
+        "--standard-json",
+        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status = result
+        .success()
+        .stdout(predicate::str::contains(
+            "Either `content` or `urls` must be set.",
+        ))
         .get_output()
         .status
         .code()

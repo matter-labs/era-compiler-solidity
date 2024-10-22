@@ -4,7 +4,9 @@
 	{
 		"A":
 		{
-			"content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C {}"
+			"urls": [
+			  "tests/data/contracts/solidity/Recursion.sol"
+			]
 		}
 	},
 	"settings": {

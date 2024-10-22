@@ -70,16 +70,28 @@ pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
 /// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH: &str =
+    "tests/data/standard_json_input/non_existent.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH: &str =
+    "tests/data/standard_json_input/invalid_utf8.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH: &str =
+    "tests/data/standard_json_input/solidity_solc_recursion.json";
+
+/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_empty_sources.json";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH: &str =
-    "tests/data/standard_json_input/solidity_solc_empty_sources.json";
-
-/// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
-    "tests/data/standard_json_input/solidity_solc.json";
+    "tests/data/standard_json_input/solidity_solc_missing_sources.json";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH: &str =
@@ -99,6 +111,14 @@ pub const TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH: &str =
 /// A test input file.
 pub const TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/yul_zksolc_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH: &str =
+    "tests/data/standard_json_input/yul_zksolc_both_urls_and_content.json";
+
+/// A test input file.
+pub const TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH: &str =
+    "tests/data/standard_json_input/yul_zksolc_neither_urls_nor_content.json";
 
 /// A test input file.
 pub const TEST_LLVM_IR_STANDARD_JSON_PATH: &str =
