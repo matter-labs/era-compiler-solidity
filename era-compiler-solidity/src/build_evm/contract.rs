@@ -60,11 +60,14 @@ impl Contract {
     pub fn write_to_terminal(
         self,
         path: String,
-        _output_metadata: bool,
+        output_metadata: bool,
         _output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======")?;
+        if output_metadata {
+            writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
+        }
         if output_binary {
             writeln!(
                 std::io::stdout(),
