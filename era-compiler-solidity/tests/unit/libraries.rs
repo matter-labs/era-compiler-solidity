@@ -2,10 +2,12 @@
 //! The Solidity compiler unit tests for libraries.
 //!
 
-use crate::common;
+use std::collections::BTreeMap;
+
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::collections::BTreeMap;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]

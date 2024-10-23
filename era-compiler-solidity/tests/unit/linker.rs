@@ -3,6 +3,7 @@
 //!
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 use era_compiler_solidity::libraries::Libraries;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
@@ -132,7 +133,7 @@ fn get_bytecode(
     let build = common::build_solidity(
         sources,
         libraries,
-        None,
+        BTreeSet::new(),
         version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::none(),

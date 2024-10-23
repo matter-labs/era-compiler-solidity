@@ -25,7 +25,7 @@ impl Default for Optimizer {
     fn default() -> Self {
         Self {
             mode: Self::default_mode(),
-            fallback_to_optimizing_for_size: Default::default(),
+            fallback_to_optimizing_for_size: false,
 
             enabled: Self::default_enabled(),
         }

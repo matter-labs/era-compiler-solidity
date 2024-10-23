@@ -4,10 +4,13 @@
 //! The tests check if the IR artifacts are kept in the final output.
 //!
 
-use crate::common;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::collections::BTreeMap;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
@@ -54,7 +57,7 @@ fn yul(version: semver::Version) {
     let build = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         SolcPipeline::Yul,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -99,7 +102,7 @@ fn evmla(version: semver::Version) {
     let build = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         SolcPipeline::EVMLA,
         era_compiler_llvm_context::OptimizerSettings::cycles(),

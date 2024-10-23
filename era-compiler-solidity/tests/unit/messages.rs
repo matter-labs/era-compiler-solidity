@@ -2,12 +2,14 @@
 //! The Solidity compiler unit tests for messages.
 //!
 
-use crate::common;
+use std::collections::BTreeMap;
+
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use era_compiler_solidity::warning_type::WarningType;
-use std::collections::BTreeMap;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]

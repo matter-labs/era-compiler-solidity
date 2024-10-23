@@ -541,7 +541,7 @@ impl Arguments {
     ///
     pub fn split_input_files_and_remappings(
         &self,
-    ) -> anyhow::Result<(Vec<PathBuf>, Option<BTreeSet<String>>)> {
+    ) -> anyhow::Result<(Vec<PathBuf>, BTreeSet<String>)> {
         let mut input_files = Vec::with_capacity(self.inputs.len());
         let mut remappings = BTreeSet::new();
 
@@ -569,12 +569,6 @@ impl Arguments {
                 input_files.push(path);
             }
         }
-
-        let remappings = if remappings.is_empty() {
-            None
-        } else {
-            Some(remappings)
-        };
 
         Ok((input_files, remappings))
     }

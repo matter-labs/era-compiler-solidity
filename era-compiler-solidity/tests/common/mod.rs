@@ -8,7 +8,6 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::path::Path;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Once;
 use std::time::Duration;
 
@@ -17,6 +16,7 @@ use assert_cmd::Command;
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
+use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use era_compiler_solidity::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 use era_compiler_solidity::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
@@ -95,7 +95,7 @@ pub fn setup() -> anyhow::Result<()> {
 pub fn build_solidity(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
-    remappings: Option<BTreeSet<String>>,
+    remappings: BTreeSet<String>,
     solc_version: &semver::Version,
     solc_pipeline: SolcPipeline,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -106,21 +106,26 @@ pub fn build_solidity(
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
+    let sources: BTreeMap<String, SolcStandardJsonInputSource> = sources
+        .into_iter()
+        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .collect();
+
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
-        None,
-        sources.clone(),
+        sources,
         libraries.clone(),
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
-        false,
         true,
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsMetadata::default(),
+        vec![],
+        vec![],
+        vec![],
         false,
-        vec![],
-        vec![],
-        vec![],
+        false,
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
@@ -152,11 +157,7 @@ pub fn build_solidity(
         None,
         None,
     )?;
-    build.write_to_standard_json(
-        &mut solc_output,
-        Some(&solc_compiler.version),
-        &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
-    )?;
+    build.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version))?;
 
     solc_output.collect_errors()?;
     Ok(solc_output)
@@ -177,21 +178,26 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
+    let sources: BTreeMap<String, SolcStandardJsonInputSource> = sources
+        .into_iter()
+        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .collect();
+
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
-        None,
-        sources.clone(),
+        sources,
         libraries.clone(),
-        None,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
         false,
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsMetadata::default(),
+        vec![],
+        vec![],
+        vec![],
         false,
         false,
-        vec![],
-        vec![],
-        vec![],
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
@@ -212,11 +218,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     )?;
 
     let missing_libraries = project.get_missing_libraries();
-    missing_libraries.write_to_standard_json(
-        &mut solc_output,
-        Some(&solc_compiler.version),
-        &semver::Version::from_str(env!("CARGO_PKG_VERSION"))?,
-    );
+    missing_libraries.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version));
 
     solc_output.collect_errors()?;
     Ok(solc_output)
@@ -230,7 +232,6 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
     let sources = sources
@@ -257,7 +258,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut solc_output, None, &zksolc_version)?;
+    build.write_to_standard_json(&mut solc_output, None)?;
 
     solc_output.collect_errors()?;
     Ok(solc_output)
@@ -276,7 +277,6 @@ pub fn build_yul_standard_json(
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode,
     )?;
@@ -310,7 +310,7 @@ pub fn build_yul_standard_json(
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut solc_output, solc_version, &zksolc_version)?;
+    build.write_to_standard_json(&mut solc_output, solc_version)?;
 
     solc_output.collect_errors()?;
     Ok(solc_output)
@@ -326,7 +326,6 @@ pub fn build_llvm_ir_standard_json(
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
@@ -343,7 +342,7 @@ pub fn build_llvm_ir_standard_json(
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut output, None, &zksolc_version)?;
+    build.write_to_standard_json(&mut output, None)?;
 
     output.collect_errors()?;
     Ok(output)
@@ -359,7 +358,6 @@ pub fn build_eravm_assembly_standard_json(
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
@@ -376,7 +374,7 @@ pub fn build_eravm_assembly_standard_json(
         None,
         None,
     )?;
-    build.write_to_standard_json(&mut output, None, &zksolc_version)?;
+    build.write_to_standard_json(&mut output, None)?;
 
     output.collect_errors()?;
     Ok(output)
@@ -404,22 +402,26 @@ pub fn check_solidity_message(
     }
 
     let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_string(), source_code.to_string());
+    sources.insert(
+        "test.sol".to_string(),
+        SolcStandardJsonInputSource::from(source_code.to_string()),
+    );
+
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
-        None,
-        sources.clone(),
+        sources,
         libraries,
-        None,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
         false,
-        false,
-        false,
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         suppressed_errors,
         suppressed_warnings,
+        false,
+        false,
     )?;
 
     let solc_output = solc_compiler.standard_json(

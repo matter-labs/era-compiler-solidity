@@ -2,10 +2,13 @@
 //! The Solidity compiler unit tests for unsupported instructions.
 //!
 
-use crate::common;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::collections::BTreeMap;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
@@ -210,7 +213,7 @@ contract FixedCodeCopy {
     common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -248,7 +251,7 @@ fn callcode(version: semver::Version, pipeline: SolcPipeline) {
     common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -280,7 +283,7 @@ fn extcodecopy(version: semver::Version, pipeline: SolcPipeline) {
     common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -367,7 +370,7 @@ fn selfdestruct(version: semver::Version, pipeline: SolcPipeline, source: &str) 
     common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),

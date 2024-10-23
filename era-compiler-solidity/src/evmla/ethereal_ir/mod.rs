@@ -19,15 +19,15 @@ use self::function::r#type::Type as FunctionType;
 use self::function::Function;
 
 ///
-/// The Ethereal IR of the EVM bytecode.
+/// Ethereal IR of EVM bytecode.
 ///
-/// The Ethereal IR (EthIR) is a special IR between the EVM legacy assembly and LLVM IR. It is
-/// created to facilitate the translation and provide an additional environment for applying some
-/// transformations, duplicating parts of the call and control flow graphs, tracking the
+/// Ethereal IR (EthIR) is a special IR between the EVM legacy assembly and LLVM IR. It is
+/// created to facilitate the translation and provide an additional environment for applying
+/// transformations, duplication parts of the call and control flow graphs, tracking the
 /// data flow, and a few more algorithms of static analysis.
 ///
 /// The most important feature of EthIR is flattening the block tags and duplicating blocks for
-/// each of initial states of the stack. The LLVM IR supports only static control flow, so the
+/// each of initial states of the stack. LLVM IR supports only static control flow, so the
 /// stack state must be known all the way throughout the program.
 ///
 #[derive(Debug)]

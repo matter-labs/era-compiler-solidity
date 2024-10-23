@@ -164,14 +164,14 @@ impl Compiler {
         });
         errors.append(messages);
 
-        if input.suppressed_errors.is_some() {
+        if !input.suppressed_errors.is_empty() {
             errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
             ));
         }
-        if input.suppressed_warnings.is_some() {
+        if !input.suppressed_warnings.is_empty() {
             errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
@@ -180,10 +180,10 @@ impl Compiler {
         }
 
         if let Some(pipeline) = pipeline {
-            let mut suppressed_errors = input.suppressed_errors.clone().unwrap_or_default();
+            let mut suppressed_errors = input.suppressed_errors.clone();
             suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
 
-            let mut suppressed_warnings = input.suppressed_warnings.clone().unwrap_or_default();
+            let mut suppressed_warnings = input.suppressed_warnings.clone();
             suppressed_warnings.extend_from_slice(input.settings.suppressed_warnings.as_slice());
 
             input.resolve_sources();

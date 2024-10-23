@@ -2,10 +2,13 @@
 //! The Solidity compiler unit tests for the optimizer.
 //!
 
-use crate::common;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+
 use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::collections::BTreeMap;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
@@ -80,7 +83,7 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     let build_unoptimized = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::none(),
@@ -89,7 +92,7 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     let build_optimized_for_cycles = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -98,7 +101,7 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     let build_optimized_for_size = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::size(),

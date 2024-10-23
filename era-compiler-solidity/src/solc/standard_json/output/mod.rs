@@ -51,8 +51,8 @@ pub struct Output {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub long_version: Option<String>,
     /// The `zksolc` compiler version.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub zk_version: Option<String>,
+    #[serde(default = "crate::version")]
+    pub zk_version: String,
 }
 
 impl Output {
@@ -75,25 +75,27 @@ impl Output {
             contracts: Some(BTreeMap::new()),
             sources: Some(sources),
             errors: Some(std::mem::take(messages)),
+
             version: None,
             long_version: None,
-            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+            zk_version: crate::version(),
         }
     }
 
     ///
-    /// Initializes a standard JSON output with errors.
+    /// Initializes a standard JSON output with messages.
     ///
     /// Is used to emit errors in standard JSON mode.
     ///
-    pub fn new_with_errors(messages: Vec<JsonOutputError>) -> Self {
+    pub fn new_with_messages(messages: Vec<JsonOutputError>) -> Self {
         Self {
             contracts: None,
             sources: None,
             errors: Some(messages),
+
             version: None,
             long_version: None,
-            zk_version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+            zk_version: crate::version(),
         }
     }
 

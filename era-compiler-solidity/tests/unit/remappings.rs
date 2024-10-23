@@ -2,11 +2,13 @@
 //! The Solidity compiler unit tests for remappings.
 //!
 
-use crate::common;
-use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+
+use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
+use era_compiler_solidity::solc::Compiler as SolcCompiler;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
@@ -70,9 +72,9 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     remappings.insert("libraries/default/=./".to_owned());
 
     common::build_solidity(
-        sources.clone(),
+        sources,
         BTreeMap::new(),
-        Some(remappings.clone()),
+        remappings,
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
