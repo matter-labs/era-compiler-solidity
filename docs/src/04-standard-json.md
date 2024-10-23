@@ -8,17 +8,18 @@ The protocol uses two data formats for communication: input JSON and output JSON
 > - When *zksolc* is called in `--standard-json` mode, it will always return with exit code 0 and standard JSON output format.
 > - It differs from *solc* that may return with exit code 1 and a free-formed error in some cases, such as when the standard JSON input file is missing.
 
+> [!IMPORTANT]
+> The formats below are modifications of the original standard JSON [input](https://docs.soliditylang.org/en/latest/using-the-compiler.html#input-description) and [output](https://docs.soliditylang.org/en/latest/using-the-compiler.html#output-description) formats implemented by *solc*. It means that there are:
+> - *zksolc*-specific options that are not present in the original format: they are marked as `zksolc` in the specifications below.
+> - *solc*-specific options that are not supported by *zksolc*: they are absent in the specifications below.
+
 
 
 ## Input JSON
 
 The input JSON provides the compiler with the source code and settings for the compilation. The example below can serve as the specification of the input JSON format.
 
-> [!IMPORTANT]
-> The format below is a modification of [the original standard JSON input format](https://docs.soliditylang.org/en/latest/using-the-compiler.html#input-description) implemented by *solc*. It means that:
-> - There are *zksolc*-specific options that are not present in the original format: marked as `zksolc`
-> - There are *solc*-specific options that are not supported by *zksolc*: they are absent in the specification above
-> - Internally, *zksolc* extracts all *zksolc*-specific options and converts the input JSON to the format expected by *solc* before calling it.
+Internally, *zksolc* extracts all *zksolc*-specific options and converts the input JSON to the format expected by *solc* before calling it.
 
 ```json
 {
@@ -58,7 +59,7 @@ The input JSON provides the compiler with the source code and settings for the c
   "settings": {
     // Optional: Optimizer settings.
     "optimizer": {
-      // Optional, *zksolc*: Set the *zksolc* LLVM optimizer level.
+      // Optional, zksolc: Set the zksolc LLVM optimizer level.
       // Available options:
       // -0: do not optimize
       // -1: basic optimizations for gas usage
@@ -68,7 +69,7 @@ The input JSON provides the compiler with the source code and settings for the c
       // -z: all optimizations for deployment cost
       // Default: 3.
       "mode": "3",
-      // Optional, *zksolc*: Re-run the compilation with "mode": "z" if the compilation with "mode": "3" fails due to EraVM bytecode size limit.
+      // Optional, zksolc: Re-run the compilation with "mode": "z" if the compilation with "mode": "3" fails due to EraVM bytecode size limit.
       // Used on a per-contract basis and applied automatically, so some contracts will end up compiled with "mode": "3", and others with "mode": "z".
       // Default: false.
       "fallbackToOptimizingForSize": false
@@ -80,16 +81,16 @@ The input JSON provides the compiler with the source code and settings for the c
     // Only used with Solidity, and only affects Yul and EVM assembly codegen. For instance, with version "cancun", *solc* will produce `MCOPY` instructions, whereas with older EVM versions it will not.
     // Default: chosen by *solc*, is version-dependent.
     "evmVersion": "cancun",
-    // Optional, Deprecated, *zksolc*: Switches the *solc* codegen to EVM assembly, as by default *zksolc* has been using Yul codegen by default for historical reasons.
+    // Optional, Deprecated, zksolc: Switches the *solc* codegen to EVM assembly, as by default zksolc has been using Yul codegen by default for historical reasons.
     // Will be replaced by "codegen" and removed in the future.
     // Default: false.
     "forceEVMLA": true,
-    // Optional, *zksolc*: Enables the EraVM extensions in Solidity and Yul modes.
+    // Optional, zksolc: Enables the EraVM extensions in Solidity and Yul modes.
     // The extensions include EraVM-specific opcodes and features, such as call forwarding and usage of additional memory spaces.
     // Default: false.
     "enableEraVMExtensions": true,
     // Optional: Select the desired output.
-    // Important: *zksolc* does not support per-file and per-contract selection.
+    // Important: zksolc does not support per-file and per-contract selection.
     //
     // Available file-level options, must be listed under "*"."":
     //   ast                       AST of all source files
@@ -104,7 +105,7 @@ The input JSON provides the compiler with the source code and settings for the c
     //   metadata                  Metadata
     //   evm.legacyAssembly        EVM assembly produced by *solc*
     //   irOptimized               Yul produced by *solc*
-    //   eravm.assembly            EraVM assembly produced by *zksolc*
+    //   eravm.assembly            EraVM assembly produced by zksolc
     //
     // Default: no flags are selected, so only bytecode is emitted.
     "outputSelection": {
@@ -128,12 +129,12 @@ The input JSON provides the compiler with the source code and settings for the c
       // Default: "keccak256".
       "bytecodeHash": "ipfs",
       // Optional: Use only literal content and not URLs.
-      // Passed through to *solc* and does not affect the *zksolc*-specific metadata.
+      // Passed through to *solc* and does not affect the zksolc-specific metadata.
       // Default: false.
       "useLiteralContent": true
     },
 
-    // Optional, *zksolc*: extra LLVM settings.
+    // Optional, zksolc: extra LLVM settings.
     "LLVMOptions": [
       "-eravm-jump-table-density-threshold", "10",
       "-tail-dup-size", "6",
@@ -142,12 +143,12 @@ The input JSON provides the compiler with the source code and settings for the c
       "-join-globalcopies",
       "-disable-early-taildup"
     ],
-    // Optional, *zksolc*: suppressed errors.
+    // Optional, zksolc: suppressed errors.
     // Available options: "sendtransfer".
     "suppressedErrors": [
       "sendtransfer"
     ],
-    // Optional, *zksolc*: suppressed warnings.
+    // Optional, zksolc: suppressed warnings.
     // Available options: "txorigin".
     "suppressedWarnings": [
       "txorigin"

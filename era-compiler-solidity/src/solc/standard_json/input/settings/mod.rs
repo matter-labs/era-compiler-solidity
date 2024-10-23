@@ -54,7 +54,7 @@ pub struct Settings {
     #[serde(rename = "detectMissingLibraries", skip_serializing)]
     pub detect_missing_libraries: Option<bool>,
     /// The optimizer settings.
-    #[serde(default, skip_serializing)]
+    #[serde(default)]
     pub optimizer: Optimizer,
     /// The extra LLVM options.
     #[serde(rename = "LLVMOptions", skip_serializing)]
