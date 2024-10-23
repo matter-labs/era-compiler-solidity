@@ -5,8 +5,6 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 
 use self::contract::Contract;
@@ -50,10 +48,11 @@ impl CombinedJson {
             );
         }
 
-        File::create(&file_path)
-            .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
-            .write_all(serde_json::to_vec(&self).expect("Always valid").as_slice())
-            .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+        std::fs::write(
+            file_path.as_path(),
+            serde_json::to_vec(&self).expect("Always valid").as_slice(),
+        )
+        .map_err(|error| anyhow::anyhow!("File {file_path:?} writing: {error}"))?;
 
         Ok(())
     }

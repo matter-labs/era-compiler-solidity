@@ -3,7 +3,6 @@
 //!
 
 use std::collections::HashSet;
-use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -111,12 +110,11 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(self.metadata_json.to_string().as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(
+                    output_path.as_path(),
+                    self.metadata_json.to_string().as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -134,12 +132,8 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(assembly.as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(output_path.as_path(), assembly.as_bytes())
+                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -157,12 +151,11 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(hex::encode(self.build.bytecode.as_slice()).as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(
+                    output_path.as_path(),
+                    hex::encode(self.build.bytecode.as_slice()).as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 

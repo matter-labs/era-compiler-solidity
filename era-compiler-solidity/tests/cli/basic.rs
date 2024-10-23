@@ -118,12 +118,11 @@ fn with_bin_output_same_file_and_cli() -> anyhow::Result<()> {
     let cli_args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "-O3", "--bin"];
     let cli_result = cli::execute_zksolc(cli_args)?;
 
-    let stderr =
-        String::from_utf8(cli_result.get_output().clone().stdout).expect("Invalid UTF-8 sequence");
+    let stdout = String::from_utf8_lossy(cli_result.get_output().stdout.as_slice());
 
     assert!(cli::is_output_same_as_file(
         bin_output_file.to_str().unwrap(),
-        stderr.as_str()
+        stdout.trim()
     )?);
 
     Ok(())
