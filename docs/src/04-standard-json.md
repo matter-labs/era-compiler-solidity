@@ -2,10 +2,10 @@
 
 Standard JSON is a protocol for interaction with the *zksolc* and *solc* compilers. This protocol must be implemented by toolkits such as Hardhat and Foundry.
 
-The protocol uses two data formats for communication: input JSON and output JSON.
+The protocol uses two data formats for communication: [input JSON](#input-json) and [output JSON](#output-json).
 
 > [!TIP]
-> - When *zksolc* is called in `--standard-json` mode, it will always return with exit code 0 and standard JSON output format.
+> - When *zksolc* is called in `--standard-json` mode, it will always return with exit code 0 and standard JSON output printed to *stdout*.
 > - It differs from *solc* that may return with exit code 1 and a free-formed error in some cases, such as when the standard JSON input file is missing.
 
 > [!IMPORTANT]
@@ -17,13 +17,14 @@ The protocol uses two data formats for communication: input JSON and output JSON
 
 ## Input JSON
 
-The input JSON provides the compiler with the source code and settings for the compilation. The example below can serve as the specification of the input JSON format.
+The input JSON provides the compiler with the source code and settings for the compilation. The example below serves as the specification of the input JSON format.
 
-Internally, *zksolc* extracts all *zksolc*-specific options and converts the input JSON to the format expected by *solc* before calling it.
+Internally, *zksolc* extracts all *zksolc*-specific options and converts the input JSON to the subset expected by *solc* before calling it.
 
 ```json
 {
-  // Required: Source code language. Currently supported ones are "Solidity", "Yul", "LLVM IR", "EraVM Assembly".
+  // Required: Source code language.
+  // Currently supported: "Solidity", "Yul", "LLVM IR", "EraVM Assembly".
   "language": "Solidity",
   // Required: Source code files to compile.
   // The keys here are the "global" names of the source files. Imports can be using other file paths via remappings.
@@ -36,7 +37,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
         // It is possible to specify multiple URLs for a single source file. In this case the first successfully resolved URL will be used.
         "/tmp/path/to/file.sol"
       ],
-      // Required (unless "urls" is used): literal contents of the source file.
+      // Required (unless "urls" is used): Literal contents of the source file.
       "content": "contract settable is owned { uint256 private x = 0; function set(uint256 _x) public { if (msg.sender == owner) x = _x; } }"
     }
   },
@@ -75,13 +76,13 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "fallbackToOptimizingForSize": false
     },
 
-    // Optional: Version of the EVM *solc* will produce IR for.
+    // Optional: Version of the EVM solc will produce IR for.
     // Affects type checking and code generation.
     // Can be "homestead", "tangerineWhistle", "spuriousDragon", "byzantium", "constantinople", "petersburg", "istanbul", "berlin", "london", "paris", "shanghai", "cancun" or "prague" (TODO, experimental).
-    // Only used with Solidity, and only affects Yul and EVM assembly codegen. For instance, with version "cancun", *solc* will produce `MCOPY` instructions, whereas with older EVM versions it will not.
-    // Default: chosen by *solc*, is version-dependent.
+    // Only used with Solidity, and only affects Yul and EVM assembly codegen. For instance, with version "cancun", solc will produce `MCOPY` instructions, whereas with older EVM versions it will not.
+    // Default: chosen by solc, is version-dependent.
     "evmVersion": "cancun",
-    // Optional, Deprecated, zksolc: Switches the *solc* codegen to EVM assembly, as by default zksolc has been using Yul codegen by default for historical reasons.
+    // Optional, Deprecated, zksolc: Switches the solc codegen to EVM assembly, as by default zksolc has been using Yul codegen by default for historical reasons.
     // Will be replaced by "codegen" and removed in the future.
     // Default: false.
     "forceEVMLA": true,
@@ -103,8 +104,8 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     //   devdoc                    Developer documentation (natspec)
     //   userdoc                   User documentation (natspec)
     //   metadata                  Metadata
-    //   evm.legacyAssembly        EVM assembly produced by *solc*
-    //   irOptimized               Yul produced by *solc*
+    //   evm.legacyAssembly        EVM assembly produced by solc
+    //   irOptimized               Yul produced by solc
     //   eravm.assembly            EraVM assembly produced by zksolc
     //
     // Default: no flags are selected, so only bytecode is emitted.
@@ -129,7 +130,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       // Default: "keccak256".
       "bytecodeHash": "ipfs",
       // Optional: Use only literal content and not URLs.
-      // Passed through to *solc* and does not affect the zksolc-specific metadata.
+      // Passed through to solc and does not affect the zksolc-specific metadata.
       // Default: false.
       "useLiteralContent": true
     },
@@ -154,5 +155,128 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "txorigin"
     ]
   }
+}
+```
+
+
+
+## Output JSON
+
+The output JSON contains all artifacts produced by both *zksolc* and *solc* compilers. The example below serves as the specification of the input JSON format.
+
+If *solc* is provided to *zksolc*, the output JSON is initially generated by *solc*, and ZKsync-specific data is appended by *zksolc* afterwards. If *solc* is not provided, the output JSON is generated by *zksolc* alone.
+
+```json
+{
+  // Required: File-level outputs.
+  "sources": {
+    "sourceFile.sol": {
+      // Required: Identifier of the source.
+      "id": 1,
+      // Optional: The AST object.
+      // Corresponds to "ast" in the outputSelection settings.
+      "ast": {/* ... */}
+    }
+  },
+
+  // Required: Contract-level outputs.
+  "contracts": {
+    // The source name.
+    "sourceFile.sol": {
+      // The contract name.
+      // If the language only supports one contract per file, this field equals to the source name.
+      "ContractName": {
+        // Optional: The Ethereum Contract ABI (object).
+        // See https://docs.soliditylang.org/en/develop/abi-spec.html.
+        // Corresponds to "abi" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "abi": [/* ... */],
+        // Optional: Storage layout (object).
+        // Corresponds to "storageLayout" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "storageLayout": {/* ... */},
+        // Optional: Transient storage layout (object).
+        // Corresponds to "transientStorageLayout" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "transientStorageLayout": {/* ... */},
+        // Optional: Developer documentation (natspec object).
+        // Corresponds to "devdoc" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "devdoc": {/* ... */},
+        // Optional: User documentation (natspec object).
+        // Corresponds to "userdoc" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "userdoc": {/* ... */},
+        // Optional: See the Metadata Output documentation (object).
+        // Corresponds to "metadata" in the outputSelection settings.
+        // Provided by solc and wrapped with additional data by zksolc.
+        "metadata": {/* ... */},
+        // Optional: Yul produced by solc (string).
+        // Corresponds to "irOptimized" in the outputSelection settings.
+        // Provided by solc and passed through by zksolc.
+        "irOptimized": "",
+        // Required: EVM-related outputs.
+        // Warning: EraVM artifacts are still returned here within the "evm" object, but it will be moved to "eravm" in the future.
+        "evm": {
+          // Required: Bytecode and related details.
+          "bytecode": {
+            // Required: Bytecode (string).
+            // Stubbed by solc and set by zksolc.
+            "object": "0000008003000039000000400030043f0000000100200190000000130000c13d..."
+          },
+          // Optional: List of function hashes (object).
+          // Corresponds to "evm.methodIdentifiers" in the outputSelection settings.
+          // Provided by solc and passed through by zksolc.
+          "methodIdentifiers": {
+            // Mapping between the function signature and its hash.
+            "delegate(address)": "5c19a95c"
+          },
+          // Optional: EVM assembly produced by solc (object).
+          // Corresponds to "evm.legacyAssembly" in the outputSelection settings.
+          // Provided by solc and passed through by zksolc.
+          "legacyAssembly": {/* ... */},
+          // Optional: EraVM assembly produced by zksolc (string).
+          // Corresponds to "eravm.assembly" in the outputSelection settings.
+          "assembly": "/* ... */"
+        }
+      }
+    }
+  }
+
+  // Optional: Absent if no messages were emitted.
+  "errors": [
+    {
+      // Optional: Location within the source file.
+      // Unset if the error is unrelated to input sources.
+      "sourceLocation": {
+        /// Required: The source path.
+        "file": "sourceFile.sol",
+        /// Required: The source location start. Equals -1 if unknown.
+        "start": 0,
+        /// Required: The source location end. Equals -1 if unknown.
+        "end": 100
+      },
+      // Required: Message type.
+      // zksolc only produces "Error" and "Warning" types.
+      // *solc* are listed at https://docs.soliditylang.org/en/latest/using-the-compiler.html#error-types.
+      "type": "Error",
+      // Required: Component the error originates from.
+      // zksolc only produces "general".
+      // *solc* may produce other values as well.
+      "component": "general",
+      // Required: Message severity.
+      // zksolc only produces "Error" and "Warning" types.
+      // *solc* "error", "warning" or "info". May be extended in the future.
+      "severity": "error",
+      // Optional: Unique code for the cause of the error.
+      // Only *solc* produces error codes for now.
+      // zksolc error classification is coming soon.
+      "errorCode": "3141",
+      // Required: Message.
+      "message": "Invalid keyword",
+      // Required: Message formatted using the source location.
+      "formattedMessage": "sourceFile.sol:100: Invalid keyword"
+    }
+  ]
 }
 ```
