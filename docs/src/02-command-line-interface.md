@@ -22,7 +22,7 @@ Basic CLI mode is the simplest way to compile a file with the source code.
 
 To compile a basic Solidity contract, make sure that [the *solc* compiler](#--solc) is present in your environment and run the example from [the *--bin* section](#--bin).
 
-The rest of this section describes the available CLI options and their usage.
+The rest of this section describes the available CLI options and their usage. You may also check out `zksolc --help` for a quick reference.
 
 
 

@@ -28,14 +28,14 @@ pub struct EVM {
     #[serde(rename = "legacyAssembly", skip_serializing_if = "Option::is_none")]
     pub legacy_assembly: Option<Assembly>,
     /// The contract function signatures.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub method_identifiers: Option<BTreeMap<String, String>>,
 
     /// The contract EraVM assembly code.
     #[serde(rename = "assembly", skip_serializing_if = "Option::is_none")]
     pub assembly: Option<String>,
     /// The extra EVMLA metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 
