@@ -249,8 +249,8 @@ impl Input {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
-        self.settings.normalize(version, pipeline);
+    pub fn normalize(&mut self, pipeline: Option<SolcPipeline>) {
+        self.settings.normalize(pipeline);
     }
 
     ///

@@ -300,7 +300,7 @@ impl Compiler {
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
             libraries.clone(),
-            StandardJsonInputSettingsOptimizer::new_yul_validation(),
+            StandardJsonInputSettingsOptimizer::default(),
             vec![],
         );
         self.validate_yul_standard_json(&mut solc_input, messages)

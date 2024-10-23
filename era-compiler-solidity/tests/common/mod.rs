@@ -101,6 +101,7 @@ pub fn build_solidity(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
+
     let solc_compiler = get_solc_compiler(solc_version)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -111,12 +112,7 @@ pub fn build_solidity(
         libraries.clone(),
         remappings,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            true,
-            None,
-            &solc_compiler.version.default,
-            false,
-        ),
+        SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
         false,
@@ -176,6 +172,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     solc_pipeline: SolcPipeline,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
+
     let solc_compiler = get_solc_compiler(solc_version)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -186,12 +183,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         libraries.clone(),
         None,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            true,
-            None,
-            &solc_compiler.version.default,
-            false,
-        ),
+        SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
         false,
@@ -286,7 +278,7 @@ pub fn build_yul_standard_json(
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
-        solc_input.settings.optimizer.mode.unwrap_or('0'),
+        solc_input.settings.optimizer.mode,
     )?;
 
     let (solc_version, mut solc_output) = match solc_compiler {
@@ -335,9 +327,8 @@ pub fn build_llvm_ir_standard_json(
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
-        input.settings.optimizer.mode.unwrap_or('0'),
-    )?;
+    let optimizer_settings =
+        era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
     let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
@@ -369,9 +360,8 @@ pub fn build_eravm_assembly_standard_json(
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
     let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
-        input.settings.optimizer.mode.unwrap_or('0'),
-    )?;
+    let optimizer_settings =
+        era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
     let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
@@ -421,7 +411,7 @@ pub fn check_solidity_message(
         libraries,
         None,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(true, None, solc_version, false),
+        SolcStandardJsonInputSettingsOptimizer::default(),
         None,
         solc_pipeline == SolcPipeline::EVMLA,
         false,

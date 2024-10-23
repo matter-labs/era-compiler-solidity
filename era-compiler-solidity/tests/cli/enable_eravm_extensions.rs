@@ -28,7 +28,7 @@ fn with_system_mode() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result
         .success()
-        .stderr(predicate::str::contains("Warning: The `--system-mode` flag is deprecated. Please use `--enable-eravm-extensions` instead."));
+        .stderr(predicate::str::contains("Warning: The `--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead"));
 
     Ok(())
 }

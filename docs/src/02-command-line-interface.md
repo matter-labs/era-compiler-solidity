@@ -28,7 +28,7 @@ The rest of this section describes the available CLI options and their usage.
 
 ### `--solc`
 
-Specifies the path to the *solc* compiler. This option is useful when the *solc* compiler is not available in the system path.
+Specifies the path to the *solc* compiler. Useful when the *solc* compiler is not available in the system path.
 
 Usage:
 
@@ -159,37 +159,23 @@ Metadata:
 
 
 
-## Multi-target Support
-
-*zksolc* is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:
-
-- `eravm` — [EraVM](https://docs.zksync.io/zk-stack/components/zksync-evm) (default).
-- `evm` — [EVM](https://ethereum.org/en/developers/docs/evm/) (under development and only available for testing).
-
-### `--target`
-
-Specifies the target architecture for the compiled contract.
-
-> [!WARNING]
-> The `--target` option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
-
-Usage:
-
-```bash
-zksolc Simple.sol --bin --target evm
-```
-
-Output:
-
-```
-======= Simple.sol:Simple =======
-Binary:
-5b60806040523415600e575f5ffd5b630000007f630000002760808282823960808092505050f35b5f5f6080604052369150600482106032575f3560e01c9050633df4ddf48114603657635a8ac02d81811480915050605a575b5f5ffd5b3415603f575f5ffd5b60015f036004830313604f575f5ffd5b602a60805260206080f35b34156063575f5ffd5b60015f0360048303136073575f5ffd5b60405160638152602090f3
-```
+## Other I/O Modes
 
 
 
-## Multi-language Support
+### `--combined-json`
+
+For the combined JSON mode usage, see the [Combined JSON](./03-combined-json.md) page.
+
+
+
+### `--standard-json`
+
+For the standard JSON mode usage, see the [Standard JSON](./04-standard-json.md) page.
+
+
+
+## Multi-Language Support
 
 *zksolc* supports input in multiple programming languages:
 
@@ -338,6 +324,36 @@ Usage with a binary file:
 
 ```bash
 zksolc --disassemble input.bin
+```
+
+
+
+## Multi-Target Support
+
+*zksolc* is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:
+
+- `eravm` — [EraVM](https://docs.zksync.io/zk-stack/components/zksync-evm) (default).
+- `evm` — [EVM](https://ethereum.org/en/developers/docs/evm/) (under development and only available for testing).
+
+### `--target`
+
+Specifies the target architecture for the compiled contract.
+
+> [!WARNING]
+> The `--target` option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
+
+Usage:
+
+```bash
+zksolc Simple.sol --bin --target evm
+```
+
+Output:
+
+```
+======= Simple.sol:Simple =======
+Binary:
+5b60806040523415600e575f5ffd5b630000007f630000002760808282823960808092505050f35b5f5f6080604052369150600482106032575f3560e01c9050633df4ddf48114603657635a8ac02d81811480915050605a575b5f5ffd5b3415603f575f5ffd5b60015f036004830313604f575f5ffd5b602a60805260206080f35b34156063575f5ffd5b60015f0360048303136073575f5ffd5b60405160638152602090f3
 ```
 
 

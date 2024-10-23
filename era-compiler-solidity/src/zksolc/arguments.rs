@@ -74,9 +74,8 @@ pub struct Arguments {
     #[structopt(long = "llvm-options")]
     pub llvm_options: Option<String>,
 
-    /// Disable the `solc` optimizer.
-    /// Use it if your project uses the `MSIZE` instruction, or in other cases.
-    /// Beware that it will prevent libraries from being inlined.
+    /// Deprecated.
+    /// The `solc` optimizer is not used by `zksolc` anymore.
     #[structopt(long = "disable-solc-optimizer")]
     pub disable_solc_optimizer: bool,
 
@@ -241,8 +240,15 @@ impl Arguments {
 
         if self.system_mode {
             messages.push(SolcStandardJsonOutputError::new_warning(
-                "The `--system-mode` flag is deprecated. Please use `--enable-eravm-extensions` instead.",
+                "The `--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead.",
                 None, None,
+            ));
+        }
+        if self.disable_solc_optimizer {
+            messages.push(SolcStandardJsonOutputError::new_warning(
+                "The `solc` optimizer is not used by `zksolc` anymore.",
+                None,
+                None,
             ));
         }
 
@@ -315,14 +321,6 @@ impl Arguments {
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EVM legacy assembly codegen is only available in Solidity mode.",
-                    None,
-                    None,
-                ));
-            }
-
-            if self.disable_solc_optimizer {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "Disabling the solc optimizer is only available in Solidity mode.",
                     None,
                     None,
                 ));
@@ -465,11 +463,6 @@ impl Arguments {
                     "Overwriting flag cannot be used in standard JSON mode.",
                     None,
                     None,
-                ));
-            }
-            if self.disable_solc_optimizer {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                "Disabling the solc optimizer must be specified in standard JSON input settings.", None, None
                 ));
             }
             if self.optimization.is_some() {

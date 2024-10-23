@@ -255,7 +255,6 @@ pub fn standard_output_eravm(
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
@@ -282,12 +281,7 @@ pub fn standard_output_eravm(
         libraries,
         remappings,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            solc_optimizer_enabled,
-            None,
-            &solc_version.default,
-            optimizer_settings.is_fallback_to_size_enabled(),
-        ),
+        SolcStandardJsonInputSettingsOptimizer::default(),
         Some(SolcStandardJsonInputSettingsMetadata::new(
             era_compiler_common::HashType::None,
             use_literal_content,
@@ -344,7 +338,6 @@ pub fn standard_output_evm(
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
     force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
@@ -367,12 +360,7 @@ pub fn standard_output_evm(
         libraries,
         remappings,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            solc_optimizer_enabled,
-            None,
-            &solc_version.default,
-            optimizer_settings.is_fallback_to_size_enabled(),
-        ),
+        SolcStandardJsonInputSettingsOptimizer::default(),
         Some(SolcStandardJsonInputSettingsMetadata::new(
             era_compiler_common::HashType::None,
             use_literal_content,
@@ -477,7 +465,7 @@ pub fn standard_json_eravm(
             };
 
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
-            solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
+            solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
@@ -635,7 +623,7 @@ pub fn standard_json_evm(
             };
 
             let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
-            solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
+            solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
@@ -739,7 +727,6 @@ pub fn combined_json_eravm(
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
     force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
@@ -766,7 +753,6 @@ pub fn combined_json_eravm(
         solc_compiler,
         messages,
         evm_version,
-        solc_optimizer_enabled,
         force_evmla,
         enable_eravm_extensions,
         metadata_hash_type,
@@ -814,7 +800,6 @@ pub fn combined_json_evm(
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
     force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
@@ -837,7 +822,6 @@ pub fn combined_json_evm(
         solc_compiler,
         messages,
         evm_version,
-        solc_optimizer_enabled,
         force_evmla,
         metadata_hash_type,
         use_literal_content,

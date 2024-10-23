@@ -54,6 +54,7 @@ pub struct Settings {
     #[serde(rename = "detectMissingLibraries", skip_serializing)]
     pub detect_missing_libraries: Option<bool>,
     /// The optimizer settings.
+    #[serde(default, skip_serializing)]
     pub optimizer: Optimizer,
     /// The extra LLVM options.
     #[serde(rename = "LLVMOptions", skip_serializing)]
@@ -116,12 +117,10 @@ impl Settings {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+    pub fn normalize(&mut self, pipeline: Option<SolcPipeline>) {
         self.output_selection
             .get_or_insert_with(Selection::default)
             .extend_with_required(pipeline);
-
-        self.optimizer.normalize(version);
     }
 
     ///
