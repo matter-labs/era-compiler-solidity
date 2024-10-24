@@ -2,8 +2,8 @@
 //! The Solidity compiler.
 //!
 
+pub mod codegen;
 pub mod combined_json;
-pub mod pipeline;
 pub mod standard_json;
 pub mod version;
 
@@ -14,8 +14,8 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
+use self::codegen::Codegen;
 use self::combined_json::CombinedJson;
-use self::pipeline::Pipeline;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::error::Error as StandardJsonOutputError;
@@ -88,7 +88,7 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: &mut StandardJsonInput,
-        pipeline: Option<Pipeline>,
+        pipeline: Option<Codegen>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,

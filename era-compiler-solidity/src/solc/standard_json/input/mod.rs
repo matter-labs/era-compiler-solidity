@@ -17,7 +17,7 @@ use rayon::iter::ParallelIterator;
 
 use crate::error_type::ErrorType;
 use crate::libraries::Libraries;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -79,8 +79,8 @@ impl Input {
         libraries: Vec<String>,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        codegen: Option<SolcCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
-        force_evmla: bool,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
         metadata: SolcStandardJsonInputSettingsMetadata,
@@ -109,8 +109,8 @@ impl Input {
             libraries,
             remappings,
             optimizer,
+            codegen,
             evm_version,
-            force_evmla,
             enable_eravm_extensions,
             output_selection,
             metadata,
@@ -130,8 +130,8 @@ impl Input {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
+        codegen: Option<SolcCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
-        force_evmla: bool,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
         metadata: SolcStandardJsonInputSettingsMetadata,
@@ -148,8 +148,8 @@ impl Input {
                 optimizer,
                 libraries,
                 remappings,
+                codegen,
                 evm_version,
-                force_evmla,
                 enable_eravm_extensions,
                 output_selection,
                 metadata,
@@ -183,7 +183,7 @@ impl Input {
                 libraries,
                 BTreeSet::new(),
                 None,
-                false,
+                None,
                 false,
                 output_selection,
                 SolcStandardJsonInputSettingsMetadata::default(),
@@ -222,7 +222,7 @@ impl Input {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcPipeline>) {
+    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
         self.settings.normalize(pipeline);
     }
 

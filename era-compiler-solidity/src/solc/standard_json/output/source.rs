@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 
 use crate::error_type::ErrorType;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
@@ -220,7 +220,7 @@ impl Source {
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &SolcVersion,
-        solc_pipeline: SolcPipeline,
+        solc_pipeline: SolcCodegen,
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> Vec<SolcStandardJsonOutputError> {
@@ -235,7 +235,7 @@ impl Source {
         if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
             messages.push(message);
         }
-        if SolcPipeline::EVMLA == solc_pipeline && solc_version.l2_revision.is_none() {
+        if SolcCodegen::EVMLA == solc_pipeline && solc_version.l2_revision.is_none() {
             if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }

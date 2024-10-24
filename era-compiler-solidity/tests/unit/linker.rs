@@ -6,69 +6,69 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use era_compiler_solidity::libraries::Libraries;
-use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
+use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
 
 #[test]
 fn library_not_passed_compile_time_08_evmla() {
-    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn library_not_passed_compile_time_08_yul() {
-    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 #[test]
 fn library_not_passed_post_compile_time_08_evmla() {
-    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn library_not_passed_post_compile_time_08_yul() {
-    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 #[test]
 fn library_passed_compile_time_08_evmla() {
-    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn library_passed_compile_time_08_yul() {
-    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 #[test]
 fn library_passed_post_compile_time_08_evmla() {
-    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn library_passed_post_compile_time_08_yul() {
-    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 #[test]
 fn library_passed_post_compile_time_second_call_08_evmla() {
     library_passed_post_compile_time_second_call(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::EVMLA,
+        SolcCodegen::EVMLA,
     );
 }
 #[test]
 fn library_passed_post_compile_time_second_call_08_yul() {
     library_passed_post_compile_time_second_call(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::Yul,
+        SolcCodegen::Yul,
     );
 }
 #[test]
 fn library_passed_post_compile_time_redundant_args_08_evmla() {
     library_passed_post_compile_time_redundant_args(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::EVMLA,
+        SolcCodegen::EVMLA,
     );
 }
 #[test]
 fn library_passed_post_compile_time_redundant_args_08_yul() {
     library_passed_post_compile_time_redundant_args(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::Yul,
+        SolcCodegen::Yul,
     );
 }
 #[test]
@@ -76,7 +76,7 @@ fn library_passed_post_compile_time_redundant_args_08_yul() {
 fn library_passed_post_compile_time_non_elf_08_evmla() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::EVMLA,
+        SolcCodegen::EVMLA,
     );
 }
 #[test]
@@ -84,7 +84,7 @@ fn library_passed_post_compile_time_non_elf_08_evmla() {
 fn library_passed_post_compile_time_non_elf_08_yul() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcPipeline::Yul,
+        SolcCodegen::Yul,
     );
 }
 
@@ -125,7 +125,7 @@ contract Greeter {
 fn get_bytecode(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     version: &semver::Version,
-    pipeline: SolcPipeline,
+    pipeline: SolcCodegen,
 ) -> Vec<u8> {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
@@ -158,7 +158,7 @@ fn get_bytecode(
     hex::decode(bytecode_hexadecimal).expect("Invalid bytecode")
 }
 
-fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
     let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
@@ -172,7 +172,7 @@ fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcPipel
     );
 }
 
-fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
     let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
@@ -189,7 +189,7 @@ fn library_not_passed_post_compile_time(version: semver::Version, pipeline: Solc
     );
 }
 
-fn library_passed_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+fn library_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
     let libraries = Libraries::into_standard_json(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
@@ -205,7 +205,7 @@ fn library_passed_compile_time(version: semver::Version, pipeline: SolcPipeline)
     assert!(!memory_buffer.is_elf_eravm(), "The bytecode is an ELF file");
 }
 
-fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcPipeline) {
+fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
@@ -227,7 +227,7 @@ fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcPipe
     );
 }
 
-fn library_passed_post_compile_time_second_call(version: semver::Version, pipeline: SolcPipeline) {
+fn library_passed_post_compile_time_second_call(version: semver::Version, pipeline: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
@@ -254,7 +254,7 @@ fn library_passed_post_compile_time_second_call(version: semver::Version, pipeli
 
 fn library_passed_post_compile_time_redundant_args(
     version: semver::Version,
-    pipeline: SolcPipeline,
+    pipeline: SolcCodegen,
 ) {
     let libraries = Libraries::into_linker(vec![
         "fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
@@ -279,7 +279,7 @@ fn library_passed_post_compile_time_redundant_args(
     );
 }
 
-fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: SolcPipeline) {
+fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])

@@ -8,9 +8,9 @@ fn with_force_evmla() -> anyhow::Result<()> {
     let args = &["--force-evmla", "--bin", cli::TEST_SOLIDITY_CONTRACT_PATH];
 
     let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stdout(predicate::str::contains("Binary:\n"));
+    result.success().stderr(predicate::str::contains(
+        "Warning: `--force-evmla` flag is deprecated: please use `--codegen 'evmla'` instead.",
+    ));
 
     Ok(())
 }
@@ -28,7 +28,7 @@ fn with_force_evmla_yul_mode() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: EVM legacy assembly codegen is only available in Solidity mode",
+        "Error: Codegen settings are only available in Solidity mode",
     ));
 
     Ok(())
@@ -47,7 +47,7 @@ fn with_force_evmla_llvm_ir_mode() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: EVM legacy assembly codegen is only available in Solidity mode",
+        "Error: Codegen settings are only available in Solidity mode",
     ));
 
     Ok(())
@@ -66,7 +66,7 @@ fn with_force_evmla_eravm_assembly_mode() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: EVM legacy assembly codegen is only available in Solidity mode",
+        "Error: Codegen settings are only available in Solidity mode",
     ));
 
     Ok(())

@@ -6,7 +6,7 @@ pub mod flag;
 
 use std::collections::HashSet;
 
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 
 use self::flag::Flag as SelectionFlag;
 
@@ -27,7 +27,7 @@ impl File {
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(pipeline: Option<SolcPipeline>) -> Self {
+    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
         let pipeline_ir_flag = pipeline
             .map(SelectionFlag::from)
             .unwrap_or(SelectionFlag::Yul);
@@ -67,7 +67,7 @@ impl File {
     ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcPipeline>) -> &mut Self {
+    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
         let required = Self::new_required(pipeline);
         self.per_file
             .get_or_insert_with(HashSet::default)

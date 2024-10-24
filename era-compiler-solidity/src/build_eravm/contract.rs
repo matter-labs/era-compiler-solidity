@@ -8,6 +8,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
+use crate::solc::standard_json::output::contract::eravm::EraVM as StandardJsonOutputContractEraVM;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
 
@@ -196,11 +197,17 @@ impl Contract {
         let assembly = self.build.assembly;
 
         standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract.eravm = Some(StandardJsonOutputContractEraVM::new(
+            bytecode.clone(),
+            assembly.clone(),
+        ));
         standard_json_contract
             .evm
             .get_or_insert_with(StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
-        standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
+        standard_json_contract
+            .factory_dependencies
+            .extend(self.build.factory_dependencies);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
 
         Ok(())

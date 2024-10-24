@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::warning_type::WarningType;
 
 use self::metadata::Metadata;
@@ -39,6 +39,16 @@ pub struct Settings {
     /// The target EVM version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
+    /// The output selection filters.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_selection: Option<Selection>,
+    /// The metadata settings.
+    #[serde(default)]
+    pub metadata: Metadata,
+
+    /// The Solidity codegen.
+    #[serde(skip_serializing)]
+    pub codegen: Option<SolcCodegen>,
     /// Whether to compile via EVM assembly.
     #[serde(default, rename = "forceEVMLA", skip_serializing)]
     pub force_evmla: bool,
@@ -46,12 +56,6 @@ pub struct Settings {
     #[serde(default, rename = "enableEraVMExtensions", skip_serializing)]
     pub enable_eravm_extensions: bool,
 
-    /// The output selection filters.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub output_selection: Option<Selection>,
-    /// The metadata settings.
-    #[serde(default)]
-    pub metadata: Metadata,
     /// The extra LLVM options.
     #[serde(default, rename = "LLVMOptions", skip_serializing)]
     pub llvm_options: Vec<String>,
@@ -86,8 +90,8 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: BTreeSet<String>,
 
+        codegen: Option<SolcCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
-        force_evmla: bool,
         enable_eravm_extensions: bool,
 
         output_selection: Selection,
@@ -105,8 +109,9 @@ impl Settings {
             libraries,
             remappings,
 
+            codegen,
             evm_version,
-            force_evmla,
+            force_evmla: codegen == Some(SolcCodegen::EVMLA),
             enable_eravm_extensions,
 
             output_selection: Some(output_selection),
@@ -123,7 +128,7 @@ impl Settings {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcPipeline>) {
+    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
         self.output_selection
             .get_or_insert_with(Selection::default)
             .extend_with_required(pipeline);

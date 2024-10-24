@@ -13,7 +13,7 @@ fn with_disable_solc_optimizer() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
-        "Warning: The `solc` optimizer is not used by `zksolc` anymore.",
+        "Warning: `--disable-solc-optimizer` flag is deprecated: the `solc` optimizer is not used by `zksolc` anymore.",
     ));
 
     Ok(())

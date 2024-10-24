@@ -15,7 +15,7 @@ use assert_cmd::Command;
 
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
-use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
+use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use era_compiler_solidity::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -97,7 +97,7 @@ pub fn build_solidity(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcPipeline,
+    solc_pipeline: SolcCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
@@ -116,8 +116,8 @@ pub fn build_solidity(
         libraries.clone(),
         remappings,
         SolcStandardJsonInputSettingsOptimizer::default(),
+        Some(solc_pipeline),
         None,
-        solc_pipeline == SolcPipeline::EVMLA,
         true,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsMetadata::default(),
@@ -170,7 +170,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcPipeline,
+    solc_pipeline: SolcCodegen,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
 
@@ -188,8 +188,8 @@ pub fn build_solidity_and_detect_missing_libraries(
         libraries.clone(),
         BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
+        Some(solc_pipeline),
         None,
-        solc_pipeline == SolcPipeline::EVMLA,
         false,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsMetadata::default(),
@@ -388,7 +388,7 @@ pub fn check_solidity_message(
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcPipeline,
+    solc_pipeline: SolcCodegen,
     skip_for_zksync_edition: bool,
     suppressed_errors: Vec<ErrorType>,
     suppressed_warnings: Vec<WarningType>,
@@ -412,8 +412,8 @@ pub fn check_solidity_message(
         libraries,
         BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
+        Some(solc_pipeline),
         None,
-        solc_pipeline == SolcPipeline::EVMLA,
         false,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsMetadata::default(),

@@ -20,20 +20,6 @@ fn with_eravm_extensions() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_system_mode() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--system-mode", "--bin"];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stderr(predicate::str::contains("Warning: The `--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead"));
-
-    Ok(())
-}
-
-#[test]
 fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
     common::setup()?;
 
@@ -85,6 +71,20 @@ fn with_enable_eravm_extensions_standard_json_mode() -> anyhow::Result<()> {
     result.success().stdout(predicate::str::contains(
         "is deprecated in standard JSON mode and must be passed in JSON as",
     ));
+
+    Ok(())
+}
+
+#[test]
+fn with_system_mode() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--system-mode", "--bin"];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stderr(predicate::str::contains("Warning: `--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead"));
 
     Ok(())
 }

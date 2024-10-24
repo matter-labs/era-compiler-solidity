@@ -36,9 +36,9 @@ pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
 pub use self::project::Project;
 pub use self::r#const::*;
+pub use self::solc::codegen::Codegen as SolcCodegen;
 pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContract;
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
-pub use self::solc::pipeline::Pipeline as SolcPipeline;
 pub use self::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
@@ -254,8 +254,8 @@ pub fn standard_output_eravm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
@@ -272,15 +272,15 @@ pub fn standard_output_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
         libraries,
         remappings,
         SolcStandardJsonInputSettingsOptimizer::default(),
+        codegen,
         evm_version,
-        force_evmla,
         enable_eravm_extensions,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
@@ -333,8 +333,8 @@ pub fn standard_output_evm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -347,15 +347,15 @@ pub fn standard_output_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
         libraries,
         remappings,
         SolcStandardJsonInputSettingsOptimizer::default(),
+        codegen,
         evm_version,
-        force_evmla,
         false,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
@@ -403,7 +403,7 @@ pub fn standard_output_evm(
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<SolcCompiler>,
-    force_evmla: bool,
+    codegen: Option<SolcCodegen>,
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
     json_path: Option<PathBuf>,
@@ -423,7 +423,11 @@ pub fn standard_json_eravm(
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let llvm_options = solc_input.settings.llvm_options.clone();
 
-    let force_evmla = solc_input.settings.force_evmla || force_evmla;
+    let codegen = if solc_input.settings.force_evmla {
+        Some(SolcCodegen::EVMLA)
+    } else {
+        codegen
+    };
     let enable_eravm_extensions =
         solc_input.settings.enable_eravm_extensions || enable_eravm_extensions;
     let detect_missing_libraries =
@@ -443,7 +447,7 @@ pub fn standard_json_eravm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
+            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
             solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
@@ -563,7 +567,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<SolcCompiler>,
-    force_evmla: bool,
+    codegen: Option<SolcCodegen>,
     json_path: Option<PathBuf>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
@@ -590,7 +594,7 @@ pub fn standard_json_evm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
+            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
             solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
@@ -694,8 +698,8 @@ pub fn combined_json_eravm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
@@ -718,8 +722,8 @@ pub fn combined_json_eravm(
         libraries,
         solc_compiler,
         messages,
+        codegen,
         evm_version,
-        force_evmla,
         enable_eravm_extensions,
         metadata_hash_type,
         use_literal_content,
@@ -765,8 +769,8 @@ pub fn combined_json_evm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
@@ -785,8 +789,8 @@ pub fn combined_json_evm(
         libraries,
         solc_compiler,
         messages,
+        codegen,
         evm_version,
-        force_evmla,
         metadata_hash_type,
         use_literal_content,
         base_path,

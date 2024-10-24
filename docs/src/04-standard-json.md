@@ -41,20 +41,6 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "content": "contract settable is owned { uint256 private x = 0; function set(uint256 _x) public { if (msg.sender == owner) x = _x; } }"
     }
   },
-  // Optional: Sorted list of remappings.
-  // Important: Only used with Solidity input.
-  "remappings": [ ":g=/dir" ],
-  // Optional: Addresses of the libraries.
-  // If not all library addresses are provided here, it will result in unlinked bytecode files that will require post-compile-time linking before deployment.
-  // Important: Only used with Solidity, Yul, and LLVM IR input.
-  "libraries": {
-    // The top level key is the name of the source file where the library is used.
-    // If remappings are used, this source file should match the global path after remappings were applied.
-    "myFile.sol": {
-      // Source code library name and address where it is deployed.
-      "MyLib": "0x123123..."
-    }
-  },
 
   // Required: Compilation settings.
   "settings": {
@@ -76,20 +62,27 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "fallbackToOptimizingForSize": false
     },
 
+    // Optional: Sorted list of remappings.
+    // Important: Only used with Solidity input.
+    "remappings": [ ":g=/dir" ],
+    // Optional: Addresses of the libraries.
+    // If not all library addresses are provided here, it will result in unlinked bytecode files that will require post-compile-time linking before deployment.
+    // Important: Only used with Solidity, Yul, and LLVM IR input.
+    "libraries": {
+      // The top level key is the name of the source file where the library is used.
+      // If remappings are used, this source file should match the global path after remappings were applied.
+      "myFile.sol": {
+        // Source code library name and address where it is deployed.
+        "MyLib": "0x123123..."
+      }
+    },
+
     // Optional: Version of the EVM solc will produce IR for.
     // Affects type checking and code generation.
-    // Can be "homestead", "tangerineWhistle", "spuriousDragon", "byzantium", "constantinople", "petersburg", "istanbul", "berlin", "london", "paris", "shanghai", "cancun" or "prague" (TODO, experimental).
+    // Can be "homestead", "tangerineWhistle", "spuriousDragon", "byzantium", "constantinople", "petersburg", "istanbul", "berlin", "london", "paris", "shanghai", "cancun" or "prague" (experimental).
     // Only used with Solidity, and only affects Yul and EVM assembly codegen. For instance, with version "cancun", solc will produce `MCOPY` instructions, whereas with older EVM versions it will not.
     // Default: chosen by solc, is version-dependent.
     "evmVersion": "cancun",
-    // Optional, Deprecated, zksolc: Switches the solc codegen to EVM assembly, as by default zksolc has been using Yul codegen by default for historical reasons.
-    // Will be replaced by "codegen" and removed in the future.
-    // Default: false.
-    "forceEVMLA": true,
-    // Optional, zksolc: Enables the EraVM extensions in Solidity and Yul modes.
-    // The extensions include EraVM-specific opcodes and features, such as call forwarding and usage of additional memory spaces.
-    // Default: false.
-    "enableEraVMExtensions": true,
     // Optional: Select the desired output.
     // Important: zksolc does not support per-file and per-contract selection.
     //
@@ -100,7 +93,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     //   abi                       Solidity ABI
     //   evm.methodIdentifiers     Solidity function hashes
     //   storageLayout             Slots, offsets and types of the contract's state variables in storage
-    //   transientStorageLayout    Slots, offsets and types of the contract's state variables in transient storage (TODO)
+    //   transientStorageLayout    Slots, offsets and types of the contract's state variables in transient storage
     //   devdoc                    Developer documentation (natspec)
     //   userdoc                   User documentation (natspec)
     //   metadata                  Metadata
@@ -121,7 +114,6 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
         ]
       }
     },
-
     // Optional: Metadata settings.
     "metadata": {
       // Optional: Use the given hash method for the metadata hash that is appended to the bytecode.
@@ -134,6 +126,19 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       // Default: false.
       "useLiteralContent": true
     },
+
+    // Optional: Solidity codegen.
+    // Can be "evmla" or "yul".
+    // In contract to solc, zksolc uses "Yul" codegen by default for solc v0.8.0 and newer. It will be fixed soon, so solc and zksolc defaults will be the same.
+    // Default: "evmla" for solc <0.8.0, "yul" for solc >=0.8.0.
+    "codegen": "Yul",
+    // Optional, Deprecated, zksolc: Use "codegen" instead.
+    // Default: false.
+    "forceEVMLA": true,
+    // Optional, zksolc: Enables the EraVM extensions in Solidity and Yul modes.
+    // The extensions include EraVM-specific opcodes and features, such as call forwarding and usage of additional memory spaces.
+    // Default: false.
+    "enableEraVMExtensions": true,
 
     // Optional, zksolc: extra LLVM settings.
     "LLVMOptions": [
@@ -214,14 +219,21 @@ If *solc* is provided to *zksolc*, the output JSON is initially generated by *so
         // Optional: Yul produced by solc (string).
         // Corresponds to "irOptimized" in the outputSelection settings.
         // Provided by solc and passed through by zksolc.
-        "irOptimized": "",
-        // Required: EVM-related outputs.
-        // Warning: EraVM artifacts are still returned here within the "evm" object, but it will be moved to "eravm" in the future.
+        "irOptimized": "/* ... */",
+        // Required: EraVM target outputs.
+        "eravm": {
+          // Required: EraVM bytecode (string).
+          "bytecode": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
+          // Optional: EraVM assembly produced by zksolc (string).
+          // Corresponds to "eravm.assembly" in the outputSelection settings.
+          "assembly": "/* ... */"
+        },
+        // Required: EVM target outputs.
+        // Warning: EraVM artifacts "bytecode" and "assembly" are still returned here within the "evm" object for backward compatibility, but all new applications must be reading from the "eravm" object.
         "evm": {
-          // Required: Bytecode and related details.
+          // Required, Deprecated(EraVM): EVM bytecode.
           "bytecode": {
             // Required: Bytecode (string).
-            // Stubbed by solc and set by zksolc.
             "object": "0000008003000039000000400030043f0000000100200190000000130000c13d..."
           },
           // Optional: List of function hashes (object).
@@ -235,9 +247,18 @@ If *solc* is provided to *zksolc*, the output JSON is initially generated by *so
           // Corresponds to "evm.legacyAssembly" in the outputSelection settings.
           // Provided by solc and passed through by zksolc.
           "legacyAssembly": {/* ... */},
-          // Optional: EraVM assembly produced by zksolc (string).
+
+          // Optional, Deprecated: EraVM assembly produced by zksolc (string).
           // Corresponds to "eravm.assembly" in the outputSelection settings.
           "assembly": "/* ... */"
+        },
+
+        // Required, zksolc: EraVM bytecode hash.
+        // Used to identify bytecode on ZKsync chains.
+        "hash": "5ab89dcf...",
+        // Required: 
+        "factoryDependencies": {
+
         }
       }
     }

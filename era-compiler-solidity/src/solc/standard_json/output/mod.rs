@@ -16,7 +16,7 @@ use rayon::iter::ParallelIterator;
 use crate::error_type::ErrorType;
 use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
@@ -223,7 +223,7 @@ impl Output {
         &mut self,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &SolcVersion,
-        pipeline: SolcPipeline,
+        pipeline: SolcCodegen,
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> anyhow::Result<()> {

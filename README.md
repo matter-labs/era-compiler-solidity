@@ -12,6 +12,10 @@ To install the *zksolc* compiler, follow the [installation guide](./docs/01-inst
 
 For local development, [build zksolc from sources](./docs/01-installation.md#building-from-source).
 
+## Usage
+
+For the detailed usage guide, see the [comprehensive documentation](./docs/src/02-command-line-interface.md).
+
 ## Testing
 
 To run the unit and CLI tests, execute the following command from the repository root:
@@ -23,7 +27,7 @@ cargo test
 ## Troubleshooting
 
 If you have multiple LLVM builds in your system, ensure that you choose the correct one to build the compiler.
-The environment variable `LLVM_SYS_{version}_PREFIX` sets the path to the directory with LLVM build artifacts, which typically ends with `target-llvm/build-final`.
+The environment variable `LLVM_SYS_170_PREFIX` sets the path to the directory with LLVM build artifacts, which typically ends with `target-llvm/build-final`.
 For example:
 
 ```shell
@@ -45,6 +49,7 @@ at your option.
 
 ## Resources
 
+- [zksolc documentation](./docs/src/SUMMARY.md)
 - [ZKsync Era compiler toolchain documentation](https://docs.zksync.io/zk-stack/components/compiler/toolchain)
 - [Solidity documentation](https://docs.soliditylang.org/en/latest/)
 

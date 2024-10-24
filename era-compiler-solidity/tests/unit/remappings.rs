@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
+use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -13,28 +13,28 @@ use crate::common;
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_04_evmla() {
-    default(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_05_evmla() {
-    default(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_06_evmla() {
-    default(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_07_evmla() {
-    default(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_08_evmla() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn default_08_yul() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 
 pub const CALLEE_TEST_SOURCE: &str = r#"
@@ -63,7 +63,7 @@ contract Main {
 }
 "#;
 
-fn default(version: semver::Version, pipeline: SolcPipeline) {
+fn default(version: semver::Version, pipeline: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("./test.sol".to_owned(), CALLER_TEST_SOURCE.to_owned());
     sources.insert("./callable.sol".to_owned(), CALLEE_TEST_SOURCE.to_owned());

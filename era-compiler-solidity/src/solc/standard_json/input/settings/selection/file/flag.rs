@@ -2,7 +2,7 @@
 //! The `solc --standard-json` expected output selection flag.
 //!
 
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 
 ///
 /// The `solc --standard-json` expected output selection flag.
@@ -44,11 +44,11 @@ pub enum Flag {
     EraVMAssembly,
 }
 
-impl From<SolcPipeline> for Flag {
-    fn from(pipeline: SolcPipeline) -> Self {
+impl From<SolcCodegen> for Flag {
+    fn from(pipeline: SolcCodegen) -> Self {
         match pipeline {
-            SolcPipeline::Yul => Self::Yul,
-            SolcPipeline::EVMLA => Self::EVMLA,
+            SolcCodegen::Yul => Self::Yul,
+            SolcCodegen::EVMLA => Self::EVMLA,
         }
     }
 }

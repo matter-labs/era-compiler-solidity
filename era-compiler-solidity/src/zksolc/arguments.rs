@@ -154,14 +154,19 @@ pub struct Arguments {
     #[structopt(long = "link")]
     pub link: bool,
 
+    /// Specify the `solc` codegen.
+    /// Available options: `evmla`, `yul`.
+    #[structopt(long = "codegen")]
+    pub codegen: Option<era_compiler_solidity::SolcCodegen>,
+
     /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
+    /// Deprecated: use `--codegen` instead.
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
 
-    /// Deprecated.
-    /// Use `--enable-eravm-extensions` instead.
+    /// Deprecated: use `--enable-eravm-extensions` instead.
     #[structopt(long = "system-mode")]
     pub system_mode: bool,
 
@@ -240,13 +245,20 @@ impl Arguments {
 
         if self.system_mode {
             messages.push(SolcStandardJsonOutputError::new_warning(
-                "The `--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead.",
+                "`--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead.",
                 None, None,
             ));
         }
         if self.disable_solc_optimizer {
             messages.push(SolcStandardJsonOutputError::new_warning(
-                "The `solc` optimizer is not used by `zksolc` anymore.",
+                "`--disable-solc-optimizer` flag is deprecated: the `solc` optimizer is not used by `zksolc` anymore.",
+                None,
+                None,
+            ));
+        }
+        if self.force_evmla {
+            messages.push(SolcStandardJsonOutputError::new_warning(
+                "`--force-evmla` flag is deprecated: please use `--codegen 'evmla'` instead.",
                 None,
                 None,
             ));
@@ -318,9 +330,9 @@ impl Arguments {
                 ));
             }
 
-            if self.force_evmla {
+            if self.force_evmla || self.codegen.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "EVM legacy assembly codegen is only available in Solidity mode.",
+                    "Codegen settings are only available in Solidity mode.",
                     None,
                     None,
                 ));
@@ -443,6 +455,13 @@ impl Arguments {
                 ));
             }
 
+            if self.codegen.is_some() {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Codegen must be passed via standard JSON input.",
+                    None,
+                    None,
+                ));
+            }
             if self.evm_version.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EVM version must be passed via standard JSON input.",
