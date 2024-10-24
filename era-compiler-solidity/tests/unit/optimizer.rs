@@ -2,36 +2,39 @@
 //! The Solidity compiler unit tests for the optimizer.
 //!
 
-use crate::common;
-use era_compiler_solidity::solc::pipeline::Pipeline as SolcPipeline;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+
+use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::Compiler as SolcCompiler;
+
+use crate::common;
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_04_evmla() {
-    default(semver::Version::new(0, 4, 26), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_05_evmla() {
-    default(semver::Version::new(0, 5, 17), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_06_evmla() {
-    default(semver::Version::new(0, 6, 12), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_07_evmla() {
-    default(semver::Version::new(0, 7, 6), SolcPipeline::EVMLA);
+    default(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
 }
 #[test]
 fn default_08_evmla() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::EVMLA);
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
 }
 #[test]
 fn default_08_yul() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcPipeline::Yul);
+    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
 }
 
 pub const SOURCE_CODE: &str = r#"
@@ -73,14 +76,14 @@ contract Test {
 }
 "#;
 
-fn default(version: semver::Version, pipeline: SolcPipeline) {
+fn default(version: semver::Version, pipeline: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
     let build_unoptimized = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::none(),
@@ -89,7 +92,7 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     let build_optimized_for_cycles = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
@@ -98,7 +101,7 @@ fn default(version: semver::Version, pipeline: SolcPipeline) {
     let build_optimized_for_size = common::build_solidity(
         sources.clone(),
         BTreeMap::new(),
-        None,
+        BTreeSet::new(),
         &version,
         pipeline,
         era_compiler_llvm_context::OptimizerSettings::size(),

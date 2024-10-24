@@ -74,9 +74,8 @@ pub struct Arguments {
     #[structopt(long = "llvm-options")]
     pub llvm_options: Option<String>,
 
-    /// Disable the `solc` optimizer.
-    /// Use it if your project uses the `MSIZE` instruction, or in other cases.
-    /// Beware that it will prevent libraries from being inlined.
+    /// Deprecated.
+    /// The `solc` optimizer is not used by `zksolc` anymore.
     #[structopt(long = "disable-solc-optimizer")]
     pub disable_solc_optimizer: bool,
 
@@ -155,14 +154,19 @@ pub struct Arguments {
     #[structopt(long = "link")]
     pub link: bool,
 
+    /// Specify the `solc` codegen.
+    /// Available options: `evmla`, `yul`.
+    #[structopt(long = "codegen")]
+    pub codegen: Option<era_compiler_solidity::SolcCodegen>,
+
     /// Forcibly switch to EVM legacy assembly pipeline.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
+    /// Deprecated: use `--codegen` instead.
     #[structopt(long = "force-evmla")]
     pub force_evmla: bool,
 
-    /// Deprecated.
-    /// Use `--enable-eravm-extensions` instead.
+    /// Deprecated: use `--enable-eravm-extensions` instead.
     #[structopt(long = "system-mode")]
     pub system_mode: bool,
 
@@ -241,8 +245,22 @@ impl Arguments {
 
         if self.system_mode {
             messages.push(SolcStandardJsonOutputError::new_warning(
-                "The `--system-mode` flag is deprecated. Please use `--enable-eravm-extensions` instead.",
+                "`--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead.",
                 None, None,
+            ));
+        }
+        if self.disable_solc_optimizer {
+            messages.push(SolcStandardJsonOutputError::new_warning(
+                "`--disable-solc-optimizer` flag is deprecated: the `solc` optimizer is not used by `zksolc` anymore.",
+                None,
+                None,
+            ));
+        }
+        if self.force_evmla {
+            messages.push(SolcStandardJsonOutputError::new_warning(
+                "`--force-evmla` flag is deprecated: please use `--codegen 'evmla'` instead.",
+                None,
+                None,
             ));
         }
 
@@ -312,17 +330,9 @@ impl Arguments {
                 ));
             }
 
-            if self.force_evmla {
+            if self.force_evmla || self.codegen.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
-                    "EVM legacy assembly codegen is only available in Solidity mode.",
-                    None,
-                    None,
-                ));
-            }
-
-            if self.disable_solc_optimizer {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                    "Disabling the solc optimizer is only available in Solidity mode.",
+                    "Codegen settings are only available in Solidity mode.",
                     None,
                     None,
                 ));
@@ -445,6 +455,13 @@ impl Arguments {
                 ));
             }
 
+            if self.codegen.is_some() {
+                messages.push(SolcStandardJsonOutputError::new_error(
+                    "Codegen must be passed via standard JSON input.",
+                    None,
+                    None,
+                ));
+            }
             if self.evm_version.is_some() {
                 messages.push(SolcStandardJsonOutputError::new_error(
                     "EVM version must be passed via standard JSON input.",
@@ -465,11 +482,6 @@ impl Arguments {
                     "Overwriting flag cannot be used in standard JSON mode.",
                     None,
                     None,
-                ));
-            }
-            if self.disable_solc_optimizer {
-                messages.push(SolcStandardJsonOutputError::new_error(
-                "Disabling the solc optimizer must be specified in standard JSON input settings.", None, None
                 ));
             }
             if self.optimization.is_some() {
@@ -548,7 +560,7 @@ impl Arguments {
     ///
     pub fn split_input_files_and_remappings(
         &self,
-    ) -> anyhow::Result<(Vec<PathBuf>, Option<BTreeSet<String>>)> {
+    ) -> anyhow::Result<(Vec<PathBuf>, BTreeSet<String>)> {
         let mut input_files = Vec::with_capacity(self.inputs.len());
         let mut remappings = BTreeSet::new();
 
@@ -576,12 +588,6 @@ impl Arguments {
                 input_files.push(path);
             }
         }
-
-        let remappings = if remappings.is_empty() {
-            None
-        } else {
-            Some(remappings)
-        };
 
         Ok((input_files, remappings))
     }

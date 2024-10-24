@@ -115,7 +115,6 @@ impl Build {
         self,
         standard_json: &mut StandardJsonOutput,
         solc_version: Option<&SolcVersion>,
-        zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
         let standard_json_contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
         let mut errors = Vec::with_capacity(self.contracts.len());
@@ -151,7 +150,6 @@ impl Build {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());
         }
-        standard_json.zk_version = Some(zksolc_version.to_string());
 
         Ok(())
     }
@@ -162,7 +160,6 @@ impl Build {
     pub fn write_to_combined_json(
         mut self,
         combined_json: &mut CombinedJson,
-        zksolc_version: &semver::Version,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
         self.exit_on_error();
@@ -192,8 +189,6 @@ impl Build {
                 .expect("Always valid")
                 .write_to_combined_json(combined_json_contract)?;
         }
-
-        combined_json.zk_version = Some(zksolc_version.to_string());
 
         Ok(())
     }

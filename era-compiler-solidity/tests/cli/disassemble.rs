@@ -86,15 +86,9 @@ fn with_invalid_file_extensions() -> anyhow::Result<()> {
 fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 
-    let target = Target::EVM.to_string();
-    let args = &[
-        "--disassemble",
-        cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH,
-        "--target",
-        target.as_str(),
-    ];
+    let args = &["--disassemble", cli::TEST_DISASSEMBLER_BINARY_BYTECODE_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, Target::EVM)?;
     result.failure().stderr(predicate::str::contains(
         "The EVM target does not support disassembling yet.",
     ));

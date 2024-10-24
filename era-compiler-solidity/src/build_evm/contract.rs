@@ -2,7 +2,6 @@
 //! The Solidity contract build.
 //!
 
-use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -60,11 +59,14 @@ impl Contract {
     pub fn write_to_terminal(
         self,
         path: String,
-        _output_metadata: bool,
+        output_metadata: bool,
         _output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======")?;
+        if output_metadata {
+            writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
+        }
         if output_binary {
             writeln!(
                 std::io::stdout(),
@@ -109,9 +111,8 @@ impl Contract {
             .zip([self.deploy_build, self.runtime_build].into_iter())
             {
                 let output_name = format!(
-                    "{}.{}.{}",
+                    "{}.{code_type}.{}",
                     self.name.name.as_deref().unwrap_or(file_name),
-                    code_type,
                     era_compiler_common::EXTENSION_EVM_BINARY
                 );
                 let mut output_path = output_path.clone();
@@ -122,14 +123,11 @@ impl Contract {
                         "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                     );
                 } else {
-                    File::create(&output_path)
-                        .map_err(|error| {
-                            anyhow::anyhow!("File {:?} creating: {}", output_path, error)
-                        })?
-                        .write_all(hex::encode(bytecode.as_slice()).as_bytes())
-                        .map_err(|error| {
-                            anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                        })?;
+                    std::fs::write(
+                        output_path.as_path(),
+                        hex::encode(bytecode.as_slice()).as_bytes(),
+                    )
+                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
                 }
             }
         }

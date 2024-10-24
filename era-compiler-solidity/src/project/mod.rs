@@ -22,7 +22,7 @@ use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcess
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
 use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
@@ -85,12 +85,12 @@ impl Project {
     ///
     pub fn try_from_solc_output(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        pipeline: SolcPipeline,
+        pipeline: SolcCodegen,
         solc_output: &mut SolcStandardJsonOutput,
         solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        if let SolcPipeline::EVMLA = pipeline {
+        if let SolcCodegen::EVMLA = pipeline {
             solc_output.preprocess_dependencies()?;
         }
 
@@ -124,13 +124,13 @@ impl Project {
                         let full_path = name.full_path.clone();
 
                         let result = match pipeline {
-                            SolcPipeline::Yul => ContractYul::try_from_source(
+                            SolcCodegen::Yul => ContractYul::try_from_source(
                                 &name,
                                 contract.ir_optimized.as_deref(),
                                 debug_config,
                             )
                             .map(|ir| ir.map(ContractYul::into)),
-                            SolcPipeline::EVMLA => {
+                            SolcCodegen::EVMLA => {
                                 Ok(ContractEVMLA::try_from_contract(contract)
                                     .map(ContractEVMLA::into))
                             }

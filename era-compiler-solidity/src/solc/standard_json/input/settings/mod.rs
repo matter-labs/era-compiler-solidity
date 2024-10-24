@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::warning_type::WarningType;
 
 use self::metadata::Metadata;
@@ -25,48 +25,59 @@ use self::selection::Selection;
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
+    /// The optimizer settings.
+    #[serde(default)]
+    pub optimizer: Optimizer,
+
+    /// The linker library addresses.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    /// The sorted list of remappings.
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub remappings: BTreeSet<String>,
+
     /// The target EVM version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
-    /// The linker library addresses.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub libraries: Option<BTreeMap<String, BTreeMap<String, String>>>,
-    /// The sorted list of remappings.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub remappings: Option<BTreeSet<String>>,
     /// The output selection filters.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_selection: Option<Selection>,
-    /// Whether to compile via EVM assembly.
-    #[serde(rename = "forceEVMLA", skip_serializing)]
-    pub force_evmla: Option<bool>,
-    /// Whether to add the Yul step to compilation via EVM assembly.
-    #[serde(
-        rename = "viaIR",
-        skip_deserializing,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub via_ir: Option<bool>,
-    /// Whether to enable EraVM extensions.
-    #[serde(rename = "enableEraVMExtensions", skip_serializing)]
-    pub enable_eravm_extensions: Option<bool>,
-    /// Whether to enable the missing libraries detection mode.
-    #[serde(rename = "detectMissingLibraries", skip_serializing)]
-    pub detect_missing_libraries: Option<bool>,
-    /// The optimizer settings.
-    pub optimizer: Optimizer,
-    /// The extra LLVM options.
-    #[serde(rename = "LLVMOptions", skip_serializing)]
-    pub llvm_options: Option<Vec<String>>,
     /// The metadata settings.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<Metadata>,
+    #[serde(default)]
+    pub metadata: Metadata,
+
+    /// The Solidity codegen.
+    #[serde(skip_serializing)]
+    pub codegen: Option<SolcCodegen>,
+    /// Whether to compile via EVM assembly.
+    #[serde(default, rename = "forceEVMLA", skip_serializing)]
+    pub force_evmla: bool,
+    /// Whether to enable EraVM extensions.
+    #[serde(default, rename = "enableEraVMExtensions", skip_serializing)]
+    pub enable_eravm_extensions: bool,
+
+    /// The extra LLVM options.
+    #[serde(default, rename = "LLVMOptions", skip_serializing)]
+    pub llvm_options: Vec<String>,
     /// The suppressed errors.
     #[serde(default, skip_serializing)]
     pub suppressed_errors: Vec<ErrorType>,
     /// The suppressed warnings.
     #[serde(default, skip_serializing)]
     pub suppressed_warnings: Vec<WarningType>,
+
+    /// Whether to enable the missing libraries detection mode.
+    /// Deprecated in favor of post-compile-time linking.
+    #[serde(default, rename = "detectMissingLibraries", skip_serializing)]
+    pub detect_missing_libraries: bool,
+    /// Whether to add the Yul step to compilation via EVM assembly.
+    /// Only used from era-compiler-tester to allow running additional tests.
+    #[serde(
+        rename = "viaIR",
+        skip_deserializing,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub via_ir: Option<bool>,
 }
 
 impl Settings {
@@ -74,54 +85,53 @@ impl Settings {
     /// A shortcut constructor.
     ///
     pub fn new(
-        evm_version: Option<era_compiler_common::EVMVersion>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
-        remappings: Option<BTreeSet<String>>,
-        output_selection: Selection,
-        force_evmla: bool,
-        via_ir: bool,
-        enable_eravm_extensions: bool,
-        detect_missing_libraries: bool,
         optimizer: Optimizer,
+
+        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        remappings: BTreeSet<String>,
+
+        codegen: Option<SolcCodegen>,
+        evm_version: Option<era_compiler_common::EVMVersion>,
+        enable_eravm_extensions: bool,
+
+        output_selection: Selection,
+        metadata: Metadata,
         llvm_options: Vec<String>,
-        metadata: Option<Metadata>,
         suppressed_errors: Vec<ErrorType>,
         suppressed_warnings: Vec<WarningType>,
+
+        detect_missing_libraries: bool,
+        via_ir: bool,
     ) -> Self {
         Self {
-            evm_version,
-            libraries: Some(libraries),
-            remappings,
-            output_selection: Some(output_selection),
-            force_evmla: if force_evmla { Some(true) } else { None },
-            via_ir: if via_ir { Some(true) } else { None },
-            enable_eravm_extensions: if enable_eravm_extensions {
-                Some(true)
-            } else {
-                None
-            },
-            detect_missing_libraries: if detect_missing_libraries {
-                Some(true)
-            } else {
-                None
-            },
             optimizer,
-            llvm_options: Some(llvm_options),
+
+            libraries,
+            remappings,
+
+            codegen,
+            evm_version,
+            force_evmla: codegen == Some(SolcCodegen::EVMLA),
+            enable_eravm_extensions,
+
+            output_selection: Some(output_selection),
             metadata,
+            llvm_options,
             suppressed_errors,
             suppressed_warnings,
+
+            detect_missing_libraries,
+            via_ir: if via_ir { Some(true) } else { None },
         }
     }
 
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
+    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
         self.output_selection
             .get_or_insert_with(Selection::default)
             .extend_with_required(pipeline);
-
-        self.optimizer.normalize(version);
     }
 
     ///

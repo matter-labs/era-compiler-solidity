@@ -5,8 +5,6 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 
 use self::contract::Contract;
@@ -28,8 +26,8 @@ pub struct CombinedJson {
     /// The `solc` compiler version.
     pub version: String,
     /// The `zksolc` compiler version.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub zk_version: Option<String>,
+    #[serde(default = "crate::version")]
+    pub zk_version: String,
 }
 
 impl CombinedJson {
@@ -50,10 +48,11 @@ impl CombinedJson {
             );
         }
 
-        File::create(&file_path)
-            .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", file_path, error))?
-            .write_all(serde_json::to_vec(&self).expect("Always valid").as_slice())
-            .map_err(|error| anyhow::anyhow!("File {:?} writing: {}", file_path, error))?;
+        std::fs::write(
+            file_path.as_path(),
+            serde_json::to_vec(&self).expect("Always valid").as_slice(),
+        )
+        .map_err(|error| anyhow::anyhow!("File {file_path:?} writing: {error}"))?;
 
         Ok(())
     }

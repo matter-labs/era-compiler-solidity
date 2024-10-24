@@ -13,7 +13,7 @@ use self::recursive_function::RecursiveFunction;
 #[serde(rename_all = "camelCase")]
 pub struct ExtraMetadata {
     /// The list of recursive functions.
-    #[serde(default = "Vec::new")]
+    #[serde(default)]
     pub recursive_functions: Vec<RecursiveFunction>,
 }
 

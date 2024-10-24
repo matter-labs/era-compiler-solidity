@@ -36,9 +36,9 @@ pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
 pub use self::project::Project;
 pub use self::r#const::*;
+pub use self::solc::codegen::Codegen as SolcCodegen;
 pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContract;
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
-pub use self::solc::pipeline::Pipeline as SolcPipeline;
 pub use self::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
@@ -254,16 +254,15 @@ pub fn standard_output_eravm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
-    force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    remappings: Option<BTreeSet<String>>,
+    remappings: BTreeSet<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -273,34 +272,25 @@ pub fn standard_output_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
-        SolcStandardJsonInputLanguage::Solidity,
-        evm_version,
         paths,
         libraries,
         remappings,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            solc_optimizer_enabled,
-            None,
-            &solc_version.default,
-            optimizer_settings.is_fallback_to_size_enabled(),
-        ),
-        Some(SolcStandardJsonInputSettingsMetadata::new(
-            era_compiler_common::HashType::None,
-            use_literal_content,
-        )),
-        force_evmla,
-        false,
+        SolcStandardJsonInputSettingsOptimizer::default(),
+        codegen,
+        evm_version,
         enable_eravm_extensions,
-        false,
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         suppressed_errors,
         suppressed_warnings,
+        false,
+        false,
     )?;
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let libraries = solc_input.settings.libraries.clone();
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
         Some(solc_pipeline),
@@ -343,49 +333,39 @@ pub fn standard_output_evm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
-    force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    remappings: Option<BTreeSet<String>>,
+    remappings: BTreeSet<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcPipeline::new(&solc_version, force_evmla);
+    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
-        SolcStandardJsonInputLanguage::Solidity,
-        evm_version,
         paths,
         libraries,
         remappings,
+        SolcStandardJsonInputSettingsOptimizer::default(),
+        codegen,
+        evm_version,
+        false,
         SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
-        SolcStandardJsonInputSettingsOptimizer::new(
-            solc_optimizer_enabled,
-            None,
-            &solc_version.default,
-            optimizer_settings.is_fallback_to_size_enabled(),
-        ),
-        Some(SolcStandardJsonInputSettingsMetadata::new(
-            era_compiler_common::HashType::None,
-            use_literal_content,
-        )),
-        force_evmla,
-        false,
-        false,
-        false,
+        SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         vec![],
         vec![],
+        false,
+        false,
     )?;
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let libraries = solc_input.settings.libraries.clone();
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
         Some(solc_pipeline),
@@ -423,7 +403,7 @@ pub fn standard_output_evm(
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<SolcCompiler>,
-    force_evmla: bool,
+    codegen: Option<SolcCodegen>,
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
     json_path: Option<PathBuf>,
@@ -434,34 +414,25 @@ pub fn standard_json_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let libraries = solc_input.settings.libraries.clone();
     let prune_output = solc_input.settings.get_unset_required();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
-    let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
+    let llvm_options = solc_input.settings.llvm_options.clone();
 
-    let force_evmla = solc_input.settings.force_evmla.unwrap_or_default() || force_evmla;
-    let enable_eravm_extensions = solc_input
-        .settings
-        .enable_eravm_extensions
-        .unwrap_or_default()
-        || enable_eravm_extensions;
-    let detect_missing_libraries = solc_input
-        .settings
-        .detect_missing_libraries
-        .unwrap_or_default()
-        || detect_missing_libraries;
-    let metadata_hash_type = solc_input
-        .settings
-        .metadata
-        .as_ref()
-        .and_then(|metadata| metadata.bytecode_hash)
-        .unwrap_or(era_compiler_common::HashType::Keccak256);
+    let codegen = if solc_input.settings.force_evmla {
+        Some(SolcCodegen::EVMLA)
+    } else {
+        codegen
+    };
+    let enable_eravm_extensions =
+        solc_input.settings.enable_eravm_extensions || enable_eravm_extensions;
+    let detect_missing_libraries =
+        solc_input.settings.detect_missing_libraries || detect_missing_libraries;
+    let metadata_hash_type = solc_input.settings.metadata.hash_type;
     let output_assembly = solc_input
         .settings
         .output_selection
@@ -476,8 +447,8 @@ pub fn standard_json_eravm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
-            solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
+            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
+            solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
@@ -574,11 +545,7 @@ pub fn standard_json_eravm(
 
     if detect_missing_libraries {
         let missing_libraries = project.get_missing_libraries();
-        missing_libraries.write_to_standard_json(
-            &mut solc_output,
-            solc_version.as_ref(),
-            &zksolc_version,
-        );
+        missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
     } else {
         let build = project.compile_to_eravm(
             messages,
@@ -590,7 +557,7 @@ pub fn standard_json_eravm(
             threads,
             debug_config,
         )?;
-        build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     }
     solc_output.write_and_exit(prune_output);
 }
@@ -600,7 +567,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<SolcCompiler>,
-    force_evmla: bool,
+    codegen: Option<SolcCodegen>,
     json_path: Option<PathBuf>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
@@ -609,23 +576,16 @@ pub fn standard_json_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let libraries = solc_input.settings.libraries.clone().unwrap_or_default();
+    let libraries = solc_input.settings.libraries.clone();
     let prune_output = solc_input.settings.get_unset_required();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
-    let llvm_options = solc_input.settings.llvm_options.take().unwrap_or_default();
+    let llvm_options = solc_input.settings.llvm_options.clone();
 
-    let metadata_hash_type = solc_input
-        .settings
-        .metadata
-        .as_ref()
-        .and_then(|metadata| metadata.bytecode_hash)
-        .unwrap_or(era_compiler_common::HashType::Keccak256);
+    let metadata_hash_type = solc_input.settings.metadata.hash_type;
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
@@ -634,8 +594,8 @@ pub fn standard_json_evm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcPipeline::new(&solc_compiler.version, force_evmla);
-            solc_input.normalize(&solc_compiler.version.default, Some(solc_pipeline));
+            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
+            solc_input.normalize(Some(solc_pipeline));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
@@ -725,7 +685,7 @@ pub fn standard_json_evm(
         threads,
         debug_config,
     )?;
-    build.write_to_standard_json(&mut solc_output, solc_version.as_ref(), &zksolc_version)?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     solc_output.write_and_exit(prune_output);
 }
 
@@ -738,16 +698,15 @@ pub fn combined_json_eravm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
-    force_evmla: bool,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    remappings: Option<BTreeSet<String>>,
+    remappings: BTreeSet<String>,
     output_directory: Option<PathBuf>,
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -758,16 +717,13 @@ pub fn combined_json_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-
     let build = standard_output_eravm(
         paths,
         libraries,
         solc_compiler,
         messages,
+        codegen,
         evm_version,
-        solc_optimizer_enabled,
-        force_evmla,
         enable_eravm_extensions,
         metadata_hash_type,
         use_literal_content,
@@ -785,7 +741,7 @@ pub fn combined_json_eravm(
     )?;
 
     let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
-    build.write_to_combined_json(&mut combined_json, &zksolc_version)?;
+    build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {
         Some(output_directory) => {
@@ -813,15 +769,14 @@ pub fn combined_json_evm(
     libraries: Vec<String>,
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
+    codegen: Option<SolcCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    solc_optimizer_enabled: bool,
-    force_evmla: bool,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    remappings: Option<BTreeSet<String>>,
+    remappings: BTreeSet<String>,
     output_directory: Option<PathBuf>,
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -829,16 +784,13 @@ pub fn combined_json_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
-    let zksolc_version = semver::Version::parse(env!("CARGO_PKG_VERSION")).expect("Always valid");
-
     let build = standard_output_evm(
         paths,
         libraries,
         solc_compiler,
         messages,
+        codegen,
         evm_version,
-        solc_optimizer_enabled,
-        force_evmla,
         metadata_hash_type,
         use_literal_content,
         base_path,
@@ -852,7 +804,7 @@ pub fn combined_json_evm(
     )?;
 
     let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
-    build.write_to_combined_json(&mut combined_json, &zksolc_version)?;
+    build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {
         Some(output_directory) => {

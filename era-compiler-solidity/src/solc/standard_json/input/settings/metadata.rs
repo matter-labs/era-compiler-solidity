@@ -9,22 +9,35 @@
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Whether to use literal content.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub use_literal_content: Option<bool>,
+    #[serde(default)]
+    pub use_literal_content: bool,
 
-    /// The bytecode hash mode.
-    #[serde(skip_serializing)]
-    pub bytecode_hash: Option<era_compiler_common::HashType>,
+    /// The metadata hash type.
+    #[serde(default = "Metadata::default_hash_type", skip_serializing)]
+    pub hash_type: era_compiler_common::HashType,
+}
+
+impl Default for Metadata {
+    fn default() -> Self {
+        Self::new(false, Self::default_hash_type())
+    }
 }
 
 impl Metadata {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(bytecode_hash: era_compiler_common::HashType, use_literal_content: bool) -> Self {
+    pub fn new(use_literal_content: bool, hash_type: era_compiler_common::HashType) -> Self {
         Self {
-            bytecode_hash: Some(bytecode_hash),
-            use_literal_content: Some(use_literal_content),
+            hash_type,
+            use_literal_content,
         }
+    }
+
+    ///
+    /// The default metadata hash type.
+    ///
+    fn default_hash_type() -> era_compiler_common::HashType {
+        era_compiler_common::HashType::Keccak256
     }
 }

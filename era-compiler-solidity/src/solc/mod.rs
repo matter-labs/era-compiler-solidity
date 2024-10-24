@@ -2,8 +2,8 @@
 //! The Solidity compiler.
 //!
 
+pub mod codegen;
 pub mod combined_json;
-pub mod pipeline;
 pub mod standard_json;
 pub mod version;
 
@@ -14,8 +14,8 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
+use self::codegen::Codegen;
 use self::combined_json::CombinedJson;
-use self::pipeline::Pipeline;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::error::Error as StandardJsonOutputError;
@@ -88,7 +88,7 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: &mut StandardJsonInput,
-        pipeline: Option<Pipeline>,
+        pipeline: Option<Codegen>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
@@ -164,14 +164,14 @@ impl Compiler {
         });
         errors.append(messages);
 
-        if input.suppressed_errors.is_some() {
+        if !input.suppressed_errors.is_empty() {
             errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
             ));
         }
-        if input.suppressed_warnings.is_some() {
+        if !input.suppressed_warnings.is_empty() {
             errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
@@ -180,10 +180,10 @@ impl Compiler {
         }
 
         if let Some(pipeline) = pipeline {
-            let mut suppressed_errors = input.suppressed_errors.clone().unwrap_or_default();
+            let mut suppressed_errors = input.suppressed_errors.clone();
             suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
 
-            let mut suppressed_warnings = input.suppressed_warnings.clone().unwrap_or_default();
+            let mut suppressed_warnings = input.suppressed_warnings.clone();
             suppressed_warnings.extend_from_slice(input.settings.suppressed_warnings.as_slice());
 
             input.resolve_sources();
@@ -300,7 +300,7 @@ impl Compiler {
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
             libraries.clone(),
-            StandardJsonInputSettingsOptimizer::new_yul_validation(),
+            StandardJsonInputSettingsOptimizer::default(),
             vec![],
         );
         self.validate_yul_standard_json(&mut solc_input, messages)

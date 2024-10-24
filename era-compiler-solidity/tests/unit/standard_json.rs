@@ -2,10 +2,12 @@
 //! The unit tests for standard JSON with different languages.
 //!
 
-use crate::common;
+use std::path::PathBuf;
+
 use era_compiler_solidity::solc::standard_json::input::Input as SolcStandardJsonInput;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use std::path::PathBuf;
+
+use crate::common;
 
 #[test]
 fn standard_json_yul_solc() {

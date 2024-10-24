@@ -6,7 +6,7 @@ pub mod file;
 
 use std::collections::HashSet;
 
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 
 use self::file::flag::Flag as SelectionFlag;
 use self::file::File as FileSelection;
@@ -25,7 +25,7 @@ impl Selection {
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(pipeline: Option<SolcPipeline>) -> Self {
+    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
         Self {
             all: Some(FileSelection::new_required(pipeline)),
         }
@@ -52,7 +52,7 @@ impl Selection {
     ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcPipeline>) -> &mut Self {
+    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
         self.all
             .get_or_insert_with(|| FileSelection::new_required(pipeline))
             .extend_with_required(pipeline);

@@ -13,6 +13,7 @@ mod asm;
 mod base_path;
 mod basic;
 mod bin;
+mod codegen;
 mod combined_json;
 mod debug_output_dir;
 mod detect_missing_libraries;

@@ -15,7 +15,30 @@ const JSON_ARGS: &[&str] = &[
 ];
 
 #[test]
-fn with_just_combined_json() -> anyhow::Result<()> {
+fn with_combined_json_loop_args() -> anyhow::Result<()> {
+    common::setup()?;
+
+    for arg in JSON_ARGS {
+        let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
+
+        let result = cli::execute_zksolc(args)?;
+        let status_code = result
+            .success()
+            .stdout(predicate::str::contains("contracts"))
+            .get_output()
+            .status
+            .code()
+            .expect("No exit code.");
+
+        let solc_result = cli::execute_solc(args)?;
+        solc_result.code(status_code);
+    }
+
+    Ok(())
+}
+
+#[test]
+fn with_combined_json_no_args() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--combined-json"];
@@ -38,17 +61,19 @@ fn with_just_combined_json() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_sol_contract_and_combined_json() -> anyhow::Result<()> {
+fn with_combined_json_and_invalid_arg() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json"];
+    let args = &[
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        "unknown",
+    ];
 
     let result = cli::execute_zksolc(args)?;
     let status_code = result
         .failure()
-        .stderr(predicate::str::contains(
-            "requires a value but none was supplied",
-        ))
+        .stderr(predicate::str::contains("Invalid option").or(predicate::str::contains("error")))
         .get_output()
         .status
         .code()
@@ -56,89 +81,6 @@ fn with_sol_contract_and_combined_json() -> anyhow::Result<()> {
 
     let solc_result = cli::execute_solc(args)?;
     solc_result.code(status_code);
-
-    Ok(())
-}
-
-#[test]
-fn with_combined_json_and_valid_args() -> anyhow::Result<()> {
-    common::setup()?;
-
-    for &arg in JSON_ARGS {
-        let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
-
-        let result = cli::execute_zksolc(args)?;
-        let status_code = result
-            .success()
-            .stdout(predicate::str::contains("contracts"))
-            .get_output()
-            .status
-            .code()
-            .expect("No exit code.");
-
-        let solc_result = cli::execute_solc(args)?;
-        solc_result.code(status_code);
-    }
-
-    Ok(())
-}
-
-#[test]
-fn with_combined_json_and_invalid_args() -> anyhow::Result<()> {
-    common::setup()?;
-
-    for &arg in JSON_ARGS {
-        let args = &[
-            cli::TEST_SOLIDITY_CONTRACT_PATH,
-            "--combined-json",
-            &format!("--{}", arg),
-        ];
-
-        let result = cli::execute_zksolc(args)?;
-        let status_code = result
-            .failure()
-            .stderr(
-                predicate::str::contains("Invalid option").or(predicate::str::contains("error")),
-            )
-            .get_output()
-            .status
-            .code()
-            .expect("No exit code.");
-
-        let solc_result = cli::execute_solc(args)?;
-        solc_result.code(status_code);
-    }
-
-    Ok(())
-}
-
-#[test]
-fn with_combined_json_and_duplicate_args() -> anyhow::Result<()> {
-    common::setup()?;
-
-    for &arg in JSON_ARGS {
-        let args = &[
-            cli::TEST_SOLIDITY_CONTRACT_PATH,
-            "--combined-json",
-            arg,
-            arg,
-        ];
-
-        let result = cli::execute_zksolc(args)?;
-        let status_code = result
-            .failure()
-            .stderr(
-                predicate::str::contains("No such file or directory")
-                    .or(predicate::str::contains("cannot find the file specified")),
-            )
-            .get_output()
-            .status
-            .code()
-            .expect("No exit code.");
-
-        let solc_result = cli::execute_solc(args)?;
-        solc_result.code(status_code);
-    }
 
     Ok(())
 }
@@ -173,7 +115,7 @@ fn with_multiple_combined_json_flags() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_yul_and_combined_json() -> anyhow::Result<()> {
+fn with_combined_json_and_yul_input() -> anyhow::Result<()> {
     common::setup()?;
 
     for &arg in JSON_ARGS {

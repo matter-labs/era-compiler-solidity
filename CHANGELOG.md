@@ -1,5 +1,26 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- Supported transient storage layout that is returned by `solc`
+- The `--codegen` option to make codegen settings more unified
+- Increased the code coverage of the interface to nearly 100%
+- The `zksolc` documentation as a part of this repository
+
+### Changed
+
+- Moved suppressed messages inside `settings` in standard JSON input
+- Moved EraVM artifacts to `contract.eravm` in standard JSON output
+
+### Deprecated
+
+- Suppressed messages at the root of standard JSON input
+- EraVM artifacts returned via `contract.evm` in standard JSON output
+- `--force-evmla` flag in favor of `--codegen`
+- `--disable-solc-optimizer` flag, as we are not using the `solc` optimizer anymore
+
 ## [1.5.6] - 2024-10-16
 
 ### Fixed

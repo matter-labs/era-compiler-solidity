@@ -17,7 +17,7 @@ use rayon::iter::ParallelIterator;
 
 use crate::error_type::ErrorType;
 use crate::libraries::Libraries;
-use crate::solc::pipeline::Pipeline as SolcPipeline;
+use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -42,10 +42,10 @@ pub struct Input {
 
     /// The suppressed errors.
     #[serde(default, skip_serializing)]
-    pub suppressed_errors: Option<Vec<ErrorType>>,
+    pub suppressed_errors: Vec<ErrorType>,
     /// The suppressed warnings.
     #[serde(default, skip_serializing)]
-    pub suppressed_warnings: Option<Vec<WarningType>>,
+    pub suppressed_warnings: Vec<WarningType>,
 }
 
 impl Input {
@@ -75,21 +75,20 @@ impl Input {
     /// A shortcut constructor from Solidity source paths.
     ///
     pub fn try_from_solidity_paths(
-        language: Language,
-        evm_version: Option<era_compiler_common::EVMVersion>,
         paths: &[PathBuf],
         libraries: Vec<String>,
-        remappings: Option<BTreeSet<String>>,
-        output_selection: SolcStandardJsonInputSettingsSelection,
+        remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
-        force_evmla: bool,
-        via_ir: bool,
+        codegen: Option<SolcCodegen>,
+        evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
-        detect_missing_libraries: bool,
+        output_selection: SolcStandardJsonInputSettingsSelection,
+        metadata: SolcStandardJsonInputSettingsMetadata,
         llvm_options: Vec<String>,
         suppressed_errors: Vec<ErrorType>,
         suppressed_warnings: Vec<WarningType>,
+        detect_missing_libraries: bool,
+        via_ir: bool,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
         let libraries = Libraries::into_standard_json(libraries)?;
@@ -105,89 +104,63 @@ impl Input {
             })
             .collect::<anyhow::Result<BTreeMap<String, Source>>>()?;
 
-        Ok(Self {
-            language,
+        Self::try_from_solidity_sources(
             sources,
-            settings: Settings::new(
-                evm_version,
-                libraries,
-                remappings,
-                output_selection,
-                force_evmla,
-                via_ir,
-                enable_eravm_extensions,
-                detect_missing_libraries,
-                optimizer,
-                llvm_options,
-                metadata,
-                suppressed_errors.clone(),
-                suppressed_warnings.clone(),
-            ),
-            suppressed_errors: if suppressed_errors.is_empty() {
-                None
-            } else {
-                Some(suppressed_errors)
-            },
-            suppressed_warnings: if suppressed_warnings.is_empty() {
-                None
-            } else {
-                Some(suppressed_warnings)
-            },
-        })
+            libraries,
+            remappings,
+            optimizer,
+            codegen,
+            evm_version,
+            enable_eravm_extensions,
+            output_selection,
+            metadata,
+            llvm_options,
+            suppressed_errors,
+            suppressed_warnings,
+            detect_missing_libraries,
+            via_ir,
+        )
     }
 
     ///
     /// A shortcut constructor from Solidity source code.
     ///
     pub fn try_from_solidity_sources(
-        evm_version: Option<era_compiler_common::EVMVersion>,
-        sources: BTreeMap<String, String>,
+        sources: BTreeMap<String, Source>,
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        remappings: Option<BTreeSet<String>>,
-        output_selection: SolcStandardJsonInputSettingsSelection,
+        remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        metadata: Option<SolcStandardJsonInputSettingsMetadata>,
-        force_evmla: bool,
-        via_ir: bool,
+        codegen: Option<SolcCodegen>,
+        evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
-        detect_missing_libraries: bool,
+        output_selection: SolcStandardJsonInputSettingsSelection,
+        metadata: SolcStandardJsonInputSettingsMetadata,
         llvm_options: Vec<String>,
         suppressed_errors: Vec<ErrorType>,
         suppressed_warnings: Vec<WarningType>,
+        detect_missing_libraries: bool,
+        via_ir: bool,
     ) -> anyhow::Result<Self> {
-        let sources = sources
-            .into_iter()
-            .map(|(path, content)| (path, Source::from(content)))
-            .collect();
-
         Ok(Self {
             language: Language::Solidity,
             sources,
             settings: Settings::new(
-                evm_version,
+                optimizer,
                 libraries,
                 remappings,
-                output_selection,
-                force_evmla,
-                via_ir,
+                codegen,
+                evm_version,
                 enable_eravm_extensions,
-                detect_missing_libraries,
-                optimizer,
-                llvm_options,
+                output_selection,
                 metadata,
+                llvm_options,
                 suppressed_errors.clone(),
                 suppressed_warnings.clone(),
+                detect_missing_libraries,
+                via_ir,
             ),
-            suppressed_errors: if suppressed_errors.is_empty() {
-                None
-            } else {
-                Some(suppressed_errors)
-            },
-            suppressed_warnings: if suppressed_warnings.is_empty() {
-                None
-            } else {
-                Some(suppressed_warnings)
-            },
+            suppressed_errors,
+            suppressed_warnings,
         })
     }
 
@@ -206,22 +179,22 @@ impl Input {
             language: Language::Yul,
             sources,
             settings: Settings::new(
-                None,
-                libraries,
-                None,
-                output_selection,
-                false,
-                false,
-                false,
-                false,
                 optimizer,
-                llvm_options,
+                libraries,
+                BTreeSet::new(),
                 None,
+                None,
+                false,
+                output_selection,
+                SolcStandardJsonInputSettingsMetadata::default(),
+                llvm_options,
                 vec![],
                 vec![],
+                false,
+                false,
             ),
-            suppressed_errors: None,
-            suppressed_warnings: None,
+            suppressed_errors: vec![],
+            suppressed_warnings: vec![],
         }
     }
 
@@ -249,8 +222,8 @@ impl Input {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, version: &semver::Version, pipeline: Option<SolcPipeline>) {
-        self.settings.normalize(version, pipeline);
+    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
+        self.settings.normalize(pipeline);
     }
 
     ///

@@ -31,7 +31,6 @@ impl Libraries {
         mut self,
         standard_json: &mut StandardJsonOutput,
         solc_version: Option<&SolcVersion>,
-        zksolc_version: &semver::Version,
     ) {
         let contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
 
@@ -50,7 +49,6 @@ impl Libraries {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());
         }
-        standard_json.zk_version = Some(zksolc_version.to_string());
     }
 
     ///

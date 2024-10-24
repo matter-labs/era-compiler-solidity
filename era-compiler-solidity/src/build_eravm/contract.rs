@@ -3,12 +3,12 @@
 //!
 
 use std::collections::HashSet;
-use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
 use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
+use crate::solc::standard_json::output::contract::eravm::EraVM as StandardJsonOutputContractEraVM;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
 use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
 
@@ -111,12 +111,11 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(self.metadata_json.to_string().as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(
+                    output_path.as_path(),
+                    self.metadata_json.to_string().as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -134,12 +133,8 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(assembly.as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(output_path.as_path(), assembly.as_bytes())
+                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -157,12 +152,11 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                File::create(&output_path)
-                    .map_err(|error| anyhow::anyhow!("File {:?} creating: {}", output_path, error))?
-                    .write_all(hex::encode(self.build.bytecode.as_slice()).as_bytes())
-                    .map_err(|error| {
-                        anyhow::anyhow!("File {:?} writing: {}", output_path, error)
-                    })?;
+                std::fs::write(
+                    output_path.as_path(),
+                    hex::encode(self.build.bytecode.as_slice()).as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -203,11 +197,17 @@ impl Contract {
         let assembly = self.build.assembly;
 
         standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract.eravm = Some(StandardJsonOutputContractEraVM::new(
+            bytecode.clone(),
+            assembly.clone(),
+        ));
         standard_json_contract
             .evm
             .get_or_insert_with(StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
-        standard_json_contract.factory_dependencies = Some(self.build.factory_dependencies);
+        standard_json_contract
+            .factory_dependencies
+            .extend(self.build.factory_dependencies);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
 
         Ok(())

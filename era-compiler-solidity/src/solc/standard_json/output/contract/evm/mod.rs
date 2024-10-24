@@ -15,27 +15,24 @@ use self::extra_metadata::ExtraMetadata;
 ///
 /// The `solc --standard-json` output contract EVM data.
 ///
-/// It is replaced by EraVM data after compiling.
-///
 #[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EVM {
     /// The contract bytecode.
-    /// Is reset by that of EraVM before yielding the compiled project artifacts.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bytecode: Option<Bytecode>,
     /// The contract EVM legacy assembly code.
-    #[serde(rename = "legacyAssembly", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub legacy_assembly: Option<Assembly>,
     /// The contract function signatures.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub method_identifiers: Option<BTreeMap<String, String>>,
 
     /// The contract EraVM assembly code.
-    #[serde(rename = "assembly", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub assembly: Option<String>,
     /// The extra EVMLA metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 

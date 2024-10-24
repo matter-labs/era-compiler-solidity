@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if is_standard_json {
-        let output = era_compiler_solidity::SolcStandardJsonOutput::new_with_errors(messages);
+        let output = era_compiler_solidity::SolcStandardJsonOutput::new_with_messages(messages);
         output.write_and_exit(HashSet::new());
     }
 
@@ -68,7 +68,7 @@ fn main_inner(
             std::io::stdout(),
             "{} v{} (LLVM build {})",
             env!("CARGO_PKG_DESCRIPTION"),
-            env!("CARGO_PKG_VERSION"),
+            era_compiler_solidity::version(),
             inkwell::support::get_commit_id().to_string(),
         )?;
         return Ok(());
@@ -189,7 +189,7 @@ fn main_inner(
                 };
                 return era_compiler_solidity::standard_json_eravm(
                     solc_compiler,
-                    arguments.force_evmla,
+                    arguments.codegen,
                     enable_eravm_extensions,
                     arguments.detect_missing_libraries,
                     standard_json.map(PathBuf::from),
@@ -213,9 +213,8 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
+                    arguments.codegen,
                     arguments.evm_version,
-                    !arguments.disable_solc_optimizer,
-                    arguments.force_evmla,
                     enable_eravm_extensions,
                     metadata_hash_type,
                     arguments.metadata_literal,
@@ -245,9 +244,8 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
+                    arguments.codegen,
                     arguments.evm_version,
-                    !arguments.disable_solc_optimizer,
-                    arguments.force_evmla,
                     enable_eravm_extensions,
                     metadata_hash_type,
                     arguments.metadata_literal,
@@ -314,7 +312,7 @@ fn main_inner(
                 };
                 return era_compiler_solidity::standard_json_evm(
                     solc_compiler,
-                    arguments.force_evmla,
+                    arguments.codegen,
                     standard_json.map(PathBuf::from),
                     messages,
                     arguments.base_path,
@@ -336,9 +334,8 @@ fn main_inner(
                     arguments.libraries,
                     &solc_compiler,
                     messages,
+                    arguments.codegen,
                     arguments.evm_version,
-                    !arguments.disable_solc_optimizer,
-                    arguments.force_evmla,
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
@@ -364,9 +361,8 @@ fn main_inner(
                     arguments.libraries,
                     &solc,
                     messages,
+                    arguments.codegen,
                     arguments.evm_version,
-                    !arguments.disable_solc_optimizer,
-                    arguments.force_evmla,
                     metadata_hash_type,
                     arguments.metadata_literal,
                     arguments.base_path,
