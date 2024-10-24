@@ -9,7 +9,7 @@ use self::recursive_function::RecursiveFunction;
 ///
 /// The `solc --standard-json` output contract EVM extra metadata.
 ///
-#[derive(Debug, Default, Clone, serde::Deserialize)]
+#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtraMetadata {
     /// The list of recursive functions.

@@ -4,9 +4,9 @@ Standard JSON is a protocol for interaction with the *zksolc* and *solc* compile
 
 The protocol uses two data formats for communication: [input JSON](#input-json) and [output JSON](#output-json).
 
-> [!TIP]
-> - When *zksolc* is called in `--standard-json` mode, it will always return with exit code 0 and standard JSON output printed to *stdout*.
-> - It differs from *solc* that may return with exit code 1 and a free-formed error in some cases, such as when the standard JSON input file is missing.
+> [!NOTE]
+> - For the sake of interface unification, *zksolc* will always return with exit code 0 and have its standard JSON output printed to *stdout*.
+> - It differs from *solc* that may return with exit code 1 and a free-formed error in some cases, such as when the standard JSON input file is missing, even though [the *solc* documentation claims otherwise](https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description).
 
 > [!IMPORTANT]
 > The formats below are modifications of the original standard JSON [input](https://docs.soliditylang.org/en/latest/using-the-compiler.html#input-description) and [output](https://docs.soliditylang.org/en/latest/using-the-compiler.html#output-description) formats implemented by *solc*. It means that there are:

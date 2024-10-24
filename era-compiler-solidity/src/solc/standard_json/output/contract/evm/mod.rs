@@ -35,7 +35,7 @@ pub struct EVM {
     #[serde(rename = "assembly", skip_serializing_if = "Option::is_none")]
     pub assembly: Option<String>,
     /// The extra EVMLA metadata.
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 
