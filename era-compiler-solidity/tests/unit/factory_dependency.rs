@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -13,28 +13,46 @@ use crate::common;
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_04_evmla() {
-    default(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    default(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn default_05_evmla() {
-    default(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    default(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn default_06_evmla() {
-    default(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    default(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn default_07_evmla() {
-    default(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    default(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn default_08_evmla() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    default(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn default_08_yul() {
-    default(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    default(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 pub const MAIN_CODE: &str = r#"
@@ -72,7 +90,7 @@ contract Callable {
 }
 "#;
 
-fn default(version: semver::Version, codegen: SolcCodegen) {
+fn default(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("main.sol".to_owned(), MAIN_CODE.to_owned());
     sources.insert("callable.sol".to_owned(), CALLABLE_CODE.to_owned());
@@ -90,8 +108,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
     assert_eq!(
         output
             .contracts
-            .as_ref()
-            .expect("Missing field `contracts`")
             .get("main.sol")
             .expect("Missing file `main.sol`")
             .get("Main")
@@ -104,8 +120,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
     assert_eq!(
         output
             .contracts
-            .as_ref()
-            .expect("Missing field `contracts`")
             .get("callable.sol")
             .expect("Missing file `callable.sol`")
             .get("Callable")

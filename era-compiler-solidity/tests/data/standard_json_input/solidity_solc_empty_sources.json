@@ -1,10 +1,13 @@
 {
-	"language": "Solidity",
-	"sources": {},
-	"settings": {
-		"optimizer": {
-			"enabled": true,
-			"runs": 200
-		}
-	}
+  "language": "Solidity",
+  "sources": {},
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
 }

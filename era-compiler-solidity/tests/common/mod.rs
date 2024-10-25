@@ -15,7 +15,7 @@ use assert_cmd::Command;
 
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use era_compiler_solidity::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -29,56 +29,37 @@ use era_compiler_solidity::warning_type::WarningType;
 /// Synchronization for `solc` downloads.
 static DOWNLOAD_SOLC: Once = Once::new();
 
-/// Download directory for `solc` binaries.
+/// Synchronization for upstream `solc` downloads.
+static DOWNLOAD_SOLC_UPSTREAM: Once = Once::new();
+
+/// Download directory for `solc` executables.
 pub const SOLC_DOWNLOAD_DIRECTORY: &str = "solc-bin";
 
-/// Path to the `solc` binary configuration file.
+/// Download directory for upstream `solc` executables.
+pub const SOLC_UPSTREAM_DOWNLOAD_DIRECTORY: &str = "solc-bin-upstream";
+
+/// Path to the `solc` executable configuration file.
 pub const SOLC_BIN_CONFIG_PATH: &str = "tests/solc-bin.json";
 
-///
-/// Returns the `solc` compiler for the given version.
-///
-pub fn get_solc_compiler(solc_version: &semver::Version) -> anyhow::Result<SolcCompiler> {
-    let solc_path = PathBuf::from(SOLC_DOWNLOAD_DIRECTORY).join(format!(
-        "{}-{solc_version}{}",
-        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
-        std::env::consts::EXE_SUFFIX,
-    ));
-
-    SolcCompiler::new(solc_path.to_str().unwrap())
-}
-
-///
-/// Downloads the necessary compiler binaries.
-///
-pub fn download_binaries() -> anyhow::Result<()> {
-    let mut http_client_builder = reqwest::blocking::ClientBuilder::new();
-    http_client_builder = http_client_builder.connect_timeout(Duration::from_secs(60));
-    http_client_builder = http_client_builder.pool_idle_timeout(Duration::from_secs(60));
-    http_client_builder = http_client_builder.timeout(Duration::from_secs(60));
-    let http_client = http_client_builder.build()?;
-
-    let config_path = Path::new(SOLC_BIN_CONFIG_PATH);
-    era_compiler_downloader::Downloader::new(http_client.clone()).download(config_path)?;
-
-    // Copy the latest `solc-*` binary to `solc` for CLI tests
-    let latest_solc =
-        PathBuf::from(get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)?.executable);
-    let mut solc = latest_solc.clone();
-    solc.set_file_name(format!("solc{}", std::env::consts::EXE_SUFFIX));
-    std::fs::copy(latest_solc, solc)?;
-
-    Ok(())
-}
+/// Path to the upstream `solc` executable configuration file.
+pub const SOLC_BIN_UPSTREAM_CONFIG_PATH: &str = "tests/solc-bin-upstream.json";
 
 ///
 /// Setup required test dependencies.
 ///
 pub fn setup() -> anyhow::Result<()> {
-    // Download `solc` binaries once
+    // Download `solc` executables once
     DOWNLOAD_SOLC.call_once(|| {
-        download_binaries().expect("Unable to download solc binaries. Aborting...");
+        download_executables(SOLC_BIN_CONFIG_PATH, true)
+            .expect("Unable to download `solc` executables");
     });
+    if cfg!(not(all(target_arch = "aarch64", target_os = "linux"))) {
+        // Download upstream `solc` executables once
+        DOWNLOAD_SOLC_UPSTREAM.call_once(|| {
+            download_executables(SOLC_BIN_UPSTREAM_CONFIG_PATH, false)
+                .expect("Unable to download upstream `solc` executables");
+        });
+    }
 
     // Set the `zksolc` binary path
     let zksolc_bin = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
@@ -86,7 +67,55 @@ pub fn setup() -> anyhow::Result<()> {
 
     // Enable LLVM pretty stack trace
     inkwell::support::enable_llvm_pretty_stack_trace();
+
     Ok(())
+}
+
+///
+/// Downloads the necessary compiler executables.
+///
+pub fn download_executables(config_path: &str, create_alias: bool) -> anyhow::Result<()> {
+    let mut http_client_builder = reqwest::blocking::ClientBuilder::new();
+    http_client_builder = http_client_builder.connect_timeout(Duration::from_secs(60));
+    http_client_builder = http_client_builder.pool_idle_timeout(Duration::from_secs(60));
+    http_client_builder = http_client_builder.timeout(Duration::from_secs(60));
+    let http_client = http_client_builder.build()?;
+
+    let config_path = Path::new(config_path);
+    era_compiler_downloader::Downloader::new(http_client.clone()).download(config_path)?;
+
+    if create_alias {
+        // Copy the latest `solc-*` binary to `solc` for CLI tests
+        let latest_solc = PathBuf::from(
+            get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)?.executable,
+        );
+        let mut solc = latest_solc.clone();
+        solc.set_file_name(format!("solc{}", std::env::consts::EXE_SUFFIX));
+        std::fs::copy(latest_solc, solc)?;
+    }
+
+    Ok(())
+}
+
+///
+/// Returns the `solc` compiler for the given version.
+///
+pub fn get_solc_compiler(
+    version: &semver::Version,
+    use_upstream: bool,
+) -> anyhow::Result<SolcCompiler> {
+    let directory = if use_upstream {
+        SOLC_UPSTREAM_DOWNLOAD_DIRECTORY
+    } else {
+        SOLC_DOWNLOAD_DIRECTORY
+    };
+    let solc_path = PathBuf::from(directory).join(format!(
+        "{}-{version}{}",
+        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+        std::env::consts::EXE_SUFFIX,
+    ));
+
+    SolcCompiler::new(solc_path.to_str().unwrap())
 }
 
 ///
@@ -97,12 +126,12 @@ pub fn build_solidity(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
 
-    let solc_compiler = get_solc_compiler(solc_version)?;
+    let solc_compiler = get_solc_compiler(solc_version, false)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -119,7 +148,7 @@ pub fn build_solidity(
         Some(solc_codegen),
         None,
         true,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -170,11 +199,11 @@ pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
 
-    let solc_compiler = get_solc_compiler(solc_version)?;
+    let solc_compiler = get_solc_compiler(solc_version, false)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
@@ -191,7 +220,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -388,18 +417,14 @@ pub fn check_solidity_message(
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
-    skip_for_zksync_edition: bool,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
+    solc_use_upstream: bool,
     suppressed_errors: Vec<ErrorType>,
     suppressed_warnings: Vec<WarningType>,
 ) -> anyhow::Result<bool> {
     self::setup()?;
 
-    let solc_compiler = get_solc_compiler(solc_version)?;
-
-    if skip_for_zksync_edition && solc_compiler.version.l2_revision.is_some() {
-        return Ok(true);
-    }
+    let solc_compiler = get_solc_compiler(solc_version, solc_use_upstream)?;
 
     let mut sources = BTreeMap::new();
     sources.insert(
@@ -415,7 +440,7 @@ pub fn check_solidity_message(
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         suppressed_errors,
@@ -434,7 +459,6 @@ pub fn check_solidity_message(
     )?;
     let contains_warning = solc_output
         .errors
-        .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?
         .iter()
         .any(|error| error.formatted_message.contains(warning_substring));
 

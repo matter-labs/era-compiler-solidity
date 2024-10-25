@@ -39,7 +39,7 @@ pub struct Contract {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ir_optimized: Option<String>,
     /// The EraVM data of the contract.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub eravm: Option<EraVM>,
     /// The EVM data of the contract.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -68,8 +68,9 @@ impl Contract {
             && self.metadata.is_none()
             && self.devdoc.is_none()
             && self.userdoc.is_none()
-            && self.evm.is_none()
             && self.ir_optimized.is_none()
+            && self.evm.is_none()
+            && self.eravm.is_none()
             && self.hash.is_none()
             && self.factory_dependencies.is_empty()
             && self.missing_libraries.is_none()

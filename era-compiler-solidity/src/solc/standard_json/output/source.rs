@@ -4,8 +4,10 @@
 
 use std::collections::BTreeMap;
 
+use boolinator::Boolinator;
+
 use crate::error_type::ErrorType;
-use crate::solc::codegen::Codegen as SolcCodegen;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
 use crate::solc::version::Version as SolcVersion;
@@ -45,18 +47,12 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "FunctionCall" {
-            return None;
-        }
+        (ast.get("nodeType")?.as_str()? == "FunctionCall").as_option()?;
 
         let expression = ast.get("expression")?.as_object()?;
-        if expression.get("nodeType")?.as_str()? != "MemberAccess" {
-            return None;
-        }
+        (expression.get("nodeType")?.as_str()? == "MemberAccess").as_option()?;
         let member_name = expression.get("memberName")?.as_str()?;
-        if !["send", "transfer"].contains(&member_name) {
-            return None;
-        }
+        ["send", "transfer"].contains(&member_name).as_option()?;
 
         let expression = expression.get("expression")?.as_object()?;
         let type_descriptions = expression.get("typeDescriptions")?.as_object()?;
@@ -65,9 +61,7 @@ impl Source {
         if solc_version.default < semver::Version::new(0, 5, 0) {
             affected_types.push("t_address");
         }
-        if !affected_types.contains(&type_identifier) {
-            return None;
-        }
+        affected_types.contains(&type_identifier).as_option()?;
 
         Some(SolcStandardJsonOutputError::error_send_and_transfer(
             ast.get("src")?.as_str(),
@@ -86,22 +80,16 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "MemberAccess" {
-            return None;
-        }
-        if ast.get("memberName")?.as_str()? != "runtimeCode" {
-            return None;
-        }
+        (ast.get("nodeType")?.as_str()? == "MemberAccess").as_option()?;
+        (ast.get("memberName")?.as_str()? == "runtimeCode").as_option()?;
 
         let expression = ast.get("expression")?.as_object()?;
         let type_descriptions = expression.get("typeDescriptions")?.as_object()?;
-        if !type_descriptions
+        type_descriptions
             .get("typeIdentifier")?
             .as_str()?
             .starts_with("t_magic_meta_type")
-        {
-            return None;
-        }
+            .as_option()?;
 
         Some(SolcStandardJsonOutputError::error_runtime_code(
             ast.get("src")?.as_str(),
@@ -120,18 +108,14 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "VariableDeclaration" {
-            return None;
-        }
+        (ast.get("nodeType")?.as_str()? == "VariableDeclaration").as_option()?;
 
         let type_descriptions = ast.get("typeDescriptions")?.as_object()?;
-        if !type_descriptions
+        type_descriptions
             .get("typeIdentifier")?
             .as_str()?
             .contains("function_internal")
-        {
-            return None;
-        }
+            .as_option()?;
 
         Some(
             SolcStandardJsonOutputError::error_internal_function_pointer(
@@ -152,20 +136,12 @@ impl Source {
     ) -> Option<SolcStandardJsonOutputError> {
         let ast = ast.as_object()?;
 
-        if ast.get("nodeType")?.as_str()? != "MemberAccess" {
-            return None;
-        }
-        if ast.get("memberName")?.as_str()? != "origin" {
-            return None;
-        }
+        (ast.get("nodeType")?.as_str()? == "MemberAccess").as_option()?;
+        (ast.get("memberName")?.as_str()? == "origin").as_option()?;
 
         let expression = ast.get("expression")?.as_object()?;
-        if expression.get("nodeType")?.as_str()? != "Identifier" {
-            return None;
-        }
-        if expression.get("name")?.as_str()? != "tx" {
-            return None;
-        }
+        (expression.get("nodeType")?.as_str()? == "Identifier").as_option()?;
+        (expression.get("name")?.as_str()? == "tx").as_option()?;
 
         Some(SolcStandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
@@ -187,20 +163,18 @@ impl Source {
 
         match ast.get("nodeType")?.as_str()? {
             "InlineAssembly" if solc_version.default < semver::Version::new(0, 6, 0) => {
-                if !ast.get("operations")?.as_str()?.contains("origin()") {
-                    return None;
-                }
+                ast.get("operations")?
+                    .as_str()?
+                    .contains("origin()")
+                    .as_option()?;
             }
             "YulFunctionCall" if solc_version.default >= semver::Version::new(0, 6, 0) => {
-                if ast
-                    .get("functionName")?
+                (ast.get("functionName")?
                     .as_object()?
                     .get("name")?
                     .as_str()?
-                    != "origin"
-                {
-                    return None;
-                }
+                    == "origin")
+                    .as_option()?;
             }
             _ => return None,
         }
@@ -220,7 +194,7 @@ impl Source {
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &SolcVersion,
-        solc_codegen: SolcCodegen,
+        solc_codegen: SolcStandardJsonInputSettingsCodegen,
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> Vec<SolcStandardJsonOutputError> {
@@ -235,7 +209,9 @@ impl Source {
         if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
             messages.push(message);
         }
-        if SolcCodegen::EVMLA == solc_codegen && solc_version.l2_revision.is_none() {
+        if SolcStandardJsonInputSettingsCodegen::EVMLA == solc_codegen
+            && solc_version.l2_revision.is_none()
+        {
             if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }

@@ -1,16 +1,18 @@
 {
-  "language": "Yul",
-  "sources": {
-    "EventWriter.yul": {
+  "language": "Solidity",
+  "sources":
+  {
+    "A":
+    {
       "urls": [
-        "tests/data/contracts/yul/EventWriter.yul"
+        "tests/data/contracts/solidity/InternalFunctionPointers.sol"
       ]
     }
   },
   "settings": {
     "optimizer": {
       "mode": "3",
-      "fallbackToOptimizingForSize": false
+      "fallbackToOptimizingForSize": true
     },
     "outputSelection": {
       "*": {
@@ -27,7 +29,8 @@
       "hashType": "ipfs"
     },
     "libraries": {},
+    "codegen": "evmla",
     "enableEraVMExtensions": true,
-    "forceEVMLA": false
+    "forceEVMLA": true
   }
 }

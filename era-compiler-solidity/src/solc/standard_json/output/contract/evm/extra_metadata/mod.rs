@@ -28,17 +28,21 @@ impl ExtraMetadata {
         for function in self.recursive_functions.iter() {
             match block_key.code_type {
                 era_compiler_llvm_context::CodeType::Deploy => {
-                    if let Some(creation_tag) = function.creation_tag {
-                        if num::BigUint::from(creation_tag) == block_key.tag {
-                            return Some(function);
-                        }
+                    if function
+                        .creation_tag
+                        .map(|creation_tag| num::BigUint::from(creation_tag) == block_key.tag)
+                        .unwrap_or_default()
+                    {
+                        return Some(function);
                     }
                 }
                 era_compiler_llvm_context::CodeType::Runtime => {
-                    if let Some(runtime_tag) = function.runtime_tag {
-                        if num::BigUint::from(runtime_tag) == block_key.tag {
-                            return Some(function);
-                        }
+                    if function
+                        .runtime_tag
+                        .map(|runtime_tag| num::BigUint::from(runtime_tag) == block_key.tag)
+                        .unwrap_or_default()
+                    {
+                        return Some(function);
                     }
                 }
             }
