@@ -188,7 +188,7 @@ object "ProgramCounter" {
     common::build_yul(sources).expect("Test failure");
 }
 
-fn codecopy_runtime(version: semver::Version, pipeline: SolcCodegen) {
+fn codecopy_runtime(version: semver::Version, codegen: SolcCodegen) {
     let source_code = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.12;
@@ -215,7 +215,7 @@ contract FixedCodeCopy {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
@@ -244,7 +244,7 @@ contract CallcodeTest {
 }
     "#;
 
-fn callcode(version: semver::Version, pipeline: SolcCodegen) {
+fn callcode(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
 
@@ -253,7 +253,7 @@ fn callcode(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
@@ -276,7 +276,7 @@ contract ExternalCodeCopy {
 }
     "#;
 
-fn extcodecopy(version: semver::Version, pipeline: SolcCodegen) {
+fn extcodecopy(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
 
@@ -285,7 +285,7 @@ fn extcodecopy(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
@@ -363,7 +363,7 @@ contract MinimalDestructible {
 }
     "#;
 
-fn selfdestruct(version: semver::Version, pipeline: SolcCodegen, source: &str) {
+fn selfdestruct(version: semver::Version, codegen: SolcCodegen, source: &str) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), source.to_owned());
 
@@ -372,7 +372,7 @@ fn selfdestruct(version: semver::Version, pipeline: SolcCodegen, source: &str) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");

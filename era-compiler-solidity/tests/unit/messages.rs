@@ -441,13 +441,13 @@ contract SendExample {
 }
 "#;
 
-fn send(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
+fn send(version: semver::Version, codegen: SolcCodegen, source_code: &str) {
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![],
@@ -455,13 +455,13 @@ fn send(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
     .expect("Test failure"));
 }
 
-fn send_suppressed(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
+fn send_suppressed(version: semver::Version, codegen: SolcCodegen, source_code: &str) {
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![ErrorType::SendTransfer],
         vec![],
@@ -496,13 +496,13 @@ contract TransferExample {
 }
 "#;
 
-fn transfer(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
+fn transfer(version: semver::Version, codegen: SolcCodegen, source_code: &str) {
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![],
@@ -510,13 +510,13 @@ fn transfer(version: semver::Version, pipeline: SolcCodegen, source_code: &str) 
     .expect("Test failure"));
 }
 
-fn transfer_suppressed(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
+fn transfer_suppressed(version: semver::Version, codegen: SolcCodegen, source_code: &str) {
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![ErrorType::SendTransfer],
         vec![],
@@ -537,13 +537,13 @@ contract Test {
 }
 "#;
 
-fn runtime_code(version: semver::Version, pipeline: SolcCodegen) {
+fn runtime_code(version: semver::Version, codegen: SolcCodegen) {
     assert!(common::check_solidity_message(
         RUNTIME_CODE_SOURCE_CODE,
         "Deploy and runtime code are merged together on ZKsync",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![],
@@ -585,7 +585,7 @@ contract InternalFunctionPointerExample {
 
     assert!(common::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in the EVM assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly codegen.",
         BTreeMap::new(),
         &version,
         SolcCodegen::EVMLA,
@@ -624,7 +624,7 @@ contract StackFunctionPointerExample {
 
     assert!(common::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in the EVM assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly codegen.",
         BTreeMap::new(),
         &version,
         SolcCodegen::EVMLA,
@@ -670,7 +670,7 @@ contract StorageFunctionPointerExample {
 
     assert!(common::check_solidity_message(
         source_code,
-        "Internal function pointers are not supported in the EVM assembly pipeline.",
+        "Internal function pointers are not supported in the EVM assembly codegen.",
         BTreeMap::new(),
         &version,
         SolcCodegen::EVMLA,
@@ -689,13 +689,13 @@ contract TxOriginExample {
 }
 "#;
 
-fn tx_origin(version: semver::Version, pipeline: SolcCodegen) {
+fn tx_origin(version: semver::Version, codegen: SolcCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![],
@@ -703,13 +703,13 @@ fn tx_origin(version: semver::Version, pipeline: SolcCodegen) {
     .expect("Test failure"));
 }
 
-fn tx_origin_suppressed(version: semver::Version, pipeline: SolcCodegen) {
+fn tx_origin_suppressed(version: semver::Version, codegen: SolcCodegen) {
     assert!(!common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![WarningType::TxOrigin],
@@ -727,13 +727,13 @@ contract TxOriginExample {
 }
 "#;
 
-fn tx_origin_assembly(version: semver::Version, pipeline: SolcCodegen) {
+fn tx_origin_assembly(version: semver::Version, codegen: SolcCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![],
@@ -741,13 +741,13 @@ fn tx_origin_assembly(version: semver::Version, pipeline: SolcCodegen) {
     .expect("Test failure"));
 }
 
-fn tx_origin_assembly_suppressed(version: semver::Version, pipeline: SolcCodegen) {
+fn tx_origin_assembly_suppressed(version: semver::Version, codegen: SolcCodegen) {
     assert!(!common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
         false,
         vec![],
         vec![WarningType::TxOrigin],

@@ -125,7 +125,7 @@ contract Greeter {
 fn get_bytecode(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     version: &semver::Version,
-    pipeline: SolcCodegen,
+    codegen: SolcCodegen,
 ) -> Vec<u8> {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
@@ -135,7 +135,7 @@ fn get_bytecode(
         libraries,
         BTreeSet::new(),
         version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
@@ -158,8 +158,8 @@ fn get_bytecode(
     hex::decode(bytecode_hexadecimal).expect("Invalid bytecode")
 }
 
-fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+fn library_not_passed_compile_time(version: semver::Version, codegen: SolcCodegen) {
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -172,8 +172,8 @@ fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcCodeg
     );
 }
 
-fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+fn library_not_passed_post_compile_time(version: semver::Version, codegen: SolcCodegen) {
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -189,13 +189,13 @@ fn library_not_passed_post_compile_time(version: semver::Version, pipeline: Solc
     );
 }
 
-fn library_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_compile_time(version: semver::Version, codegen: SolcCodegen) {
     let libraries = Libraries::into_standard_json(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
     .expect("Always valid");
 
-    let bytecode = get_bytecode(libraries, &version, pipeline);
+    let bytecode = get_bytecode(libraries, &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -205,13 +205,13 @@ fn library_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) 
     assert!(!memory_buffer.is_elf_eravm(), "The bytecode is an ELF file");
 }
 
-fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time(version: semver::Version, codegen: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
     .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -227,13 +227,13 @@ fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCode
     );
 }
 
-fn library_passed_post_compile_time_second_call(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time_second_call(version: semver::Version, codegen: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
     .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -252,10 +252,7 @@ fn library_passed_post_compile_time_second_call(version: semver::Version, pipeli
     );
 }
 
-fn library_passed_post_compile_time_redundant_args(
-    version: semver::Version,
-    pipeline: SolcCodegen,
-) {
+fn library_passed_post_compile_time_redundant_args(version: semver::Version, codegen: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
         "scam.sol:Scam=0x0000000000000000000000000000000000000000".to_owned(),
@@ -263,7 +260,7 @@ fn library_passed_post_compile_time_redundant_args(
     ])
     .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -279,13 +276,13 @@ fn library_passed_post_compile_time_redundant_args(
     );
 }
 
-fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time_non_elf(version: semver::Version, codegen: SolcCodegen) {
     let libraries = Libraries::into_linker(vec![
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ])
     .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, pipeline);
+    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),

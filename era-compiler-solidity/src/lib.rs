@@ -272,7 +272,7 @@ pub fn standard_output_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
+    let solc_codegen = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
@@ -282,7 +282,7 @@ pub fn standard_output_eravm(
         codegen,
         evm_version,
         enable_eravm_extensions,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         suppressed_errors,
@@ -293,7 +293,7 @@ pub fn standard_output_eravm(
     let libraries = solc_input.settings.libraries.clone();
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -304,7 +304,7 @@ pub fn standard_output_eravm(
 
     let project = Project::try_from_solc_output(
         libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         solc_compiler,
         debug_config.as_ref(),
@@ -347,7 +347,7 @@ pub fn standard_output_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
+    let solc_codegen = SolcCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
@@ -357,7 +357,7 @@ pub fn standard_output_evm(
         codegen,
         evm_version,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         vec![],
@@ -368,7 +368,7 @@ pub fn standard_output_evm(
     let libraries = solc_input.settings.libraries.clone();
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -379,7 +379,7 @@ pub fn standard_output_evm(
 
     let project = Project::try_from_solc_output(
         libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         solc_compiler,
         debug_config.as_ref(),
@@ -447,12 +447,12 @@ pub fn standard_json_eravm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(Some(solc_pipeline));
+            let solc_codegen = SolcCodegen::new(&solc_compiler.version, codegen);
+            solc_input.normalize(Some(solc_codegen));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_pipeline),
+                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -464,7 +464,7 @@ pub fn standard_json_eravm(
 
             let project = Project::try_from_solc_output(
                 libraries,
-                solc_pipeline,
+                solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
                 debug_config.as_ref(),
@@ -594,12 +594,12 @@ pub fn standard_json_evm(
                 None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
             };
 
-            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(Some(solc_pipeline));
+            let solc_codegen = SolcCodegen::new(&solc_compiler.version, codegen);
+            solc_input.normalize(Some(solc_codegen));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_pipeline),
+                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -611,7 +611,7 @@ pub fn standard_json_evm(
 
             let project = Project::try_from_solc_output(
                 libraries,
-                solc_pipeline,
+                solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
                 debug_config.as_ref(),

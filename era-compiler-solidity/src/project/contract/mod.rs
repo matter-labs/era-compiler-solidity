@@ -145,7 +145,7 @@ impl Contract {
                 let solc_version = dependency_data
                     .solc_version
                     .clone()
-                    .expect("The EVM assembly pipeline cannot be executed without `solc`");
+                    .expect("The EVM assembly codegen cannot be executed without `solc`");
 
                 let module = llvm.create_module(self.name.full_path.as_str());
                 let mut context = era_compiler_llvm_context::EraVMContext::new(

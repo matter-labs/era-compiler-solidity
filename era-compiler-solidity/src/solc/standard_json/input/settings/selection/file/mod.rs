@@ -27,8 +27,8 @@ impl File {
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
-        let pipeline_ir_flag = pipeline
+    pub fn new_required(codegen: Option<SolcCodegen>) -> Self {
+        let codegen_ir_flag = codegen
             .map(SelectionFlag::from)
             .unwrap_or(SelectionFlag::Yul);
 
@@ -36,7 +36,7 @@ impl File {
         let per_contract = HashSet::from_iter([
             SelectionFlag::MethodIdentifiers,
             SelectionFlag::Metadata,
-            pipeline_ir_flag,
+            codegen_ir_flag,
         ]);
         Self {
             per_file: Some(per_file),
@@ -67,8 +67,8 @@ impl File {
     ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
-        let required = Self::new_required(pipeline);
+    pub fn extend_with_required(&mut self, codegen: Option<SolcCodegen>) -> &mut Self {
+        let required = Self::new_required(codegen);
         self.per_file
             .get_or_insert_with(HashSet::default)
             .extend(required.per_file.unwrap_or_default());

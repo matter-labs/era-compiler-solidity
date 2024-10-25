@@ -220,7 +220,7 @@ impl Source {
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &SolcVersion,
-        solc_pipeline: SolcCodegen,
+        solc_codegen: SolcCodegen,
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> Vec<SolcStandardJsonOutputError> {
@@ -235,7 +235,7 @@ impl Source {
         if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
             messages.push(message);
         }
-        if SolcCodegen::EVMLA == solc_pipeline && solc_version.l2_revision.is_none() {
+        if SolcCodegen::EVMLA == solc_codegen && solc_version.l2_revision.is_none() {
             if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }
@@ -258,7 +258,7 @@ impl Source {
                         id_paths,
                         sources,
                         solc_version,
-                        solc_pipeline,
+                        solc_codegen,
                         suppressed_errors,
                         suppressed_warnings,
                     ));
@@ -271,7 +271,7 @@ impl Source {
                         id_paths,
                         sources,
                         solc_version,
-                        solc_pipeline,
+                        solc_codegen,
                         suppressed_errors,
                         suppressed_warnings,
                     ));

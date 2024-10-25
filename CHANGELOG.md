@@ -36,7 +36,7 @@
 
 ### Fixed
 
-- The compilation pipeline that was not run without output parameters
+- Skipped compilation if no output parameters are provided
 - Broken `--output-dir` output paths for non-Solidity contracts
 - `solc` that was not picked up from `${PATH}` in standard JSON mode
 - `solc` exit code check which is now before the output parsing
@@ -337,7 +337,7 @@
 
 ### Changed
 
-- Internal function pointers now trigger a compile-time error with the EVMLA pipeline
+- Internal function pointers now trigger a compile-time error with the EVMLA codegen
 - Calldata instructions now return 0 in deploy code
 
 ### Removed
@@ -356,7 +356,7 @@
 
 ### Added
 
-- Better errors for unsupported `type(X).runtimeCode` with the Yul pipeline
+- Better errors for unsupported `type(X).runtimeCode` with the Yul codegen
 - An option to disable the `solc` optimizer
 
 ### Changed
@@ -366,9 +366,9 @@
 
 ### Fixed
 
-- Another stack overflow issue with the EVMLA pipeline
-- `CODECOPY` in runtime code now does not copy calldata with the EVMLA pipeline
-- `CODESIZE` in runtime code now returns 0 with the EVMLA pipeline
+- Another stack overflow issue with the EVMLA codegen
+- `CODECOPY` in runtime code now does not copy calldata with the EVMLA codegen
+- `CODESIZE` in runtime code now returns 0 with the EVMLA codegen
 - Hexadecimal arguments in EVMLA are now parsed as case-insensitive
 
 ## [1.3.7] - 2023-03-15
@@ -421,7 +421,7 @@
 ### Fixed
 
 - The `send` and `transfer` now produce a warning again due to false-positives
-- Malfunctioned `CODECOPY` in some cases with the EVMLA pipeline
+- Malfunctioned `CODECOPY` in some cases with the EVMLA codegen
 - The near call exception handling for the requests to system contracts
 
 ## [1.3.2] - 2023-02-14

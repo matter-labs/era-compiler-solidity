@@ -76,7 +76,7 @@ contract Test {
 }
 "#;
 
-fn default(version: semver::Version, pipeline: SolcCodegen) {
+fn default(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
@@ -85,7 +85,7 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
@@ -94,7 +94,7 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");
@@ -103,7 +103,7 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::size(),
     )
     .expect("Build failure");

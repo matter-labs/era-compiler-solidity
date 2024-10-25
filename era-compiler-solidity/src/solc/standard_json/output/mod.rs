@@ -223,7 +223,7 @@ impl Output {
         &mut self,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &SolcVersion,
-        pipeline: SolcCodegen,
+        codegen: SolcCodegen,
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> anyhow::Result<()> {
@@ -248,7 +248,7 @@ impl Output {
                             &id_paths,
                             sources,
                             version,
-                            pipeline,
+                            codegen,
                             suppressed_errors,
                             suppressed_warnings,
                         )

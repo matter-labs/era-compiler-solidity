@@ -159,7 +159,7 @@ pub struct Arguments {
     #[structopt(long = "codegen")]
     pub codegen: Option<era_compiler_solidity::SolcCodegen>,
 
-    /// Forcibly switch to EVM legacy assembly pipeline.
+    /// Forcibly switch to EVM legacy assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
     /// Deprecated: use `--codegen` instead.
@@ -542,7 +542,7 @@ impl Arguments {
             }
             if self.force_evmla {
                 messages.push(SolcStandardJsonOutputError::new_warning(
-                "EVM legacy assembly pipeline CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON as `settings.forceEVMLA`.", None, None
+                "EVM legacy assembly codegen CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON as `settings.forceEVMLA`.", None, None
                 ));
             }
             if self.detect_missing_libraries {

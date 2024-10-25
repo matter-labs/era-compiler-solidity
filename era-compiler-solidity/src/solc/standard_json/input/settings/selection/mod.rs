@@ -25,9 +25,9 @@ impl Selection {
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
+    pub fn new_required(codegen: Option<SolcCodegen>) -> Self {
         Self {
-            all: Some(FileSelection::new_required(pipeline)),
+            all: Some(FileSelection::new_required(codegen)),
         }
     }
 
@@ -52,10 +52,10 @@ impl Selection {
     ///
     /// Extends the output selection with flag required by EraVM compilation process.
     ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
+    pub fn extend_with_required(&mut self, codegen: Option<SolcCodegen>) -> &mut Self {
         self.all
-            .get_or_insert_with(|| FileSelection::new_required(pipeline))
-            .extend_with_required(pipeline);
+            .get_or_insert_with(|| FileSelection::new_required(codegen))
+            .extend_with_required(codegen);
         self
     }
 

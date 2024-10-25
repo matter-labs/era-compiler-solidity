@@ -63,7 +63,7 @@ contract Main {
 }
 "#;
 
-fn default(version: semver::Version, pipeline: SolcCodegen) {
+fn default(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("./test.sol".to_owned(), CALLER_TEST_SOURCE.to_owned());
     sources.insert("./callable.sol".to_owned(), CALLEE_TEST_SOURCE.to_owned());
@@ -76,7 +76,7 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         remappings,
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");

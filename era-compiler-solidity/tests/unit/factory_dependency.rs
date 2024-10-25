@@ -72,7 +72,7 @@ contract Callable {
 }
 "#;
 
-fn default(version: semver::Version, pipeline: SolcCodegen) {
+fn default(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("main.sol".to_owned(), MAIN_CODE.to_owned());
     sources.insert("callable.sol".to_owned(), CALLABLE_CODE.to_owned());
@@ -82,7 +82,7 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");

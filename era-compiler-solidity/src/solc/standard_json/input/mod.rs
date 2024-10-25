@@ -222,8 +222,8 @@ impl Input {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
-        self.settings.normalize(pipeline);
+    pub fn normalize(&mut self, codegen: Option<SolcCodegen>) {
+        self.settings.normalize(codegen);
     }
 
     ///

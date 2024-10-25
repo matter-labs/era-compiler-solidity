@@ -88,7 +88,7 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: &mut StandardJsonInput,
-        pipeline: Option<Codegen>,
+        codegen: Option<Codegen>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
@@ -179,7 +179,7 @@ impl Compiler {
             ));
         }
 
-        if let Some(pipeline) = pipeline {
+        if let Some(codegen) = codegen {
             let mut suppressed_errors = input.suppressed_errors.clone();
             suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
 
@@ -190,7 +190,7 @@ impl Compiler {
             solc_output.preprocess_ast(
                 &input.sources,
                 &self.version,
-                pipeline,
+                codegen,
                 suppressed_errors.as_slice(),
                 suppressed_warnings.as_slice(),
             )?;

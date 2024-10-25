@@ -83,10 +83,6 @@ pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
     "tests/data/standard_json_input/solidity_solc.json";
 
 /// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH: &str =
-    "tests/data/standard_json_input/solidity_solc_recursion.json";
-
-/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_empty_sources.json";
 
@@ -99,7 +95,11 @@ pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_invalid.json";
 
 /// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH: &str =
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH: &str =
+    "tests/data/standard_json_input/solidity_zksolc_recursion.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_zksolc_invalid.json";
 
 /// A test input file.

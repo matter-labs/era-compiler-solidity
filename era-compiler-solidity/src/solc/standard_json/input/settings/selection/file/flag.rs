@@ -45,8 +45,8 @@ pub enum Flag {
 }
 
 impl From<SolcCodegen> for Flag {
-    fn from(pipeline: SolcCodegen) -> Self {
-        match pipeline {
+    fn from(codegen: SolcCodegen) -> Self {
+        match codegen {
             SolcCodegen::Yul => Self::Yul,
             SolcCodegen::EVMLA => Self::EVMLA,
         }

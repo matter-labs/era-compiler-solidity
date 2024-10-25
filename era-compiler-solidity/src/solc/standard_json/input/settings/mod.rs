@@ -128,10 +128,10 @@ impl Settings {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
+    pub fn normalize(&mut self, codegen: Option<SolcCodegen>) {
         self.output_selection
             .get_or_insert_with(Selection::default)
-            .extend_with_required(pipeline);
+            .extend_with_required(codegen);
     }
 
     ///

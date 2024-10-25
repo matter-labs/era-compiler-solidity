@@ -97,7 +97,7 @@ pub fn build_solidity(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcCodegen,
+    solc_codegen: SolcCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
@@ -116,10 +116,10 @@ pub fn build_solidity(
         libraries.clone(),
         remappings,
         SolcStandardJsonInputSettingsOptimizer::default(),
-        Some(solc_pipeline),
+        Some(solc_codegen),
         None,
         true,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -130,7 +130,7 @@ pub fn build_solidity(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         &mut vec![],
         None,
         vec![],
@@ -140,7 +140,7 @@ pub fn build_solidity(
 
     let project = Project::try_from_solc_output(
         libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         &solc_compiler,
         None,
@@ -170,7 +170,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcCodegen,
+    solc_codegen: SolcCodegen,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
 
@@ -188,10 +188,10 @@ pub fn build_solidity_and_detect_missing_libraries(
         libraries.clone(),
         BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
-        Some(solc_pipeline),
+        Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -202,7 +202,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         &mut vec![],
         None,
         vec![],
@@ -211,7 +211,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let project = Project::try_from_solc_output(
         libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         &solc_compiler,
         None,
@@ -388,7 +388,7 @@ pub fn check_solidity_message(
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_pipeline: SolcCodegen,
+    solc_codegen: SolcCodegen,
     skip_for_zksync_edition: bool,
     suppressed_errors: Vec<ErrorType>,
     suppressed_warnings: Vec<WarningType>,
@@ -412,10 +412,10 @@ pub fn check_solidity_message(
         libraries,
         BTreeSet::new(),
         SolcStandardJsonInputSettingsOptimizer::default(),
-        Some(solc_pipeline),
+        Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         suppressed_errors,
@@ -426,7 +426,7 @@ pub fn check_solidity_message(
 
     let solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         &mut vec![],
         None,
         vec![],

@@ -90,7 +90,7 @@ contract SimpleContract {
 }
     "#;
 
-fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
+fn not_specified(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
@@ -98,7 +98,7 @@ fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
         sources.clone(),
         BTreeMap::new(),
         &version,
-        pipeline,
+        codegen,
     )
     .expect("Test failure");
     assert!(
@@ -118,7 +118,7 @@ fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
     );
 }
 
-fn specified(version: semver::Version, pipeline: SolcCodegen) {
+fn specified(version: semver::Version, codegen: SolcCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
@@ -133,7 +133,7 @@ fn specified(version: semver::Version, pipeline: SolcCodegen) {
         sources.clone(),
         libraries.clone(),
         &version,
-        pipeline,
+        codegen,
     )
     .expect("Test failure");
     assert!(

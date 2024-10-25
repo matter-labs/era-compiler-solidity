@@ -4,7 +4,9 @@
   {
     "A":
     {
-      "content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C { function distribute(address payable recipient) public { recipient.send(1); recipient.transfer(1); payable(tx.origin).transfer(1); } }"
+      "urls": [
+        "tests/data/contracts/solidity/Recursion.sol"
+      ]
     }
   },
   "settings": {

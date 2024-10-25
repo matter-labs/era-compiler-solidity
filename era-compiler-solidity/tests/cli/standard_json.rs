@@ -104,11 +104,11 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
     let args_solc = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -162,7 +162,7 @@ fn with_standard_json_recursion() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;

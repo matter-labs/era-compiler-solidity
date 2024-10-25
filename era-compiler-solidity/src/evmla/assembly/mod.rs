@@ -40,7 +40,7 @@ pub struct Assembly {
     #[serde(default)]
     pub factory_dependencies: HashSet<String>,
     /// The EVMLA extra metadata.
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 

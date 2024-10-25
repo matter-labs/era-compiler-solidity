@@ -85,12 +85,12 @@ impl Project {
     ///
     pub fn try_from_solc_output(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        pipeline: SolcCodegen,
+        codegen: SolcCodegen,
         solc_output: &mut SolcStandardJsonOutput,
         solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        if let SolcCodegen::EVMLA = pipeline {
+        if let SolcCodegen::EVMLA = codegen {
             solc_output.preprocess_dependencies()?;
         }
 
@@ -123,7 +123,7 @@ impl Project {
                         );
                         let full_path = name.full_path.clone();
 
-                        let result = match pipeline {
+                        let result = match codegen {
                             SolcCodegen::Yul => ContractYul::try_from_source(
                                 &name,
                                 contract.ir_optimized.as_deref(),
