@@ -91,3 +91,20 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_standard_json_missing_file() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Error: File \\\"tests/data/contracts/llvm_ir/Missing.ll\\\" reading:",
+    ));
+
+    Ok(())
+}

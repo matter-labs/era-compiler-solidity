@@ -1,24 +1,24 @@
 {
-	"language": "Solidity",
-	"sources":
-	{
-		"A":
-		{
-			"content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C {}"
-		}
-	},
-	"settings": {
-		"optimizer": {
-			"enabled": true,
-			"runs": 200,
-			"details": {
-				"peephole": true,
-				"jumpdestRemover": true,
-				"orderLiterals": true,
-				"deduplicate": true,
-				"cse": true,
-				"constantOptimizer": true
-			}
-		}
-	}
+  "language": "Solidity",
+  "sources":
+  {
+    "A":
+    {
+      "content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C {}"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200,
+      "details": {
+        "peephole": true,
+        "jumpdestRemover": true,
+        "orderLiterals": true,
+        "deduplicate": true,
+        "cse": true,
+        "constantOptimizer": true
+      }
+    }
+  }
 }

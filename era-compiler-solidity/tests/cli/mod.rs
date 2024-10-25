@@ -56,6 +56,9 @@ pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Test.sol";
 
 /// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_GREETER_PATH: &str = "tests/data/contracts/solidity/Greeter.sol";
+
+/// A test input file.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
 
 /// A test input file.
@@ -130,12 +133,20 @@ pub const TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/llvm_ir_urls_invalid.json";
 
 /// A test input file.
+pub const TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH: &str =
+    "tests/data/standard_json_input/llvm_ir_urls_missing_file.json";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls.json";
 
 /// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH: &str =
+    "tests/data/standard_json_input/eravm_assembly_urls_missing_file.json";
 
 /// A test input file.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =

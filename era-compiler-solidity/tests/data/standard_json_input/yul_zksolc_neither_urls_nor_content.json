@@ -1,9 +1,9 @@
 {
-	"language": "Yul",
-	"sources":
-	{
-		"A": {}
-	},
+  "language": "Yul",
+  "sources":
+  {
+    "A": {}
+  },
     "settings": {
       "optimizer": {
         "enabled": true,
