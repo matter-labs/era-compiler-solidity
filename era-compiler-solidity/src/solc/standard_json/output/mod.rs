@@ -35,14 +35,14 @@ use self::source::Source;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Output {
     /// The file-contract hashmap.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub contracts: Option<BTreeMap<String, BTreeMap<String, Contract>>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub contracts: BTreeMap<String, BTreeMap<String, Contract>>,
     /// The source code mapping data.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub sources: Option<BTreeMap<String, Source>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub sources: BTreeMap<String, Source>,
     /// The compilation errors and warnings.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<JsonOutputError>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub errors: Vec<JsonOutputError>,
 
     /// The `solc` compiler version.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,9 +72,9 @@ impl Output {
             .collect::<BTreeMap<String, Source>>();
 
         Self {
-            contracts: Some(BTreeMap::new()),
-            sources: Some(sources),
-            errors: Some(std::mem::take(messages)),
+            contracts: BTreeMap::new(),
+            sources,
+            errors: std::mem::take(messages),
 
             version: None,
             long_version: None,
@@ -89,9 +89,9 @@ impl Output {
     ///
     pub fn new_with_messages(messages: Vec<JsonOutputError>) -> Self {
         Self {
-            contracts: None,
-            sources: None,
-            errors: Some(messages),
+            contracts: BTreeMap::new(),
+            sources: BTreeMap::new(),
+            errors: messages,
 
             version: None,
             long_version: None,
@@ -103,11 +103,7 @@ impl Output {
     /// Prunes the output JSON and prints it to stdout.
     ///
     pub fn write_and_exit(mut self, prune_output: HashSet<SelectionFlag>) -> ! {
-        let sources = self
-            .sources
-            .as_mut()
-            .map(|sources| sources.values_mut().collect::<Vec<&mut Source>>())
-            .unwrap_or_default();
+        let sources = self.sources.values_mut().collect::<Vec<&mut Source>>();
         for source in sources.into_iter() {
             if prune_output.contains(&SelectionFlag::AST) {
                 source.ast = None;
@@ -116,14 +112,9 @@ impl Output {
 
         let contracts = self
             .contracts
-            .as_mut()
-            .map(|contracts| {
-                contracts
-                    .values_mut()
-                    .flat_map(|contracts| contracts.values_mut())
-                    .collect::<Vec<&mut Contract>>()
-            })
-            .unwrap_or_default();
+            .values_mut()
+            .flat_map(|contracts| contracts.values_mut())
+            .collect::<Vec<&mut Contract>>();
         for contract in contracts.into_iter() {
             if prune_output.contains(&SelectionFlag::Metadata) {
                 contract.metadata = None;
@@ -150,37 +141,10 @@ impl Output {
             }
         }
 
-        if let Some(ref mut files) = self.contracts {
-            files.retain(|_, contracts| {
-                contracts.retain(|_, contract| !contract.is_empty());
-                !contracts.is_empty()
-            });
-        }
-
-        if self
-            .contracts
-            .as_ref()
-            .map(|contracts| contracts.is_empty())
-            .unwrap_or_default()
-        {
-            self.contracts = None;
-        }
-        if self
-            .sources
-            .as_ref()
-            .map(|sources| sources.is_empty())
-            .unwrap_or_default()
-        {
-            self.sources = None;
-        }
-        if self
-            .errors
-            .as_ref()
-            .map(|errors| errors.is_empty())
-            .unwrap_or_default()
-        {
-            self.errors = None;
-        }
+        self.contracts.retain(|_, contracts| {
+            contracts.retain(|_, contract| !contract.is_empty());
+            !contracts.is_empty()
+        });
 
         serde_json::to_writer(std::io::stdout(), &self).expect("Stdout writing error");
         std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
@@ -190,12 +154,10 @@ impl Output {
     /// Removes EVM artifacts to prevent their accidental usage.
     ///
     pub fn remove_evm(&mut self) {
-        if let Some(files) = self.contracts.as_mut() {
-            for (_, file) in files.iter_mut() {
-                for (_, contract) in file.iter_mut() {
-                    if let Some(evm) = contract.evm.as_mut() {
-                        evm.bytecode = None;
-                    }
+        for (_, file) in self.contracts.iter_mut() {
+            for (_, contract) in file.iter_mut() {
+                if let Some(evm) = contract.evm.as_mut() {
+                    evm.bytecode = None;
                 }
             }
         }
@@ -207,13 +169,11 @@ impl Output {
     /// Please do not push project-general errors without paths here.
     ///
     pub fn push_error(&mut self, path: Option<String>, error: anyhow::Error) {
-        self.errors
-            .get_or_insert_with(Vec::new)
-            .push(JsonOutputError::new_error(
-                error,
-                path.map(JsonOutputErrorSourceLocation::new),
-                None,
-            ));
+        self.errors.push(JsonOutputError::new_error(
+            error,
+            path.map(JsonOutputErrorSourceLocation::new),
+            None,
+        ));
     }
 
     ///
@@ -227,16 +187,14 @@ impl Output {
         suppressed_errors: &[ErrorType],
         suppressed_warnings: &[WarningType],
     ) -> anyhow::Result<()> {
-        let source_asts = match self.sources.as_ref() {
-            Some(sources) => sources,
-            None => return Ok(()),
-        };
-        let id_paths: BTreeMap<usize, &String> = source_asts
+        let id_paths: BTreeMap<usize, &String> = self
+            .sources
             .iter()
             .map(|(path, source)| (source.id, path))
             .collect();
 
-        let messages: Vec<JsonOutputError> = source_asts
+        let messages: Vec<JsonOutputError> = self
+            .sources
             .par_iter()
             .map(|(_path, source)| {
                 source
@@ -257,7 +215,7 @@ impl Output {
             })
             .flatten()
             .collect();
-        self.errors.get_or_insert_with(Vec::new).extend(messages);
+        self.errors.extend(messages);
 
         Ok(())
     }
@@ -266,14 +224,10 @@ impl Output {
     /// The pass, which replaces with dependency indexes with actual data.
     ///
     pub fn preprocess_dependencies(&mut self) -> anyhow::Result<()> {
-        let files = match self.contracts.as_mut() {
-            Some(files) => files,
-            None => return Ok(()),
-        };
         let mut hash_path_mapping = BTreeMap::new();
 
-        for (path, contracts) in files.iter() {
-            for (name, contract) in contracts.iter() {
+        for (path, file) in self.contracts.iter() {
+            for (name, contract) in file.iter() {
                 let full_path = format!("{path}:{name}");
                 let hash = match contract
                     .evm
@@ -290,8 +244,8 @@ impl Output {
         }
 
         let mut assemblies = BTreeMap::new();
-        for (path, contracts) in files.iter_mut() {
-            for (name, contract) in contracts.iter_mut() {
+        for (path, file) in self.contracts.iter_mut() {
+            for (name, contract) in file.iter_mut() {
                 let full_path = format!("{path}:{name}");
                 let assembly = match contract
                     .evm
@@ -354,28 +308,20 @@ impl Output {
 
 impl CollectableError for Output {
     fn errors(&self) -> Vec<&JsonOutputError> {
-        match self.errors {
-            Some(ref errors) => errors
-                .iter()
-                .filter(|error| error.severity == "error")
-                .collect(),
-            None => vec![],
-        }
+        self.errors
+            .iter()
+            .filter(|error| error.severity == "error")
+            .collect()
     }
 
     fn warnings(&self) -> Vec<&JsonOutputError> {
-        match self.errors {
-            Some(ref errors) => errors
-                .iter()
-                .filter(|error| error.severity == "warning")
-                .collect(),
-            None => vec![],
-        }
+        self.errors
+            .iter()
+            .filter(|error| error.severity == "warning")
+            .collect()
     }
 
     fn remove_warnings(&mut self) {
-        if let Some(ref mut errors) = self.errors {
-            errors.retain(|error| error.severity != "warning");
-        }
+        self.errors.retain(|error| error.severity != "warning");
     }
 }

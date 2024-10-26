@@ -141,8 +141,6 @@ fn get_bytecode(
     .expect("Build failure");
     let bytecode_hexadecimal = build
         .contracts
-        .as_ref()
-        .expect("Missing field `contracts`")
         .get("test.sol")
         .expect("Missing file `test.sol`")
         .get("Greeter")

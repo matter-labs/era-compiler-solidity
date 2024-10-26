@@ -90,8 +90,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
     assert_eq!(
         output
             .contracts
-            .as_ref()
-            .expect("Missing field `contracts`")
             .get("main.sol")
             .expect("Missing file `main.sol`")
             .get("Main")
@@ -104,8 +102,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
     assert_eq!(
         output
             .contracts
-            .as_ref()
-            .expect("Missing field `contracts`")
             .get("callable.sol")
             .expect("Missing file `callable.sol`")
             .get("Callable")

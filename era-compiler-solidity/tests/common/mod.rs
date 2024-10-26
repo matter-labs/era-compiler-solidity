@@ -459,7 +459,6 @@ pub fn check_solidity_message(
     )?;
     let contains_warning = solc_output
         .errors
-        .ok_or_else(|| anyhow::anyhow!("Solidity compiler messages not found"))?
         .iter()
         .any(|error| error.formatted_message.contains(warning_substring));
 

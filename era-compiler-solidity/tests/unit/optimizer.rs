@@ -110,8 +110,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
 
     let size_when_unoptimized = build_unoptimized
         .contracts
-        .as_ref()
-        .expect("Missing field `contracts`")
         .get("test.sol")
         .expect("Missing file `test.sol`")
         .get("Test")
@@ -126,8 +124,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
         .len();
     let size_when_optimized_for_cycles = build_optimized_for_cycles
         .contracts
-        .as_ref()
-        .expect("Missing field `contracts`")
         .get("test.sol")
         .expect("Missing file `test.sol`")
         .get("Test")
@@ -142,8 +138,6 @@ fn default(version: semver::Version, codegen: SolcCodegen) {
         .len();
     let size_when_optimized_for_size = build_optimized_for_size
         .contracts
-        .as_ref()
-        .expect("Missing field `contracts`")
         .get("test.sol")
         .expect("Missing file `test.sol`")
         .get("Test")

@@ -104,8 +104,6 @@ fn not_specified(version: semver::Version, codegen: SolcCodegen) {
     assert!(
         output
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("SimpleContract")
@@ -139,8 +137,6 @@ fn specified(version: semver::Version, codegen: SolcCodegen) {
     assert!(
         output
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("SimpleContract")

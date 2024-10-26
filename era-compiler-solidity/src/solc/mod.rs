@@ -157,22 +157,23 @@ impl Compiler {
             }
         };
 
-        let errors = solc_output.errors.get_or_insert_with(Vec::new);
-        errors.retain(|error| match error.error_code.as_deref() {
-            Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
-            None => true,
-        });
-        errors.append(messages);
+        solc_output
+            .errors
+            .retain(|error| match error.error_code.as_deref() {
+                Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
+                None => true,
+            });
+        solc_output.errors.append(messages);
 
         if !input.suppressed_errors.is_empty() {
-            errors.push(StandardJsonOutputError::new_warning(
+            solc_output.errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
             ));
         }
         if !input.suppressed_warnings.is_empty() {
-            errors.push(StandardJsonOutputError::new_warning(
+            solc_output.errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
