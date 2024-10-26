@@ -10,7 +10,7 @@ use crate::solc::Compiler as SolcCompiler;
 ///
 /// The Solidity compiler codegen.
 ///
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Codegen {
     /// The Yul IR.
@@ -40,7 +40,7 @@ impl FromStr for Codegen {
             "yul" => Ok(Self::Yul),
             "evmla" => Ok(Self::EVMLA),
             string => anyhow::bail!(
-                "Invalid codegen: {string}. Available options: {}",
+                "Invalid codegen: `{string}`. Available options: {}.",
                 [Self::EVMLA, Self::Yul]
                     .into_iter()
                     .map(|codegen| codegen.to_string())

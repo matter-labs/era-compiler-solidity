@@ -7,9 +7,28 @@
   },
   "settings": {
     "optimizer": {
-      "enabled": true,
-      "runs": 200
-    }
+      "mode": "3",
+      "fallbackToOptimizingForSize": false
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers"
+        ]
+      }
+    },
+    "metadata": {
+      "hashType": "ipfs"
+    },
+    "libraries": {},
+    "enableEraVMExtensions": true,
+    "forceEVMLA": false,
+    "suppressedErrors": ["INVALID_SUPPRESSED_ERROR_TYPE"],
+    "suppressedWarnings": ["txorigin"]
   },
   "suppressedErrors": ["INVALID_SUPPRESSED_ERROR_TYPE"],
   "suppressedWarnings": ["txorigin"]

@@ -290,13 +290,6 @@ impl Compiler {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        if self.version.default != Self::LAST_SUPPORTED_VERSION {
-            anyhow::bail!(
-                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
-                Self::LAST_SUPPORTED_VERSION,
-            );
-        }
-
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
             libraries.clone(),

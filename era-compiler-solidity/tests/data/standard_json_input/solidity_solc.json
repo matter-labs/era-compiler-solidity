@@ -9,7 +9,6 @@
   },
   "settings": {
     "optimizer": {
-      "enabled": true,
       "runs": 200,
       "details": {
         "peephole": true,
@@ -19,6 +18,9 @@
         "cse": true,
         "constantOptimizer": true
       }
+    },
+    "metadata": {
+      "useLiteralContent": true
     }
   }
 }

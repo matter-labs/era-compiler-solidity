@@ -11,11 +11,8 @@
   },
   "settings": {
     "optimizer": {
-      "enabled": true,
       "mode": "3",
-      "details": null,
-      "fallbackToOptimizingForSize": false,
-      "disableSystemRequestMemoization": true
+      "fallbackToOptimizingForSize": true
     },
     "outputSelection": {
       "*": {
@@ -28,9 +25,11 @@
         ]
       }
     },
+    "metadata": {
+      "hashType": "ipfs"
+    },
     "libraries": {},
-    "isSystem": false,
-    "forceEvmla": true,
-    "areLibrariesMissing": false
+    "enableEraVMExtensions": true,
+    "forceEVMLA": true
   }
 }

@@ -10,11 +10,9 @@
   },
     "settings": {
       "optimizer": {
-        "enabled": true,
-        "mode": "3",
+          "mode": "3",
         "details": null,
-        "fallbackToOptimizingForSize": false,
-        "disableSystemRequestMemoization": true
+        "fallbackToOptimizingForSize": false
       },
       "outputSelection": {
         "*": {
@@ -27,9 +25,12 @@
           ]
         }
       },
+      "metadata": {
+        "hashType": "keccak256"
+      },
       "libraries": {},
-      "isSystem": false,
-      "forceEvmla": false,
+      "enableEraVMExtensions": true,
+      "forceEVMLA": false,
       "areLibrariesMissing": false
     }
 }

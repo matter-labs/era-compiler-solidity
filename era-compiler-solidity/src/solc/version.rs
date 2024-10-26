@@ -30,15 +30,4 @@ impl Version {
             l2_revision,
         }
     }
-
-    ///
-    /// A shortcut constructor for a simple version.
-    ///
-    pub fn new_simple(version: semver::Version) -> Self {
-        Self {
-            long: version.to_string(),
-            default: version,
-            l2_revision: None,
-        }
-    }
 }

@@ -110,3 +110,22 @@ fn with_codegen_standard_json_mode(codegen: SolcCodegen) -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_codegen_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "invalid",
+        "--bin",
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("Invalid value for \'--codegen <codegen>\': Invalid codegen: `invalid`. Available options: evmla, yul"));
+
+    Ok(())
+}
