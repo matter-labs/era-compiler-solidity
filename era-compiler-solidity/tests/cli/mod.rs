@@ -102,6 +102,10 @@ pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH: &str =
     "tests/data/standard_json_input/solidity_zksolc_recursion.json";
 
 /// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INTERNAL_FUNCTION_POINTERS_PATH: &str =
+    "tests/data/standard_json_input/solidity_zksolc_internal_function_pointers.json";
+
+/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_zksolc_invalid.json";
 
@@ -247,6 +251,7 @@ pub fn execute_zksolc_with_target(
 pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
     let solc_compiler = crate::common::get_solc_compiler(
         &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
     )?
     .executable;
     let mut cmd = Command::new(solc_compiler);

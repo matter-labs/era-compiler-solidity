@@ -67,16 +67,3 @@ impl SourceLocation {
         ))
     }
 }
-
-impl std::fmt::Display for SourceLocation {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.file)?;
-        if self.start > 0 {
-            write!(f, ":{}", self.start)?;
-            if self.end > 0 {
-                write!(f, ":{}", self.end)?;
-            }
-        }
-        Ok(())
-    }
-}

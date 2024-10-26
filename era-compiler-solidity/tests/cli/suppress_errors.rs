@@ -64,9 +64,11 @@ fn with_suppressed_errors_invalid() -> anyhow::Result<()> {
 fn with_suppressed_warnings_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -87,9 +89,11 @@ fn with_suppressed_warnings_invalid_standard_json() -> anyhow::Result<()> {
 fn with_suppressed_errors_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",

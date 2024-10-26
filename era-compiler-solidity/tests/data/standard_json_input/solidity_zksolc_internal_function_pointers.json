@@ -5,7 +5,7 @@
     "A":
     {
       "urls": [
-        "tests/data/contracts/solidity/Recursion.sol"
+        "tests/data/contracts/solidity/InternalFunctionPointers.sol"
       ]
     }
   },

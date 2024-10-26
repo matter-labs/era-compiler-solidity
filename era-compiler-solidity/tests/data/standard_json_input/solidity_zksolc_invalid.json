@@ -27,6 +27,7 @@
       "hashType": "ipfs"
     },
     "libraries": {},
+    "codegen": "evmla",
     "enableEraVMExtensions": true,
     "forceEVMLA": true
   }

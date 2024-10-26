@@ -436,9 +436,7 @@ pub fn standard_json_eravm(
     let output_assembly = solc_input
         .settings
         .output_selection
-        .as_ref()
-        .map(|selection| selection.contains_eravm_assembly())
-        .unwrap_or_default();
+        .contains_eravm_assembly();
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {

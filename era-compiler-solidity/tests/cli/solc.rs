@@ -8,9 +8,11 @@ fn with_solc() -> anyhow::Result<()> {
     common::setup()?;
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let assert = zksolc
         .arg(cli::TEST_SOLIDITY_CONTRACT_PATH)
@@ -48,9 +50,11 @@ fn with_solc_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let assert = zksolc
         .arg("--solc")
@@ -88,9 +92,11 @@ fn without_solc_standard_json_mode() -> anyhow::Result<()> {
 fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -112,9 +118,11 @@ fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
 fn with_solc_eravm_assembly_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",

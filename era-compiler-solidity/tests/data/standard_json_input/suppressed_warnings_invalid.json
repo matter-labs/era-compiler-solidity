@@ -25,6 +25,7 @@
       "hashType": "ipfs"
     },
     "libraries": {},
+    "codegen": "yul",
     "enableEraVMExtensions": true,
     "forceEVMLA": false,
     "suppressedErrors": ["sendtransfer"],

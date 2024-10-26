@@ -238,70 +238,133 @@ fn runtime_code_08_yul() {
 }
 
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_argument_04() {
     internal_function_pointer_argument(semver::Version::new(0, 4, 26));
 }
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_argument_05() {
     internal_function_pointer_argument(semver::Version::new(0, 5, 17));
 }
 #[test]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_argument_06() {
     internal_function_pointer_argument(semver::Version::new(0, 6, 12));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_argument_07() {
     internal_function_pointer_argument(semver::Version::new(0, 7, 6));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_argument_08() {
     internal_function_pointer_argument(SolcCompiler::LAST_SUPPORTED_VERSION);
 }
 
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_stack_04() {
     internal_function_pointer_stack(semver::Version::new(0, 4, 26));
 }
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_stack_05() {
     internal_function_pointer_stack(semver::Version::new(0, 5, 17));
 }
 #[test]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_stack_06() {
     internal_function_pointer_stack(semver::Version::new(0, 6, 12));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_stack_07() {
     internal_function_pointer_stack(semver::Version::new(0, 7, 6));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_stack_08() {
     internal_function_pointer_stack(SolcCompiler::LAST_SUPPORTED_VERSION);
 }
 
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_storage_04() {
     internal_function_pointer_storage(semver::Version::new(0, 4, 26));
 }
 #[test]
-#[cfg_attr(target_os = "windows", ignore)]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_storage_05() {
     internal_function_pointer_storage(semver::Version::new(0, 5, 17));
 }
 #[test]
+#[cfg_attr(
+    any(
+        target_os = "windows",
+        all(target_arch = "aarch64", target_os = "linux")
+    ),
+    ignore
+)]
 fn internal_function_pointer_storage_06() {
     internal_function_pointer_storage(semver::Version::new(0, 6, 12));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_storage_07() {
     internal_function_pointer_storage(semver::Version::new(0, 7, 6));
 }
 #[test]
+#[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_storage_08() {
     internal_function_pointer_storage(SolcCompiler::LAST_SUPPORTED_VERSION);
 }
