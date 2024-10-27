@@ -39,7 +39,7 @@ pub struct Contract {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ir_optimized: Option<String>,
     /// The EraVM data of the contract.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub eravm: Option<EraVM>,
     /// The EVM data of the contract.
     #[serde(default, skip_serializing_if = "Option::is_none")]

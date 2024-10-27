@@ -69,7 +69,7 @@ impl Compiler {
         let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
-            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}. Please add it to ${{PATH}} or provide it explicitly with the `--solc` option.");
+            anyhow::bail!("The `{executable}` executable not found: {error}. Please add it to ${{PATH}} or provide it explicitly with the `--solc` option.");
         }
         let version = Self::parse_version(executable)?;
         let compiler = Self {
@@ -335,11 +335,10 @@ impl Compiler {
         command.arg("--version");
         let output = command
             .output()
-            .map_err(|error| anyhow::anyhow!("{} subprocess: {:?}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("`{executable}` subprocess: {error:?}."))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} version getting: {}",
-                executable,
+                "`{executable}` version getting: {}",
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
         }
@@ -348,22 +347,19 @@ impl Compiler {
         let long = stdout
             .lines()
             .nth(1)
-            .ok_or_else(|| anyhow::anyhow!("{} version parsing: not enough lines", executable))?
+            .ok_or_else(|| anyhow::anyhow!("`{executable}` version parsing: not enough lines."))?
             .split(' ')
             .nth(1)
             .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "{} version parsing: not enough words in the 2nd line",
-                    executable
-                )
+                anyhow::anyhow!("`{executable}` version parsing: not enough words in the 2nd line.")
             })?
             .to_owned();
         let default: semver::Version = long
             .split('+')
             .next()
-            .ok_or_else(|| anyhow::anyhow!("{} version parsing: metadata dropping", executable))?
+            .expect("Always exists")
             .parse()
-            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("`{executable}` version parsing: {error}."))?;
 
         let l2_revision: Option<semver::Version> = stdout
             .lines()
@@ -375,14 +371,14 @@ impl Compiler {
         let version = Version::new(long, default, l2_revision);
         if version.default < Self::FIRST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "`solc` versions <{} are not supported, found {}",
+                "`{executable}` versions older than {} are not supported, found {}. Please upgrade to the latest supported version.",
                 Self::FIRST_SUPPORTED_VERSION,
                 version.default
             );
         }
         if version.default > Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "`solc` versions >{} are not supported, found {}",
+                "`{executable}` versions newer than {} are not supported, found {}. Please check if you are using the latest version of zksolc.",
                 Self::LAST_SUPPORTED_VERSION,
                 version.default
             );

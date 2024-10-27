@@ -183,6 +183,28 @@ pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_co
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
 /// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH: &str =
+    "tests/scripts/solc_version_output_error.sh";
+
+/// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_TOO_OLD_PATH: &str = "tests/scripts/solc_version_too_old.sh";
+
+/// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_TOO_NEW_PATH: &str = "tests/scripts/solc_version_too_new.sh";
+
+/// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_LINES_PATH: &str =
+    "tests/scripts/solc_version_not_enough_lines.sh";
+
+/// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_WORDS_IN_2ND_LINE_PATH: &str =
+    "tests/scripts/solc_version_not_enough_words_in_2nd_line.sh";
+
+/// A test constant.
+pub const TEST_SCRIPT_SOLC_VERSION_PARSING_ERROR_PATH: &str =
+    "tests/scripts/solc_version_parsing_error.sh";
+
+/// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
 /// A test constant.

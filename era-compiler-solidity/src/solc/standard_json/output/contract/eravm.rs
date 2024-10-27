@@ -5,7 +5,7 @@
 ///
 /// The `solc --standard-json` output contract EraVM data.
 ///
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EraVM {
     /// The contract bytecode.
