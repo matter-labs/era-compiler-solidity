@@ -17,7 +17,7 @@ use rayon::iter::ParallelIterator;
 
 use crate::error_type::ErrorType;
 use crate::libraries::Libraries;
-use crate::solc::codegen::Codegen as SolcCodegen;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -79,7 +79,7 @@ impl Input {
         libraries: Vec<String>,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcCodegen>,
+        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
@@ -130,7 +130,7 @@ impl Input {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcCodegen>,
+        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
@@ -222,7 +222,7 @@ impl Input {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, codegen: Option<SolcCodegen>) {
+    pub fn normalize(&mut self, codegen: SolcStandardJsonInputSettingsCodegen) {
         self.settings.normalize(codegen);
     }
 

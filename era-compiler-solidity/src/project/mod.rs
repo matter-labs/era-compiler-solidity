@@ -22,8 +22,8 @@ use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcess
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
-use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
 use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
@@ -85,20 +85,17 @@ impl Project {
     ///
     pub fn try_from_solc_output(
         libraries: BTreeMap<String, BTreeMap<String, String>>,
-        codegen: SolcCodegen,
+        codegen: SolcStandardJsonInputSettingsCodegen,
         solc_output: &mut SolcStandardJsonOutput,
         solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        if let SolcCodegen::EVMLA = codegen {
+        if let SolcStandardJsonInputSettingsCodegen::EVMLA = codegen {
             solc_output.preprocess_dependencies()?;
         }
 
         let solc_version = solc_compiler.version.to_owned();
 
-        if solc_output.contracts.is_empty() {
-            anyhow::bail!("No input sources specified.");
-        };
         let mut input_contracts = Vec::with_capacity(solc_output.contracts.len());
         for (path, file) in solc_output.contracts.iter() {
             for (name, contract) in file.iter() {
@@ -123,13 +120,15 @@ impl Project {
                         let full_path = name.full_path.clone();
 
                         let result = match codegen {
-                            SolcCodegen::Yul => ContractYul::try_from_source(
-                                &name,
-                                contract.ir_optimized.as_deref(),
-                                debug_config,
-                            )
-                            .map(|ir| ir.map(ContractYul::into)),
-                            SolcCodegen::EVMLA => {
+                            SolcStandardJsonInputSettingsCodegen::Yul => {
+                                ContractYul::try_from_source(
+                                    &name,
+                                    contract.ir_optimized.as_deref(),
+                                    debug_config,
+                                )
+                                .map(|ir| ir.map(ContractYul::into))
+                            }
+                            SolcStandardJsonInputSettingsCodegen::EVMLA => {
                                 Ok(ContractEVMLA::try_from_contract(contract)
                                     .map(ContractEVMLA::into))
                             }

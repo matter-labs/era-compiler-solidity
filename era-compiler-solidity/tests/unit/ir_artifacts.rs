@@ -7,7 +7,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -59,7 +59,7 @@ fn yul(version: semver::Version) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
@@ -100,7 +100,7 @@ fn evmla(version: semver::Version) {
         BTreeMap::new(),
         BTreeSet::new(),
         &version,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");

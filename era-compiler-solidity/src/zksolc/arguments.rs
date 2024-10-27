@@ -157,7 +157,7 @@ pub struct Arguments {
     /// Specify the `solc` codegen.
     /// Available options: `evmla`, `yul`.
     #[structopt(long = "codegen")]
-    pub codegen: Option<era_compiler_solidity::SolcCodegen>,
+    pub codegen: Option<era_compiler_solidity::SolcStandardJsonInputSettingsCodegen>,
 
     /// Forcibly switch to EVM legacy assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental

@@ -2,7 +2,7 @@
 //! The `solc --standard-json` expected output selection flag.
 //!
 
-use crate::solc::codegen::Codegen as SolcCodegen;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 
 ///
 /// The `solc --standard-json` expected output selection flag.
@@ -44,11 +44,11 @@ pub enum Flag {
     EraVMAssembly,
 }
 
-impl From<SolcCodegen> for Flag {
-    fn from(codegen: SolcCodegen) -> Self {
+impl From<SolcStandardJsonInputSettingsCodegen> for Flag {
+    fn from(codegen: SolcStandardJsonInputSettingsCodegen) -> Self {
         match codegen {
-            SolcCodegen::Yul => Self::Yul,
-            SolcCodegen::EVMLA => Self::EVMLA,
+            SolcStandardJsonInputSettingsCodegen::Yul => Self::Yul,
+            SolcStandardJsonInputSettingsCodegen::EVMLA => Self::EVMLA,
         }
     }
 }

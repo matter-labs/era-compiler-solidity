@@ -15,7 +15,7 @@ use assert_cmd::Command;
 
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use era_compiler_solidity::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -126,7 +126,7 @@ pub fn build_solidity(
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
@@ -148,7 +148,7 @@ pub fn build_solidity(
         Some(solc_codegen),
         None,
         true,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -199,7 +199,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
     self::setup()?;
 
@@ -220,7 +220,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         vec![],
@@ -417,7 +417,7 @@ pub fn check_solidity_message(
     warning_substring: &str,
     libraries: BTreeMap<String, BTreeMap<String, String>>,
     solc_version: &semver::Version,
-    solc_codegen: SolcCodegen,
+    solc_codegen: SolcStandardJsonInputSettingsCodegen,
     solc_use_upstream: bool,
     suppressed_errors: Vec<ErrorType>,
     suppressed_warnings: Vec<WarningType>,
@@ -440,7 +440,7 @@ pub fn check_solidity_message(
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_codegen)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::default(),
         vec![],
         suppressed_errors,

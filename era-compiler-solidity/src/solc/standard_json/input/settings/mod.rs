@@ -2,6 +2,7 @@
 //! The `solc --standard-json` input settings.
 //!
 
+pub mod codegen;
 pub mod metadata;
 pub mod optimizer;
 pub mod selection;
@@ -11,9 +12,9 @@ use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
-use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::warning_type::WarningType;
 
+use self::codegen::Codegen;
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::file::flag::Flag as SelectionFlag;
@@ -48,7 +49,7 @@ pub struct Settings {
 
     /// The Solidity codegen.
     #[serde(skip_serializing)]
-    pub codegen: Option<SolcCodegen>,
+    pub codegen: Option<Codegen>,
     /// Whether to compile via EVM assembly.
     #[serde(default, rename = "forceEVMLA", skip_serializing)]
     pub force_evmla: bool,
@@ -90,7 +91,7 @@ impl Settings {
         libraries: BTreeMap<String, BTreeMap<String, String>>,
         remappings: BTreeSet<String>,
 
-        codegen: Option<SolcCodegen>,
+        codegen: Option<Codegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
 
@@ -111,7 +112,7 @@ impl Settings {
 
             codegen,
             evm_version,
-            force_evmla: codegen == Some(SolcCodegen::EVMLA),
+            force_evmla: codegen == Some(Codegen::EVMLA),
             enable_eravm_extensions,
 
             output_selection,
@@ -128,7 +129,7 @@ impl Settings {
     ///
     /// Sets the necessary defaults for EraVM compilation.
     ///
-    pub fn normalize(&mut self, codegen: Option<SolcCodegen>) {
+    pub fn normalize(&mut self, codegen: Codegen) {
         self.output_selection.extend_with_required(codegen);
     }
 

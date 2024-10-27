@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -13,95 +13,149 @@ use crate::common;
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn codecopy_runtime_04_evmla() {
-    codecopy_runtime(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    codecopy_runtime(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn codecopy_runtime_05_evmla() {
-    codecopy_runtime(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    codecopy_runtime(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn codecopy_runtime_06_evmla() {
-    codecopy_runtime(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    codecopy_runtime(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn codecopy_runtime_07_evmla() {
-    codecopy_runtime(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    codecopy_runtime(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn codecopy_runtime_08_evmla() {
-    codecopy_runtime(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    codecopy_runtime(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CODECOPY` instruction is not supported")]
 fn codecopy_runtime_08_yul() {
-    codecopy_runtime(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    codecopy_runtime(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 #[cfg_attr(target_os = "windows", ignore)]
 fn callcode_04_evmla() {
-    callcode(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    callcode(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 #[cfg_attr(target_os = "windows", ignore)]
 fn callcode_05_evmla() {
-    callcode(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    callcode(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_06_evmla() {
-    callcode(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    callcode(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_07_evmla() {
-    callcode(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    callcode(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_08_evmla() {
-    callcode(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    callcode(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode_08_yul() {
-    callcode(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    callcode(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 #[cfg_attr(target_os = "windows", ignore)]
 fn extcodecopy_04_evmla() {
-    extcodecopy(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    extcodecopy(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 #[cfg_attr(target_os = "windows", ignore)]
 fn extcodecopy_05_evmla() {
-    extcodecopy(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    extcodecopy(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_06_evmla() {
-    extcodecopy(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    extcodecopy(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_07_evmla() {
-    extcodecopy(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    extcodecopy(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_08_evmla() {
-    extcodecopy(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    extcodecopy(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy_08_yul() {
-    extcodecopy(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    extcodecopy(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 #[test]
@@ -110,7 +164,7 @@ fn extcodecopy_08_yul() {
 fn selfdestruct_04_evmla() {
     selfdestruct(
         semver::Version::new(0, 4, 26),
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         SELFDESTRUCT_TEST_SOURCE_04,
     );
 }
@@ -120,7 +174,7 @@ fn selfdestruct_04_evmla() {
 fn selfdestruct_05_evmla() {
     selfdestruct(
         semver::Version::new(0, 5, 17),
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         SELFDESTRUCT_TEST_SOURCE_05,
     );
 }
@@ -129,7 +183,7 @@ fn selfdestruct_05_evmla() {
 fn selfdestruct_06_evmla() {
     selfdestruct(
         semver::Version::new(0, 6, 12),
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         SELFDESTRUCT_TEST_SOURCE_06,
     );
 }
@@ -138,7 +192,7 @@ fn selfdestruct_06_evmla() {
 fn selfdestruct_07_evmla() {
     selfdestruct(
         semver::Version::new(0, 7, 6),
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         SELFDESTRUCT_TEST_SOURCE,
     );
 }
@@ -147,7 +201,7 @@ fn selfdestruct_07_evmla() {
 fn selfdestruct_08_evmla() {
     selfdestruct(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         SELFDESTRUCT_TEST_SOURCE,
     );
 }
@@ -156,7 +210,7 @@ fn selfdestruct_08_evmla() {
 fn selfdestruct_08_yul() {
     selfdestruct(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
         SELFDESTRUCT_TEST_SOURCE,
     );
 }
@@ -188,7 +242,7 @@ object "ProgramCounter" {
     common::build_yul(sources).expect("Test failure");
 }
 
-fn codecopy_runtime(version: semver::Version, codegen: SolcCodegen) {
+fn codecopy_runtime(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let source_code = r#"
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.12;
@@ -244,7 +298,7 @@ contract CallcodeTest {
 }
     "#;
 
-fn callcode(version: semver::Version, codegen: SolcCodegen) {
+fn callcode(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
 
@@ -276,7 +330,7 @@ contract ExternalCodeCopy {
 }
     "#;
 
-fn extcodecopy(version: semver::Version, codegen: SolcCodegen) {
+fn extcodecopy(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
 
@@ -363,7 +417,11 @@ contract MinimalDestructible {
 }
     "#;
 
-fn selfdestruct(version: semver::Version, codegen: SolcCodegen, source: &str) {
+fn selfdestruct(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+    source: &str,
+) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), source.to_owned());
 
