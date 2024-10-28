@@ -24,6 +24,11 @@ To run the unit and CLI tests, execute the following command from the repository
 cargo test
 ```
 
+## Documentation
+
+Documentation is using [mdBook](https://github.com/rust-lang/mdBook) utility and is available in the `docs/` directory.
+To build the documentation, follow the [instructions](./docs/README.md).
+
 ## Troubleshooting
 
 If you have multiple LLVM builds in your system, ensure that you choose the correct one to build the compiler.
