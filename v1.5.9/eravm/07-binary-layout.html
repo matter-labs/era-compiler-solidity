@@ -1,0 +1,498 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Binary Layout - ZKsync Solidity Compiler Toolchain Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../css/version-box.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZKsync Solidity Compiler Toolchain Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="eravm-binary-layout"><a class="header" href="#eravm-binary-layout">EraVM Binary Layout</a></h1>
+<p>This page describes how assembler listing looks like and how it is transformed to bytecode that can be deployed to the chain.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<ul>
+<li>A directive is a command issued to the assembler, which is not translated into an executable bytecode instruction.
+Their names start with a period, for example, <code>.cell</code>.
+Directives are used to regulate the translation process.</li>
+<li>An instruction constitutes the smallest executable segment of bytecode.
+In EraVM, each instruction is exactly eight bytes long.</li>
+<li>A word is a 256-bit unsigned integer in a big-endian format.</li>
+</ul>
+<h2 id="structure-of-assembly-file"><a class="header" href="#structure-of-assembly-file">Structure of Assembly File</a></h2>
+<p>This section describes the structure of an EraVM assembly file, a text file typically with the extension <code>.zasm</code>.</p>
+<h3 id="data-types"><a class="header" href="#data-types">Data Types</a></h3>
+<ul>
+<li><code>U256</code> word, a 256-bit unsigned integer number, big-endian.</li>
+<li><code>U16</code> 16-bit unsigned integer number, big-endian.</li>
+</ul>
+<h3 id="sections"><a class="header" href="#sections">Sections</a></h3>
+<p>The source code within an EraVM assembly is organized into several sections. The start of a section is denoted by one of the following directives:</p>
+<ul>
+<li><code>.rodata</code>: constant, read-only data.</li>
+<li><code>.data</code>: global mutable data.</li>
+<li><code>.text</code>: executable code.</li>
+</ul>
+<p>The description of any section may be spread across the file:</p>
+<pre><code class="language-asm">.rodata
+    .cell 0
+.text
+    &lt;some instruction&gt;
+.rodata
+    .cell 1
+</code></pre>
+<p>In this example, multiple <code>.rodata</code> sections appear, but in the resulting binary file they will be merged into a single contiguous region of memory. The same principle applies to other sections.</p>
+<h3 id="defining-data"><a class="header" href="#defining-data">Defining Data</a></h3>
+<p>The <code>.cell</code> directive defines data:</p>
+<pre><code class="language-asm">.rodata
+    .cell -1
+    .cell 23090
+.data
+    .cell 1213
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>Using <code>.cell</code> in the <code>.data</code> section is deprecated and will not be supported in the future versions of assembly.</li>
+<li>The value of cell is provided as a signed 256-bit decimal number.</li>
+<li>Negative numbers will be encoded as 256-bit 2's complement, e.g. <code>-1</code> is encoded as <code>0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff</code>.</li>
+<li>An optional <code>+</code> sign before positive numbers is allowed, e.g. <code>.cell +123</code>.</li>
+<li>Hexadecimal integer literals are not supported.</li>
+</ul>
+<p>Symbols (label names) are supported, for example:</p>
+<pre><code class="language-asm">.text
+
+f:
+   add r0, r0, r0
+
+g:
+   add r0, r0, r0
+
+.rodata
+
+my_cells:
+    .cell @lab1
+    .cell @lab2
+    .cell -1
+</code></pre>
+<p>A single <code>@</code> is prefixing the label name.</p>
+<p>Each <code>.cell</code> is 256-bit wide, even though an address such as <code>@lab1</code> or <code>@lab2</code> is just 16-bit wide.
+Addresses are padded with zeroes to fit in the word.</p>
+<h3 id="overall-structure"><a class="header" href="#overall-structure">Overall Structure</a></h3>
+<p>The structure of an assembly file is described as follows:</p>
+<pre><code class="language-asm">&lt;file&gt; := &lt;section&gt;*
+
+&lt;section&gt; :=
+    | ".rodata" &lt;eol&gt;  &lt;const-element&gt;*
+    | ".data" &lt;eol&gt; &lt;data-element&gt; *
+    | ".text" &lt;eol&gt;  &lt;code-element&gt; *
+
+&lt;const-element&gt; := &lt;label&gt; | &lt;cell&gt;
+&lt;label&gt; ::= [a-zA-Z_.@][0-9a-zA-Z_.@]
+
+&lt;data-element&gt; := &lt;label&gt; | &lt;cell&gt;
+&lt;cell&gt; :=
+    ".cell" &lt;256-bit signed or unsigned constant&gt;
+
+&lt;comment&gt; ::= ";" .*
+&lt;labels&gt; ::= (&lt;label&gt; ":" ) *
+&lt;code-element&gt; ::= &lt;labels&gt; &lt;instruction&gt; &lt;operand-list&gt; &lt;comment&gt;? EOL
+</code></pre>
+<ul>
+<li><code>EOL</code> stands for “end of line”.</li>
+<li><code>&lt;instruction&gt;</code>, <code>&lt;operand-list&gt;</code> depend on the specific instruction.
+See the <a href="https://matter-labs.github.io/eravm-spec/spec.html">EraVM specification</a>.</li>
+</ul>
+<h2 id="execution-model"><a class="header" href="#execution-model">Execution model</a></h2>
+<p>This section provides some elements of the execution environment, the Era Virtual Machine.
+Full execution model is described in <a href="https://matter-labs.github.io/eravm-spec/spec.html">EraVM specification</a>.</p>
+<h3 id="registers"><a class="header" href="#registers">Registers</a></h3>
+<p>EraVM has 16 general-purpose registers and 2 special registers:</p>
+<ul>
+<li><code>PC</code> is a 16-bit program counter register; it holds the address of the next instruction to be executed.</li>
+<li><code>SP</code> is a 16-bit stack pointer register. It points to the address following the top of the stack.</li>
+</ul>
+<h3 id="memory"><a class="header" href="#memory">Memory</a></h3>
+<p>EraVM memory is divided into <strong>pages</strong>. When a contract is launched, EraVM assigns several pages to it:</p>
+<ul>
+<li>
+<p><strong>Code</strong> page.</p>
+<ul>
+<li>
+<p>Immutable.</p>
+</li>
+<li>
+<p>Contains <code>2^{16}</code> words.</p>
+</li>
+<li>
+<p>Used to store both instructions and the constants of type <code>U256</code>.</p>
+</li>
+<li>
+<p>Each word may contain 4 instructions or one constant.</p>
+</li>
+<li>
+<p>Instructions and constants are indistinguishable.</p>
+</li>
+<li>
+<p>Code page is addressable in two ways:</p>
+<ul>
+<li>
+<p>When EraVM fetches instruction from this page using <code>PC</code>, it addresses 8-byte chunks.</p>
+</li>
+<li>
+<p>When EraVM fetches constants from this page, it addresses 32-byte (word-sized) chunks.</p>
+<p>For example, reading a constant by the address 0 will yield a word composed of binary
+encoded instructions number 0, 1, 2 and 3; reading a constant by
+the address 1 from this page will yield a binary encoding for the
+instructions number 4,5,6,7, and so on.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Heap</strong> page.</p>
+<ul>
+<li>Contains <code>2^{32}</code> bytes and is byte-addressable.</li>
+<li>However, it is only possible to read words from heap, not the individual
+bytes.</li>
+</ul>
+</li>
+<li>
+<p><strong>Data stack</strong> page.</p>
+<ul>
+<li>Contains <code>2^{16}</code> words.</li>
+<li>Grows towards higher addresses, so every push-like instruction advances <code>SP</code> by at least one.</li>
+<li>Reserving space on stack is therefore incrementing the value of <code>SP</code>.</li>
+<li>Each word has an additional tag. If the tag is set, the word contains a
+pointer to a heap page, either of this contract or belonging to a different
+contract.</li>
+<li>Data on stack page can be addressed by their absolute addresses, or relative
+to <code>SP</code>.</li>
+<li>Global mutable variables are allocated on stack.</li>
+</ul>
+</li>
+</ul>
+<h3 id="callstack"><a class="header" href="#callstack">Callstack</a></h3>
+<p>EraVM has a separate call stack, a utility data structure that holds information about call frames.
+There are two kinds of call frames in the EraVM, corresponding to near and far calls:</p>
+<ul>
+<li>Far call frame corresponds to a call to a different contract.</li>
+<li>Near call frame corresponds to a near call to the code inside the same
+contract. Near calls are a low-level mechanism that is used mostly in system
+contracts.</li>
+</ul>
+<p>Call stack differs from the data stack pages, described in section <strong>Memory</strong>.</p>
+<h2 id="binary-layout"><a class="header" href="#binary-layout">Binary layout</a></h2>
+<p>The binary file published on chain and passed to EraVM has no structure. It is an image loaded at the beginning of the <strong>code</strong> page (with offset 0).</p>
+<p>The initial value of <code>PC</code> is zero, therefore the execution will start at the first instruction on the code page.
+Instructions or functions in <code>.text</code> section are not reordered, so the first instruction appearing in the assembly file will be executed first, regardless of labels.</p>
+<p>The length of the binary should be an odd number of words, that is, <code>32 * (2N+1)</code> bytes.</p>
+<p>The last word in the binary file is the metadata hash, see section <strong>Metadata Hash</strong>.</p>
+<h2 id="symbols"><a class="header" href="#symbols">Symbols</a></h2>
+<p>There are three default predefined symbols:</p>
+<ol>
+<li><code>DEFAULT_UNWIND</code>: default exception handler / stack unroller for near call instruction <code>call</code>.</li>
+<li><code>DEFAULT_FAR_RETURN</code>:  default stack unroller for returns (see <strong>Landing Pads</strong>).</li>
+<li><code>DEFAULT_FAR_REVERT</code>:  default stack unroller for reverts (see <strong>Landing Pads</strong>).</li>
+</ol>
+<p>If the user did not define one of these labels, the assembler will define it and emit a corresponding landing pad (see <strong>Landing Pads</strong>).</p>
+<h2 id="linking-and-loading"><a class="header" href="#linking-and-loading">Linking and loading</a></h2>
+<p>This section details how the assembly file structure is flattened into a loadable image.</p>
+<p>The binary file is divided into three regions:</p>
+<ol>
+<li>Initializer.</li>
+<li>Instructions.</li>
+<li>Constant pool.</li>
+</ol>
+<p>The following subsections describe these regions.</p>
+<h3 id="initializer-region"><a class="header" href="#initializer-region">Initializer region</a></h3>
+<p>Mutable global variables are allocated in the beginning of the stack page, not in code.
+The stack page supports absolute addressing, therefore the global variables can be accessed directly by their addresses.</p>
+<p>If the assembly file defines global variables, the assembler will emit a special initializer code in the beginning of the program; otherwise, initializer region is skipped and we pass to the code region immediately.</p>
+<p>The first instruction of the initializer region is <code>incsp &lt;number of globals&gt;</code>. It allocates one word on a data stack per global mutable variable.</p>
+<p>For each global that is initialized with a non-zero value, assembler does the following:</p>
+<ul>
+<li>Copies its initializer to <code>.rodata</code>, which will be loaded to the code page.</li>
+<li>Emits an instruction:</li>
+</ul>
+<pre><code class="language-asm">add code[INIT], r0, stack[IDX]
+</code></pre>
+<p>where:</p>
+<ul>
+<li><code>INIT</code> is the address of the initializer in the <code>.rodata</code>.</li>
+<li><code>IDX</code>  is the index of the global variable.</li>
+</ul>
+<p>For example, the following program:</p>
+<pre><code class="language-asm">.text
+
+some_label:
+  sub!   r0, r0, r0
+  jump @some_label
+
+.data
+    my_globals:
+    .cell 32
+
+.rodata
+    .cell 0
+</code></pre>
+<p>Will be translated as if it were written this way:</p>
+<pre><code class="language-asm">.text
+init_globals:
+    incsp 1
+    add code[@global_init_0], r0, stack[0]
+
+some_label:
+    sub! r0, r0, r0
+    jump @some_label
+
+.rodata
+    .cell 0
+    global_init_0:
+    .cell 32
+</code></pre>
+<h3 id="code-region"><a class="header" href="#code-region">Code region</a></h3>
+<p>The <code>.text</code> section is emitted after the initializer region or, if there are no globals, right in the start of the binary file.
+It is followed by the landing pads and the padding, before the start of the constant pool region.</p>
+<h4 id="landing-pads"><a class="header" href="#landing-pads">Landing Pads</a></h4>
+<p>After emitting the instructions provided in the <code>.text</code> section of the assembly file, the assembler may emit the landing pads for near calls, returns and reverts.
+This happens for three predefined symbols: <code>DEFAULT_UNWIND</code>, <code>DEFAULT_FAR_RETURN</code> and <code>DEFAULT_FAR_REVERT</code>.</p>
+<p>For example, if the symbol <code>DEFAULT_FAR_RETURN</code> is not explicitly defined, it will be defined automatically and the following landing pad will be appended to the executable code:</p>
+<pre><code class="language-asm">;; landing pad for returns
+DEFAULT_FAR_RETURN:
+    retl @DEFAULT_FAR_RETURN
+</code></pre>
+<p>If the contract executes an instruction <code>retl @DEFAULT_FAR_RETURN</code>, the control is passed to the address <code>DEFAULT_FAR_RETURN</code>, which hosts the same instruction.
+This starts a loop, popping all near call frames from the callstack. The last <code>retl</code> will perform a far return from the contract.
+This allows emitting <code>retl @DEFAULT_FAR_RETURN</code> to return from any place inside the contract, no matter how many near calls are currently active.</p>
+<p>If neither of the predefined symbols <code>DEFAULT_UNWIND</code>, <code>DEFAULT_FAR_RETURN</code>, <code>DEFAULT_FAR_REVERT</code> was defined explicitly, the following code will be emitted after the <code>.text</code> section.</p>
+<pre><code class="language-asm">;; landing pad for near calls
+DEFAULT_UNWIND:
+    ret.panic.to_label r0, @DEFAULT_UNWIND
+
+;; landing pad for returns
+DEFAULT_FAR_RETURN:
+    ret.ok.to_label r1, @DEFAULT_FAR_RETURN
+
+;; landing pad for reverts
+DEFAULT_FAR_REVERT:
+    ret.revert.to_label r1, @DEFAULT_FAR_REVERT
+</code></pre>
+<h4 id="code-padding"><a class="header" href="#code-padding">Code padding</a></h4>
+<p>The code section starts at 0, if we count the initializing code as its part. Therefore, it is aligned on a 32 byte boundary.
+If the total number of instructions, with the landing pads, is not divisible by <code>4</code>, the assembler emits 1 to 3 <code>INVALID</code> instructions as a padding.
+This way, the instructions will fill a certain number of words completely, and the following region (constant pool region) is aligned on a 32-byte boundary as well.</p>
+<h3 id="constant-pool-region"><a class="header" href="#constant-pool-region">Constant pool region</a></h3>
+<p>The constant pool region is aligned on a <code>32</code> byte boundary.
+It is placed immediately after the code region and contains:</p>
+<ul>
+<li>Constants defined in <code>.rodata</code> section.</li>
+<li>Initializers for mutable globals.</li>
+<li>Padding: nothing or a zero-word to ensure, that the total length of the binary file, including the following hash, equals to an odd number of words.</li>
+<li>Optionally, <strong>metadata hash</strong>.</li>
+</ul>
+<h3 id="metadata-hash"><a class="header" href="#metadata-hash">Metadata Hash</a></h3>
+<p>An optional, implementation-defined hash of the contract metadata, which may include its source.
+Depending on the initial layer where the compilation starts (a Solidity contract, its Yul code, assembly), the hash value may be different.</p>
+<ul>
+<li><a href="../02-command-line-interface.html#--metadata">Metadata usage and definition.</a></li>
+<li><a href="../02-command-line-interface.html#--metadata-hash">Supported metadata hash types.</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../eravm/06-extensions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../guides/01-sanitizers.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../eravm/06-extensions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../guides/01-sanitizers.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../js/version-box.js"></script>
+
+
+    </div>
+    </body>
+</html>

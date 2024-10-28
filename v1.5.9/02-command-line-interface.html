@@ -1,0 +1,616 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Command Line Interface - ZKsync Solidity Compiler Toolchain Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="css/version-box.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZKsync Solidity Compiler Toolchain Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="command-line-interface-cli"><a class="header" href="#command-line-interface-cli">Command Line Interface (CLI)</a></h1>
+<p>The CLI of <em>zksolc</em> is designed with resemblance to the CLI of <em>solc</em>. There are several main input/output (I/O) modes in the <em>zksolc</em> interface:</p>
+<ul>
+<li><a href="#basic-cli">Basic CLI</a></li>
+<li><a href="./03-standard-json.html">Standard JSON</a></li>
+<li><a href="./04-combined-json.html">Combined JSON</a></li>
+</ul>
+<p>The basic CLI and combined JSON modes are more light-weight and suitable for calling from the shell. The standard JSON mode is similar to client-server interaction, thus more suitable for using from other applications, such as <a href="https://github.com/matter-labs/foundry-zksync">Foundry</a>.</p>
+<blockquote>
+<p>All toolkits using <em>zksolc</em> must be operating in standard JSON mode and follow <a href="./03-standard-json.html">its specification</a>.
+It will make the toolkits more robust and future-proof, as the standard JSON mode is the most versatile and used for the majority of popular projects.</p>
+</blockquote>
+<p>This page focuses on the basic CLI mode. For more information on the other modes, see the corresponding <a href="./04-combined-json.html">combined JSON</a> and <a href="./03-standard-json.html">standard JSON</a> pages.</p>
+<h2 id="basic-cli"><a class="header" href="#basic-cli">Basic CLI</a></h2>
+<p>Basic CLI mode is the simplest way to compile a file with the source code.</p>
+<p>To compile a basic Solidity contract, make sure that <a href="#--solc">the <em>solc</em> compiler</a> is present in your environment and run the example from <a href="#--bin">the <em>--bin</em> section</a>.</p>
+<p>The rest of this section describes the available CLI options and their usage. You may also check out <code>zksolc --help</code> for a quick reference.</p>
+<h3 id="--solc"><a class="header" href="#--solc"><code>--solc</code></a></h3>
+<p>Specifies the path to the <em>solc</em> compiler. Useful when the <em>solc</em> compiler is not available in the system path.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --solc '/path/to/solc'
+</code></pre>
+<blockquote>
+<p>Examples in the subsequent sections assume that <em>solc</em> <a href="./01-installation.html#installing-solc">is installed and available</a> in the system path.
+If you prefer specifying the full path to <em>solc</em>, use the <code>--solc</code> option with the examples below.</p>
+</blockquote>
+<h3 id="--bin"><a class="header" href="#--bin"><code>--bin</code></a></h3>
+<p>Enables the output of compiled bytecode. The following command compiles a Solidity file and prints the bytecode:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.sol:Simple =======
+Binary:
+0000008003000039000000400030043f0000000100200190000000130000c13d...
+</code></pre>
+<p>It is possible to dry-run the compilation without writing any output. To do this, simply omit <code>--bin</code> and other output options:</p>
+<pre><code class="language-bash">zksolc './Simple.sol'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">Compiler run successful. No output requested. Use flags --metadata, --asm, --bin.
+</code></pre>
+<h3 id="input-files"><a class="header" href="#input-files">Input Files</a></h3>
+<p><em>zksolc</em> supports multiple input files. The following command compiles two Solidity files and prints the bytecode:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' './Complex.sol' --bin
+</code></pre>
+<p><a href="https://docs.soliditylang.org/en/latest/path-resolution.html#import-remapping">Solidity import remappings</a> are passed in the way as input files, but they are distinguished by a <code>=</code> symbol between source and destination. The following command compiles a Solidity file with a remapping and prints the bytecode:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' 'github.com/ethereum/dapp-bin/=/usr/local/lib/dapp-bin/' --bin
+</code></pre>
+<p><em>zksolc</em> does not handle remappings itself, but only passes them through to <em>solc</em>.
+Visit <a href="https://docs.soliditylang.org/en/latest/using-the-compiler.html#base-path-and-import-remapping">the <em>solc</em> documentation</a> to learn more about the processing of remappings.</p>
+<h3 id="--libraries"><a class="header" href="#--libraries"><code>--libraries</code></a></h3>
+<p>Specifies the libraries to link with compiled contracts. The option accepts multiple string arguments. The safest way is to wrap each argument in single quotes, and separate them with a space.</p>
+<p>The specifier has the following format: <code>&lt;ContractPath&gt;:&lt;ContractName&gt;=&lt;LibraryAddress&gt;</code>.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --libraries 'Simple.sol:Test=0x1234567890abcdef1234567890abcdef12345678'
+</code></pre>
+<p>There are two ways of linking libraries:</p>
+<ol>
+<li>At compile time, immediately after the contract is compiled.</li>
+<li>At deploy time (a.k.a. post-compile time), right before the contract is deployed.</li>
+</ol>
+<p>The use case above describes linking at compile time. For linking at deploy time, see the <a href="./05-linker.html">linker documentation</a>.</p>
+<h3 id="--base-path---include-path---allow-paths"><a class="header" href="#--base-path---include-path---allow-paths"><code>--base-path</code>, <code>--include-path</code>, <code>--allow-paths</code></a></h3>
+<p>These options are used to specify Solidity import resolution settings. They are not used by <em>zksolc</em> and only passed through to <em>solc</em> like import remappings.</p>
+<p>Visit <a href="https://docs.soliditylang.org/en/latest/path-resolution.html">the <em>solc</em> documentation</a> to learn more about the processing of these options.</p>
+<h3 id="--asm"><a class="header" href="#--asm"><code>--asm</code></a></h3>
+<p>Enables the output of contract assembly. The assembly format depends on the <a href="#--target"><em>--target</em></a> architecture the contract is compiled for.</p>
+<p>For the EraVM assembly specification, visit the <a href="https://docs.zksync.io/zk-stack/components/compiler/specification/binary-layout">EraVM documentation</a>.</p>
+<p>EVM assembly is not supported yet.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc Simple.sol --asm
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.sol:Simple =======
+EraVM assembly:
+        .text
+        .file   "Simple.sol:Simple"
+        .globl  __entry
+__entry:
+.func_begin0:
+        add     128, r0, r3
+        stm.h   64, r3
+...
+</code></pre>
+<p>The <code>--asm</code> option can be combined with other output options, such as <code>--bin</code>:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --asm --bin
+</code></pre>
+<h3 id="--metadata"><a class="header" href="#--metadata"><code>--metadata</code></a></h3>
+<p>Enables the output of contract metadata. The metadata is a JSON object that contains information about the contract, such as its name, source code hash, the list of dependencies, compiler versions, and so on.</p>
+<p>The <em>zksolc</em> metadata format is compatible with the <a href="https://soliditylang.org/docs/develop/metadata.html">Solidity metadata format</a>. This means that the metadata output can be used with other tools that support Solidity metadata. Essentially, <em>solc</em> metadata is a part of <em>zksolc</em> metadata, and it is included as <code>source_metadata</code> without any modifications.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --metadata
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.sol:Simple =======
+Metadata:
+{"llvm_options":[],"optimizer_settings":{"is_debug_logging_enabled":false,"is_fallback_to_size_enabled":false,"is_verify_each_enabled":false,"level_back_end":"Aggressive","level_middle_end":"Aggressive","level_middle_end_size":"Zero"},"solc_version":"x.y.z","solc_zkvm_edition":null,"source_metadata":{...},"zk_version":"x.y.z"}
+</code></pre>
+<h3 id="--output-dir"><a class="header" href="#--output-dir"><code>--output-dir</code></a></h3>
+<p>Specifies the output directory for build artifacts. Can only be used in <a href="#basic-cli">basic CLI</a> and <a href="./04-combined-json.html">combined JSON</a> modes.</p>
+<p>Usage in basic CLI mode:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --asm --metadata --output-dir './build/'
+ls './build/Simple.sol'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">Compiler run successful. Artifact(s) can be found in directory "build".
+...
+Test.zasm       Test.zbin       Test_meta.json
+</code></pre>
+<p>Usage in combined JSON mode:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/'
+ls './build/'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">Compiler run successful. Artifact(s) can be found in directory "build".
+...
+combined.json
+</code></pre>
+<h3 id="--overwrite"><a class="header" href="#--overwrite"><code>--overwrite</code></a></h3>
+<p>Overwrites the output files if they already exist in the output directory. By default, <em>zksolc</em> does not overwrite existing files.</p>
+<p>Can only be used in combination with the <a href="#--output-dir"><code>--output-dir</code></a> option.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/' --overwrite
+</code></pre>
+<p>If the <code>--overwrite</code> option is not specified and the output files already exist, <em>zksolc</em> will print an error message and exit:</p>
+<pre><code class="language-text">Error: Refusing to overwrite an existing file "build/combined.json" (use --overwrite to force).
+</code></pre>
+<h3 id="--version"><a class="header" href="#--version"><code>--version</code></a></h3>
+<p>Prints the version of <em>zksolc</em> and the hash of the LLVM commit it was built with.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc --version
+</code></pre>
+<h3 id="--help"><a class="header" href="#--help"><code>--help</code></a></h3>
+<p>Prints the help message.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc --help
+</code></pre>
+<h2 id="other-io-modes"><a class="header" href="#other-io-modes">Other I/O Modes</a></h2>
+<blockquote>
+<p>The mode-altering CLI options are mutually exclusive. This means that only one of the options below can be enabled at a time:</p>
+<ul>
+<li><code>--standard-json</code></li>
+<li><code>--combined-json</code></li>
+<li><code>--yul</code></li>
+<li><code>--llvm-ir</code></li>
+<li><code>--eravm-assembly</code></li>
+<li><code>--disassemble</code></li>
+<li><code>--link</code></li>
+</ul>
+</blockquote>
+<h3 id="--standard-json"><a class="header" href="#--standard-json"><code>--standard-json</code></a></h3>
+<p>For the standard JSON mode usage, see the <a href="./03-standard-json.html">Standard JSON</a> page.</p>
+<h3 id="--combined-json"><a class="header" href="#--combined-json"><code>--combined-json</code></a></h3>
+<p>For the combined JSON mode usage, see the <a href="./04-combined-json.html">Combined JSON</a> page.</p>
+<h2 id="zksolc-compilation-settings"><a class="header" href="#zksolc-compilation-settings"><em>zksolc</em> Compilation Settings</a></h2>
+<p>The options in this section are only configuring the <em>zksolc</em> compiler and do not affect the underlying <em>solc</em> compiler.</p>
+<h3 id="--optimization---o"><a class="header" href="#--optimization---o"><code>--optimization / -O</code></a></h3>
+<p>Sets the optimization level of the LLVM optimizer. Available values are:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Level</th><th style="text-align: left">Meaning</th><th style="text-align: left">Hints</th></tr></thead><tbody>
+<tr><td style="text-align: left">0</td><td style="text-align: left">No optimization</td><td style="text-align: left">Best compilation speed: for active development</td></tr>
+<tr><td style="text-align: left">1</td><td style="text-align: left">Performance: basic</td><td style="text-align: left">For optimization research</td></tr>
+<tr><td style="text-align: left">2</td><td style="text-align: left">Performance: default</td><td style="text-align: left">For optimization research</td></tr>
+<tr><td style="text-align: left">3</td><td style="text-align: left">Performance: aggressive</td><td style="text-align: left">Default value. Best performance: for production</td></tr>
+<tr><td style="text-align: left">s</td><td style="text-align: left">Size: default</td><td style="text-align: left">For optimization research</td></tr>
+<tr><td style="text-align: left">z</td><td style="text-align: left">Size: aggressive</td><td style="text-align: left">Best size: for contracts with size constraints</td></tr>
+</tbody></table>
+</div>
+<p>For most cases, it is fine to use the default value of <code>3</code>. You should only use the level <code>z</code> if you are ready to deliberately sacrifice performance and optimize for size.</p>
+<blockquote>
+<p>Large contracts may hit the EraVM or EVM bytecode size limit. In this case, it is recommended to use the <a href="#--fallback-oz"><code>--fallback-Oz</code></a> option rather than set the <code>z</code> level.</p>
+</blockquote>
+<h3 id="--fallback-oz"><a class="header" href="#--fallback-oz"><code>--fallback-Oz</code></a></h3>
+<p>Sets the optimization level to <code>z</code> for contracts that failed to compile due to overrunning the bytecode size constraints.</p>
+<p>Under the hood, this option automatically triggers recompilation of contracts with level <code>z</code>. Contracts that were successfully compiled with <a href="#--optimization---o">the original <code>--optimization</code> setting</a> are not recompiled.</p>
+<blockquote>
+<p>It is recommended to have this option always enabled to prevent compilation failures due to bytecode size constraints. There are no known downsides to using this option.</p>
+</blockquote>
+<h3 id="--metadata-hash"><a class="header" href="#--metadata-hash"><code>--metadata-hash</code></a></h3>
+<p>Specifies the hash function used for contract metadata.</p>
+<p>The following values are allowed:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Value</th><th style="text-align: left">Size</th><th style="text-align: left">Padding</th><th style="text-align: left">Reference</th></tr></thead><tbody>
+<tr><td style="text-align: left">none</td><td style="text-align: left">0 B</td><td style="text-align: left">0-32 B</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left">keccak256</td><td style="text-align: left">32 B</td><td style="text-align: left">0-32 B</td><td style="text-align: left"><a href="https://en.wikipedia.org/wiki/SHA-3">SHA-3 Wikipedia Page</a></td></tr>
+<tr><td style="text-align: left">ipfs</td><td style="text-align: left">44 B</td><td style="text-align: left">20-52 B</td><td style="text-align: left"><a href="https://docs.ipfs.tech/">IPFS Documentation</a></td></tr>
+</tbody></table>
+</div>
+<p>The default value is <code>keccak256</code>.</p>
+<blockquote>
+<p>EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is <em>prepended</em> with zeros according to the <em>Padding</em> column in the table above.</p>
+</blockquote>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --metadata-hash 'ipfs'
+</code></pre>
+<h3 id="--enable-eravm-extensions"><a class="header" href="#--enable-eravm-extensions"><code>--enable-eravm-extensions</code></a></h3>
+<p>Enables the EraVM extensions.</p>
+<p>If this flag is set, calls to addresses <code>0xFFFF</code> and below are substituted by special EraVM instructions.</p>
+<p>In Yul mode, the <code>verbatim_*</code> instruction family becomes available.</p>
+<p>The full list of EraVM extensions and their usage can be found <a href="./06-eravm-extensions.html">here</a>.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --enable-eravm-extensions
+</code></pre>
+<h3 id="--suppress-errors"><a class="header" href="#--suppress-errors"><code>--suppress-errors</code></a></h3>
+<p>Tells the compiler to suppress specified errors. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.</p>
+<p>Only one error can be suppressed with this option: <a href="https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer"><code>sendtransfer</code></a>.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
+</code></pre>
+<h3 id="--suppress-warnings"><a class="header" href="#--suppress-warnings"><code>--suppress-warnings</code></a></h3>
+<p>Tells the compiler to suppress specified warnings. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.</p>
+<p>Only one warning can be suppressed with this option: <a href="https://docs.zksync.io/build/tooling/foundry/migration-guide/testing#origin-address"><code>txorigin</code></a>.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --suppress-warnings 'txorigin'
+</code></pre>
+<h3 id="--llvm-options"><a class="header" href="#--llvm-options"><code>--llvm-options</code></a></h3>
+<p>Specifies additional options for the LLVM framework. The argument must be a single quoted string following a <code>=</code> separator.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --llvm-options='-eravm-jump-table-density-threshold=10'
+</code></pre>
+<blockquote>
+<p>The <code>--llvm-options</code> option is experimental and must only be used by experienced users. All supported options will be documented in the future.</p>
+</blockquote>
+<h2 id="solc-compilation-settings"><a class="header" href="#solc-compilation-settings"><em>solc</em> Compilation Settings</a></h2>
+<p>The options in this section are only configuring <em>solc</em>, so they are passed directly to its child process, and do not affect the <em>zksolc</em> compiler.</p>
+<h3 id="--codegen"><a class="header" href="#--codegen"><code>--codegen</code></a></h3>
+<p>Specifies the <em>solc</em> codegen. The following values are allowed:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Value</th><th style="text-align: left">Description</th><th style="text-align: left">Hints</th></tr></thead><tbody>
+<tr><td style="text-align: left">evmla</td><td style="text-align: left">EVM legacy assembly</td><td style="text-align: left"><em>solc</em> default for EVM/L1</td></tr>
+<tr><td style="text-align: left">yul</td><td style="text-align: left">Yul a.k.a. IR</td><td style="text-align: left"><em>zksolc</em> default for ZKsync</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><em>solc</em> uses the <code>evmla</code> codegen by default. However, <em>zksolc</em> uses the <code>yul</code> codegen by default for historical reasons.
+Codegens are not equivalent and may lead to different behavior in production.
+Make sure that this option is set to <code>evmla</code> if you want your contracts to behave as they would on L1.
+For codegen differences, visit the <a href="https://docs.soliditylang.org/en/latest/ir-breaking-changes.html">solc IR breaking changes page</a>.
+<em>zksolc</em> is going to switch to the <code>evmla</code> codegen by default in the future in order to have more parity with L1.</p>
+</blockquote>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --codegen 'evmla'
+</code></pre>
+<h3 id="--evm-version"><a class="header" href="#--evm-version"><code>--evm-version</code></a></h3>
+<p>Specifies the EVM version <em>solc</em> will produce artifacts for. Only artifacts such as Yul and EVM assembly are known to be affected by this option. For instance, if the EVM version is set to <em>cancun</em>, then Yul and EVM assembly may contain <code>MCOPY</code> instructions.</p>
+<blockquote>
+<p>EVM version only affects IR artifacts produced by <em>solc</em> and does not affect EraVM bytecode produced by <em>zksolc</em>.</p>
+</blockquote>
+<p>The default value is chosen by <em>solc</em>. For instance, <em>solc</em> v0.8.24 and older use <em>shanghai</em> by default, whereas newer ones use <em>cancun</em>.</p>
+<p>The following values are allowed, however have in mind that newer EVM versions are only supported by newer versions of <em>solc</em>:</p>
+<ul>
+<li>homestead</li>
+<li>tangerineWhistle</li>
+<li>spuriousDragon</li>
+<li>byzantium</li>
+<li>constantinople</li>
+<li>petersburg</li>
+<li>istanbul</li>
+<li>berlin</li>
+<li>london</li>
+<li>paris</li>
+<li>shanghai</li>
+<li>cancun</li>
+<li>prague</li>
+</ul>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --evm-version 'cancun'
+</code></pre>
+<p>For more information on how <em>solc</em> handles EVM versions, see its <a href="https://docs.soliditylang.org/en/latest/using-the-compiler.html#setting-the-evm-version-to-target">EVM version documentation</a>.</p>
+<h3 id="--metadata-literal"><a class="header" href="#--metadata-literal"><code>--metadata-literal</code></a></h3>
+<p>Tells <em>solc</em> to store referenced sources as literal data in the metadata output.</p>
+<blockquote>
+<p>This option only affects the contract metadata output produced by <em>solc</em>, and does not affect artifacts produced by <em>zksolc</em>.</p>
+</blockquote>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --metadata-literal
+</code></pre>
+<h2 id="multi-language-support"><a class="header" href="#multi-language-support">Multi-Language Support</a></h2>
+<p><em>zksolc</em> supports input in multiple programming languages:</p>
+<ul>
+<li><a href="https://soliditylang.org/">Solidity</a></li>
+<li><a href="https://docs.soliditylang.org/en/latest/yul.html">Yul</a></li>
+<li><a href="https://llvm.org/docs/LangRef.html">LLVM IR</a></li>
+<li><a href="https://docs.zksync.io/zk-stack/components/compiler/specification/binary-layout">EraVM assembly</a></li>
+</ul>
+<p>The following sections outline how to use <em>zksolc</em> with these languages.</p>
+<h3 id="--yul"><a class="header" href="#--yul"><code>--yul</code></a></h3>
+<p>Enables the Yul mode. In this mode, input is expected to be in the Yul language. The output works the same way as with Solidity input.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc --yul './Simple.yul' --bin
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.yul =======
+Binary:
+0000000100200190000000060000c13d0000002a01000039000000000010043f...
+</code></pre>
+<p><em>zksolc</em> is able to compile Yul without <em>solc</em>. However, using <em>solc</em> is still recommended as it provides additional validation, diagnostics and better error messages:</p>
+<pre><code class="language-bash">zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
+</code></pre>
+<p><em>zksolc</em> features its own dialect of Yul with extensions for EraVM. If <a href="./06-eravm-extensions.html">the extensions</a> are enabled, it is not possible to use <em>solc</em> for validation.</p>
+<h3 id="--llvm-ir"><a class="header" href="#--llvm-ir"><code>--llvm-ir</code></a></h3>
+<p>Enables the LLVM IR mode. In this mode, input is expected to be in the LLVM IR language. The output works the same way as with Solidity input.</p>
+<p>Unlike <em>solc</em>, <em>zksolc</em> is an LLVM-based compiler toolchain, so it uses LLVM IR as an intermediate representation. It is not recommended to write LLVM IR manually, but it can be useful for debugging and optimization purposes. LLVM IR is more low-level than Yul in the ZKsync compiler toolchain IR hierarchy, so <em>solc</em> is not used for compilation.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc --llvm-ir './Simple.ll' --bin
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.ll =======
+Binary:
+000000000002004b000000070000613d0000002001000039000000000010043f...
+</code></pre>
+<h3 id="--eravm-assembly"><a class="header" href="#--eravm-assembly"><code>--eravm-assembly</code></a></h3>
+<p>Enables the EraVM Assembly mode. In this mode, input is expected to be in the EraVM assembly language. The output works the same way as with Solidity input.</p>
+<p>EraVM assembly is a representation the closest to EraVM bytecode. It is not recommended to write EraVM assembly manually, but it can be even more useful for debugging and optimization purposes than LLVM IR.</p>
+<p>For the EraVM assembly specification, visit the <a href="https://docs.zksync.io/zk-stack/components/compiler/specification/binary-layout">EraVM documentation</a>.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc --eravm-assembly './Simple.zasm' --bin
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.zasm =======
+Binary:
+000000000120008c000000070000613d00000020010000390000000000100435...
+</code></pre>
+<h2 id="multi-target-support"><a class="header" href="#multi-target-support">Multi-Target Support</a></h2>
+<p><em>zksolc</em> is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:</p>
+<ul>
+<li><code>eravm</code> — <a href="https://docs.zksync.io/zk-stack/components/zksync-evm">EraVM</a> (default).</li>
+<li><code>evm</code> — <a href="https://ethereum.org/en/developers/docs/evm/">EVM</a> (under development and only available for testing).</li>
+</ul>
+<h3 id="--target"><a class="header" href="#--target"><code>--target</code></a></h3>
+<p>Specifies the target architecture for the compiled contract.</p>
+<div class="warning">
+The <code>--target</code> option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
+</div>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc Simple.sol --bin --target evm
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">======= Simple.sol:Simple =======
+Binary:
+0000008003000039000000400030043f0000000100200190000000130000c13d...
+</code></pre>
+<h2 id="integrated-tooling"><a class="header" href="#integrated-tooling">Integrated Tooling</a></h2>
+<p><em>zksolc</em> includes several tools provided by the LLVM framework out of the box, such as disassembler and linker. The following sections describe the usage of these tools.</p>
+<h3 id="--disassemble"><a class="header" href="#--disassemble"><code>--disassemble</code></a></h3>
+<p>Enables the disassembler mode.</p>
+<p><em>zksolc</em> includes an LLVM-based disassembler that can be used to disassemble compiled bytecode.</p>
+<p>The disassembler input must be files with a hexadecimal string. The disassembler output is a human-readable representation of the bytecode, also known as EraVM assembly.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">cat './input.zbin'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">0x0000008003000039000000400030043f0000000100200190000000140000c13d00000000020...
+</code></pre>
+<pre><code class="language-bash">zksolc --disassemble './input.zbin'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">File `input.zbin` disassembly:
+
+       0: 00 00 00 80 03 00 00 39       add     128, r0, r3
+       8: 00 00 00 40 00 30 04 3f       stm.h   64, r3
+      10: 00 00 00 01 00 20 01 90       and!    1, r2, r0
+      18: 00 00 00 14 00 00 c1 3d       jump.ne 20
+      20: 00 00 00 00 02 01 00 19       add     r1, r0, r2
+      28: 00 00 00 0b 00 20 01 98       and!    code[11], r2, r0
+      30: 00 00 00 23 00 00 61 3d       jump.eq 35
+      38: 00 00 00 00 01 01 04 3b       ldp     r1, r1
+</code></pre>
+<h3 id="--link"><a class="header" href="#--link"><code>--link</code></a></h3>
+<p>Enables the linker mode.</p>
+<p>For the linker usage, visit <a href="./05-linker.html">the linker documentation</a>.</p>
+<h2 id="debugging"><a class="header" href="#debugging">Debugging</a></h2>
+<h3 id="--debug-output-dir"><a class="header" href="#--debug-output-dir"><code>--debug-output-dir</code></a></h3>
+<p>Specifies the directory to store intermediate build artifacts. The artifacts can be useful for debugging and research.</p>
+<p>The directory is created if it does not exist. If artifacts are already present in the directory, they are overwritten.</p>
+<p>The intermediate build artifacts can be:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Codegen</th><th style="text-align: left">File extension</th></tr></thead><tbody>
+<tr><td style="text-align: left">EVM Assembly</td><td style="text-align: left">evmla</td><td style="text-align: left"><em>evmla</em></td></tr>
+<tr><td style="text-align: left">EthIR</td><td style="text-align: left">evmla</td><td style="text-align: left"><em>ethir</em></td></tr>
+<tr><td style="text-align: left">Yul</td><td style="text-align: left">yul</td><td style="text-align: left"><em>yul</em></td></tr>
+<tr><td style="text-align: left">LLVM IR</td><td style="text-align: left">evmla, yul</td><td style="text-align: left"><em>ll</em></td></tr>
+<tr><td style="text-align: left">EraVM Assembly</td><td style="text-align: left">evmla, yul</td><td style="text-align: left"><em>zasm</em></td></tr>
+</tbody></table>
+</div>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --debug-output-dir './debug/'
+ls './debug/'
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-text">Compiler run successful. No output requested. Use flags --metadata, --asm, --bin.
+...
+Simple.sol.C.runtime.optimized.ll
+Simple.sol.C.runtime.unoptimized.ll
+Simple.sol.C.yul
+Simple.sol.C.zasm
+Simple.sol.Test.runtime.optimized.ll
+Simple.sol.Test.runtime.unoptimized.ll
+Simple.sol.Test.yul
+Simple.sol.Test.zasm
+</code></pre>
+<p>The output file name is constructed as follows: <code>&lt;ContractPath&gt;.&lt;ContractName&gt;.&lt;Modifiers&gt;.&lt;Extension&gt;</code>.</p>
+<h3 id="--llvm-verify-each"><a class="header" href="#--llvm-verify-each"><code>--llvm-verify-each</code></a></h3>
+<p>Enables the verification of the LLVM IR after each optimization pass. This option is useful for debugging and research purposes.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --llvm-verify-each
+</code></pre>
+<h3 id="--llvm-debug-logging"><a class="header" href="#--llvm-debug-logging"><code>--llvm-debug-logging</code></a></h3>
+<p>Enables the debug logging of the LLVM IR optimization passes. This option is useful for debugging and research purposes.</p>
+<p>Usage:</p>
+<pre><code class="language-bash">zksolc './Simple.sol' --bin --llvm-debug-logging
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="01-installation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="03-standard-json.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="01-installation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="03-standard-json.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="js/version-box.js"></script>
+
+
+    </div>
+    </body>
+</html>
