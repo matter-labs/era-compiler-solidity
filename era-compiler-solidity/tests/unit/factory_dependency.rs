@@ -5,6 +5,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
+use era_compiler_solidity::libraries::Libraries;
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
@@ -79,7 +80,8 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
 
     let output = common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
         pipeline,

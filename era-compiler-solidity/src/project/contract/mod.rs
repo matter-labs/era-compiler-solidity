@@ -6,6 +6,7 @@ pub mod factory_dependency;
 pub mod ir;
 pub mod metadata;
 
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
@@ -72,6 +73,7 @@ impl Contract {
         mut self,
         dependency_data: EraVMProcessInputDependencyData,
         enable_eravm_extensions: bool,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -136,6 +138,7 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
+                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -170,6 +173,7 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
+                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -194,6 +198,7 @@ impl Contract {
                 );
                 context.build(
                     self.name.full_path.as_str(),
+                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -218,6 +223,7 @@ impl Contract {
                 };
                 era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
+                    &linker_symbols,
                     metadata_hash,
                     assembly_text,
                 )?

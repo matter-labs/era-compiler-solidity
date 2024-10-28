@@ -79,8 +79,8 @@ fn with_libraries_contract_name_missing() -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc(args)?;
-    result.success().stdout(predicate::str::contains(
-        "{\"ignored\":{},\"linked\":{},\"unlinked\":{\"tests/data/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+    result.failure().stderr(predicate::str::contains(
+        "Error: Library `test.sol` contract name is missing.",
     ));
 
     Ok(())
@@ -99,7 +99,7 @@ fn with_libraries_address_missing() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Address of the library `test.sol:GreaterHelper` is missing.",
+        "Error: Library `test.sol:GreaterHelper` address is missing.",
     ));
 
     Ok(())
@@ -118,7 +118,7 @@ fn with_libraries_address_invalid() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Invalid address of library `test.sol:GreaterHelper`: Odd number of digits.",
+        "Error: Invalid address `XINVALID` of library `test.sol:GreaterHelper`: Invalid character \'X\' at position 0.",
     ));
 
     Ok(())
@@ -137,7 +137,7 @@ fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Invalid address size of library `test.sol:GreaterHelper`: expected 20, found 4.",
+        "Error: Incorrect size of address `0x12345678` of library `test.sol:GreaterHelper`: expected 20, found 4.",
     ));
 
     Ok(())

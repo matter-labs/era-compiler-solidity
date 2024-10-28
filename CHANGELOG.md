@@ -14,6 +14,10 @@
 - Moved suppressed messages inside `settings` in standard JSON input
 - Moved EraVM artifacts to `contract.eravm` in standard JSON output
 
+### Fixed
+
+- Different bytecode for compile-time and post-compile-time library linking
+
 ### Deprecated
 
 - Suppressed messages at the root of standard JSON input

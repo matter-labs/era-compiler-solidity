@@ -7,12 +7,13 @@ pub mod combined_json;
 pub mod standard_json;
 pub mod version;
 
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
+
+use crate::libraries::Libraries;
 
 use self::codegen::Codegen;
 use self::combined_json::CombinedJson;
@@ -287,7 +288,7 @@ impl Compiler {
     pub fn validate_yul_paths(
         &self,
         paths: &[PathBuf],
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
@@ -299,7 +300,7 @@ impl Compiler {
 
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
-            libraries.clone(),
+            libraries,
             StandardJsonInputSettingsOptimizer::default(),
             vec![],
         );

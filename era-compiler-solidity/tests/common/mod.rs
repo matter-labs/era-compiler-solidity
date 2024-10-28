@@ -14,6 +14,7 @@ use std::time::Duration;
 use assert_cmd::Command;
 
 use era_compiler_solidity::error_type::ErrorType;
+use era_compiler_solidity::libraries::Libraries;
 use era_compiler_solidity::project::Project;
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
@@ -94,7 +95,8 @@ pub fn setup() -> anyhow::Result<()> {
 ///
 pub fn build_solidity(
     sources: BTreeMap<String, String>,
-    libraries: BTreeMap<String, BTreeMap<String, String>>,
+    libraries: Libraries,
+    metadata_hash_type: era_compiler_common::HashType,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
     solc_pipeline: SolcCodegen,
@@ -138,6 +140,8 @@ pub fn build_solidity(
     )?;
     solc_output.collect_errors()?;
 
+    let linker_symbols = libraries.as_linker_symbols()?;
+
     let project = Project::try_from_solc_output(
         libraries,
         solc_pipeline,
@@ -150,7 +154,8 @@ pub fn build_solidity(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        era_compiler_common::HashType::Ipfs,
+        linker_symbols,
+        metadata_hash_type,
         optimizer_settings,
         vec![],
         false,
@@ -168,7 +173,7 @@ pub fn build_solidity(
 ///
 pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
-    libraries: BTreeMap<String, BTreeMap<String, String>>,
+    libraries: Libraries,
     solc_version: &semver::Version,
     solc_pipeline: SolcCodegen,
 ) -> anyhow::Result<SolcStandardJsonOutput> {
@@ -243,7 +248,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     let project = Project::try_from_yul_sources(
         sources,
-        BTreeMap::new(),
+        Libraries::default(),
         Some(&mut solc_output),
         None,
         None,
@@ -251,6 +256,7 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
+        BTreeMap::new(),
         era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
@@ -295,7 +301,7 @@ pub fn build_yul_standard_json(
 
     let project = Project::try_from_yul_sources(
         solc_input.sources,
-        BTreeMap::new(),
+        Libraries::default(),
         Some(&mut solc_output),
         solc_version,
         None,
@@ -303,6 +309,7 @@ pub fn build_yul_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         solc_compiler.is_none(),
+        BTreeMap::new(),
         era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
@@ -331,10 +338,12 @@ pub fn build_llvm_ir_standard_json(
 
     let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
-    let project = Project::try_from_llvm_ir_sources(input.sources, Some(&mut output))?;
+    let project =
+        Project::try_from_llvm_ir_sources(input.sources, Libraries::default(), Some(&mut output))?;
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
+        BTreeMap::new(),
         era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
@@ -367,6 +376,7 @@ pub fn build_eravm_assembly_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
+        BTreeMap::new(),
         era_compiler_common::HashType::Ipfs,
         optimizer_settings,
         vec![],
@@ -386,7 +396,7 @@ pub fn build_eravm_assembly_standard_json(
 pub fn check_solidity_message(
     source_code: &str,
     warning_substring: &str,
-    libraries: BTreeMap<String, BTreeMap<String, String>>,
+    libraries: Libraries,
     solc_version: &semver::Version,
     solc_pipeline: SolcCodegen,
     skip_for_zksync_edition: bool,

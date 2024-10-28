@@ -102,7 +102,7 @@ fn with_libraries_missing_contract_name() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
 
     result.failure().stderr(predicate::str::contains(
-        "The library `tests/data/contracts/solidity/MiniMath.sol` contract name is missing.",
+        "Library `tests/data/contracts/solidity/MiniMath.sol` contract name is missing.",
     ));
 
     Ok(())
@@ -121,7 +121,7 @@ fn with_libraries_missing_address() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
 
     result.failure().stderr(predicate::str::contains(
-        "The library `tests/data/contracts/solidity/MiniMath.sol:MiniMath` address is missing.",
+        "Error: Library `tests/data/contracts/solidity/MiniMath.sol:MiniMath` address is missing.",
     ));
 
     Ok(())
@@ -140,7 +140,7 @@ fn with_libraries_invalid_address() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
 
     result.failure().stderr(predicate::str::contains(
-        "Error: Library address is not prefixed with \"0x\"",
+        "Error: Invalid address `INVALID` of library `tests/data/contracts/solidity/MiniMath.sol:MiniMath`: Odd number of digits",
     ));
 
     Ok(())

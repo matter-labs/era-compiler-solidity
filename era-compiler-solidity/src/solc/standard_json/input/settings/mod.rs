@@ -11,6 +11,7 @@ use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
+use crate::libraries::Libraries;
 use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::warning_type::WarningType;
 
@@ -87,7 +88,7 @@ impl Settings {
     pub fn new(
         optimizer: Optimizer,
 
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         remappings: BTreeSet<String>,
 
         codegen: Option<SolcCodegen>,
@@ -106,7 +107,7 @@ impl Settings {
         Self {
             optimizer,
 
-            libraries,
+            libraries: libraries.into_inner(),
             remappings,
 
             codegen,

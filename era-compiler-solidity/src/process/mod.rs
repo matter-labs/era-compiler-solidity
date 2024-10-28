@@ -41,6 +41,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
                 .compile_to_eravm(
                     input.dependency_data,
                     input.enable_eravm_extensions,
+                    input.linker_symbols,
                     input.metadata_hash_type,
                     input.optimizer_settings,
                     input.llvm_options,

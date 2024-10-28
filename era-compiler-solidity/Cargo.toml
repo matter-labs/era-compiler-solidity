@@ -37,7 +37,7 @@ sha3 = "=0.10.8"
 zkevm_opcode_defs = "=0.150.6"
 
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-linker-indeterminism" }
 era-yul = { path = "../era-yul" }
 
 [dev-dependencies]

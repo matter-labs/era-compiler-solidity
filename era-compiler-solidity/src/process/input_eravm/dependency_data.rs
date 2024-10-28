@@ -16,8 +16,6 @@ pub struct DependencyData {
     pub solc_version: Option<SolcVersion>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
-    /// The library addresses.
-    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
     /// The dependencies required by specific contract.
     pub dependencies: BTreeMap<String, EraVMContractBuild>,
 }
@@ -29,12 +27,10 @@ impl DependencyData {
     pub fn new(
         solc_version: Option<SolcVersion>,
         identifier_paths: BTreeMap<String, String>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
     ) -> Self {
         Self {
             solc_version,
             identifier_paths,
-            libraries,
             dependencies: BTreeMap::new(),
         }
     }
@@ -66,18 +62,5 @@ impl era_compiler_llvm_context::Dependency for DependencyData {
                     identifier
                 )
             })
-    }
-
-    fn resolve_library(&self, path: &str) -> Option<String> {
-        for (file_path, contracts) in self.libraries.iter() {
-            for (contract_name, address) in contracts.iter() {
-                let key = format!("{file_path}:{contract_name}");
-                if key.as_str() == path {
-                    return Some(address["0x".len()..].to_owned());
-                }
-            }
-        }
-
-        None
     }
 }
