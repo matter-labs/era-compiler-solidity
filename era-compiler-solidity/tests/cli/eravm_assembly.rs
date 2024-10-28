@@ -157,3 +157,20 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn with_standard_json_missing() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Error: File \\\"tests/data/contracts/eravm_assembly/Missing.zasm\\\" reading:",
+    ));
+
+    Ok(())
+}

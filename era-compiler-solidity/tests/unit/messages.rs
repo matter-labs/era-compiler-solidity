@@ -2,10 +2,9 @@
 //! The Solidity compiler unit tests for messages.
 //!
 
-use std::collections::BTreeMap;
-
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use era_compiler_solidity::warning_type::WarningType;
 
@@ -445,7 +444,7 @@ fn send(version: semver::Version, pipeline: SolcCodegen, source_code: &str) {
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -459,7 +458,7 @@ fn send_suppressed(version: semver::Version, pipeline: SolcCodegen, source_code:
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -500,7 +499,7 @@ fn transfer(version: semver::Version, pipeline: SolcCodegen, source_code: &str) 
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -514,7 +513,7 @@ fn transfer_suppressed(version: semver::Version, pipeline: SolcCodegen, source_c
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -541,7 +540,7 @@ fn runtime_code(version: semver::Version, pipeline: SolcCodegen) {
     assert!(common::check_solidity_message(
         RUNTIME_CODE_SOURCE_CODE,
         "Deploy and runtime code are merged together on ZKsync",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -586,7 +585,7 @@ contract InternalFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly pipeline.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcCodegen::EVMLA,
         true,
@@ -625,7 +624,7 @@ contract StackFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly pipeline.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcCodegen::EVMLA,
         true,
@@ -671,7 +670,7 @@ contract StorageFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly pipeline.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcCodegen::EVMLA,
         true,
@@ -693,7 +692,7 @@ fn tx_origin(version: semver::Version, pipeline: SolcCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -707,7 +706,7 @@ fn tx_origin_suppressed(version: semver::Version, pipeline: SolcCodegen) {
     assert!(!common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -731,7 +730,7 @@ fn tx_origin_assembly(version: semver::Version, pipeline: SolcCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,
@@ -745,7 +744,7 @@ fn tx_origin_assembly_suppressed(version: semver::Version, pipeline: SolcCodegen
     assert!(!common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
         false,

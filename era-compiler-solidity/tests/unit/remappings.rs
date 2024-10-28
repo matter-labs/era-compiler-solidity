@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -73,7 +74,8 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
 
     common::build_solidity(
         sources,
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Keccak256,
         remappings,
         &version,
         pipeline,

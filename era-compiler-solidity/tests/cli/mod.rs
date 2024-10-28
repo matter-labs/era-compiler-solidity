@@ -130,12 +130,20 @@ pub const TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/llvm_ir_urls_invalid.json";
 
 /// A test input file.
+pub const TEST_LLVM_IR_STANDARD_JSON_MISSING_PATH: &str =
+    "tests/data/standard_json_input/llvm_ir_urls_missing.json";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls.json";
 
 /// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_PATH: &str =
+    "tests/data/standard_json_input/eravm_assembly_urls_missing.json";
 
 /// A test input file.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
@@ -193,7 +201,7 @@ pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
 pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=INVALID";
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=XINVALID";
 
 /// A test constant.
 pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";

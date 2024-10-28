@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -82,7 +83,8 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
 
     let build_unoptimized = common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Keccak256,
         BTreeSet::new(),
         &version,
         pipeline,
@@ -91,7 +93,8 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
     .expect("Build failure");
     let build_optimized_for_cycles = common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Keccak256,
         BTreeSet::new(),
         &version,
         pipeline,
@@ -100,7 +103,8 @@ fn default(version: semver::Version, pipeline: SolcCodegen) {
     .expect("Build failure");
     let build_optimized_for_size = common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Keccak256,
         BTreeSet::new(),
         &version,
         pipeline,

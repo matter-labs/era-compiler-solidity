@@ -5,6 +5,7 @@
 use std::collections::BTreeMap;
 
 use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -96,7 +97,7 @@ fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
 
     let output = common::build_solidity_and_detect_missing_libraries(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         pipeline,
     )
@@ -128,14 +129,11 @@ fn specified(version: semver::Version, pipeline: SolcCodegen) {
         .or_insert_with(BTreeMap::new)
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
+    let libraries = Libraries::from(libraries);
 
-    let output = common::build_solidity_and_detect_missing_libraries(
-        sources.clone(),
-        libraries.clone(),
-        &version,
-        pipeline,
-    )
-    .expect("Test failure");
+    let output =
+        common::build_solidity_and_detect_missing_libraries(sources, libraries, &version, pipeline)
+            .expect("Test failure");
     assert!(
         output
             .contracts

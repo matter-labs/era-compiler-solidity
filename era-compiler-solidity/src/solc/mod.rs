@@ -7,7 +7,6 @@ pub mod combined_json;
 pub mod standard_json;
 pub mod version;
 
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
@@ -16,6 +15,7 @@ use std::sync::RwLock;
 
 use self::codegen::Codegen;
 use self::combined_json::CombinedJson;
+use self::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::error::Error as StandardJsonOutputError;
@@ -58,7 +58,7 @@ impl Compiler {
     /// Different tools may use different `executable` names. For example, the integration tester
     /// uses `solc-<version>` format.
     ///
-    pub fn new(executable: &str) -> anyhow::Result<Self> {
+    pub fn try_from_path(executable: &str) -> anyhow::Result<Self> {
         if let Some(executable) = Self::executables()
             .read()
             .expect("Sync")
@@ -80,6 +80,13 @@ impl Compiler {
 
         executables.insert(executable.to_owned(), compiler.clone());
         Ok(compiler)
+    }
+
+    ///
+    /// Initializes the Solidity compiler with the default executable name.
+    ///
+    pub fn try_from_default() -> anyhow::Result<Self> {
+        Self::try_from_path(Self::DEFAULT_EXECUTABLE_NAME)
     }
 
     ///
@@ -287,7 +294,7 @@ impl Compiler {
     pub fn validate_yul_paths(
         &self,
         paths: &[PathBuf],
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: StandardJsonInputSettingsLibraries,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         if self.version.default != Self::LAST_SUPPORTED_VERSION {
@@ -299,7 +306,7 @@ impl Compiler {
 
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
-            libraries.clone(),
+            libraries,
             StandardJsonInputSettingsOptimizer::default(),
             vec![],
         );

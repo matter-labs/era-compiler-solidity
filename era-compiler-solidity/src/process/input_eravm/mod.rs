@@ -6,6 +6,8 @@
 
 pub mod dependency_data;
 
+use std::collections::BTreeMap;
+
 use crate::project::contract::Contract;
 
 use self::dependency_data::DependencyData;
@@ -21,6 +23,8 @@ pub struct Input {
     pub dependency_data: DependencyData,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
+    /// The linker symbols.
+    pub linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
     /// The metadata hash type.
     pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
@@ -41,6 +45,7 @@ impl Input {
         contract: Option<Contract>,
         dependency_data: DependencyData,
         enable_eravm_extensions: bool,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -51,6 +56,7 @@ impl Input {
             contract,
             dependency_data,
             enable_eravm_extensions,
+            linker_symbols,
             metadata_hash_type,
             optimizer_settings,
             llvm_options,

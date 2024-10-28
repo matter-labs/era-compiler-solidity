@@ -16,7 +16,6 @@ use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::error_type::ErrorType;
-use crate::libraries::Libraries;
 use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
@@ -24,6 +23,7 @@ use crate::solc::standard_json::input::settings::selection::Selection as SolcSta
 use crate::warning_type::WarningType;
 
 use self::language::Language;
+use self::settings::libraries::Libraries;
 use self::settings::Settings;
 use self::source::Source;
 
@@ -76,7 +76,7 @@ impl Input {
     ///
     pub fn try_from_solidity_paths(
         paths: &[PathBuf],
-        libraries: Vec<String>,
+        libraries: &[String],
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         codegen: Option<SolcCodegen>,
@@ -91,8 +91,8 @@ impl Input {
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
-        let libraries = Libraries::into_standard_json(libraries)?;
-        for library_file in libraries.keys() {
+        let libraries = Libraries::try_from(libraries)?;
+        for library_file in libraries.as_inner().keys() {
             paths.insert(PathBuf::from(library_file));
         }
 
@@ -127,7 +127,7 @@ impl Input {
     ///
     pub fn try_from_solidity_sources(
         sources: BTreeMap<String, Source>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         codegen: Option<SolcCodegen>,
@@ -169,7 +169,7 @@ impl Input {
     ///
     pub fn from_yul_sources(
         sources: BTreeMap<String, Source>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
@@ -203,7 +203,7 @@ impl Input {
     ///
     pub fn from_yul_paths(
         paths: &[PathBuf],
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {

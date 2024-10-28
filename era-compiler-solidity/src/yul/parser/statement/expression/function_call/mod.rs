@@ -895,11 +895,8 @@ impl FunctionCall {
                     anyhow::anyhow!("{} Linker symbol literal is missing", location)
                 })?;
 
-                Ok(Some(
-                    context
-                        .resolve_library(path.as_str())?
-                        .as_basic_value_enum(),
-                ))
+                era_compiler_llvm_context::eravm_evm_call::linker_symbol(context, path.as_str())
+                    .map(Some)
             }
             Name::MemoryGuard => {
                 let arguments = self.pop_arguments_llvm::<D, 1>(context)?;

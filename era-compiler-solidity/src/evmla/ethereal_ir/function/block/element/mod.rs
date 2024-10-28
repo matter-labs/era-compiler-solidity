@@ -185,11 +185,8 @@ where
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
 
-                Ok(Some(
-                    context
-                        .resolve_library(path.as_str())?
-                        .as_basic_value_enum(),
-                ))
+                era_compiler_llvm_context::eravm_evm_call::linker_symbol(context, path.as_str())
+                    .map(Some)
             }
             InstructionName::PUSH_Data => {
                 let value = self
