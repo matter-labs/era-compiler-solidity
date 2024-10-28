@@ -65,14 +65,14 @@ fn yul(version: semver::Version) {
     .expect("Test failure");
 
     assert!(
-        build
+        !build
             .contracts
             .get("test.sol")
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
             .ir_optimized
-            .is_some(),
+            .is_empty(),
         "Yul is missing"
     );
     assert!(
@@ -126,7 +126,7 @@ fn evmla(version: semver::Version) {
             .get("Test")
             .expect("Always exists")
             .ir_optimized
-            .is_none(),
+            .is_empty(),
         "Yul is present although not requested",
     );
 }

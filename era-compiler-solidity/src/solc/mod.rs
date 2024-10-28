@@ -16,6 +16,7 @@ use std::sync::RwLock;
 use self::combined_json::CombinedJson;
 use self::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
+use self::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::error::Error as StandardJsonOutputError;
 use self::standard_json::output::Output as StandardJsonOutput;
@@ -265,16 +266,16 @@ impl Compiler {
         for filtered_flag in filtered_flags.into_iter() {
             for (_path, contract) in combined_json.contracts.iter_mut() {
                 match filtered_flag {
-                    "asm" => contract.asm = Some(serde_json::Value::Null),
-                    "bin" => contract.bin = Some("".to_owned()),
-                    "bin-runtime" => contract.bin_runtime = Some("".to_owned()),
+                    "asm" => contract.asm = serde_json::Value::Null,
+                    "bin" => contract.bin = None,
+                    "bin-runtime" => contract.bin_runtime = None,
                     _ => continue,
                 }
             }
         }
         if combined_json_fake_flag_pushed {
-            combined_json.source_list = None;
-            combined_json.sources = None;
+            combined_json.source_list.clear();
+            combined_json.sources = serde_json::Value::Null;
         }
         combined_json.remove_evm();
 
@@ -314,7 +315,7 @@ impl Compiler {
             );
         }
 
-        solc_input.normalize_yul_validation();
+        solc_input.extend_selection(StandardJsonInputSettingsSelection::new_yul_validation());
         let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
         Ok(solc_output)
     }

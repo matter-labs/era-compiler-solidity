@@ -9,7 +9,6 @@ pub mod selection;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
 use crate::warning_type::WarningType;
@@ -17,7 +16,6 @@ use crate::warning_type::WarningType;
 use self::codegen::Codegen;
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
-use self::selection::file::flag::Flag as SelectionFlag;
 use self::selection::Selection;
 
 ///
@@ -127,17 +125,10 @@ impl Settings {
     }
 
     ///
-    /// Sets the necessary defaults for EraVM compilation.
+    /// Extends the output selection with another one.
     ///
-    pub fn normalize(&mut self, codegen: Codegen) {
-        self.output_selection.extend_with_required(codegen);
-    }
-
-    ///
-    /// Sets the necessary defaults for Yul validation.
-    ///
-    pub fn normalize_yul_validation(&mut self) {
-        self.output_selection.extend_with_yul_validation();
+    pub fn extend_selection(&mut self, selection: Selection) {
+        self.output_selection.extend(selection);
     }
 
     ///
@@ -146,7 +137,7 @@ impl Settings {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
-        self.output_selection.get_unset_required()
+    pub fn selection_to_prune(&self) -> Selection {
+        self.output_selection.selection_to_prune()
     }
 }

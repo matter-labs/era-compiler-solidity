@@ -4,8 +4,6 @@
 
 pub mod file;
 
-use std::collections::HashSet;
-
 use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 
 use self::file::flag::Flag as SelectionFlag;
@@ -22,6 +20,15 @@ pub struct Selection {
 }
 
 impl Selection {
+    ///
+    /// Creates the selection with arbitrary flags.
+    ///
+    pub fn new(flags: Vec<SelectionFlag>) -> Self {
+        Self {
+            all: FileSelection::new(flags),
+        }
+    }
+
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
@@ -41,38 +48,10 @@ impl Selection {
     }
 
     ///
-    /// Creates the selection for EraVM assembly.
+    /// Extends the output selection with another one.
     ///
-    pub fn new_eravm_assembly() -> Self {
-        Self {
-            all: FileSelection::new_eravm_assembly(),
-        }
-    }
-
-    ///
-    /// Extends the output selection with flag required by EraVM compilation process.
-    ///
-    pub fn extend_with_required(
-        &mut self,
-        codegen: SolcStandardJsonInputSettingsCodegen,
-    ) -> &mut Self {
-        self.all.extend_with_required(codegen);
-        self
-    }
-
-    ///
-    /// Extends the output selection with flag required by the Yul validation.
-    ///
-    pub fn extend_with_yul_validation(&mut self) -> &mut Self {
-        self.all.extend_with_yul_validation();
-        self
-    }
-
-    ///
-    /// Extends the output selection with EraVM assembly.
-    ///
-    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
-        self.all.extend_with_eravm_assembly();
+    pub fn extend(&mut self, other: Self) -> &mut Self {
+        self.all.extend(other.all);
         self
     }
 
@@ -82,16 +61,16 @@ impl Selection {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
-        self.all.get_unset_required()
+    pub fn selection_to_prune(&self) -> Self {
+        Self {
+            all: self.all.selection_to_prune(),
+        }
     }
 
     ///
-    /// Whether EraVM assembly is requested.
+    /// Whether the flag is requested.
     ///
-    pub fn contains_eravm_assembly(&self) -> bool {
-        self.all
-            .per_contract
-            .contains(&SelectionFlag::EraVMAssembly)
+    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+        self.all.contains(flag)
     }
 }

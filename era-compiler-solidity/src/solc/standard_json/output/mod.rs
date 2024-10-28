@@ -7,7 +7,6 @@ pub mod error;
 pub mod source;
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -18,6 +17,7 @@ use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::assembly::Assembly;
 use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::solc::standard_json::input::settings::selection::Selection;
 use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
 use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::solc::version::Version as SolcVersion;
@@ -102,10 +102,10 @@ impl Output {
     ///
     /// Prunes the output JSON and prints it to stdout.
     ///
-    pub fn write_and_exit(mut self, prune_output: HashSet<SelectionFlag>) -> ! {
+    pub fn write_and_exit(mut self, selection_to_prune: Selection) -> ! {
         let sources = self.sources.values_mut().collect::<Vec<&mut Source>>();
         for source in sources.into_iter() {
-            if prune_output.contains(&SelectionFlag::AST) {
+            if selection_to_prune.contains(&SelectionFlag::AST) {
                 source.ast = None;
             }
         }
@@ -116,17 +116,17 @@ impl Output {
             .flat_map(|contracts| contracts.values_mut())
             .collect::<Vec<&mut Contract>>();
         for contract in contracts.into_iter() {
-            if prune_output.contains(&SelectionFlag::Metadata) {
-                contract.metadata = None;
+            if selection_to_prune.contains(&SelectionFlag::Metadata) {
+                contract.metadata = serde_json::Value::Null;
             }
-            if prune_output.contains(&SelectionFlag::Yul) {
-                contract.ir_optimized = None;
+            if selection_to_prune.contains(&SelectionFlag::Yul) {
+                contract.ir_optimized = String::new();
             }
             if let Some(ref mut evm) = contract.evm {
-                if prune_output.contains(&SelectionFlag::EVMLA) {
+                if selection_to_prune.contains(&SelectionFlag::EVMLA) {
                     evm.legacy_assembly = None;
                 }
-                if prune_output.contains(&SelectionFlag::MethodIdentifiers) {
+                if selection_to_prune.contains(&SelectionFlag::MethodIdentifiers) {
                     evm.method_identifiers = None;
                 }
                 evm.extra_metadata = None;
