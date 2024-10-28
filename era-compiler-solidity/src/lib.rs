@@ -42,7 +42,7 @@ pub use self::solc::standard_json::input::language::Language as SolcStandardJson
 pub use self::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
-pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFileFlag;
+pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFlag;
 pub use self::solc::standard_json::input::settings::selection::file::File as SolcStandardJsonInputSettingsSelectionFile;
 pub use self::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 pub use self::solc::standard_json::input::settings::Settings as SolcStandardJsonInputSettings;
@@ -417,7 +417,7 @@ pub fn standard_json_eravm(
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let libraries = solc_input.settings.libraries.clone();
-    let prune_output = solc_input.settings.get_unset_required();
+    let prune_output = solc_input.settings.selection_to_prune();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
@@ -436,7 +436,7 @@ pub fn standard_json_eravm(
     let output_assembly = solc_input
         .settings
         .output_selection
-        .contains_eravm_assembly();
+        .contains(&SolcStandardJsonInputSettingsSelectionFlag::EraVMAssembly);
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
@@ -447,7 +447,9 @@ pub fn standard_json_eravm(
 
             let solc_codegen =
                 SolcStandardJsonInputSettingsCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(solc_codegen);
+            solc_input.extend_selection(SolcStandardJsonInputSettingsSelection::new_required(
+                solc_codegen,
+            ));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
@@ -578,7 +580,7 @@ pub fn standard_json_evm(
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let libraries = solc_input.settings.libraries.clone();
-    let prune_output = solc_input.settings.get_unset_required();
+    let prune_output = solc_input.settings.selection_to_prune();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
@@ -595,7 +597,9 @@ pub fn standard_json_evm(
 
             let solc_codegen =
                 SolcStandardJsonInputSettingsCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(solc_codegen);
+            solc_input.extend_selection(SolcStandardJsonInputSettingsSelection::new_required(
+                solc_codegen,
+            ));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,

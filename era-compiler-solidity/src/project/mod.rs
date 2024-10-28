@@ -123,7 +123,7 @@ impl Project {
                             SolcStandardJsonInputSettingsCodegen::Yul => {
                                 ContractYul::try_from_source(
                                     &name,
-                                    contract.ir_optimized.as_deref(),
+                                    contract.ir_optimized.as_str(),
                                     debug_config,
                                 )
                                 .map(|ir| ir.map(ContractYul::into))
@@ -135,11 +135,7 @@ impl Project {
                         }
                         .map(|source| {
                             source.map(|source| {
-                                Contract::new(
-                                    name,
-                                    source,
-                                    contract.metadata.to_owned().expect("Always exists"),
-                                )
+                                Contract::new(name, source, contract.metadata.to_owned())
                             })
                         });
                         (full_path, result)
@@ -206,8 +202,8 @@ impl Project {
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let result =
-                    ContractYul::try_from_source(&name, Some(source_code.as_str()), debug_config)
-                        .map(|ir| {
+                    ContractYul::try_from_source(&name, source_code.as_str(), debug_config).map(
+                        |ir| {
                             ir.map(ContractYul::into).map(|ir| {
                                 Contract::new(
                                     name,
@@ -218,7 +214,8 @@ impl Project {
                                     }),
                                 )
                             })
-                        });
+                        },
+                    );
 
                 (path, result)
             })

@@ -220,17 +220,10 @@ impl Input {
     }
 
     ///
-    /// Sets the necessary defaults for EraVM compilation.
+    /// Extends the output selection with another one.
     ///
-    pub fn normalize(&mut self, codegen: SolcStandardJsonInputSettingsCodegen) {
-        self.settings.normalize(codegen);
-    }
-
-    ///
-    /// Sets the necessary defaults for Yul validation.
-    ///
-    pub fn normalize_yul_validation(&mut self) {
-        self.settings.normalize_yul_validation();
+    pub fn extend_selection(&mut self, selection: SolcStandardJsonInputSettingsSelection) {
+        self.settings.extend_selection(selection);
     }
 
     ///

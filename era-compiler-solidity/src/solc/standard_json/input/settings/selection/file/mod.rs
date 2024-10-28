@@ -66,42 +66,11 @@ impl File {
     }
 
     ///
-    /// Creates the selection for EraVM assembly.
+    /// Extends the output selection with another one.
     ///
-    pub fn new_eravm_assembly() -> Self {
-        Self::new(vec![SelectionFlag::EraVMAssembly])
-    }
-
-    ///
-    /// Extends the output selection with flag required by EraVM compilation process.
-    ///
-    pub fn extend_with_required(
-        &mut self,
-        codegen: SolcStandardJsonInputSettingsCodegen,
-    ) -> &mut Self {
-        let required = Self::new_required(codegen);
-        self.per_file.extend(required.per_file);
-        self.per_contract.extend(required.per_contract);
-        self
-    }
-
-    ///
-    /// Extends the output selection with flag required by the Yul validation.
-    ///
-    pub fn extend_with_yul_validation(&mut self) -> &mut Self {
-        let yul_validation = Self::new_yul_validation();
-        self.per_file.extend(yul_validation.per_file);
-        self.per_contract.extend(yul_validation.per_contract);
-        self
-    }
-
-    ///
-    /// Extends the output selection with EraVM assembly flag.
-    ///
-    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
-        let eravm_assembly = Self::new_eravm_assembly();
-        self.per_file.extend(eravm_assembly.per_file);
-        self.per_contract.extend(eravm_assembly.per_contract);
+    pub fn extend(&mut self, other: Self) -> &mut Self {
+        self.per_file.extend(other.per_file);
+        self.per_contract.extend(other.per_contract);
         self
     }
 
@@ -111,7 +80,7 @@ impl File {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
+    pub fn selection_to_prune(&self) -> Self {
         let required_per_file = vec![SelectionFlag::AST];
         let required_per_contract = vec![
             SelectionFlag::MethodIdentifiers,
@@ -119,20 +88,34 @@ impl File {
             SelectionFlag::Yul,
             SelectionFlag::EVMLA,
         ];
-        let mut flags =
-            HashSet::with_capacity(required_per_file.len() + required_per_contract.len());
+
+        let mut unset_per_file = HashSet::with_capacity(required_per_file.len());
+        let mut unset_per_contract = HashSet::with_capacity(required_per_contract.len());
 
         for flag in required_per_file {
             if !self.per_file.contains(&flag) {
-                flags.insert(flag);
+                unset_per_file.insert(flag);
             }
         }
         for flag in required_per_contract {
             if !self.per_contract.contains(&flag) {
-                flags.insert(flag);
+                unset_per_contract.insert(flag);
             }
         }
-        flags
+        Self {
+            per_file: unset_per_file,
+            per_contract: unset_per_contract,
+        }
+    }
+
+    ///
+    /// Whether the flag is requested.
+    ///
+    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+        match flag {
+            flag @ SelectionFlag::AST => self.per_file.contains(flag),
+            flag => self.per_contract.contains(flag),
+        }
     }
 
     ///
