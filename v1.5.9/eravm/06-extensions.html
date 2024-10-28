@@ -1,0 +1,1034 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Extensions - ZKsync Solidity Compiler Toolchain Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../css/version-box.css">
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ZKsync Solidity Compiler Toolchain Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="extensions"><a class="header" href="#extensions">Extensions</a></h1>
+<p>EraVM extensions are a set of additional instructions that can be expressed in Solidity and Yul, that can only be compiled to EraVM bytecode.</p>
+<p>There are two ways of using EraVM extensions with <em>zksolc</em>:</p>
+<ol>
+<li><a href="#call-simulations">Call simulations</a> in Solidity.</li>
+<li><a href="#verbatim"><code>verbatim</code></a> function in Yul mode.</li>
+</ol>
+<h3 id="call-simulations"><a class="header" href="#call-simulations">Call simulations</a></h3>
+<p>Since <em>zksolc</em> could only operate on Yul received from <em>solc</em>, it was not possible to add EraVM-specific functionality to Solidity and Yul. Instead, <em>zksolc</em> introduced a hack with external call instructions that would be replaced with EraVM-specific instructions during emitting LLVM IR. In such external call instructions, the address argument denotes the instruction type, whereas the rest of the arguments are used as instruction arguments.</p>
+<p>Call simulations are the only way to use EraVM extensions in Solidity.</p>
+<h3 id="verbatim"><a class="header" href="#verbatim"><code>verbatim</code></a></h3>
+<p>In Yul mode, there is a special instruction called <code>verbatim</code> that allows emitting EraVM-specific instructions directly from Yul. This instruction is more robust than call simulations, as it allows passing more arguments to the instruction, and it is not affected by the <em>solc</em>'s optimizer. Unfortunately, <code>verbatim</code> is only available in Yul mode and cannot be used in Solidity.</p>
+<p>It is recommended to only use <code>verbatim</code> in Yul mode, as it is more robust and less error-prone than call simulations in Solidity.</p>
+<h2 id="call-types"><a class="header" href="#call-types">Call Types</a></h2>
+<p>In addition to EVM-like <code>call</code>, <code>staticcall</code> and <code>delegatecall</code>, EraVM introduces a few more call types:</p>
+<ol>
+<li>Mimic call</li>
+<li>System call</li>
+<li>Raw call</li>
+</ol>
+<p>Each of the call types above has <a href="#mimic-call-by-reference-0xfff9">its by-ref modification</a>, which <a href="#active-pointers">allows passing pointers</a> to ABI data instead of data itself.</p>
+<h3 id="mimic-call"><a class="header" href="#mimic-call">Mimic Call</a></h3>
+<p>Mimic call is a call type that allows the caller to execute a call to a contract, but with the ability to specify the address of the contract that will be used as the caller. This is useful for EraVM System Contracts that need to call other contracts on behalf of the user. Essentially, it is a more complete version of <code>DELEGATECALL</code>.</p>
+<p>For a deeper dive into the Mimic Call, visit <a href="https://matter-labs.github.io/eravm-spec/spec.html">the EraVM formal specification</a>.</p>
+<h3 id="system-call"><a class="header" href="#system-call">System Call</a></h3>
+<p>System call allows passing more arguments to the callee contract using EraVM registers. This is useful for System Contracts that often require auxiliary data that cannot be passed via calldata.</p>
+<p>There are also <a href="#system-mimic-call-0xfffa">system mimic calls</a>, which are a combination of both, that is auxiliary arguments can be passed via EraVM registers.</p>
+<h3 id="raw-call"><a class="header" href="#raw-call">Raw Call</a></h3>
+<p>Raw calls are similar to EVM's <code>CALL</code>, <code>STATICCALL</code>, and <code>DELEGATECALL</code>, but they do not encode the ABI data. Instead, the ABI data is passed as an argument to the instruction. This is useful for EraVM System Contracts that need to call other contracts with a specific ABI data that cannot be encoded in the calldata.</p>
+<h2 id="active-pointers"><a class="header" href="#active-pointers">Active Pointers</a></h2>
+<p>Active pointers are a set of calldata and return data pointers stored in global LLVM IR variables. They are not accessible directly from Yul, but they can be used to forward call and return data between contracts.</p>
+<p>The number of active pointers is fixed at 10, and they are numbered from 0 to 9. Some instructions can only use the 0th pointer due to the lack of spare arguments to specify the pointer number. In order to use pointers other than the 0th, use <a href="#active-pointer-swap-0xffd9">the swap instruction</a>.</p>
+<p>Instructions that use active pointers have a reference to this section.</p>
+<h2 id="constant-arrays"><a class="header" href="#constant-arrays">Constant Arrays</a></h2>
+<p>Constant arrays are a set of global arrays that can be used to store constant values. They are not accessible directly from Yul, but they can be used to store constant values that are used in multiple places in the contract.</p>
+<h1 id="instruction-reference"><a class="header" href="#instruction-reference">Instruction Reference</a></h1>
+<p>The sections below have the following structure:</p>
+<ol>
+<li>EraVM instruction name and substituted address.</li>
+<li>Instruction description.</li>
+<li>Pseudo-code illustrating the behavior under the hood.</li>
+<li>Solidity call simulation usage example.</li>
+<li>Yul <code>verbatim</code> usage example.</li>
+</ol>
+<p>For instance:</p>
+<h2 id="example-0xxxxx"><a class="header" href="#example-0xxxxx">Example (0xXXXX)</a></h2>
+<p>Executes an EraVM instruction.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">return_value = instruction(arg1, arg2, arg3)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := call(arg1, 0xXXXX, arg2, arg3, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := verbatim_3i_1o("instruction", arg1, arg2, arg3)
+}
+</code></pre>
+<p>Full list of instructions:</p>
+<ul>
+<li>
+<p><a href="#to-l1-0xffff">To L1 (0xFFFF)</a></p>
+</li>
+<li>
+<p><a href="#precompile-0xfffd">Precompile (0xFFFD)</a></p>
+</li>
+<li>
+<p><a href="#decommit-0xffdd">Decommit (0xFFDD)</a></p>
+</li>
+<li>
+<p><a href="#set-context-value-0xfff3">Set Context Value (0xFFF3)</a></p>
+</li>
+<li>
+<p><a href="#set-pubdata-price-0xfff2">Set Pubdata Price (0xFFF2)</a></p>
+</li>
+<li>
+<p><a href="#increment-tx-counter-0xfff1">Increment TX Counter (0xFFF1)</a></p>
+</li>
+<li>
+<p><a href="#code-source-0xfffe">Code Source (0xFFFE)</a></p>
+</li>
+<li>
+<p><a href="#meta-0xfffc">Meta (0xFFFC)</a></p>
+</li>
+<li>
+<p><a href="#get-calldata-pointer-0xfff0">Get Calldata Pointer (0xFFF0)</a></p>
+</li>
+<li>
+<p><a href="#get-call-flags-0xffef">Get Call Flags (0xFFEF)</a></p>
+</li>
+<li>
+<p><a href="#get-return-data-pointer-0xffee">Get Return Data Pointer (0xFFEE)</a></p>
+</li>
+<li>
+<p><a href="#get-extra-abi-data-0xffe5">Get Extra ABI Data (0xFFE5)</a></p>
+</li>
+<li>
+<p><a href="#multiplication-with-overflow-0xffe6">Multiplication with Overflow (0xFFE6)</a></p>
+</li>
+<li>
+<p><a href="#event-initialize-0xffed">Event Initialize (0xFFED)</a></p>
+</li>
+<li>
+<p><a href="#event-write-0xffec">Event Write (0xFFEC)</a></p>
+</li>
+<li>
+<p><a href="#mimic-call-0xfffb">Mimic Call (0xFFFB)</a></p>
+</li>
+<li>
+<p><a href="#mimic-call-by-reference-0xfff9">Mimic Call by Reference (0xFFF9)</a></p>
+</li>
+<li>
+<p><a href="#system-mimic-call-0xfffa">System Mimic Call (0xFFFA)</a></p>
+</li>
+<li>
+<p><a href="#system-mimic-call-by-reference-0xfff8">System Mimic Call by Reference (0xFFF8)</a></p>
+</li>
+<li>
+<p><a href="#raw-call-0xfff7">Raw Call (0xFFF7)</a></p>
+</li>
+<li>
+<p><a href="#raw-call-by-reference-0xfff6">Raw Call by Reference (0xFFF6)</a></p>
+</li>
+<li>
+<p><a href="#system-call-0xfff5">System Call (0xFFF5)</a></p>
+</li>
+<li>
+<p><a href="#system-call-by-reference-0xfff4">System Call by Reference (0xFFF4)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-load-calldata-0xffeb">Active Pointer: Load Calldata (0xFFEB)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-load-return-data-0xffea">Active Pointer: Load Return Data (0xFFEA)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-load-decommit-0xffdc">Active Pointer: Load Decommit (0xFFDC)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-increment-0xffe9">Active Pointer: Increment (0xFFE9)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-shrink-0xffe8">Active Pointer: Shrink (0xFFE8)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-pack-0xffe7">Active Pointer: Pack (0xFFE7)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-load-0xffe4">Active Pointer: Load (0xFFE4)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-copy-0xffe3">Active Pointer: Copy (0xFFE3)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-size-0xffe2">Active Pointer: Size (0xFFE2)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-swap-0xffd9">Active Pointer: Swap (0xFFD9)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-return-0xffdb">Active Pointer: Return (0xFFDB)</a></p>
+</li>
+<li>
+<p><a href="#active-pointer-revert-0xffda">Active Pointer: Revert (0xFFDA)</a></p>
+</li>
+<li>
+<p><a href="#constant-array-declare-0xffe1">Constant Array: Declare (0xFFE1)</a></p>
+</li>
+<li>
+<p><a href="#constant-array-set-0xffe0">Constant Array: Set (0xFFE0)</a></p>
+</li>
+<li>
+<p><a href="#constant-array-finalize-0xffdf">Constant Array: Finalize (0xFFDF)</a></p>
+</li>
+<li>
+<p><a href="#constant-array-get-0xffde">Constant Array: Get (0xFFDE)</a></p>
+</li>
+<li>
+<p><a href="#return-deployed-verbatim-only">Return Deployed (verbatim-only)</a></p>
+</li>
+<li>
+<p><a href="#throw-verbatim-only">Throw (verbatim-only)</a></p>
+</li>
+</ul>
+<p>Notes:</p>
+<ol>
+<li>The <code>input_length</code> parameter is always set to 0xFFFF or non-zero value. It prevents the <em>solc</em>'s optimizer from optimizing the call out.</li>
+<li>Instructions that do not modify state are using <code>staticcall</code> instead of <code>call</code>.</li>
+<li>Instructions such as raw calls preserve the call type, so they act as modifiers of <code>call</code>, <code>staticcall</code>, and <code>delegatecall</code>.</li>
+</ol>
+<h2 id="to-l1-0xffff"><a class="header" href="#to-l1-0xffff">To L1 (0xFFFF)</a></h2>
+<p>Send a message to L1.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">to_l1(is_first, value_1, value_2)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(is_first, 0xFFFF, value_1, value_2, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_3i_0o("to_l1", is_first, value_1, value_2)
+}
+</code></pre>
+<h2 id="precompile-0xfffd"><a class="header" href="#precompile-0xfffd">Precompile (0xFFFD)</a></h2>
+<p>Calls an EraVM precompile.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">return_value = precompile(input_data, ergs)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := staticcall(input_data, 0xFFFD, ergs, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := verbatim_2i_01("precompile", input_data, ergs)
+}
+</code></pre>
+<h2 id="decommit-0xffdd"><a class="header" href="#decommit-0xffdd">Decommit (0xFFDD)</a></h2>
+<p>Calls the EraVM decommit.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">return_value = decommit(versioned_hash, ergs)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := staticcall(versioned_hash, 0xFFDD, ergs, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let return_value := verbatim_2i_01("decommit", input_data, ergs)
+}
+</code></pre>
+<h2 id="set-context-value-0xfff3"><a class="header" href="#set-context-value-0xfff3">Set Context Value (0xFFF3)</a></h2>
+<p>Sets the 128-bit context value. Usually the value is used to pass Ether to the callee contract.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">set_context_value(value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(0, 0xFFF3, value, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_1i_0o("set_context_u128", value)
+}
+</code></pre>
+<h2 id="set-pubdata-price-0xfff2"><a class="header" href="#set-pubdata-price-0xfff2">Set Pubdata Price (0xFFF2)</a></h2>
+<p>Sets the public data price.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">set_pubdata_price(value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(value, 0xFFF2, 0, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_1i_0o("set_pubdata_price", value)
+}
+</code></pre>
+<h2 id="increment-tx-counter-0xfff1"><a class="header" href="#increment-tx-counter-0xfff1">Increment TX Counter (0xFFF1)</a></h2>
+<p>Increments the EraVM transaction counter.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">increment_tx_counter()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(0, 0xFFF1, 0, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("increment_tx_counter")
+}
+</code></pre>
+<h2 id="code-source-0xfffe"><a class="header" href="#code-source-0xfffe">Code Source (0xFFFE)</a></h2>
+<p>Returns the address where the contract is actually deployed, even if it is called with a delegate call. Mostly used in EraVM System Contracts.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">code_source = code_source()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let code_source := staticcall(0, 0xFFFE, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let code_source := verbatim_0i_1o("code_source")
+}
+</code></pre>
+<h2 id="meta-0xfffc"><a class="header" href="#meta-0xfffc">Meta (0xFFFC)</a></h2>
+<p>Returns a part of the internal EraVM state.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">meta = meta()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let meta := staticcall(0, 0xFFFC, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let meta := verbatim_0i_1o("meta")
+}
+</code></pre>
+<h2 id="get-calldata-pointer-0xfff0"><a class="header" href="#get-calldata-pointer-0xfff0">Get Calldata Pointer (0xFFF0)</a></h2>
+<p>Returns the ABI-encoded calldata pointer as integer.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">pointer = get_calldata_pointer()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let pointer := staticcall(0, 0xFFF0, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let pointer := verbatim_0i_1o("get_global::ptr_calldata")
+}
+</code></pre>
+<h2 id="get-call-flags-0xffef"><a class="header" href="#get-call-flags-0xffef">Get Call Flags (0xFFEF)</a></h2>
+<p>Returns the call flags encoded as 256-bit integer.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">flags = get_call_flags()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let flags := staticcall(0, 0xFFEF, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let flags := verbatim_0i_1o("get_global::call_flags")
+}
+</code></pre>
+<h2 id="get-return-data-pointer-0xffee"><a class="header" href="#get-return-data-pointer-0xffee">Get Return Data Pointer (0xFFEE)</a></h2>
+<p>Returns the ABI-encoded return data pointer as integer.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">pointer = get_return_data_pointer()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let pointer := staticcall(0, 0xFFEE, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let pointer := verbatim_0i_1o("get_global::ptr_return_data")
+}
+</code></pre>
+<h2 id="get-extra-abi-data-0xffe5"><a class="header" href="#get-extra-abi-data-0xffe5">Get Extra ABI Data (0xFFE5)</a></h2>
+<p>Returns the N-th extra ABI data value passed via registers <code>r3</code>-<code>r12</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">value = get_extra_abi_data(index)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let value := staticcall(index, 0xFFE5, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let value := verbatim_0i_1o("get_global::extra_abi_data_0")
+    let value := verbatim_0i_1o("get_global::extra_abi_data_1")
+    ...
+    let value := verbatim_0i_1o("get_global::extra_abi_data_9")
+}
+</code></pre>
+<h2 id="multiplication-with-overflow-0xffe6"><a class="header" href="#multiplication-with-overflow-0xffe6">Multiplication with Overflow (0xFFE6)</a></h2>
+<p>Performs a multiplication with overflow, returning the higher register.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">higher_register = mul_high(a, b)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let higher_register := staticcall(a, 0xFFE6, b, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let higher_register := verbatim_2i_1o("mul_high", a, b)
+}
+</code></pre>
+<h2 id="event-initialize-0xffed"><a class="header" href="#event-initialize-0xffed">Event Initialize (0xFFED)</a></h2>
+<p>Initializes a new EVM-like event.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">event_initialize(value_1, value_2)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(value_1, 0xFFED, value_2, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_2i_0o("event_initialize", value_1, value_2)
+}
+</code></pre>
+<h2 id="event-write-0xffec"><a class="header" href="#event-write-0xffec">Event Write (0xFFEC)</a></h2>
+<p>Writes more data to the previously initialized EVM-like event.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">event_write(value_1, value_2)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := call(value_1, 0xFFEC, value_2, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_2i_0o("event_write", value_1, value_2)
+}
+</code></pre>
+<h2 id="mimic-call-0xfffb"><a class="header" href="#mimic-call-0xfffb">Mimic Call (0xFFFB)</a></h2>
+<p>Executes an EraVM mimic call.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = mimic_call(callee_address, mimic_address, abi_data)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFFB, 0, abi_data, mimic_address, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_3i_1o("mimic_call", callee_address, mimic_address, abi_data)
+}
+</code></pre>
+<h2 id="mimic-call-by-reference-0xfff9"><a class="header" href="#mimic-call-by-reference-0xfff9">Mimic Call by Reference (0xFFF9)</a></h2>
+<p>Executes an EraVM mimic call, passing <a href="#active-pointers">the 0th active pointer</a> instead of ABI data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = mimic_call_byref(callee_address, mimic_address)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF9, 0, 0, mimic_address, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_2i_1o("mimic_call_byref", callee_address, mimic_address)
+}
+</code></pre>
+<h2 id="system-mimic-call-0xfffa"><a class="header" href="#system-mimic-call-0xfffa">System Mimic Call (0xFFFA)</a></h2>
+<p>Executes an EraVM mimic call with additional arguments for System Contracts.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = system_mimic_call(callee_address, mimic_address, abi_data, r3_value, r4_value, [r5_value, r6_value])
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFFA, 0, abi_data, mimic_address, r3_value, r4_value)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_5i_1o("system_mimic_call", callee_address, mimic_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+}
+</code></pre>
+<blockquote>
+<p>Yul's <code>verbatim</code> allows passing two more extra arguments as it is no limited by the semantics of the <code>call</code> instruction.</p>
+</blockquote>
+<h2 id="system-mimic-call-by-reference-0xfff8"><a class="header" href="#system-mimic-call-by-reference-0xfff8">System Mimic Call by Reference (0xFFF8)</a></h2>
+<p>Executes an EraVM mimic call with additional arguments for System Contracts, passing <a href="#active-pointers">the 0th active pointer</a> instead of ABI data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = system_mimic_call_byref(callee_address, mimic_address, r3_value, r4_value, [r5_value, r6_value])
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF8, 0, 0, mimic_address, r3_value, r4_value)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_4i_1o("system_mimic_call_byref", callee_address, mimic_address, r3_value, r4_value, r5_value, r6_value)
+}
+</code></pre>
+<blockquote>
+<p>Yul's <code>verbatim</code> allows passing two more extra arguments as it is no limited by the semantics of the <code>call</code> instruction.</p>
+</blockquote>
+<h2 id="raw-call-0xfff7"><a class="header" href="#raw-call-0xfff7">Raw Call (0xFFF7)</a></h2>
+<p>Executes an EraVM raw call.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = raw_call(callee_address, abi_data, output_offset, output_length)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF7, 0, 0, abi_data, output_offset, output_length)
+    let status := staticcall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
+    let status := delegatecall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_4i_1o("raw_call", callee_address, abi_data, output_offset, output_length)
+    let status := verbatim_4i_1o("raw_static_call", callee_address, abi_data, output_offset, output_length)
+    let status := verbatim_4i_1o("raw_delegate_call", callee_address, abi_data, output_offset, output_length)
+}
+</code></pre>
+<h2 id="raw-call-by-reference-0xfff6"><a class="header" href="#raw-call-by-reference-0xfff6">Raw Call by Reference (0xFFF6)</a></h2>
+<p>Executes an EraVM raw call, passing <a href="#active-pointers">the 0th active pointer</a> instead of ABI data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = raw_call_byref(callee_address, output_offset, output_length)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF7, 0, 0, 0, output_offset, output_length)
+    let status := staticcall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
+    let status := delegatecall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_3i_1o("raw_call_byref", callee_address, output_offset, output_length)
+    let status := verbatim_3i_1o("raw_static_call_byref", callee_address, output_offset, output_length)
+    let status := verbatim_3i_1o("raw_delegate_call_byref", callee_address, output_offset, output_length)
+}
+</code></pre>
+<h2 id="system-call-0xfff5"><a class="header" href="#system-call-0xfff5">System Call (0xFFF5)</a></h2>
+<p>Executes an EraVM system call.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = system_call(callee_address, r3_value, r4_value, abi_data, r5_value, r6_value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF5, r3_value, r4_value, abi_data, r5_value, r6_value)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_6i_1o("system_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_6i_1o("system_static_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_6i_1o("system_delegate_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+}
+</code></pre>
+<blockquote>
+<p>Static and delegate system calls are only available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="system-call-by-reference-0xfff4"><a class="header" href="#system-call-by-reference-0xfff4">System Call by Reference (0xFFF4)</a></h2>
+<p>Executes an EraVM system call, passing <a href="#active-pointers">the 0th active pointer</a> instead of ABI data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">status = system_call_byref(callee_address, r3_value, r4_value, r5_value, r6_value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := call(callee_address, 0xFFF4, r3_value, r4_value, 0xFFFF, r5_value, r6_value)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let status := verbatim_5i_1o("system_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_5i_1o("system_static_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_5i_1o("system_delegate_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+}
+</code></pre>
+<blockquote>
+<p>Static and delegate system calls are only available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="active-pointer-load-calldata-0xffeb"><a class="header" href="#active-pointer-load-calldata-0xffeb">Active Pointer: Load Calldata (0xFFEB)</a></h2>
+<p>Loads the calldata pointer to <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_load_calldata()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(0, 0xFFEB, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("calldata_ptr_to_active")
+}
+</code></pre>
+<h2 id="active-pointer-load-return-data-0xffea"><a class="header" href="#active-pointer-load-return-data-0xffea">Active Pointer: Load Return Data (0xFFEA)</a></h2>
+<p>Loads the return data pointer to <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_load_return_data()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(0, 0xFFEA, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("return_data_ptr_to_active")
+}
+</code></pre>
+<h2 id="active-pointer-load-decommit-0xffdc"><a class="header" href="#active-pointer-load-decommit-0xffdc">Active Pointer: Load Decommit (0xFFDC)</a></h2>
+<p>Loads the decommit pointer to <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_load_decommit()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(0, 0xFFDC, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("decommit_ptr_to_active")
+}
+</code></pre>
+<h2 id="active-pointer-increment-0xffe9"><a class="header" href="#active-pointer-increment-0xffe9">Active Pointer: Increment (0xFFE9)</a></h2>
+<p>Increments the offset of <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_add(value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(value, 0xFFE9, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_1i_0o("active_ptr_add_assign", value)
+}
+</code></pre>
+<h2 id="active-pointer-shrink-0xffe8"><a class="header" href="#active-pointer-shrink-0xffe8">Active Pointer: Shrink (0xFFE8)</a></h2>
+<p>Decrements the slice length of <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_shrink(value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(value, 0xFFE8, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_1i_0o("active_ptr_shrink_assign", value)
+}
+</code></pre>
+<h2 id="active-pointer-pack-0xffe7"><a class="header" href="#active-pointer-pack-0xffe7">Active Pointer: Pack (0xFFE7)</a></h2>
+<p>Writes the upper 128 bits to <a href="#active-pointers">the 0th active pointer</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_pack(value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(value, 0xFFE7, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_1i_0o("active_ptr_pack_assign", value)
+}
+</code></pre>
+<h2 id="active-pointer-load-0xffe4"><a class="header" href="#active-pointer-load-0xffe4">Active Pointer: Load (0xFFE4)</a></h2>
+<p>Loads a value from <a href="#active-pointers">the 0th active pointer</a> at the specified offset, similarly to EVM's <code>CALLDATALOAD</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">value = active_ptr_load(offset)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let value := staticcall(offset, 0xFFE4, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let value := verbatim_1i_1o("active_ptr_data_load", offset)
+}
+</code></pre>
+<h2 id="active-pointer-copy-0xffe3"><a class="header" href="#active-pointer-copy-0xffe3">Active Pointer: Copy (0xFFE3)</a></h2>
+<p>Copies a slice from the <a href="#active-pointers">the 0th active pointer</a> to the heap, similarly to EVM's <code>CALLDATACOPY</code> and <code>RETURNDATACOPY</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_copy(destination, source, size)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(destination, 0xFFE3, source, 0xFFFF, size, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_3i_0o("active_ptr_data_copy", destination, source, size)
+}
+</code></pre>
+<h2 id="active-pointer-size-0xffe2"><a class="header" href="#active-pointer-size-0xffe2">Active Pointer: Size (0xFFE2)</a></h2>
+<p>Returns the length of the slice referenced by <a href="#active-pointers">the 0th active pointer</a>, similarly to EVM's <code>CALLDATASIZE</code> and <code>RETURNDATASIZE</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">size = active_ptr_size()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let size := staticcall(0, 0xFFE2, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let size := verbatim_0i_1o("active_ptr_data_size")
+}
+</code></pre>
+<h2 id="active-pointer-swap-0xffd9"><a class="header" href="#active-pointer-swap-0xffd9">Active Pointer: Swap (0xFFD9)</a></h2>
+<p>Swaps the Nth and Mth <a href="#active-pointers">active pointers</a>. Swapping allows the active pointer instructions to use pointers other than the 0th.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_swap(N, M)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(N, 0xFFD9, M, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_2i_0o("active_ptr_swap", N, M)
+}
+</code></pre>
+<h2 id="active-pointer-return-0xffdb"><a class="header" href="#active-pointer-return-0xffdb">Active Pointer: Return (0xFFDB)</a></h2>
+<p>Returns from the contract, using <a href="#active-pointers">the 0th active pointer</a> as the return data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_return()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(0, 0xFFDB, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("active_ptr_return_forward")
+}
+</code></pre>
+<h2 id="active-pointer-revert-0xffda"><a class="header" href="#active-pointer-revert-0xffda">Active Pointer: Revert (0xFFDA)</a></h2>
+<p>Reverts from the contract, using <a href="#active-pointers">the 0th active pointer</a> as the return data.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">active_ptr_revert()
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(0, 0xFFDA, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("active_ptr_revert_forward")
+}
+</code></pre>
+<h2 id="constant-array-declare-0xffe1"><a class="header" href="#constant-array-declare-0xffe1">Constant Array: Declare (0xFFE1)</a></h2>
+<p>Declares a new <a href="#constant-arrays">global array of constants</a>. After the array is declared, it must be right away filled with values using <a href="#constant-array-set-0xffe0">the set instruction</a> and declared final using <a href="#constant-array-finalize-0xffdf">the finalization instruction</a>.</p>
+<p>Index must be an 8-bit constant value in the range <code>[0; 255]</code>.</p>
+<p>Size must be a 16-bit constant value in the range <code>[0; 65535]</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">const_array_declare(index, size)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(index, 0xFFE1, size, 0xFFFF, 0, 0)
+}
+</code></pre>
+<blockquote>
+<p>This instruction is not available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="constant-array-set-0xffe0"><a class="header" href="#constant-array-set-0xffe0">Constant Array: Set (0xFFE0)</a></h2>
+<p>Sets a value in a <a href="#constant-arrays">global array of constants</a>.</p>
+<p>Index must be an 8-bit constant value in the range <code>[0; 255]</code>.</p>
+<p>Size must be a 16-bit constant value in the range <code>[0; 65535]</code>.</p>
+<p>Value must be a 256-bit constant value.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">const_array_set(index, size, value)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(index, 0xFFE0, size, 0xFFFF, value, 0)
+}
+</code></pre>
+<blockquote>
+<p>This instruction is not available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="constant-array-finalize-0xffdf"><a class="header" href="#constant-array-finalize-0xffdf">Constant Array: Finalize (0xFFDF)</a></h2>
+<p>Finalizes a <a href="#constant-arrays">global array of constants</a>.</p>
+<p>Index must be an 8-bit constant value in the range <code>[0; 255]</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">const_array_finalize(index)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := staticcall(index, 0xFFDF, 0, 0xFFFF, 0, 0)
+}
+</code></pre>
+<blockquote>
+<p>This instruction is not available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="constant-array-get-0xffde"><a class="header" href="#constant-array-get-0xffde">Constant Array: Get (0xFFDE)</a></h2>
+<p>Gets a value from a <a href="#constant-arrays">global array of constants</a>.</p>
+<p>Index must be an 8-bit constant value in the range <code>[0; 255]</code>.</p>
+<p>Offset must be a 16-bit constant value in the range <code>[0; 65535]</code>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">value = const_array_get(index, offset)
+</code></pre>
+<p>Solidity usage:</p>
+<pre><code class="language-solidity">assembly {
+    let value := staticcall(index, 0xFFDE, offset, 0xFFFF, 0, 0)
+}
+</code></pre>
+<blockquote>
+<p>This instruction is not available in Yul as <code>verbatim</code>.</p>
+</blockquote>
+<h2 id="return-deployed-verbatim-only"><a class="header" href="#return-deployed-verbatim-only">Return Deployed (verbatim-only)</a></h2>
+<p>Returns heap data from the constructor.</p>
+<p>Since EraVM constructors always return immutables via auxiliary heap, it is not possible to use them for EVM-like scenarios, such as EVM emulators.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">return_deployed(offset, length)
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_2i_0o("return_deployed", offset, length)
+}
+</code></pre>
+<h2 id="throw-verbatim-only"><a class="header" href="#throw-verbatim-only">Throw (verbatim-only)</a></h2>
+<p>Throws a <a href="./03-exception-handling.html#function-level">function-level exception</a>.</p>
+<p>For a deeper dive into EraVM exceptions, see <a href="./03-exception-handling.html">this page</a>.</p>
+<p>Pseudo-code:</p>
+<pre><code class="language-solidity">throw()
+</code></pre>
+<p>Yul usage:</p>
+<pre><code class="language-solidity">assembly {
+    let _ := verbatim_0i_0o("throw")
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../eravm/05-instructions/04-yul.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../eravm/07-binary-layout.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../eravm/05-instructions/04-yul.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../eravm/07-binary-layout.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../js/version-box.js"></script>
+
+
+    </div>
+    </body>
+</html>
