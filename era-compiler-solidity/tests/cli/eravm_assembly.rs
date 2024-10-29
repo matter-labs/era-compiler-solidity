@@ -19,7 +19,7 @@ fn with_eravm_assembly() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_double_eravm_options() -> anyhow::Result<()> {
+fn with_eravm_assembly_duplicate_flag() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         "--eravm-assembly",
@@ -36,7 +36,24 @@ fn with_double_eravm_options() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_incompatible_input_format() -> anyhow::Result<()> {
+fn with_eravm_assembly_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--eravm-assembly",
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_INVALID_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}
+
+#[test]
+fn with_wrong_input_format() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         "--eravm-assembly",
@@ -62,6 +79,41 @@ fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
     result
         .failure()
         .stderr(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}
+
+#[test]
+fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
+    common::setup()?;
+    let args = &[
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--eravm-assembly",
+        "--combined-json",
+        "anyarg",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Only one mode is allowed at the same time",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+    let args = &[
+        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--eravm-assembly",
+        "--standard-json",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Only one mode is allowed at the same time",
+    ));
 
     Ok(())
 }
@@ -154,6 +206,23 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
     result
         .success()
         .stdout(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_missing_file() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Error: File \\\"tests/data/contracts/eravm_assembly/Missing.zasm\\\" reading:",
+    ));
 
     Ok(())
 }

@@ -7,9 +7,29 @@
   },
   "settings": {
     "optimizer": {
-      "enabled": true,
-      "runs": 200
-    }
+      "mode": "3",
+      "fallbackToOptimizingForSize": false
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers"
+        ]
+      }
+    },
+    "metadata": {
+      "hashType": "ipfs"
+    },
+    "libraries": {},
+    "codegen": "yul",
+    "enableEraVMExtensions": true,
+    "forceEVMLA": false,
+    "suppressedErrors": ["sendtransfer"],
+    "suppressedWarnings": ["INVALID_SUPPRESSED_WARNING_TYPE"]
   },
   "suppressedErrors": ["sendtransfer"],
   "suppressedWarnings": ["INVALID_SUPPRESSED_WARNING_TYPE"]

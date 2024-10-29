@@ -4,9 +4,7 @@
 
 pub mod file;
 
-use std::collections::HashSet;
-
-use crate::solc::codegen::Codegen as SolcCodegen;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 
 use self::file::flag::Flag as SelectionFlag;
 use self::file::File as FileSelection;
@@ -17,65 +15,44 @@ use self::file::File as FileSelection;
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Selection {
     /// Only the 'all' wildcard is available for robustness reasons.
-    #[serde(rename = "*", skip_serializing_if = "Option::is_none")]
-    pub all: Option<FileSelection>,
+    #[serde(default, rename = "*", skip_serializing_if = "FileSelection::is_empty")]
+    pub all: FileSelection,
 }
 
 impl Selection {
     ///
+    /// Creates the selection with arbitrary flags.
+    ///
+    pub fn new(flags: Vec<SelectionFlag>) -> Self {
+        Self {
+            all: FileSelection::new(flags),
+        }
+    }
+
+    ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
-        Self {
-            all: Some(FileSelection::new_required(pipeline)),
-        }
+    pub fn new_required(codegen: SolcStandardJsonInputSettingsCodegen) -> Self {
+        Self::new(vec![
+            SelectionFlag::AST,
+            SelectionFlag::MethodIdentifiers,
+            SelectionFlag::Metadata,
+            codegen.into(),
+        ])
     }
 
     ///
     /// Creates the selection required by Yul validation process.
     ///
     pub fn new_yul_validation() -> Self {
-        Self {
-            all: Some(FileSelection::new_yul_validation()),
-        }
+        Self::new(vec![SelectionFlag::EVM])
     }
 
     ///
-    /// Creates the selection for EraVM assembly.
+    /// Extends the output selection with another one.
     ///
-    pub fn new_eravm_assembly() -> Self {
-        Self {
-            all: Some(FileSelection::new_eravm_assembly()),
-        }
-    }
-
-    ///
-    /// Extends the output selection with flag required by EraVM compilation process.
-    ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
-        self.all
-            .get_or_insert_with(|| FileSelection::new_required(pipeline))
-            .extend_with_required(pipeline);
-        self
-    }
-
-    ///
-    /// Extends the output selection with flag required by the Yul validation.
-    ///
-    pub fn extend_with_yul_validation(&mut self) -> &mut Self {
-        self.all
-            .get_or_insert_with(FileSelection::new_yul_validation)
-            .extend_with_yul_validation();
-        self
-    }
-
-    ///
-    /// Extends the output selection with EraVM assembly.
-    ///
-    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
-        self.all
-            .get_or_insert_with(FileSelection::new_eravm_assembly)
-            .extend_with_eravm_assembly();
+    pub fn extend(&mut self, other: Self) -> &mut Self {
+        self.all.extend(other.all);
         self
     }
 
@@ -85,21 +62,16 @@ impl Selection {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
-        self.all
-            .as_ref()
-            .map(|selection| selection.get_unset_required())
-            .unwrap_or_else(|| FileSelection::default().get_unset_required())
+    pub fn selection_to_prune(&self) -> Self {
+        Self {
+            all: self.all.selection_to_prune(),
+        }
     }
 
     ///
-    /// Whether EraVM assembly is requested.
+    /// Whether the flag is requested.
     ///
-    pub fn contains_eravm_assembly(&self) -> bool {
-        self.all
-            .as_ref()
-            .and_then(|file| file.per_contract.as_ref())
-            .map(|contract| contract.contains(&SelectionFlag::EraVMAssembly))
-            .unwrap_or_default()
+    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+        self.all.contains(flag)
     }
 }

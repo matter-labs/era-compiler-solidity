@@ -16,8 +16,8 @@ use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::error_type::ErrorType;
-use crate::libraries::Libraries;
-use crate::solc::codegen::Codegen as SolcCodegen;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use crate::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputSettingsLibraries;
 use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
@@ -76,10 +76,10 @@ impl Input {
     ///
     pub fn try_from_solidity_paths(
         paths: &[PathBuf],
-        libraries: Vec<String>,
+        libraries: &[String],
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcCodegen>,
+        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
@@ -91,8 +91,8 @@ impl Input {
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
-        let libraries = Libraries::into_standard_json(libraries)?;
-        for library_file in libraries.keys() {
+        let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
+        for library_file in libraries.as_inner().keys() {
             paths.insert(PathBuf::from(library_file));
         }
 
@@ -127,10 +127,10 @@ impl Input {
     ///
     pub fn try_from_solidity_sources(
         sources: BTreeMap<String, Source>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputSettingsLibraries,
         remappings: BTreeSet<String>,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcCodegen>,
+        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
         output_selection: SolcStandardJsonInputSettingsSelection,
@@ -169,7 +169,7 @@ impl Input {
     ///
     pub fn from_yul_sources(
         sources: BTreeMap<String, Source>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputSettingsLibraries,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
@@ -203,7 +203,7 @@ impl Input {
     ///
     pub fn from_yul_paths(
         paths: &[PathBuf],
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputSettingsLibraries,
         optimizer: SolcStandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
@@ -220,17 +220,10 @@ impl Input {
     }
 
     ///
-    /// Sets the necessary defaults for EraVM compilation.
+    /// Extends the output selection with another one.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
-        self.settings.normalize(pipeline);
-    }
-
-    ///
-    /// Sets the necessary defaults for Yul validation.
-    ///
-    pub fn normalize_yul_validation(&mut self) {
-        self.settings.normalize_yul_validation();
+    pub fn extend_selection(&mut self, selection: SolcStandardJsonInputSettingsSelection) {
+        self.settings.extend_selection(selection);
     }
 
     ///

@@ -29,7 +29,7 @@ pub struct EVM {
     pub method_identifiers: Option<BTreeMap<String, String>>,
 
     /// The contract EraVM assembly code.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub assembly: Option<String>,
     /// The extra EVMLA metadata.
     #[serde(skip_serializing_if = "Option::is_none")]

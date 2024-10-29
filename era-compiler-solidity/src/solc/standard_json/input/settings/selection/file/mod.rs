@@ -6,8 +6,6 @@ pub mod flag;
 
 use std::collections::HashSet;
 
-use crate::solc::codegen::Codegen as SolcCodegen;
-
 use self::flag::Flag as SelectionFlag;
 
 ///
@@ -16,93 +14,42 @@ use self::flag::Flag as SelectionFlag;
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct File {
     /// The per-file output selections.
-    #[serde(rename = "", skip_serializing_if = "Option::is_none")]
-    pub per_file: Option<HashSet<SelectionFlag>>,
+    #[serde(rename = "", skip_serializing_if = "HashSet::is_empty")]
+    pub per_file: HashSet<SelectionFlag>,
     /// The per-contract output selections.
-    #[serde(rename = "*", skip_serializing_if = "Option::is_none")]
-    pub per_contract: Option<HashSet<SelectionFlag>>,
+    #[serde(rename = "*", skip_serializing_if = "HashSet::is_empty")]
+    pub per_contract: HashSet<SelectionFlag>,
 }
 
 impl File {
     ///
-    /// Creates the selection required by EraVM compilation process.
+    /// A shortcut constructor.
     ///
-    pub fn new_required(pipeline: Option<SolcCodegen>) -> Self {
-        let pipeline_ir_flag = pipeline
-            .map(SelectionFlag::from)
-            .unwrap_or(SelectionFlag::Yul);
-
-        let per_file = HashSet::from_iter([SelectionFlag::AST]);
-        let per_contract = HashSet::from_iter([
-            SelectionFlag::MethodIdentifiers,
-            SelectionFlag::Metadata,
-            pipeline_ir_flag,
-        ]);
+    pub fn new(flags: Vec<SelectionFlag>) -> Self {
+        let mut per_file = HashSet::new();
+        let mut per_contract = HashSet::new();
+        for flag in flags.into_iter() {
+            match flag {
+                SelectionFlag::AST => {
+                    per_file.insert(SelectionFlag::AST);
+                }
+                flag => {
+                    per_contract.insert(flag);
+                }
+            }
+        }
         Self {
-            per_file: Some(per_file),
-            per_contract: Some(per_contract),
+            per_file,
+            per_contract,
         }
     }
 
     ///
-    /// Creates the selection required by Yul validation process.
+    /// Extends the output selection with another one.
     ///
-    pub fn new_yul_validation() -> Self {
-        Self {
-            per_file: Some(HashSet::new()),
-            per_contract: Some(HashSet::from_iter([SelectionFlag::EVM])),
-        }
-    }
-
-    ///
-    /// Creates the selection for EraVM assembly.
-    ///
-    pub fn new_eravm_assembly() -> Self {
-        Self {
-            per_file: Some(HashSet::new()),
-            per_contract: Some(HashSet::from_iter([SelectionFlag::EraVMAssembly])),
-        }
-    }
-
-    ///
-    /// Extends the output selection with flag required by EraVM compilation process.
-    ///
-    pub fn extend_with_required(&mut self, pipeline: Option<SolcCodegen>) -> &mut Self {
-        let required = Self::new_required(pipeline);
-        self.per_file
-            .get_or_insert_with(HashSet::default)
-            .extend(required.per_file.unwrap_or_default());
-        self.per_contract
-            .get_or_insert_with(HashSet::default)
-            .extend(required.per_contract.unwrap_or_default());
-        self
-    }
-
-    ///
-    /// Extends the output selection with flag required by the Yul validation.
-    ///
-    pub fn extend_with_yul_validation(&mut self) -> &mut Self {
-        let yul_validation = Self::new_yul_validation();
-        self.per_file
-            .get_or_insert_with(HashSet::default)
-            .extend(yul_validation.per_file.unwrap_or_default());
-        self.per_contract
-            .get_or_insert_with(HashSet::default)
-            .extend(yul_validation.per_contract.unwrap_or_default());
-        self
-    }
-
-    ///
-    /// Extends the output selection with EraVM assembly flag.
-    ///
-    pub fn extend_with_eravm_assembly(&mut self) -> &mut Self {
-        let eravm_assembly = Self::new_eravm_assembly();
-        self.per_file
-            .get_or_insert_with(HashSet::default)
-            .extend(eravm_assembly.per_file.unwrap_or_default());
-        self.per_contract
-            .get_or_insert_with(HashSet::default)
-            .extend(eravm_assembly.per_contract.unwrap_or_default());
+    pub fn extend(&mut self, other: Self) -> &mut Self {
+        self.per_file.extend(other.per_file);
+        self.per_contract.extend(other.per_contract);
         self
     }
 
@@ -112,7 +59,7 @@ impl File {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
+    pub fn selection_to_prune(&self) -> Self {
         let required_per_file = vec![SelectionFlag::AST];
         let required_per_contract = vec![
             SelectionFlag::MethodIdentifiers,
@@ -120,29 +67,40 @@ impl File {
             SelectionFlag::Yul,
             SelectionFlag::EVMLA,
         ];
-        let mut flags =
-            HashSet::with_capacity(required_per_file.len() + required_per_contract.len());
+
+        let mut unset_per_file = HashSet::with_capacity(required_per_file.len());
+        let mut unset_per_contract = HashSet::with_capacity(required_per_contract.len());
 
         for flag in required_per_file {
-            if !self
-                .per_file
-                .as_ref()
-                .map(|per_file| per_file.contains(&flag))
-                .unwrap_or_default()
-            {
-                flags.insert(flag);
+            if !self.per_file.contains(&flag) {
+                unset_per_file.insert(flag);
             }
         }
         for flag in required_per_contract {
-            if !self
-                .per_contract
-                .as_ref()
-                .map(|per_contract| per_contract.contains(&flag))
-                .unwrap_or_default()
-            {
-                flags.insert(flag);
+            if !self.per_contract.contains(&flag) {
+                unset_per_contract.insert(flag);
             }
         }
-        flags
+        Self {
+            per_file: unset_per_file,
+            per_contract: unset_per_contract,
+        }
+    }
+
+    ///
+    /// Whether the flag is requested.
+    ///
+    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+        match flag {
+            flag @ SelectionFlag::AST => self.per_file.contains(flag),
+            flag => self.per_contract.contains(flag),
+        }
+    }
+
+    ///
+    /// Checks whether the selection is empty.
+    ///
+    pub fn is_empty(&self) -> bool {
+        self.per_file.is_empty() && self.per_contract.is_empty()
     }
 }

@@ -25,12 +25,11 @@ impl Yul {
     ///
     pub fn try_from_source(
         name: &era_compiler_common::ContractName,
-        source_code: Option<&str>,
+        source_code: &str,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Option<Self>> {
-        let source_code = match source_code {
-            None | Some("") => return Ok(None),
-            Some(ir_optimized) => ir_optimized,
+        if source_code.is_empty() {
+            return Ok(None);
         };
 
         if let Some(debug_config) = debug_config {

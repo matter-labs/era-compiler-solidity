@@ -52,7 +52,7 @@ zksolc './Simple.sol' --bin
 
 Output:
 
-```
+```text
 ======= Simple.sol:Simple =======
 Binary:
 0000008003000039000000400030043f0000000100200190000000130000c13d...
@@ -66,7 +66,7 @@ zksolc './Simple.sol'
 
 Output:
 
-```
+```text
 Compiler run successful. No output requested. Use flags --metadata, --asm, --bin.
 ```
 
@@ -116,7 +116,7 @@ zksolc Simple.sol --asm
 
 Output:
 
-```
+```text
 ======= Simple.sol:Simple =======
 EraVM assembly:
         .text
@@ -151,7 +151,7 @@ zksolc Simple.sol --metadata
 
 Output:
 
-```
+```text
 ======= Simple.sol:Simple =======
 Metadata:
 {"llvm_options":[],"optimizer_settings":{"is_debug_logging_enabled":false,"is_fallback_to_size_enabled":false,"is_verify_each_enabled":false,"level_back_end":"Aggressive","level_middle_end":"Aggressive","level_middle_end_size":"Zero"},"solc_version":"<masked>","solc_zkvm_edition":null,"source_metadata":{...},"zk_version":"<masked>"}
@@ -200,7 +200,7 @@ zksolc --yul Simple.yul --bin
 
 Output:
 
-```
+```text
 ======= Simple.yul =======
 Binary:
 0000000100200190000000060000c13d0000002a01000039000000000010043f...
@@ -230,7 +230,7 @@ zksolc --llvm-ir Simple.ll --bin
 
 Output:
 
-```
+```text
 ======= Simple.ll =======
 Binary:
 000000000002004b000000070000613d0000002001000039000000000010043f...
@@ -254,7 +254,7 @@ zksolc --eravm-assembly Simple.zasm --bin
 
 Output:
 
-```
+```text
 ======= Simple.zasm =======
 Binary:
 000000000120008c000000070000613d00000020010000390000000000100435...
@@ -294,7 +294,7 @@ cat './input.hex'
 
 Output:
 
-```
+```text
 0x0000008003000039000000400030043f0000000100200190000000140000c13d00000000020...
 ```
 
@@ -307,7 +307,7 @@ zksolc --disassemble './input.hex'
 
 Output:
 
-```
+```text
 File `input.hex` disassembly:
 
        0: 00 00 00 80 03 00 00 39       add     128, r0, r3
@@ -350,7 +350,7 @@ zksolc Simple.sol --bin --target evm
 
 Output:
 
-```
+```text
 ======= Simple.sol:Simple =======
 Binary:
 5b60806040523415600e575f5ffd5b630000007f630000002760808282823960808092505050f35b5f5f6080604052369150600482106032575f3560e01c9050633df4ddf48114603657635a8ac02d81811480915050605a575b5f5ffd5b3415603f575f5ffd5b60015f036004830313604f575f5ffd5b602a60805260206080f35b34156063575f5ffd5b60015f0360048303136073575f5ffd5b60405160638152602090f3

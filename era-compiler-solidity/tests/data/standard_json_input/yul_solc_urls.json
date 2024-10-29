@@ -11,6 +11,9 @@
       "optimizer": {
         "enabled": true
       },
+      "metadata": {
+        "useLiteralContent": true
+      },
       "outputSelection": {
         "*": {
           "": [

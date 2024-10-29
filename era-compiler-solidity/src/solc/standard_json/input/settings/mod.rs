@@ -2,21 +2,21 @@
 //! The `solc --standard-json` input settings.
 //!
 
+pub mod codegen;
+pub mod libraries;
 pub mod metadata;
 pub mod optimizer;
 pub mod selection;
 
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::collections::HashSet;
 
 use crate::error_type::ErrorType;
-use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::warning_type::WarningType;
 
+use self::codegen::Codegen;
+use self::libraries::Libraries;
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
-use self::selection::file::flag::Flag as SelectionFlag;
 use self::selection::Selection;
 
 ///
@@ -30,8 +30,8 @@ pub struct Settings {
     pub optimizer: Optimizer,
 
     /// The linker library addresses.
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Libraries::is_empty")]
+    pub libraries: Libraries,
     /// The sorted list of remappings.
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub remappings: BTreeSet<String>,
@@ -40,15 +40,15 @@ pub struct Settings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
     /// The output selection filters.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub output_selection: Option<Selection>,
+    #[serde(default)]
+    pub output_selection: Selection,
     /// The metadata settings.
     #[serde(default)]
     pub metadata: Metadata,
 
     /// The Solidity codegen.
     #[serde(skip_serializing)]
-    pub codegen: Option<SolcCodegen>,
+    pub codegen: Option<Codegen>,
     /// Whether to compile via EVM assembly.
     #[serde(default, rename = "forceEVMLA", skip_serializing)]
     pub force_evmla: bool,
@@ -87,10 +87,10 @@ impl Settings {
     pub fn new(
         optimizer: Optimizer,
 
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         remappings: BTreeSet<String>,
 
-        codegen: Option<SolcCodegen>,
+        codegen: Option<Codegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
 
@@ -111,10 +111,10 @@ impl Settings {
 
             codegen,
             evm_version,
-            force_evmla: codegen == Some(SolcCodegen::EVMLA),
+            force_evmla: codegen == Some(Codegen::EVMLA),
             enable_eravm_extensions,
 
-            output_selection: Some(output_selection),
+            output_selection,
             metadata,
             llvm_options,
             suppressed_errors,
@@ -126,21 +126,10 @@ impl Settings {
     }
 
     ///
-    /// Sets the necessary defaults for EraVM compilation.
+    /// Extends the output selection with another one.
     ///
-    pub fn normalize(&mut self, pipeline: Option<SolcCodegen>) {
-        self.output_selection
-            .get_or_insert_with(Selection::default)
-            .extend_with_required(pipeline);
-    }
-
-    ///
-    /// Sets the necessary defaults for Yul validation.
-    ///
-    pub fn normalize_yul_validation(&mut self) {
-        self.output_selection
-            .get_or_insert_with(Selection::new_yul_validation)
-            .extend_with_yul_validation();
+    pub fn extend_selection(&mut self, selection: Selection) {
+        self.output_selection.extend(selection);
     }
 
     ///
@@ -149,10 +138,7 @@ impl Settings {
     ///
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
-    pub fn get_unset_required(&self) -> HashSet<SelectionFlag> {
-        self.output_selection
-            .as_ref()
-            .map(|selection| selection.get_unset_required())
-            .unwrap_or_else(|| Selection::default().get_unset_required())
+    pub fn selection_to_prune(&self) -> Selection {
+        self.output_selection.selection_to_prune()
     }
 }

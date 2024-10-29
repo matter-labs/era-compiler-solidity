@@ -180,8 +180,14 @@ impl Contract {
             .bin_runtime
             .clone_from(&combined_json_contract.bin);
 
-        combined_json_contract.assembly = self.build.assembly.map(serde_json::Value::String);
-        combined_json_contract.factory_deps = Some(self.build.factory_dependencies);
+        combined_json_contract.assembly = self
+            .build
+            .assembly
+            .map(serde_json::Value::String)
+            .unwrap_or_default();
+        combined_json_contract
+            .factory_deps
+            .extend(self.build.factory_dependencies);
 
         Ok(())
     }
@@ -196,7 +202,7 @@ impl Contract {
         let bytecode = hex::encode(self.build.bytecode.as_slice());
         let assembly = self.build.assembly;
 
-        standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract.metadata = self.metadata_json;
         standard_json_contract.eravm = Some(StandardJsonOutputContractEraVM::new(
             bytecode.clone(),
             assembly.clone(),

@@ -187,10 +187,10 @@ You may disable this error with:
         sources: &BTreeMap<String, StandardJSONInputSource>,
     ) -> Self {
         let message = r#"
-Internal function pointers are not supported in the EVM assembly pipeline.
+Internal function pointers are not supported in the EVM assembly codegen.
 Please do one of the following:
     1. Use the ZKsync fork of the Solidity compiler: https://github.com/matter-labs/era-solidity/releases
-    2. Switch to the latest solc with Yul assembly pipeline: https://docs.soliditylang.org/en/latest/yul.html
+    2. Switch to the latest solc with Yul assembly codegen: https://docs.soliditylang.org/en/latest/yul.html
 "#;
 
         Self::new_error(

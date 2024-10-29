@@ -113,7 +113,6 @@ impl Build {
         standard_json: &mut StandardJsonOutput,
         solc_version: Option<&SolcVersion>,
     ) -> anyhow::Result<()> {
-        let standard_json_contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
         let mut errors = Vec::with_capacity(self.contracts.len());
         for (full_path, build) in self.contracts.into_iter() {
             let mut full_path_split = full_path.split(':');
@@ -121,7 +120,8 @@ impl Build {
             let name = full_path_split.next().unwrap_or(path);
 
             match build {
-                Ok(build) => match standard_json_contracts
+                Ok(build) => match standard_json
+                    .contracts
                     .get_mut(path)
                     .and_then(|contracts| contracts.get_mut(name))
                 {
@@ -129,7 +129,7 @@ impl Build {
                         build.write_to_standard_json(contract)?;
                     }
                     None => {
-                        let contracts = standard_json_contracts.entry(path.to_owned()).or_default();
+                        let contracts = standard_json.contracts.entry(path.to_owned()).or_default();
                         let mut contract = StandardJsonOutputContract::default();
                         build.write_to_standard_json(&mut contract)?;
                         contracts.insert(name.to_owned(), contract);
@@ -139,10 +139,7 @@ impl Build {
             }
         }
 
-        standard_json
-            .errors
-            .get_or_insert_with(Vec::new)
-            .extend(errors);
+        standard_json.errors.extend(errors);
         if let Some(solc_version) = solc_version {
             standard_json.version = Some(solc_version.default.to_string());
             standard_json.long_version = Some(solc_version.long.to_owned());

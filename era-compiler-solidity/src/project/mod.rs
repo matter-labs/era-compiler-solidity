@@ -17,13 +17,14 @@ use rayon::iter::ParallelIterator;
 
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
-use crate::libraries::Libraries;
 use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
-use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use crate::solc::standard_json::input::settings::libraries::missing::MissingLibraries;
+use crate::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputLibraries;
 use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
 use crate::solc::standard_json::output::contract::Contract as SolcStandardJsonOutputContract;
 use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
@@ -53,7 +54,7 @@ pub struct Project {
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
     /// The library addresses.
-    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    pub libraries: SolcStandardJsonInputLibraries,
 }
 
 impl Project {
@@ -64,7 +65,7 @@ impl Project {
         language: SolcStandardJsonInputLanguage,
         solc_version: Option<SolcVersion>,
         contracts: BTreeMap<String, Contract>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputLibraries,
     ) -> Self {
         let mut identifier_paths = BTreeMap::new();
         for (path, contract) in contracts.iter() {
@@ -84,25 +85,21 @@ impl Project {
     /// Parses the Solidity `sources` and returns a Solidity project.
     ///
     pub fn try_from_solc_output(
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
-        pipeline: SolcCodegen,
+        libraries: SolcStandardJsonInputLibraries,
+        codegen: SolcStandardJsonInputSettingsCodegen,
         solc_output: &mut SolcStandardJsonOutput,
         solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        if let SolcCodegen::EVMLA = pipeline {
+        if let SolcStandardJsonInputSettingsCodegen::EVMLA = codegen {
             solc_output.preprocess_dependencies()?;
         }
 
         let solc_version = solc_compiler.version.to_owned();
 
-        let files = solc_output
-            .contracts
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No input sources specified."))?;
-        let mut input_contracts = Vec::with_capacity(files.len());
-        for (path, contracts) in files.iter() {
-            for (name, contract) in contracts.iter() {
+        let mut input_contracts = Vec::with_capacity(solc_output.contracts.len());
+        for (path, file) in solc_output.contracts.iter() {
+            for (name, contract) in file.iter() {
                 input_contracts.push((path, name, contract));
             }
         }
@@ -123,25 +120,23 @@ impl Project {
                         );
                         let full_path = name.full_path.clone();
 
-                        let result = match pipeline {
-                            SolcCodegen::Yul => ContractYul::try_from_source(
-                                &name,
-                                contract.ir_optimized.as_deref(),
-                                debug_config,
-                            )
-                            .map(|ir| ir.map(ContractYul::into)),
-                            SolcCodegen::EVMLA => {
+                        let result = match codegen {
+                            SolcStandardJsonInputSettingsCodegen::Yul => {
+                                ContractYul::try_from_source(
+                                    &name,
+                                    contract.ir_optimized.as_str(),
+                                    debug_config,
+                                )
+                                .map(|ir| ir.map(ContractYul::into))
+                            }
+                            SolcStandardJsonInputSettingsCodegen::EVMLA => {
                                 Ok(ContractEVMLA::try_from_contract(contract)
                                     .map(ContractEVMLA::into))
                             }
                         }
                         .map(|source| {
                             source.map(|source| {
-                                Contract::new(
-                                    name,
-                                    source,
-                                    contract.metadata.to_owned().expect("Always exists"),
-                                )
+                                Contract::new(name, source, contract.metadata.to_owned())
                             })
                         });
                         (full_path, result)
@@ -172,7 +167,7 @@ impl Project {
     ///
     pub fn try_from_yul_paths(
         paths: &[PathBuf],
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputLibraries,
         solc_output: Option<&mut SolcStandardJsonOutput>,
         solc_version: Option<&SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
@@ -192,7 +187,7 @@ impl Project {
     ///
     pub fn try_from_yul_sources(
         sources: BTreeMap<String, SolcStandardJsonInputSource>,
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: SolcStandardJsonInputLibraries,
         mut solc_output: Option<&mut SolcStandardJsonOutput>,
         solc_version: Option<&SolcVersion>,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
@@ -208,8 +203,8 @@ impl Project {
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let result =
-                    ContractYul::try_from_source(&name, Some(source_code.as_str()), debug_config)
-                        .map(|ir| {
+                    ContractYul::try_from_source(&name, source_code.as_str(), debug_config).map(
+                        |ir| {
                             ir.map(ContractYul::into).map(|ir| {
                                 Contract::new(
                                     name,
@@ -220,7 +215,8 @@ impl Project {
                                     }),
                                 )
                             })
-                        });
+                        },
+                    );
 
                 (path, result)
             })
@@ -252,6 +248,7 @@ impl Project {
     ///
     pub fn try_from_llvm_ir_paths(
         paths: &[PathBuf],
+        libraries: SolcStandardJsonInputLibraries,
         solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
         let sources = paths
@@ -261,7 +258,7 @@ impl Project {
                 (path.to_string_lossy().to_string(), source)
             })
             .collect::<BTreeMap<String, SolcStandardJsonInputSource>>();
-        Self::try_from_llvm_ir_sources(sources, solc_output)
+        Self::try_from_llvm_ir_sources(sources, libraries, solc_output)
     }
 
     ///
@@ -269,6 +266,7 @@ impl Project {
     ///
     pub fn try_from_llvm_ir_sources(
         sources: BTreeMap<String, SolcStandardJsonInputSource>,
+        libraries: SolcStandardJsonInputLibraries,
         mut solc_output: Option<&mut SolcStandardJsonOutput>,
     ) -> anyhow::Result<Self> {
         let results = sources
@@ -309,7 +307,7 @@ impl Project {
             SolcStandardJsonInputLanguage::LLVMIR,
             None,
             contracts,
-            BTreeMap::new(),
+            libraries,
         ))
     }
 
@@ -375,7 +373,7 @@ impl Project {
             SolcStandardJsonInputLanguage::EraVMAssembly,
             None,
             contracts,
-            BTreeMap::new(),
+            SolcStandardJsonInputLibraries::default(),
         ))
     }
 
@@ -386,6 +384,7 @@ impl Project {
         self,
         messages: &mut Vec<SolcStandardJsonOutputError>,
         enable_eravm_extensions: bool,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -394,16 +393,14 @@ impl Project {
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
         let identifier_paths = self.identifier_paths.clone();
-        let dependency_data = EraVMProcessInputDependencyData::new(
-            self.solc_version,
-            self.identifier_paths.clone(),
-            self.libraries.clone(),
-        );
+        let dependency_data =
+            EraVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths.clone());
 
         let input_template = EraVMProcessInput::new(
             None,
             dependency_data,
             enable_eravm_extensions,
+            linker_symbols,
             metadata_hash_type,
             optimizer_settings,
             llvm_options,
@@ -462,11 +459,8 @@ impl Project {
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
-        let dependency_data = EVMProcessInputDependencyData::new(
-            self.solc_version,
-            self.identifier_paths,
-            self.libraries,
-        );
+        let dependency_data =
+            EVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths);
 
         let input_template = EVMProcessInput::new(
             None,
@@ -485,9 +479,10 @@ impl Project {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> Libraries {
+    pub fn get_missing_libraries(&self) -> MissingLibraries {
         let deployed_libraries = self
             .libraries
+            .as_inner()
             .iter()
             .flat_map(|(file, names)| {
                 names
@@ -506,6 +501,6 @@ impl Project {
                 .collect::<HashSet<String>>();
             missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
         }
-        Libraries::new(missing_deployable_libraries)
+        MissingLibraries::new(missing_deployable_libraries)
     }
 }

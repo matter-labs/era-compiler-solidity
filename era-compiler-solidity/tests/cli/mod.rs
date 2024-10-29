@@ -46,6 +46,15 @@ mod threads;
 mod version;
 mod yul;
 
+macro_rules! test_script_path {
+    ($name:ident, $base:expr) => {
+        #[cfg(target_os = "windows")]
+        pub const $name: &str = concat!($base, ".bat");
+        #[cfg(not(target_os = "windows"))]
+        pub const $name: &str = concat!($base, ".sh");
+    };
+}
+
 /// A test input file.
 pub const TEST_CONTRACTS_PATH: &str = "tests/data/contracts/";
 
@@ -54,6 +63,9 @@ pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 
 /// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Test.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_GREETER_PATH: &str = "tests/data/contracts/solidity/Greeter.sol";
 
 /// A test input file.
 pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
@@ -68,7 +80,14 @@ pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.ll";
 
 /// A test input file.
+pub const TEST_LLVM_IR_CONTRACT_INVALID_PATH: &str = "tests/data/contracts/llvm_ir/Invalid.ll";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
+
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_CONTRACT_INVALID_PATH: &str =
+    "tests/data/contracts/eravm_assembly/Invalid.zasm";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH: &str =
@@ -83,10 +102,6 @@ pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH: &str =
     "tests/data/standard_json_input/solidity_solc.json";
 
 /// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH: &str =
-    "tests/data/standard_json_input/solidity_solc_recursion.json";
-
-/// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_empty_sources.json";
 
@@ -99,7 +114,15 @@ pub const TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_solc_invalid.json";
 
 /// A test input file.
-pub const TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH: &str =
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH: &str =
+    "tests/data/standard_json_input/solidity_zksolc_recursion.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INTERNAL_FUNCTION_POINTERS_PATH: &str =
+    "tests/data/standard_json_input/solidity_zksolc_internal_function_pointers.json";
+
+/// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_zksolc_invalid.json";
 
 /// A test input file.
@@ -130,12 +153,20 @@ pub const TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/llvm_ir_urls_invalid.json";
 
 /// A test input file.
+pub const TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH: &str =
+    "tests/data/standard_json_input/llvm_ir_urls_missing_file.json";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls.json";
 
 /// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls_invalid.json";
+
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH: &str =
+    "tests/data/standard_json_input/eravm_assembly_urls_missing_file.json";
 
 /// A test input file.
 pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
@@ -167,6 +198,32 @@ pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_co
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
+/// Shell script test constants.
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH,
+    "tests/scripts/solc_version_output_error"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_TOO_OLD_PATH,
+    "tests/scripts/solc_version_too_old"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_TOO_NEW_PATH,
+    "tests/scripts/solc_version_too_new"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_LINES_PATH,
+    "tests/scripts/solc_version_not_enough_lines"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_WORDS_IN_2ND_LINE_PATH,
+    "tests/scripts/solc_version_not_enough_words_in_2nd_line"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_PARSING_ERROR_PATH,
+    "tests/scripts/solc_version_parsing_error"
+);
+
 /// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";
 
@@ -193,7 +250,7 @@ pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
 pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=INVALID";
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=XINVALID";
 
 /// A test constant.
 pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";
@@ -236,6 +293,7 @@ pub fn execute_zksolc_with_target(
 pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
     let solc_compiler = crate::common::get_solc_compiler(
         &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
     )?
     .executable;
     let mut cmd = Command::new(solc_compiler);
