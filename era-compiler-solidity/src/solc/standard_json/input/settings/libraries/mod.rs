@@ -59,13 +59,6 @@ impl Libraries {
     pub fn as_inner(&self) -> &BTreeMap<String, BTreeMap<String, String>> {
         &self.inner
     }
-
-    ///
-    /// Extracts the inner value.
-    ///
-    pub fn into_inner(self) -> BTreeMap<String, BTreeMap<String, String>> {
-        self.inner
-    }
 }
 
 impl From<BTreeMap<String, BTreeMap<String, String>>> for Libraries {

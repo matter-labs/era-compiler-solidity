@@ -5,15 +5,12 @@ use predicates::prelude::*;
 fn with_llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[cli::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir"];
-    let invalid_args = &["--llvm-ir", "anyarg"];
 
     let result = cli::execute_zksolc(args)?;
-    let invalid_result = cli::execute_zksolc(invalid_args)?;
 
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested.",
     ));
-    invalid_result.failure();
 
     Ok(())
 }
@@ -32,6 +29,20 @@ fn with_llvm_ir_duplicate_flag() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_llvm_ir_invalid() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--llvm-ir", cli::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "error: use of undefined value \'%runtime\'",
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn with_wrong_input_format() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
@@ -40,6 +51,20 @@ fn with_wrong_input_format() -> anyhow::Result<()> {
     result
         .failure()
         .stderr(predicate::str::contains("expected top-level entity"));
+
+    Ok(())
+}
+
+#[test]
+fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("error: cannot parse operand"));
 
     Ok(())
 }
@@ -65,7 +90,11 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
 #[test]
 fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--llvm-ir", "--standard-json"];
+    let args = &[
+        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        "--llvm-ir",
+        "--standard-json",
+    ];
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(

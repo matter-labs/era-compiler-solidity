@@ -6,8 +6,6 @@ pub mod flag;
 
 use std::collections::HashSet;
 
-use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-
 use self::flag::Flag as SelectionFlag;
 
 ///
@@ -44,25 +42,6 @@ impl File {
             per_file,
             per_contract,
         }
-    }
-
-    ///
-    /// Creates the selection required by EraVM compilation process.
-    ///
-    pub fn new_required(codegen: SolcStandardJsonInputSettingsCodegen) -> Self {
-        Self::new(vec![
-            SelectionFlag::AST,
-            SelectionFlag::MethodIdentifiers,
-            SelectionFlag::Metadata,
-            codegen.into(),
-        ])
-    }
-
-    ///
-    /// Creates the selection required by Yul validation process.
-    ///
-    pub fn new_yul_validation() -> Self {
-        Self::new(vec![SelectionFlag::EVM])
     }
 
     ///

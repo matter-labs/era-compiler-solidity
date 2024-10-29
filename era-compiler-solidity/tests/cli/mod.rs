@@ -71,7 +71,14 @@ pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.ll";
 
 /// A test input file.
+pub const TEST_LLVM_IR_CONTRACT_INVALID_PATH: &str = "tests/data/contracts/llvm_ir/Invalid.ll";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
+
+/// A test input file.
+pub const TEST_ERAVM_ASSEMBLY_CONTRACT_INVALID_PATH: &str =
+    "tests/data/contracts/eravm_assembly/Invalid.zasm";
 
 /// A test input file.
 pub const TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH: &str =

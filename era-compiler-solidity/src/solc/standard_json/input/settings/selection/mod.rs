@@ -33,18 +33,19 @@ impl Selection {
     /// Creates the selection required by EraVM compilation process.
     ///
     pub fn new_required(codegen: SolcStandardJsonInputSettingsCodegen) -> Self {
-        Self {
-            all: FileSelection::new_required(codegen),
-        }
+        Self::new(vec![
+            SelectionFlag::AST,
+            SelectionFlag::MethodIdentifiers,
+            SelectionFlag::Metadata,
+            codegen.into(),
+        ])
     }
 
     ///
     /// Creates the selection required by Yul validation process.
     ///
     pub fn new_yul_validation() -> Self {
-        Self {
-            all: FileSelection::new_yul_validation(),
-        }
+        Self::new(vec![SelectionFlag::EVM])
     }
 
     ///
