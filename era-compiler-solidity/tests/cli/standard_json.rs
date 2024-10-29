@@ -5,9 +5,11 @@ use predicates::prelude::*;
 fn with_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -60,9 +62,11 @@ fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
 fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -96,19 +100,21 @@ fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
 fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
     let args_solc = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_BY_ZKSOLC_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -126,9 +132,11 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
 fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -162,7 +170,24 @@ fn with_standard_json_recursion() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_RECURSION_PATH,
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("bytecode"));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_internal_function_pointers() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INTERNAL_FUNCTION_POINTERS_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -398,9 +423,11 @@ fn with_standard_json_neither_urls_nor_content() -> anyhow::Result<()> {
 fn with_standard_json_yul_with_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--solc",
@@ -443,9 +470,11 @@ fn with_standard_json_llvm_ir() -> anyhow::Result<()> {
 fn with_standard_json_llvm_ir_with_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--standard-json",
@@ -483,9 +512,11 @@ fn with_standard_json_eravm_assembly() -> anyhow::Result<()> {
 fn with_standard_json_eravm_assembly_with_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION)?
-            .executable;
+    let solc_compiler = common::get_solc_compiler(
+        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
+        false,
+    )?
+    .executable;
 
     let args = &[
         "--standard-json",

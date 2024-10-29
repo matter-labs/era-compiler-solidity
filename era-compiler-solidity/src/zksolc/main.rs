@@ -4,7 +4,6 @@
 
 pub mod arguments;
 
-use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -35,7 +34,9 @@ fn main() -> anyhow::Result<()> {
 
     if is_standard_json {
         let output = era_compiler_solidity::SolcStandardJsonOutput::new_with_messages(messages);
-        output.write_and_exit(HashSet::new());
+        output.write_and_exit(
+            era_compiler_solidity::SolcStandardJsonInputSettingsSelection::default(),
+        );
     }
 
     let exit_code = if messages.iter().any(|error| error.severity == "error") {

@@ -34,15 +34,15 @@ pub use self::process::EXECUTABLE;
 pub use self::project::contract::Contract as ProjectContract;
 pub use self::project::Project;
 pub use self::r#const::*;
-pub use self::solc::codegen::Codegen as SolcCodegen;
 pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContract;
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
 pub use self::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+pub use self::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 pub use self::solc::standard_json::input::settings::libraries::missing::MissingLibraries;
 pub use self::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputSettingsLibraries;
 pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
-pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFileFlag;
+pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFlag;
 pub use self::solc::standard_json::input::settings::selection::file::File as SolcStandardJsonInputSettingsSelectionFile;
 pub use self::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
 pub use self::solc::standard_json::input::settings::Settings as SolcStandardJsonInputSettings;
@@ -265,7 +265,7 @@ pub fn standard_output_eravm(
     libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
@@ -283,7 +283,7 @@ pub fn standard_output_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
+    let solc_codegen = SolcStandardJsonInputSettingsCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
@@ -293,7 +293,7 @@ pub fn standard_output_eravm(
         codegen,
         evm_version,
         enable_eravm_extensions,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         suppressed_errors,
@@ -304,7 +304,7 @@ pub fn standard_output_eravm(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -317,7 +317,7 @@ pub fn standard_output_eravm(
 
     let project = Project::try_from_solc_output(
         solc_input.settings.libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         solc_compiler,
         debug_config.as_ref(),
@@ -347,7 +347,7 @@ pub fn standard_output_evm(
     libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,
@@ -361,7 +361,7 @@ pub fn standard_output_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
-    let solc_pipeline = SolcCodegen::new(&solc_version, codegen);
+    let solc_codegen = SolcStandardJsonInputSettingsCodegen::new(&solc_version, codegen);
 
     let mut solc_input = SolcStandardJsonInput::try_from_solidity_paths(
         paths,
@@ -371,7 +371,7 @@ pub fn standard_output_evm(
         codegen,
         evm_version,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(Some(solc_pipeline)),
+        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
         SolcStandardJsonInputSettingsMetadata::new(use_literal_content, metadata_hash_type),
         llvm_options.clone(),
         vec![],
@@ -382,7 +382,7 @@ pub fn standard_output_evm(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_pipeline),
+        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -393,7 +393,7 @@ pub fn standard_output_evm(
 
     let project = Project::try_from_solc_output(
         solc_input.settings.libraries,
-        solc_pipeline,
+        solc_codegen,
         &mut solc_output,
         solc_compiler,
         debug_config.as_ref(),
@@ -417,7 +417,7 @@ pub fn standard_output_evm(
 ///
 pub fn standard_json_eravm(
     solc_compiler: Option<SolcCompiler>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     enable_eravm_extensions: bool,
     detect_missing_libraries: bool,
     json_path: Option<PathBuf>,
@@ -430,14 +430,14 @@ pub fn standard_json_eravm(
 ) -> anyhow::Result<()> {
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let prune_output = solc_input.settings.get_unset_required();
+    let prune_output = solc_input.settings.selection_to_prune();
     let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let llvm_options = solc_input.settings.llvm_options.clone();
 
     let codegen = if solc_input.settings.force_evmla {
-        Some(SolcCodegen::EVMLA)
+        Some(SolcStandardJsonInputSettingsCodegen::EVMLA)
     } else {
         codegen
     };
@@ -449,9 +449,7 @@ pub fn standard_json_eravm(
     let output_assembly = solc_input
         .settings
         .output_selection
-        .as_ref()
-        .map(|selection| selection.contains_eravm_assembly())
-        .unwrap_or_default();
+        .contains(&SolcStandardJsonInputSettingsSelectionFlag::EraVMAssembly);
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
@@ -460,12 +458,15 @@ pub fn standard_json_eravm(
                 None => SolcCompiler::try_from_default()?,
             };
 
-            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(Some(solc_pipeline));
+            let solc_codegen =
+                SolcStandardJsonInputSettingsCodegen::new(&solc_compiler.version, codegen);
+            solc_input.extend_selection(SolcStandardJsonInputSettingsSelection::new_required(
+                solc_codegen,
+            ));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_pipeline),
+                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -477,7 +478,7 @@ pub fn standard_json_eravm(
 
             let project = Project::try_from_solc_output(
                 solc_input.settings.libraries,
-                solc_pipeline,
+                solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
                 debug_config.as_ref(),
@@ -584,7 +585,7 @@ pub fn standard_json_eravm(
 ///
 pub fn standard_json_evm(
     solc_compiler: Option<SolcCompiler>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     json_path: Option<PathBuf>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     base_path: Option<String>,
@@ -595,7 +596,7 @@ pub fn standard_json_evm(
 ) -> anyhow::Result<()> {
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let prune_output = solc_input.settings.get_unset_required();
+    let prune_output = solc_input.settings.selection_to_prune();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
@@ -610,12 +611,15 @@ pub fn standard_json_evm(
                 None => SolcCompiler::try_from_default()?,
             };
 
-            let solc_pipeline = SolcCodegen::new(&solc_compiler.version, codegen);
-            solc_input.normalize(Some(solc_pipeline));
+            let solc_codegen =
+                SolcStandardJsonInputSettingsCodegen::new(&solc_compiler.version, codegen);
+            solc_input.extend_selection(SolcStandardJsonInputSettingsSelection::new_required(
+                solc_codegen,
+            ));
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_pipeline),
+                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -627,7 +631,7 @@ pub fn standard_json_evm(
 
             let project = Project::try_from_solc_output(
                 solc_input.settings.libraries,
-                solc_pipeline,
+                solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
                 debug_config.as_ref(),
@@ -717,7 +721,7 @@ pub fn combined_json_eravm(
     libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
     metadata_hash_type: era_compiler_common::HashType,
@@ -788,7 +792,7 @@ pub fn combined_json_evm(
     libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
-    codegen: Option<SolcCodegen>,
+    codegen: Option<SolcStandardJsonInputSettingsCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     metadata_hash_type: era_compiler_common::HashType,
     use_literal_content: bool,

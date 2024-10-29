@@ -22,4 +22,5 @@
 *.bak
 
 # Test solc versions
-solc-bin/
+**/solc-bin/
+**/solc-bin-upstream/

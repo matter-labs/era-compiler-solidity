@@ -15,14 +15,14 @@ use self::contract::Contract;
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct CombinedJson {
     /// The contract entries.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub contracts: BTreeMap<String, Contract>,
     /// The list of source files.
-    #[serde(rename = "sourceList")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub source_list: Option<Vec<String>>,
+    #[serde(default, rename = "sourceList", skip_serializing_if = "Vec::is_empty")]
+    pub source_list: Vec<String>,
     /// The source code extra data, including the AST.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sources: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    pub sources: serde_json::Value,
     /// The `solc` compiler version.
     pub version: String,
     /// The `zksolc` compiler version.

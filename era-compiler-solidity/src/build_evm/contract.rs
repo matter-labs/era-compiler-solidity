@@ -182,7 +182,7 @@ impl Contract {
         let deploy_bytecode = hex::encode(self.deploy_build.as_slice());
         let runtime_bytecode = hex::encode(self.runtime_build.as_slice());
 
-        standard_json_contract.metadata = Some(self.metadata_json);
+        standard_json_contract.metadata = self.metadata_json;
         standard_json_contract
             .evm
             .get_or_insert_with(StandardJsonOutputContractEVM::default)

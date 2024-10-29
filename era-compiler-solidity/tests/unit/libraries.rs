@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
@@ -13,55 +13,91 @@ use crate::common;
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn not_specified_04_evmla() {
-    not_specified(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    not_specified(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn not_specified_05_evmla() {
-    not_specified(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    not_specified(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn not_specified_06_evmla() {
-    not_specified(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    not_specified(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn not_specified_07_evmla() {
-    not_specified(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    not_specified(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn not_specified_08_evmla() {
-    not_specified(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    not_specified(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn not_specified_08_yul() {
-    not_specified(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    not_specified(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn specified_04_evmla() {
-    specified(semver::Version::new(0, 4, 26), SolcCodegen::EVMLA);
+    specified(
+        semver::Version::new(0, 4, 26),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 #[cfg_attr(target_os = "windows", ignore)]
 fn specified_05_evmla() {
-    specified(semver::Version::new(0, 5, 17), SolcCodegen::EVMLA);
+    specified(
+        semver::Version::new(0, 5, 17),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn specified_06_evmla() {
-    specified(semver::Version::new(0, 6, 12), SolcCodegen::EVMLA);
+    specified(
+        semver::Version::new(0, 6, 12),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn specified_07_evmla() {
-    specified(semver::Version::new(0, 7, 6), SolcCodegen::EVMLA);
+    specified(
+        semver::Version::new(0, 7, 6),
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn specified_08_evmla() {
-    specified(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    specified(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn specified_08_yul() {
-    specified(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    specified(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 
 pub const LIBRARY_TEST_SOURCE: &str = r#"
@@ -91,7 +127,7 @@ contract SimpleContract {
 }
     "#;
 
-fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
+fn not_specified(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
@@ -99,14 +135,12 @@ fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
         sources.clone(),
         Libraries::default(),
         &version,
-        pipeline,
+        codegen,
     )
     .expect("Test failure");
     assert!(
         output
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("SimpleContract")
@@ -119,7 +153,7 @@ fn not_specified(version: semver::Version, pipeline: SolcCodegen) {
     );
 }
 
-fn specified(version: semver::Version, pipeline: SolcCodegen) {
+fn specified(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
@@ -132,13 +166,11 @@ fn specified(version: semver::Version, pipeline: SolcCodegen) {
     let libraries = Libraries::from(libraries);
 
     let output =
-        common::build_solidity_and_detect_missing_libraries(sources, libraries, &version, pipeline)
+        common::build_solidity_and_detect_missing_libraries(sources, libraries, &version, codegen)
             .expect("Test failure");
     assert!(
         output
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("SimpleContract")

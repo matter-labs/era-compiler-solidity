@@ -2,7 +2,6 @@
 //! The Solidity compiler.
 //!
 
-pub mod codegen;
 pub mod combined_json;
 pub mod standard_json;
 pub mod version;
@@ -13,10 +12,11 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
-use self::codegen::Codegen;
 use self::combined_json::CombinedJson;
+use self::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use self::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
+use self::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
 use self::standard_json::input::Input as StandardJsonInput;
 use self::standard_json::output::error::Error as StandardJsonOutputError;
 use self::standard_json::output::Output as StandardJsonOutput;
@@ -70,7 +70,7 @@ impl Compiler {
         let mut executables = Self::executables().write().expect("Sync");
 
         if let Err(error) = which::which(executable) {
-            anyhow::bail!("The `{executable}` executable not found in ${{PATH}}: {error}. Please add it to ${{PATH}} or provide it explicitly with the `--solc` option.");
+            anyhow::bail!("The `{executable}` executable not found: {error}. Please add it to ${{PATH}} or provide it explicitly with the `--solc` option.");
         }
         let version = Self::parse_version(executable)?;
         let compiler = Self {
@@ -95,7 +95,7 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: &mut StandardJsonInput,
-        pipeline: Option<Codegen>,
+        codegen: Option<StandardJsonInputSettingsCodegen>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
@@ -164,29 +164,30 @@ impl Compiler {
             }
         };
 
-        let errors = solc_output.errors.get_or_insert_with(Vec::new);
-        errors.retain(|error| match error.error_code.as_deref() {
-            Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
-            None => true,
-        });
-        errors.append(messages);
+        solc_output
+            .errors
+            .retain(|error| match error.error_code.as_deref() {
+                Some(code) => !StandardJsonOutputError::IGNORED_WARNING_CODES.contains(&code),
+                None => true,
+            });
+        solc_output.errors.append(messages);
 
         if !input.suppressed_errors.is_empty() {
-            errors.push(StandardJsonOutputError::new_warning(
+            solc_output.errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
             ));
         }
         if !input.suppressed_warnings.is_empty() {
-            errors.push(StandardJsonOutputError::new_warning(
+            solc_output.errors.push(StandardJsonOutputError::new_warning(
                 "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
                 None,
                 None,
             ));
         }
 
-        if let Some(pipeline) = pipeline {
+        if let Some(codegen) = codegen {
             let mut suppressed_errors = input.suppressed_errors.clone();
             suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
 
@@ -197,7 +198,7 @@ impl Compiler {
             solc_output.preprocess_ast(
                 &input.sources,
                 &self.version,
-                pipeline,
+                codegen,
                 suppressed_errors.as_slice(),
                 suppressed_warnings.as_slice(),
             )?;
@@ -272,16 +273,16 @@ impl Compiler {
         for filtered_flag in filtered_flags.into_iter() {
             for (_path, contract) in combined_json.contracts.iter_mut() {
                 match filtered_flag {
-                    "asm" => contract.asm = Some(serde_json::Value::Null),
-                    "bin" => contract.bin = Some("".to_owned()),
-                    "bin-runtime" => contract.bin_runtime = Some("".to_owned()),
+                    "asm" => contract.asm = serde_json::Value::Null,
+                    "bin" => contract.bin = None,
+                    "bin-runtime" => contract.bin_runtime = None,
                     _ => continue,
                 }
             }
         }
         if combined_json_fake_flag_pushed {
-            combined_json.source_list = None;
-            combined_json.sources = None;
+            combined_json.source_list.clear();
+            combined_json.sources = serde_json::Value::Null;
         }
         combined_json.remove_evm();
 
@@ -297,13 +298,6 @@ impl Compiler {
         libraries: StandardJsonInputSettingsLibraries,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        if self.version.default != Self::LAST_SUPPORTED_VERSION {
-            anyhow::bail!(
-                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
-                Self::LAST_SUPPORTED_VERSION,
-            );
-        }
-
         let mut solc_input = StandardJsonInput::from_yul_paths(
             paths,
             libraries,
@@ -328,7 +322,7 @@ impl Compiler {
             );
         }
 
-        solc_input.normalize_yul_validation();
+        solc_input.extend_selection(StandardJsonInputSettingsSelection::new_yul_validation());
         let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
         Ok(solc_output)
     }
@@ -349,11 +343,10 @@ impl Compiler {
         command.arg("--version");
         let output = command
             .output()
-            .map_err(|error| anyhow::anyhow!("{} subprocess: {:?}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("`{executable}` subprocess: {error:?}."))?;
         if !output.status.success() {
             anyhow::bail!(
-                "{} version getting: {}",
-                executable,
+                "`{executable}` version getting: {}",
                 String::from_utf8_lossy(output.stderr.as_slice()).to_string()
             );
         }
@@ -362,22 +355,19 @@ impl Compiler {
         let long = stdout
             .lines()
             .nth(1)
-            .ok_or_else(|| anyhow::anyhow!("{} version parsing: not enough lines", executable))?
+            .ok_or_else(|| anyhow::anyhow!("`{executable}` version parsing: not enough lines."))?
             .split(' ')
             .nth(1)
             .ok_or_else(|| {
-                anyhow::anyhow!(
-                    "{} version parsing: not enough words in the 2nd line",
-                    executable
-                )
+                anyhow::anyhow!("`{executable}` version parsing: not enough words in the 2nd line.")
             })?
             .to_owned();
         let default: semver::Version = long
             .split('+')
             .next()
-            .ok_or_else(|| anyhow::anyhow!("{} version parsing: metadata dropping", executable))?
+            .expect("Always exists")
             .parse()
-            .map_err(|error| anyhow::anyhow!("{} version parsing: {}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("`{executable}` version parsing: {error}."))?;
 
         let l2_revision: Option<semver::Version> = stdout
             .lines()
@@ -389,14 +379,14 @@ impl Compiler {
         let version = Version::new(long, default, l2_revision);
         if version.default < Self::FIRST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "`solc` versions <{} are not supported, found {}",
+                "`{executable}` versions older than {} are not supported, found {}. Please upgrade to the latest supported version.",
                 Self::FIRST_SUPPORTED_VERSION,
                 version.default
             );
         }
         if version.default > Self::LAST_SUPPORTED_VERSION {
             anyhow::bail!(
-                "`solc` versions >{} are not supported, found {}",
+                "`{executable}` versions newer than {} are not supported, found {}. Please check if you are using the latest version of zksolc.",
                 Self::LAST_SUPPORTED_VERSION,
                 version.default
             );

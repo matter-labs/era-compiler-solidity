@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
@@ -13,62 +13,86 @@ use crate::common;
 
 #[test]
 fn library_not_passed_compile_time_08_evmla() {
-    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    library_not_passed_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn library_not_passed_compile_time_08_yul() {
-    library_not_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    library_not_passed_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 #[test]
 fn library_not_passed_post_compile_time_08_evmla() {
-    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    library_not_passed_post_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn library_not_passed_post_compile_time_08_yul() {
-    library_not_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    library_not_passed_post_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 #[test]
 fn library_passed_compile_time_08_evmla() {
-    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    library_passed_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn library_passed_compile_time_08_yul() {
-    library_passed_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    library_passed_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 #[test]
 fn library_passed_post_compile_time_08_evmla() {
-    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::EVMLA);
+    library_passed_post_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
 }
 #[test]
 fn library_passed_post_compile_time_08_yul() {
-    library_passed_post_compile_time(SolcCompiler::LAST_SUPPORTED_VERSION, SolcCodegen::Yul);
+    library_passed_post_compile_time(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
 }
 #[test]
 fn library_passed_post_compile_time_second_call_08_evmla() {
     library_passed_post_compile_time_second_call(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
     );
 }
 #[test]
 fn library_passed_post_compile_time_second_call_08_yul() {
     library_passed_post_compile_time_second_call(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
     );
 }
 #[test]
 fn library_passed_post_compile_time_redundant_args_08_evmla() {
     library_passed_post_compile_time_redundant_args(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
     );
 }
 #[test]
 fn library_passed_post_compile_time_redundant_args_08_yul() {
     library_passed_post_compile_time_redundant_args(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
     );
 }
 #[test]
@@ -76,7 +100,7 @@ fn library_passed_post_compile_time_redundant_args_08_yul() {
 fn library_passed_post_compile_time_non_elf_08_evmla() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
     );
 }
 #[test]
@@ -84,21 +108,21 @@ fn library_passed_post_compile_time_non_elf_08_evmla() {
 fn library_passed_post_compile_time_non_elf_08_yul() {
     library_passed_post_compile_time_non_elf(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
     );
 }
 #[test]
 fn library_produce_equal_bytecode_in_both_cases_08_evmla() {
     library_produce_equal_bytecode_in_both_cases(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
     );
 }
 #[test]
 fn library_produce_equal_bytecode_in_both_cases_08_yul() {
     library_produce_equal_bytecode_in_both_cases(
         SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
     );
 }
 
@@ -136,7 +160,11 @@ contract Greeter {
 }
 "#;
 
-fn get_bytecode(libraries: Libraries, version: &semver::Version, pipeline: SolcCodegen) -> Vec<u8> {
+fn get_bytecode(
+    libraries: Libraries,
+    version: &semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) -> Vec<u8> {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
 
@@ -146,14 +174,12 @@ fn get_bytecode(libraries: Libraries, version: &semver::Version, pipeline: SolcC
         era_compiler_common::HashType::None,
         BTreeSet::new(),
         version,
-        pipeline,
+        codegen,
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
     let bytecode_hexadecimal = build
         .contracts
-        .as_ref()
-        .expect("Missing field `contracts`")
         .get("test.sol")
         .expect("Missing file `test.sol`")
         .get("Greeter")
@@ -169,8 +195,11 @@ fn get_bytecode(libraries: Libraries, version: &semver::Version, pipeline: SolcC
     hex::decode(bytecode_hexadecimal).expect("Invalid bytecode")
 }
 
-fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+fn library_not_passed_compile_time(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -183,8 +212,11 @@ fn library_not_passed_compile_time(version: semver::Version, pipeline: SolcCodeg
     );
 }
 
-fn library_not_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+fn library_not_passed_post_compile_time(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -200,12 +232,15 @@ fn library_not_passed_post_compile_time(version: semver::Version, pipeline: Solc
     );
 }
 
-fn library_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_compile_time(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
     let library_arguments =
         vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = Libraries::try_from(library_arguments.as_slice()).expect("Always valid");
 
-    let bytecode = get_bytecode(libraries, &version, pipeline);
+    let bytecode = get_bytecode(libraries, &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -215,7 +250,10 @@ fn library_passed_compile_time(version: semver::Version, pipeline: SolcCodegen) 
     assert!(!memory_buffer.is_elf_eravm(), "The bytecode is an ELF file");
 }
 
-fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
     let library_arguments =
         vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let linker_symbols = Libraries::try_from(library_arguments.as_slice())
@@ -223,7 +261,7 @@ fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCode
         .as_linker_symbols()
         .expect("Always valid");
 
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -239,7 +277,10 @@ fn library_passed_post_compile_time(version: semver::Version, pipeline: SolcCode
     );
 }
 
-fn library_passed_post_compile_time_second_call(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time_second_call(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
     let library_arguments =
         vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let linker_symbols = Libraries::try_from(library_arguments.as_slice())
@@ -247,7 +288,7 @@ fn library_passed_post_compile_time_second_call(version: semver::Version, pipeli
         .as_linker_symbols()
         .expect("Always valid");
 
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -268,7 +309,7 @@ fn library_passed_post_compile_time_second_call(version: semver::Version, pipeli
 
 fn library_passed_post_compile_time_redundant_args(
     version: semver::Version,
-    pipeline: SolcCodegen,
+    codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
     let library_arguments = vec![
         "fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
@@ -280,7 +321,7 @@ fn library_passed_post_compile_time_redundant_args(
         .as_linker_symbols()
         .expect("Always valid");
 
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -296,7 +337,10 @@ fn library_passed_post_compile_time_redundant_args(
     );
 }
 
-fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: SolcCodegen) {
+fn library_passed_post_compile_time_non_elf(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
     let library_arguments =
         vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = Libraries::try_from(library_arguments.as_slice())
@@ -304,7 +348,7 @@ fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: 
         .as_linker_symbols()
         .expect("Always valid");
 
-    let bytecode = get_bytecode(Libraries::default(), &version, pipeline);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -323,7 +367,10 @@ fn library_passed_post_compile_time_non_elf(version: semver::Version, pipeline: 
     );
 }
 
-fn library_produce_equal_bytecode_in_both_cases(version: semver::Version, codegen: SolcCodegen) {
+fn library_produce_equal_bytecode_in_both_cases(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
     let library_arguments =
         vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = Libraries::try_from(library_arguments.as_slice()).expect("Always valid");

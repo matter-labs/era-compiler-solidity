@@ -19,7 +19,6 @@ fn standard_json_yul_solc() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")
@@ -41,14 +40,13 @@ fn standard_json_yul_solc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)
+    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)
         .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")
@@ -73,7 +71,6 @@ fn standard_json_yul_solc_urls() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")
@@ -95,14 +92,13 @@ fn standard_json_yul_solc_urls_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)
+    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)
         .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")
@@ -127,7 +123,6 @@ fn standard_json_yul_zksolc() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
         .get("EventWriter.yul")
@@ -149,14 +144,13 @@ fn standard_json_yul_zksolc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)
+    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)
         .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
         .get("EventWriter.yul")
@@ -181,7 +175,6 @@ fn standard_json_yul_zksolc_urls() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
         .get("EventWriter.yul")
@@ -202,14 +195,13 @@ fn standard_json_yul_zksolc_urls_validated() {
         PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION)
+    let solc_compiler = common::get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)
         .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
         .get("EventWriter.yul")
@@ -234,7 +226,6 @@ fn standard_json_llvm_ir_urls() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")
@@ -259,7 +250,6 @@ fn standard_json_eravm_assembly_urls() {
 
     assert!(!solc_output
         .contracts
-        .expect("The `contracts` field is missing")
         .get("Test")
         .expect("The `Test` contract is missing")
         .get("Test")

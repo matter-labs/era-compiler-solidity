@@ -159,12 +159,12 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_missing() -> anyhow::Result<()> {
+fn with_standard_json_missing_file() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
         "--standard-json",
-        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_PATH,
+        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;

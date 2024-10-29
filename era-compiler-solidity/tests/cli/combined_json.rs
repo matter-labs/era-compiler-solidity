@@ -38,6 +38,32 @@ fn with_combined_json_loop_args() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_combined_json_two_files() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        cli::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
+        "--combined-json",
+        "bin",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    let status_code = result
+        .success()
+        .stdout(predicate::str::contains("contracts"))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
+
+    let solc_result = cli::execute_solc(args)?;
+    solc_result.code(status_code);
+
+    Ok(())
+}
+
+#[test]
 fn with_combined_json_no_args() -> anyhow::Result<()> {
     common::setup()?;
 

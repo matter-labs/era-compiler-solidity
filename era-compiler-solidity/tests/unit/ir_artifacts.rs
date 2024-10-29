@@ -7,7 +7,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::codegen::Codegen as SolcCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
@@ -61,29 +61,25 @@ fn yul(version: semver::Version) {
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
-        SolcCodegen::Yul,
+        SolcStandardJsonInputSettingsCodegen::Yul,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 
     assert!(
-        build
+        !build
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
             .ir_optimized
-            .is_some(),
-        "Yul IR is missing"
+            .is_empty(),
+        "Yul is missing"
     );
     assert!(
         build
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("Test")
@@ -93,7 +89,7 @@ fn yul(version: semver::Version) {
             .expect("EVM object is missing")
             .legacy_assembly
             .is_none(),
-        "EVM assembly IR is present although not requested"
+        "EVM assembly is present although not requested"
     );
 }
 
@@ -107,15 +103,13 @@ fn evmla(version: semver::Version) {
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
-        SolcCodegen::EVMLA,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
     assert!(
         build
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("Test")
@@ -125,19 +119,17 @@ fn evmla(version: semver::Version) {
             .expect("EVM object is missing")
             .legacy_assembly
             .is_some(),
-        "EVM assembly IR is missing",
+        "EVM assembly is missing",
     );
     assert!(
         build
             .contracts
-            .as_ref()
-            .expect("Always exists")
             .get("test.sol")
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
             .ir_optimized
-            .is_none(),
-        "Yul IR is present although not requested",
+            .is_empty(),
+        "Yul is present although not requested",
     );
 }

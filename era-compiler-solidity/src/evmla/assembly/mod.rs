@@ -37,10 +37,10 @@ pub struct Assembly {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub full_path: Option<String>,
     /// The factory dependency paths.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
     pub factory_dependencies: HashSet<String>,
     /// The EVMLA extra metadata.
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 

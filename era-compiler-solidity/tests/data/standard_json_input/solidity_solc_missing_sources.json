@@ -1,9 +1,12 @@
 {
-	"language": "Solidity",
-	"settings": {
-		"optimizer": {
-			"enabled": true,
-			"runs": 200
-		}
-	}
+  "language": "Solidity",
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
 }

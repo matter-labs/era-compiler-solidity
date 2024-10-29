@@ -3,6 +3,12 @@
 pragma solidity >=0.4.16;
 
 contract Test {
+    uint64 x;
+
+    constructor(uint8 i) public {
+        x = fib(i);
+    }
+
     function fib(uint8 n) public pure returns(uint64) {
         if (n <= 1) {
             return n;

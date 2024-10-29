@@ -21,8 +21,8 @@ use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcess
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
-use crate::solc::codegen::Codegen as SolcCodegen;
 use crate::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
+use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
 use crate::solc::standard_json::input::settings::libraries::missing::MissingLibraries;
 use crate::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputLibraries;
 use crate::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
@@ -86,24 +86,20 @@ impl Project {
     ///
     pub fn try_from_solc_output(
         libraries: SolcStandardJsonInputLibraries,
-        pipeline: SolcCodegen,
+        codegen: SolcStandardJsonInputSettingsCodegen,
         solc_output: &mut SolcStandardJsonOutput,
         solc_compiler: &SolcCompiler,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Self> {
-        if let SolcCodegen::EVMLA = pipeline {
+        if let SolcStandardJsonInputSettingsCodegen::EVMLA = codegen {
             solc_output.preprocess_dependencies()?;
         }
 
         let solc_version = solc_compiler.version.to_owned();
 
-        let files = solc_output
-            .contracts
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No input sources specified."))?;
-        let mut input_contracts = Vec::with_capacity(files.len());
-        for (path, contracts) in files.iter() {
-            for (name, contract) in contracts.iter() {
+        let mut input_contracts = Vec::with_capacity(solc_output.contracts.len());
+        for (path, file) in solc_output.contracts.iter() {
+            for (name, contract) in file.iter() {
                 input_contracts.push((path, name, contract));
             }
         }
@@ -124,25 +120,23 @@ impl Project {
                         );
                         let full_path = name.full_path.clone();
 
-                        let result = match pipeline {
-                            SolcCodegen::Yul => ContractYul::try_from_source(
-                                &name,
-                                contract.ir_optimized.as_deref(),
-                                debug_config,
-                            )
-                            .map(|ir| ir.map(ContractYul::into)),
-                            SolcCodegen::EVMLA => {
+                        let result = match codegen {
+                            SolcStandardJsonInputSettingsCodegen::Yul => {
+                                ContractYul::try_from_source(
+                                    &name,
+                                    contract.ir_optimized.as_str(),
+                                    debug_config,
+                                )
+                                .map(|ir| ir.map(ContractYul::into))
+                            }
+                            SolcStandardJsonInputSettingsCodegen::EVMLA => {
                                 Ok(ContractEVMLA::try_from_contract(contract)
                                     .map(ContractEVMLA::into))
                             }
                         }
                         .map(|source| {
                             source.map(|source| {
-                                Contract::new(
-                                    name,
-                                    source,
-                                    contract.metadata.to_owned().expect("Always exists"),
-                                )
+                                Contract::new(name, source, contract.metadata.to_owned())
                             })
                         });
                         (full_path, result)
@@ -209,8 +203,8 @@ impl Project {
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
 
                 let result =
-                    ContractYul::try_from_source(&name, Some(source_code.as_str()), debug_config)
-                        .map(|ir| {
+                    ContractYul::try_from_source(&name, source_code.as_str(), debug_config).map(
+                        |ir| {
                             ir.map(ContractYul::into).map(|ir| {
                                 Contract::new(
                                     name,
@@ -221,7 +215,8 @@ impl Project {
                                     }),
                                 )
                             })
-                        });
+                        },
+                    );
 
                 (path, result)
             })

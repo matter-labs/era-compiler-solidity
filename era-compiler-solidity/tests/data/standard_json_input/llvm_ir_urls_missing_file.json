@@ -1,16 +1,15 @@
 {
-    "language": "Yul",
+    "language": "LLVM IR",
     "sources": {
       "Test": {
-        "content": "object \"Test\" { code { { return(0, 0) } } object \"Test_deployed\" { code { { return(0, 0) } } } }"
+        "urls": [
+          "tests/data/contracts/llvm_ir/Missing.ll"
+        ]
       }
     },
     "settings": {
       "optimizer": {
         "enabled": true
-      },
-      "metadata": {
-        "useLiteralContent": true
       },
       "outputSelection": {
         "*": {
@@ -22,6 +21,9 @@
             "evm.methodIdentifiers"
           ]
         }
+      },
+      "metadata": {
+        "hashType": "ipfs"
       },
       "libraries": {}
     }

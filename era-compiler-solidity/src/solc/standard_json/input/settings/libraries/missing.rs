@@ -32,10 +32,8 @@ impl MissingLibraries {
         standard_json: &mut StandardJsonOutput,
         solc_version: Option<&SolcVersion>,
     ) {
-        let contracts = standard_json.contracts.get_or_insert_with(BTreeMap::new);
-
-        for (path, contracts) in contracts.iter_mut() {
-            for (name, contract) in contracts.iter_mut() {
+        for (path, file) in standard_json.contracts.iter_mut() {
+            for (name, contract) in file.iter_mut() {
                 let full_name = format!("{path}:{name}");
                 let missing_libraries = self.contract_libraries.remove(full_name.as_str());
 
