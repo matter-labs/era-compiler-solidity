@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -266,7 +267,8 @@ contract FixedCodeCopy {
 
     common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
         codegen,
@@ -304,7 +306,8 @@ fn callcode(version: semver::Version, codegen: SolcStandardJsonInputSettingsCode
 
     common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
         codegen,
@@ -336,7 +339,8 @@ fn extcodecopy(version: semver::Version, codegen: SolcStandardJsonInputSettingsC
 
     common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
         codegen,
@@ -427,7 +431,8 @@ fn selfdestruct(
 
     common::build_solidity(
         sources.clone(),
-        BTreeMap::new(),
+        Libraries::default(),
+        era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
         codegen,

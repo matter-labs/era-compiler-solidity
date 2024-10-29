@@ -3,17 +3,18 @@
 //!
 
 pub mod codegen;
+pub mod libraries;
 pub mod metadata;
 pub mod optimizer;
 pub mod selection;
 
-use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use crate::error_type::ErrorType;
 use crate::warning_type::WarningType;
 
 use self::codegen::Codegen;
+use self::libraries::Libraries;
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::Selection;
@@ -29,8 +30,8 @@ pub struct Settings {
     pub optimizer: Optimizer,
 
     /// The linker library addresses.
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub libraries: BTreeMap<String, BTreeMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Libraries::is_empty")]
+    pub libraries: Libraries,
     /// The sorted list of remappings.
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub remappings: BTreeSet<String>,
@@ -86,7 +87,7 @@ impl Settings {
     pub fn new(
         optimizer: Optimizer,
 
-        libraries: BTreeMap<String, BTreeMap<String, String>>,
+        libraries: Libraries,
         remappings: BTreeSet<String>,
 
         codegen: Option<Codegen>,

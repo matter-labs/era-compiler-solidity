@@ -14,7 +14,6 @@ pub mod build_evm;
 pub mod r#const;
 pub mod error_type;
 pub mod evmla;
-pub mod libraries;
 pub mod process;
 pub mod project;
 pub mod solc;
@@ -26,7 +25,6 @@ pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
 pub use self::error_type::ErrorType;
-pub use self::libraries::Libraries;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
 pub use self::process::output_eravm::Output as EraVMProcessOutput;
@@ -40,6 +38,8 @@ pub use self::solc::combined_json::contract::Contract as SolcCombinedJsonContrac
 pub use self::solc::combined_json::CombinedJson as SolcCombinedJson;
 pub use self::solc::standard_json::input::language::Language as SolcStandardJsonInputLanguage;
 pub use self::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+pub use self::solc::standard_json::input::settings::libraries::missing::MissingLibraries;
+pub use self::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputSettingsLibraries;
 pub use self::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
 pub use self::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
 pub use self::solc::standard_json::input::settings::selection::file::flag::Flag as SolcStandardJsonInputSettingsSelectionFlag;
@@ -75,7 +75,7 @@ pub type Result<T> = std::result::Result<T, SolcStandardJsonOutputError>;
 ///
 pub fn yul_to_eravm(
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_path: Option<String>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     enable_eravm_extensions: bool,
@@ -86,14 +86,15 @@ pub fn yul_to_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let libraries = Libraries::into_standard_json(libraries)?;
+    let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
+    let linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
             if enable_eravm_extensions {
                 anyhow::bail!("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`.")
             }
-            let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
+            let solc_compiler = SolcCompiler::try_from_path(solc_path.as_str())?;
             solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
             Some(solc_compiler.version)
         }
@@ -111,6 +112,7 @@ pub fn yul_to_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
+        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
@@ -126,7 +128,7 @@ pub fn yul_to_eravm(
 ///
 pub fn yul_to_evm(
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_path: Option<String>,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     metadata_hash_type: era_compiler_common::HashType,
@@ -135,11 +137,11 @@ pub fn yul_to_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let libraries = Libraries::into_standard_json(libraries)?;
+    let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
-            let solc_compiler = SolcCompiler::new(solc_path.as_str())?;
+            let solc_compiler = SolcCompiler::try_from_path(solc_path.as_str())?;
             solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
             Some(solc_compiler.version)
         }
@@ -170,6 +172,7 @@ pub fn yul_to_evm(
 ///
 pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
+    libraries: &[String],
     messages: &mut Vec<SolcStandardJsonOutputError>,
     metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -178,11 +181,15 @@ pub fn llvm_ir_to_eravm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let project = Project::try_from_llvm_ir_paths(paths, None)?;
+    let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
+    let linker_symbols = libraries.as_linker_symbols()?;
+
+    let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
 
     let build = project.compile_to_eravm(
         messages,
         false,
+        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
@@ -198,6 +205,7 @@ pub fn llvm_ir_to_eravm(
 ///
 pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
+    libraries: &[String],
     messages: &mut Vec<SolcStandardJsonOutputError>,
     metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -205,7 +213,9 @@ pub fn llvm_ir_to_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let project = Project::try_from_llvm_ir_paths(paths, None)?;
+    let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
+
+    let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
 
     let build = project.compile_to_evm(
         messages,
@@ -236,6 +246,7 @@ pub fn eravm_assembly(
     let build = project.compile_to_eravm(
         messages,
         false,
+        BTreeMap::new(),
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
@@ -251,7 +262,7 @@ pub fn eravm_assembly(
 ///
 pub fn standard_output_eravm(
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     codegen: Option<SolcStandardJsonInputSettingsCodegen>,
@@ -290,7 +301,7 @@ pub fn standard_output_eravm(
         false,
         false,
     )?;
-    let libraries = solc_input.settings.libraries.clone();
+
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
         Some(solc_codegen),
@@ -302,8 +313,10 @@ pub fn standard_output_eravm(
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
+    let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
+
     let project = Project::try_from_solc_output(
-        libraries,
+        solc_input.settings.libraries,
         solc_codegen,
         &mut solc_output,
         solc_compiler,
@@ -315,6 +328,7 @@ pub fn standard_output_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
+        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
@@ -330,7 +344,7 @@ pub fn standard_output_eravm(
 ///
 pub fn standard_output_evm(
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     codegen: Option<SolcStandardJsonInputSettingsCodegen>,
@@ -365,7 +379,7 @@ pub fn standard_output_evm(
         false,
         false,
     )?;
-    let libraries = solc_input.settings.libraries.clone();
+
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
         Some(solc_codegen),
@@ -378,7 +392,7 @@ pub fn standard_output_evm(
     solc_output.collect_errors()?;
 
     let project = Project::try_from_solc_output(
-        libraries,
+        solc_input.settings.libraries,
         solc_codegen,
         &mut solc_output,
         solc_compiler,
@@ -416,9 +430,8 @@ pub fn standard_json_eravm(
 ) -> anyhow::Result<()> {
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let libraries = solc_input.settings.libraries.clone();
     let prune_output = solc_input.settings.selection_to_prune();
-
+    let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from(&solc_input.settings.optimizer)?;
     let llvm_options = solc_input.settings.llvm_options.clone();
@@ -442,7 +455,7 @@ pub fn standard_json_eravm(
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
             let solc_compiler = match solc_compiler {
                 Some(solc_compiler) => solc_compiler,
-                None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
+                None => SolcCompiler::try_from_default()?,
             };
 
             let solc_codegen =
@@ -464,7 +477,7 @@ pub fn standard_json_eravm(
             }
 
             let project = Project::try_from_solc_output(
-                libraries,
+                solc_input.settings.libraries,
                 solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
@@ -485,7 +498,7 @@ pub fn standard_json_eravm(
 
             let project = Project::try_from_yul_sources(
                 solc_input.sources,
-                libraries,
+                solc_input.settings.libraries,
                 Some(&mut solc_output),
                 Some(&solc_compiler.version),
                 debug_config.as_ref(),
@@ -501,7 +514,7 @@ pub fn standard_json_eravm(
 
             let project = Project::try_from_yul_sources(
                 solc_input.sources,
-                libraries,
+                solc_input.settings.libraries,
                 Some(&mut solc_output),
                 None,
                 debug_config.as_ref(),
@@ -518,8 +531,11 @@ pub fn standard_json_eravm(
         (SolcStandardJsonInputLanguage::LLVMIR, None) => {
             let mut solc_output = SolcStandardJsonOutput::new(&solc_input.sources, messages);
 
-            let project =
-                Project::try_from_llvm_ir_sources(solc_input.sources, Some(&mut solc_output))?;
+            let project = Project::try_from_llvm_ir_sources(
+                solc_input.sources,
+                solc_input.settings.libraries,
+                Some(&mut solc_output),
+            )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
@@ -551,6 +567,7 @@ pub fn standard_json_eravm(
         let build = project.compile_to_eravm(
             messages,
             enable_eravm_extensions,
+            linker_symbols,
             metadata_hash_type,
             optimizer_settings,
             llvm_options,
@@ -579,7 +596,6 @@ pub fn standard_json_evm(
 ) -> anyhow::Result<()> {
     let mut solc_input = SolcStandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
-    let libraries = solc_input.settings.libraries.clone();
     let prune_output = solc_input.settings.selection_to_prune();
 
     let optimizer_settings =
@@ -592,7 +608,7 @@ pub fn standard_json_evm(
         (SolcStandardJsonInputLanguage::Solidity, solc_compiler) => {
             let solc_compiler = match solc_compiler {
                 Some(solc_compiler) => solc_compiler,
-                None => SolcCompiler::new(SolcCompiler::DEFAULT_EXECUTABLE_NAME)?,
+                None => SolcCompiler::try_from_default()?,
             };
 
             let solc_codegen =
@@ -614,7 +630,7 @@ pub fn standard_json_evm(
             }
 
             let project = Project::try_from_solc_output(
-                libraries,
+                solc_input.settings.libraries,
                 solc_codegen,
                 &mut solc_output,
                 &solc_compiler,
@@ -635,7 +651,7 @@ pub fn standard_json_evm(
 
             let project = Project::try_from_yul_sources(
                 solc_input.sources,
-                libraries,
+                solc_input.settings.libraries,
                 Some(&mut solc_output),
                 Some(&solc_compiler.version),
                 debug_config.as_ref(),
@@ -651,7 +667,7 @@ pub fn standard_json_evm(
 
             let project = Project::try_from_yul_sources(
                 solc_input.sources,
-                libraries,
+                solc_input.settings.libraries,
                 Some(&mut solc_output),
                 None,
                 debug_config.as_ref(),
@@ -668,8 +684,11 @@ pub fn standard_json_evm(
         (SolcStandardJsonInputLanguage::LLVMIR, None) => {
             let mut solc_output = SolcStandardJsonOutput::new(&solc_input.sources, messages);
 
-            let project =
-                Project::try_from_llvm_ir_sources(solc_input.sources, Some(&mut solc_output))?;
+            let project = Project::try_from_llvm_ir_sources(
+                solc_input.sources,
+                solc_input.settings.libraries,
+                Some(&mut solc_output),
+            )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
@@ -699,7 +718,7 @@ pub fn standard_json_evm(
 pub fn combined_json_eravm(
     format: String,
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     codegen: Option<SolcStandardJsonInputSettingsCodegen>,
@@ -770,7 +789,7 @@ pub fn combined_json_eravm(
 pub fn combined_json_evm(
     format: String,
     paths: &[PathBuf],
-    libraries: Vec<String>,
+    libraries: &[String],
     solc_compiler: &SolcCompiler,
     messages: &mut Vec<SolcStandardJsonOutputError>,
     codegen: Option<SolcStandardJsonInputSettingsCodegen>,
@@ -880,7 +899,7 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 ///
 /// Runs the linker for EraVM bytecode file, modifying it in place.
 ///
-pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
+pub fn link_eravm(paths: Vec<String>, libraries: &[String]) -> anyhow::Result<()> {
     let bytecodes = paths
         .into_par_iter()
         .map(|path| {
@@ -894,7 +913,8 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
         })
         .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
-    let linker_symbols = Libraries::into_linker(libraries)?;
+    let linker_symbols =
+        SolcStandardJsonInputSettingsLibraries::try_from(libraries)?.as_linker_symbols()?;
     let mut linked_objects = serde_json::Map::new();
     let mut unlinked_objects = serde_json::Map::new();
     let mut ignored_objects = serde_json::Map::new();

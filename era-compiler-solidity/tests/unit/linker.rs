@@ -5,8 +5,8 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::libraries::Libraries;
 use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 
 use crate::common;
@@ -111,6 +111,20 @@ fn library_passed_post_compile_time_non_elf_08_yul() {
         SolcStandardJsonInputSettingsCodegen::Yul,
     );
 }
+#[test]
+fn library_produce_equal_bytecode_in_both_cases_08_evmla() {
+    library_produce_equal_bytecode_in_both_cases(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::EVMLA,
+    );
+}
+#[test]
+fn library_produce_equal_bytecode_in_both_cases_08_yul() {
+    library_produce_equal_bytecode_in_both_cases(
+        SolcCompiler::LAST_SUPPORTED_VERSION,
+        SolcStandardJsonInputSettingsCodegen::Yul,
+    );
+}
 
 pub const SOURCE_CODE: &str = r#"
 // SPDX-License-Identifier: MIT
@@ -147,7 +161,7 @@ contract Greeter {
 "#;
 
 fn get_bytecode(
-    libraries: BTreeMap<String, BTreeMap<String, String>>,
+    libraries: Libraries,
     version: &semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) -> Vec<u8> {
@@ -157,6 +171,7 @@ fn get_bytecode(
     let build = common::build_solidity(
         sources,
         libraries,
+        era_compiler_common::HashType::None,
         BTreeSet::new(),
         version,
         codegen,
@@ -184,7 +199,7 @@ fn library_not_passed_compile_time(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -201,7 +216,7 @@ fn library_not_passed_post_compile_time(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -221,10 +236,9 @@ fn library_passed_compile_time(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let libraries = Libraries::into_standard_json(vec![
-        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
-    ])
-    .expect("Always valid");
+    let library_arguments =
+        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+    let libraries = Libraries::try_from(library_arguments.as_slice()).expect("Always valid");
 
     let bytecode = get_bytecode(libraries, &version, codegen);
 
@@ -240,12 +254,14 @@ fn library_passed_post_compile_time(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let libraries = Libraries::into_linker(vec![
-        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
-    ])
-    .expect("Always valid");
+    let library_arguments =
+        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+    let linker_symbols = Libraries::try_from(library_arguments.as_slice())
+        .expect("Always valid")
+        .as_linker_symbols()
+        .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -253,7 +269,7 @@ fn library_passed_post_compile_time(
         false,
     );
     let memory_buffer_linked = memory_buffer
-        .link_module_eravm(&libraries)
+        .link_module_eravm(&linker_symbols)
         .expect("Link failure");
     assert!(
         !memory_buffer_linked.is_elf_eravm(),
@@ -265,12 +281,14 @@ fn library_passed_post_compile_time_second_call(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let libraries = Libraries::into_linker(vec![
-        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
-    ])
-    .expect("Always valid");
+    let library_arguments =
+        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+    let linker_symbols = Libraries::try_from(library_arguments.as_slice())
+        .expect("Always valid")
+        .as_linker_symbols()
+        .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -281,7 +299,7 @@ fn library_passed_post_compile_time_second_call(
         .link_module_eravm(&BTreeMap::new())
         .expect("Link failure");
     let memory_buffer_linked = memory_buffer_linked_empty
-        .link_module_eravm(&libraries)
+        .link_module_eravm(&linker_symbols)
         .expect("Link failure");
     assert!(
         !memory_buffer_linked.is_elf_eravm(),
@@ -293,14 +311,17 @@ fn library_passed_post_compile_time_redundant_args(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let libraries = Libraries::into_linker(vec![
+    let library_arguments = vec![
         "fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
         "scam.sol:Scam=0x0000000000000000000000000000000000000000".to_owned(),
         "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
-    ])
-    .expect("Always valid");
+    ];
+    let linker_symbols = Libraries::try_from(library_arguments.as_slice())
+        .expect("Always valid")
+        .as_linker_symbols()
+        .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -308,7 +329,7 @@ fn library_passed_post_compile_time_redundant_args(
         false,
     );
     let memory_buffer_linked = memory_buffer
-        .link_module_eravm(&libraries)
+        .link_module_eravm(&linker_symbols)
         .expect("Link failure");
     assert!(
         !memory_buffer_linked.is_elf_eravm(),
@@ -320,12 +341,14 @@ fn library_passed_post_compile_time_non_elf(
     version: semver::Version,
     codegen: SolcStandardJsonInputSettingsCodegen,
 ) {
-    let libraries = Libraries::into_linker(vec![
-        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
-    ])
-    .expect("Always valid");
+    let library_arguments =
+        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+    let libraries = Libraries::try_from(library_arguments.as_slice())
+        .expect("Always valid")
+        .as_linker_symbols()
+        .expect("Always valid");
 
-    let bytecode = get_bytecode(BTreeMap::new(), &version, codegen);
+    let bytecode = get_bytecode(Libraries::default(), &version, codegen);
 
     let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
         bytecode.as_slice(),
@@ -341,5 +364,42 @@ fn library_passed_post_compile_time_non_elf(
     assert!(
         !memory_buffer_linked_non_elf.is_elf_eravm(),
         "The bytecode is an ELF file"
+    );
+}
+
+fn library_produce_equal_bytecode_in_both_cases(
+    version: semver::Version,
+    codegen: SolcStandardJsonInputSettingsCodegen,
+) {
+    let library_arguments =
+        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+    let libraries = Libraries::try_from(library_arguments.as_slice()).expect("Always valid");
+    let linker_symbols = libraries.as_linker_symbols().expect("Always valid");
+
+    let bytecode_compile_time = get_bytecode(libraries, &version, codegen);
+    let memory_buffer_compile_time = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+        bytecode_compile_time.as_slice(),
+        "bytecode_compile_time",
+        false,
+    );
+
+    let bytecode_post_compile_time = get_bytecode(Libraries::default(), &version, codegen);
+    let memory_buffer_post_compile_time =
+        inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+            bytecode_post_compile_time.as_slice(),
+            "bytecode_post_compile_time",
+            false,
+        );
+    let memory_buffer_linked_post_compile_time = memory_buffer_post_compile_time
+        .link_module_eravm(&linker_symbols)
+        .expect("Link failure");
+
+    dbg!(
+        hex::encode(memory_buffer_compile_time.as_slice()),
+        hex::encode(memory_buffer_linked_post_compile_time.as_slice())
+    );
+    assert!(
+        memory_buffer_compile_time.as_slice() == memory_buffer_linked_post_compile_time.as_slice(),
+        "The bytecodes are not equal"
     );
 }

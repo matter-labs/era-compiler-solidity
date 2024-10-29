@@ -2,10 +2,9 @@
 //! The Solidity compiler unit tests for messages.
 //!
 
-use std::collections::BTreeMap;
-
 use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
 use era_compiler_solidity::solc::Compiler as SolcCompiler;
 use era_compiler_solidity::warning_type::WarningType;
 
@@ -599,7 +598,7 @@ fn send(
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -617,7 +616,7 @@ fn send_suppressed(
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -662,7 +661,7 @@ fn transfer(
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -680,7 +679,7 @@ fn transfer_suppressed(
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -707,7 +706,7 @@ fn runtime_code(version: semver::Version, codegen: SolcStandardJsonInputSettings
     assert!(common::check_solidity_message(
         RUNTIME_CODE_SOURCE_CODE,
         "Deploy and runtime code are merged together on ZKsync",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -752,7 +751,7 @@ contract InternalFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcStandardJsonInputSettingsCodegen::EVMLA,
         true,
@@ -791,7 +790,7 @@ contract StackFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcStandardJsonInputSettingsCodegen::EVMLA,
         true,
@@ -837,7 +836,7 @@ contract StorageFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         SolcStandardJsonInputSettingsCodegen::EVMLA,
         true,
@@ -859,7 +858,7 @@ fn tx_origin(version: semver::Version, codegen: SolcStandardJsonInputSettingsCod
     assert!(common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -873,7 +872,7 @@ fn tx_origin_suppressed(version: semver::Version, codegen: SolcStandardJsonInput
     assert!(!common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -897,7 +896,7 @@ fn tx_origin_assembly(version: semver::Version, codegen: SolcStandardJsonInputSe
     assert!(common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,
@@ -914,7 +913,7 @@ fn tx_origin_assembly_suppressed(
     assert!(!common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
-        BTreeMap::new(),
+        Libraries::default(),
         &version,
         codegen,
         false,

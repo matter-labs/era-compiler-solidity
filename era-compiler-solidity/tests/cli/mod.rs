@@ -230,7 +230,7 @@ pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
 pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=INVALID";
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=XINVALID";
 
 /// A test constant.
 pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";
