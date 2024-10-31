@@ -103,3 +103,18 @@ jobs:
           target: ${{ matrix.target || '' }}
           enable-coverage: ${{ matrix.enable-coverage || 'false' }}
           coverage-token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Special job that allows some of the jobs to be skipped or failed
+  # requiring others to be successful
+  pr-checks:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - secrets-scanner
+      - cargo-checks
+      - build-and-test
+    steps:
+      - name: Decide on PR checks
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
