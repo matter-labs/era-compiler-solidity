@@ -9,6 +9,10 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/deploy-docs.yaml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yaml'
   workflow_dispatch:
     inputs:
       version:
@@ -45,3 +49,4 @@ jobs:
           docs-dir: ${{ inputs.docs-dir || 'docs' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           enable-tests: true
+          deploy: ${{ github.event_name != 'pull_request' }}
