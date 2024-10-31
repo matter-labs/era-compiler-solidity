@@ -4,10 +4,9 @@ To compile contracts for ZKsync, you need the ZKsync Solidity compiler toolchain
 It consists of two components:
 
 1. The main component: [*zksolc*](https://github.com/matter-labs/era-compiler-solidity/releases).
-2. The additional component: [*solc*](https://docs.soliditylang.org/en/latest), which produces artifacts used by *zksolc*.
+2. The additional component: [*solc*](https://docs.soliditylang.org/en/latest), which produces Solidity artifacts used by *zksolc*.
 
-> [!IMPORTANT]
-> We are using a [fork](https://github.com/matter-labs/era-solidity) of the upstream *solc* compiler.
+> We are using our [fork](https://github.com/matter-labs/era-solidity) of the upstream *solc* compiler.
 > The fork is necessary to support several ZKsync-specific features and workarounds.
 
 
@@ -17,7 +16,6 @@ It consists of two components:
 It is recommended to have at least 4 GB of RAM to compile large projects. The compilation process is parallelized by default, so the number of threads used is
 equal to the number of CPU cores.
 
-> [!IMPORTANT]
 > Large projects can consume a lot of RAM during compilation on machines with a high number of cores.
 > If you encounter memory issues, consider reducing the number of threads using the `--threads` option.
 
@@ -28,13 +26,12 @@ The table below outlines the supported platforms and architectures:
 | x86_64 |   ✅   |   ✅   |    ✅    |
 | arm64  |   ✅   |   ✅   |    ❌    |
 
-> [!IMPORTANT]
 > Please avoid using outdated distributions of operating systems, as they may lack the necessary dependencies or include outdated versions of them.
 > *zksolc* is only tested on recent versions of popular distributions, such as MacOS 11.0 and Windows 10.
 
 <div class="warning">
-[musl](https://musl.libc.org)-based builds are deprecated, but they are still supported to preserve tooling compatibility.
-Starting from *zksolc* v1.5.3, we are shipping builds statically linked with [the GNU C library](https://www.gnu.org/software/libc/).
+<a href="https://musl.libc.org">musl</a>-based builds are deprecated, but they are still supported to preserve tooling compatibility.<br>
+Starting from <b>zksolc</b> v1.5.3, we are shipping builds statically linked with <a href="https://www.gnu.org/software/libc/">the GNU C library</a>.
 </div>
 
 
@@ -43,7 +40,6 @@ Starting from *zksolc* v1.5.3, we are shipping builds statically linked with [th
 
 The *zksolc* versioning scheme does not yet follow the [Semantic Versioning](https://semver.org) specification. Instead, its major and minor versions match those of the EraVM protocol for which *zksolc* produces bytecode. The patch version is incremented with each release, regardless of whether breaking changes are introduced. Therefore, please consult the changelog before updating the compiler.
 
-> [!IMPORTANT]
 > We recommend always using the latest version of *zksolc* and *solc* to benefit from the latest features and bug fixes.
 
 
@@ -56,7 +52,6 @@ You can install the ZKsync Solidity compiler toolchain using the following metho
 2. Download pre-built binaries of [*solc*](https://github.com/matter-labs/era-solidity/releases) and [*zksolc*](https://github.com/matter-labs/era-compiler-solidity/releases). See [Static Executables](#static-executables).
 3. Build *zksolc* from sources. See [Building from Source](#building-from-source).
 
-> [!TIP]
 > For small projects, learning and research purposes, *zksolc* and *solc* executables without a toolkit are sufficient.
 
 
@@ -82,10 +77,7 @@ Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://git
     zksolc --solc './solc' --bin 'Greeter.sol'
     ```
 
-> [!TIP]
 > The second option is more convenient if you are using different versions of *solc* for different projects.
-
-> [!IMPORTANT]
 > *zksolc* only supports *solc* of version 0.4.12 and newer.
 
 
@@ -106,12 +98,12 @@ The ZKsync toolchain is supported by the following toolkits:
 We ship *zksolc* binaries on the [releases page of `matter-labs/era-compiler-solidity` repository](https://github.com/matter-labs/era-compiler-solidity/releases). 
 This repository maintains intuitive and stable naming for the executables and provides a changelog for each release. Tools using *zksolc* will download the binaries from this repository and cache them locally.
 
-> [!WARNING]
-> The `matter-labs/era-compiler-solidity` repository only contains builds for versions 1.4.0 and newer.
-> You can download older versions from [the main branch](https://github.com/matter-labs/zksolc-bin/tree/main) or [the releases page](https://github.com/matter-labs/zksolc-bin/releases) of the deprecated repository for zksolc executables.
-> If any of your projects are still using the old locations, please change their download URLs to the [new one](https://github.com/matter-labs/era-compiler-solidity/releases).
+<div class="warning">
+The <a href="https://github.com/matter-labs/era-compiler-solidity">matter-labs/era-compiler-solidity</a> repository only contains builds for versions 1.4.0 and newer.<br>
+You can download older versions from <a href="https://github.com/matter-labs/zksolc-bin/tree/main">the main branch</a> or <a href="https://github.com/matter-labs/zksolc-bin/releases">the releases page</a> of the deprecated repository for zksolc executables.<br>
+If any of your projects are still using the old locations, please change their download URLs to <a href="https://github.com/matter-labs/era-compiler-solidity/releases">the new one</a>.
+</div>
 
-> [!NOTE]
 > All binaries are statically linked and must work on all recent platforms without issues.
 > *zksolc* is fully written in Rust, aiming to minimize incompatibilities with the environment.
 
@@ -119,7 +111,6 @@ This repository maintains intuitive and stable naming for the executables and pr
 
 ## Building from Source
 
-> [!IMPORTANT]
 > Please consider using the pre-built executables before building from source.
 > Building from source is only necessary for development, research, and debugging purposes.
 > Deployment and production use cases should rely only on [the officially released executables](#static-executables).
@@ -156,7 +147,6 @@ This repository maintains intuitive and stable naming for the executables and pr
 
    The easiest way to do it is following the latest [official instructions](https://www.rust-lang.org/tools/install).
 
-> [!TIP]
 > The Rust version used for building is pinned in the [rust-toolchain.toml](../rust-toolchain.toml) file at the repository root.
 > *cargo* will automatically download the pinned version of *rustc* when you start building the project.
 
@@ -174,7 +164,6 @@ This repository maintains intuitive and stable naming for the executables and pr
 
     To fine-tune your build of ZKsync LLVM framework, refer to the section [Fine tuning ZKsync LLVM build](#fine-tuning-zksync-llvm-build)
 
-> [!IMPORTANT]
 > Always use the latest version of the builder to benefit from the latest features and bug fixes.
 > To check for new versions and update the builder, simply run `cargo install compiler-llvm-builder` again, even if you have already installed the builder.
 > The builder is not the ZKsync LLVM framework itself, but a tool to build it.
@@ -247,7 +236,6 @@ This repository maintains intuitive and stable naming for the executables and pr
   -DBUILD_SHARED_LIBS='Off'
   ```
 
-> [!IMPORTANT]
 > For most users, the [ZKsync LLVM builder](#building-from-source) is the recommended way to build the ZKsync LLVM framework.
 > This section exists for the ZKsync toolchain developers and researchers with specific requirements and experience with the LLVM framework.
 > We are going to present a more detailed guide for LLVM contributors in the future.
