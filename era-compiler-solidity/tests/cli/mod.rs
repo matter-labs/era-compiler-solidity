@@ -48,6 +48,7 @@ mod yul;
 
 macro_rules! test_script_path {
     ($name:ident, $base:expr) => {
+        /// Shell script test constants.
         #[cfg(target_os = "windows")]
         pub const $name: &str = concat!($base, ".bat");
         #[cfg(not(target_os = "windows"))]
@@ -198,7 +199,6 @@ pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_co
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
-/// Shell script test constants.
 test_script_path!(
     TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH,
     "tests/scripts/solc_version_output_error"

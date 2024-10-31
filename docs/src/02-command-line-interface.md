@@ -3,16 +3,15 @@
 The CLI of *zksolc* is designed with resemblance to the CLI of *solc*. There are several main input/output (I/O) modes in the *zksolc* interface:
 
 - [Basic CLI](#basic-cli)
-- [Combined JSON](./03-combined-json.md)
-- [Standard JSON](./04-standard-json.md)
+- [Standard JSON](./03-standard-json.md)
+- [Combined JSON](./04-combined-json.md)
 
 The basic CLI and combined JSON modes are more light-weight and suitable for calling from the shell. The standard JSON mode is similar to client-server interaction, thus more suitable for using from other applications, such as [Foundry](https://github.com/matter-labs/foundry-zksync).
 
-> [!IMPORTANT]
-> All toolkits using *zksolc* must be operating in standard JSON mode and follow [its specification](./04-standard-json.md).
+> All toolkits using *zksolc* must be operating in standard JSON mode and follow [its specification](./03-standard-json.md).
 > It will make the toolkits more robust and future-proof, as the standard JSON mode is the most versatile and used for the majority of popular projects.
 
-This page focuses on the basic CLI mode. For more information on the other modes, see the corresponding [combined JSON](./03-combined-json.md) and [standard JSON](./04-standard-json.md) pages.
+This page focuses on the basic CLI mode. For more information on the other modes, see the corresponding [combined JSON](./04-combined-json.md) and [standard JSON](./03-standard-json.md) pages.
 
 
 
@@ -36,7 +35,6 @@ Usage:
 zksolc Simple.sol --bin --solc '/path/to/solc'
 ```
 
-> [!IMPORTANT]
 > Examples in the subsequent sections assume that *solc* [is installed and available](./01-installation.md#installing-solc) in the system path.
 > If you prefer specifying the full path to *solc*, use the `--solc` option with the examples below.
 
@@ -163,15 +161,15 @@ Metadata:
 
 
 
-### `--combined-json`
-
-For the combined JSON mode usage, see the [Combined JSON](./03-combined-json.md) page.
-
-
-
 ### `--standard-json`
 
-For the standard JSON mode usage, see the [Standard JSON](./04-standard-json.md) page.
+For the standard JSON mode usage, see the [Standard JSON](./03-standard-json.md) page.
+
+
+
+### `--combined-json`
+
+For the combined JSON mode usage, see the [Combined JSON](./04-combined-json.md) page.
 
 
 
@@ -266,7 +264,6 @@ Binary:
 
 *zksolc* includes several tools provided by the LLVM framework out of the box, such as disassembler and linker. The following sections describe the usage of these tools.
 
-> [!NOTE]
 > The mode-altering CLI options are mutually exclusive. This means that only one of the options below can be enabled at a time:
 > - `--standard-json`
 > - `--combined-json`
@@ -298,7 +295,6 @@ Output:
 0x0000008003000039000000400030043f0000000100200190000000140000c13d00000000020...
 ```
 
-> [!NOTE]
 > The `0x` prefix in the front of the hexadecimal string is optional.
 
 ```bash
@@ -339,8 +335,9 @@ zksolc --disassemble input.bin
 
 Specifies the target architecture for the compiled contract.
 
-> [!WARNING]
-> The `--target` option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
+<div class="warning">
+The <code>--target</code> option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
+</div>
 
 Usage:
 
@@ -353,7 +350,7 @@ Output:
 ```text
 ======= Simple.sol:Simple =======
 Binary:
-5b60806040523415600e575f5ffd5b630000007f630000002760808282823960808092505050f35b5f5f6080604052369150600482106032575f3560e01c9050633df4ddf48114603657635a8ac02d81811480915050605a575b5f5ffd5b3415603f575f5ffd5b60015f036004830313604f575f5ffd5b602a60805260206080f35b34156063575f5ffd5b60015f0360048303136073575f5ffd5b60405160638152602090f3
+0000008003000039000000400030043f0000000100200190000000130000c13d...
 ```
 
 
@@ -364,7 +361,15 @@ Enables the linker mode.
 
 *zksolc* includes an LLVM-based linker that can be used for post-compile-time linking of libraries.
 
-Such linking is happening in several steps:
+The linker features its own minimal JSON output format:
+
+|         Field        |                                              Description                                            |
+|:--------------------:|:---------------------------------------------------------------------------------------------------:|
+| **linked**           | Bytecode files where all library references have been successfully resolved. Values are hashes of the bytecode used to identify EraVM dependencies during deployment             |
+| **unlinked**         | If empty, the bytecode in the file `./output/Greeter.sol/Greeter.zbin` is ready for deployment. The bytecode file is modified in-place, so the original file with unlinked bytecode is overwritten. If not empty, some symbols are left unresolved, so the linker must be called again.                 |
+| **ignored**          | Bytecode files already linked before, so they were not processed by the linker in the current call. |
+
+Linking is done in several steps:
 
 1. A contract with a library dependency is compiled to bytecode:
 
@@ -398,7 +403,7 @@ contract Greeter {
 zksolc './Greeter.sol' --output-dir './output' --bin
 ```
 
-For unlinked bytecode, the ZKsync compiler toolchain uses [an ELF wrapper](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) which is the standard of the LLVM framework. ELF-wrapped bytecode is not a valid bytecode that can be deployed to the blockchain. Before deployment, all library references must be resolved. Upon the resolution of the library references, the ELF wrapper is stripped and only the raw bytecode ready for deployment remains. This also means that unlinked and linked bytecodes are not equal in size.
+For unlinked bytecode, the ZKsync compiler toolchain uses [an ELF wrapper](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) which is the standard of the LLVM framework. ELF-wrapped bytecode is not a valid bytecode that can be deployed to the blockchain. Before deployment, all library references must be resolved. Upon the resolution of the library references, the ELF wrapper is stripped and only the raw bytecode ready for deployment remains. It also means that unlinked and linked bytecodes are not equal in size.
 
 2. Check for unlinked library references.
 
@@ -442,11 +447,7 @@ Output:
 }
 ```
 
-The `linked` field tells lists all bytecode files where all library references were successfully resolved. The values next to file paths are the hashes of the bytecode that are used to identify EraVM dependencies during deployment.
-
-If `unlinked` is empty, the bytecode in the file `./output/Greeter.sol/Greeter.zbin` is ready for deployment. The bytecode file is modified in-place, so the original file with unlinked bytecode is overwritten.
-
-The `ignored` field list files that have been already linked before, so they are not processed by the linker in the current call. For instance, if you run the command above once again:
+If you run the last command above once again, nothing will happen, and the previously linked file will show up as `ignored`:
 
 ```json
 {

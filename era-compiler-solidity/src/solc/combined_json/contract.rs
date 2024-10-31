@@ -43,12 +43,16 @@ pub struct Contract {
     pub bin_runtime: Option<String>,
 
     /// The EraVM assembly.
-    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    #[serde(
+        default,
+        skip_serializing_if = "serde_json::Value::is_null",
+        skip_deserializing
+    )]
     pub assembly: serde_json::Value,
     /// The factory dependencies.
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, skip_deserializing)]
     pub factory_deps: BTreeMap<String, String>,
     /// The missing libraries.
-    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
+    #[serde(default, skip_serializing_if = "HashSet::is_empty", skip_deserializing)]
     pub missing_libraries: HashSet<String>,
 }
