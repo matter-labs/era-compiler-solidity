@@ -32,9 +32,10 @@ The table below outlines the supported platforms and architectures:
 > Please avoid using outdated distributions of operating systems, as they may lack the necessary dependencies or include outdated versions of them.
 > *zksolc* is only tested on recent versions of popular distributions, such as MacOS 11.0 and Windows 10.
 
-> [!WARNING]
-> [musl](https://musl.libc.org)-based builds are deprecated, but they are still supported to preserve tooling compatibility.
-> Starting from version 1.5.3, we provide builds statically linked with [the GNU C library](https://www.gnu.org/software/libc/).
+<div class="warning">
+[musl](https://musl.libc.org)-based builds are deprecated, but they are still supported to preserve tooling compatibility.
+Starting from *zksolc* v1.5.3, we are shipping builds statically linked with [the GNU C library](https://www.gnu.org/software/libc/).
+</div>
 
 
 
