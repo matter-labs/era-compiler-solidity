@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.7] - 2024-10-31
 
 ### Added
 
@@ -8,6 +8,7 @@
 - The `--codegen` option to make codegen settings more unified
 - Increased the code coverage of the interface to nearly 100%
 - The `zksolc` documentation as a part of this repository
+- More LLVM optimizations
 
 ### Changed
 
