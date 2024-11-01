@@ -13,19 +13,8 @@ use std::time::Duration;
 
 use assert_cmd::Command;
 
-use era_compiler_solidity::error_type::ErrorType;
 use era_compiler_solidity::project::Project;
-use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputSettingsLibraries;
-use era_compiler_solidity::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
-use era_compiler_solidity::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
-use era_compiler_solidity::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
-use era_compiler_solidity::solc::standard_json::input::source::Source as SolcStandardJsonInputSource;
-use era_compiler_solidity::solc::standard_json::input::Input as SolcStandardJsonInput;
-use era_compiler_solidity::solc::standard_json::output::error::collectable::Collectable as CollectableError;
-use era_compiler_solidity::solc::standard_json::output::Output as SolcStandardJsonOutput;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use era_compiler_solidity::warning_type::WarningType;
+use era_solc::CollectableError;
 
 /// Synchronization for `solc` downloads.
 static DOWNLOAD_SOLC: Once = Once::new();
@@ -88,7 +77,7 @@ pub fn download_executables(config_path: &str, create_alias: bool) -> anyhow::Re
     if create_alias {
         // Copy the latest `solc-*` binary to `solc` for CLI tests
         let latest_solc = PathBuf::from(
-            get_solc_compiler(&SolcCompiler::LAST_SUPPORTED_VERSION, false)?.executable,
+            get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable,
         );
         let mut solc = latest_solc.clone();
         solc.set_file_name(format!("solc{}", std::env::consts::EXE_SUFFIX));
@@ -104,7 +93,7 @@ pub fn download_executables(config_path: &str, create_alias: bool) -> anyhow::Re
 pub fn get_solc_compiler(
     version: &semver::Version,
     use_upstream: bool,
-) -> anyhow::Result<SolcCompiler> {
+) -> anyhow::Result<era_solc::Compiler> {
     let directory = if use_upstream {
         SOLC_UPSTREAM_DOWNLOAD_DIRECTORY
     } else {
@@ -112,11 +101,11 @@ pub fn get_solc_compiler(
     };
     let solc_path = PathBuf::from(directory).join(format!(
         "{}-{version}{}",
-        SolcCompiler::DEFAULT_EXECUTABLE_NAME,
+        era_solc::Compiler::DEFAULT_EXECUTABLE_NAME,
         std::env::consts::EXE_SUFFIX,
     ));
 
-    SolcCompiler::try_from_path(solc_path.to_str().expect("Always valid"))
+    era_solc::Compiler::try_from_path(solc_path.to_str().expect("Always valid"))
 }
 
 ///
@@ -124,34 +113,34 @@ pub fn get_solc_compiler(
 ///
 pub fn build_solidity(
     sources: BTreeMap<String, String>,
-    libraries: SolcStandardJsonInputSettingsLibraries,
+    libraries: era_solc::StandardJsonInputLibraries,
     metadata_hash_type: era_compiler_common::HashType,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
-    solc_codegen: SolcStandardJsonInputSettingsCodegen,
+    solc_codegen: era_solc::StandardJsonInputCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-) -> anyhow::Result<SolcStandardJsonOutput> {
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     let solc_compiler = get_solc_compiler(solc_version, false)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let sources: BTreeMap<String, SolcStandardJsonInputSource> = sources
+    let sources: BTreeMap<String, era_solc::StandardJsonInputSource> = sources
         .into_iter()
-        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .map(|(path, source)| (path, era_solc::StandardJsonInputSource::from(source)))
         .collect();
 
-    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = era_solc::StandardJsonInput::try_from_solidity_sources(
         sources,
         libraries.clone(),
         remappings,
-        SolcStandardJsonInputSettingsOptimizer::default(),
+        era_solc::StandardJsonInputOptimizer::default(),
         Some(solc_codegen),
         None,
         true,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
-        SolcStandardJsonInputSettingsMetadata::default(),
+        era_solc::StandardJsonInputSelection::new_required(solc_codegen),
+        era_solc::StandardJsonInputMetadata::default(),
         vec![],
         vec![],
         vec![],
@@ -202,31 +191,31 @@ pub fn build_solidity(
 ///
 pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
-    libraries: SolcStandardJsonInputSettingsLibraries,
+    libraries: era_solc::StandardJsonInputLibraries,
     solc_version: &semver::Version,
-    solc_codegen: SolcStandardJsonInputSettingsCodegen,
-) -> anyhow::Result<SolcStandardJsonOutput> {
+    solc_codegen: era_solc::StandardJsonInputCodegen,
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     let solc_compiler = get_solc_compiler(solc_version, false)?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
-    let sources: BTreeMap<String, SolcStandardJsonInputSource> = sources
+    let sources: BTreeMap<String, era_solc::StandardJsonInputSource> = sources
         .into_iter()
-        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .map(|(path, source)| (path, era_solc::StandardJsonInputSource::from(source)))
         .collect();
 
-    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = era_solc::StandardJsonInput::try_from_solidity_sources(
         sources,
         libraries.clone(),
         BTreeSet::new(),
-        SolcStandardJsonInputSettingsOptimizer::default(),
+        era_solc::StandardJsonInputOptimizer::default(),
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
-        SolcStandardJsonInputSettingsMetadata::default(),
+        era_solc::StandardJsonInputSelection::new_required(solc_codegen),
+        era_solc::StandardJsonInputMetadata::default(),
         vec![],
         vec![],
         vec![],
@@ -261,7 +250,9 @@ pub fn build_solidity_and_detect_missing_libraries(
 ///
 /// Builds the Yul `sources` and returns the standard JSON output.
 ///
-pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStandardJsonOutput> {
+pub fn build_yul(
+    sources: BTreeMap<String, String>,
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -270,14 +261,14 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 
     let sources = sources
         .into_iter()
-        .map(|(path, source)| (path, SolcStandardJsonInputSource::from(source)))
+        .map(|(path, source)| (path, era_solc::StandardJsonInputSource::from(source)))
         .collect();
 
-    let mut solc_output = SolcStandardJsonOutput::new(&sources, &mut vec![]);
+    let mut solc_output = era_solc::StandardJsonOutput::new(&sources, &mut vec![]);
 
     let project = Project::try_from_yul_sources(
         sources,
-        SolcStandardJsonInputSettingsLibraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         Some(&mut solc_output),
         None,
         None,
@@ -305,9 +296,9 @@ pub fn build_yul(sources: BTreeMap<String, String>) -> anyhow::Result<SolcStanda
 /// If `solc_compiler` is set, the standard JSON is validated with `solc`.
 ///
 pub fn build_yul_standard_json(
-    mut solc_input: SolcStandardJsonInput,
-    solc_compiler: Option<&SolcCompiler>,
-) -> anyhow::Result<SolcStandardJsonOutput> {
+    mut solc_input: era_solc::StandardJsonInput,
+    solc_compiler: Option<&era_solc::Compiler>,
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -324,13 +315,13 @@ pub fn build_yul_standard_json(
         }
         None => (
             None,
-            SolcStandardJsonOutput::new(&solc_input.sources, &mut vec![]),
+            era_solc::StandardJsonOutput::new(&solc_input.sources, &mut vec![]),
         ),
     };
 
     let project = Project::try_from_yul_sources(
         solc_input.sources,
-        SolcStandardJsonInputSettingsLibraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         Some(&mut solc_output),
         solc_version,
         None,
@@ -356,8 +347,8 @@ pub fn build_yul_standard_json(
 /// Builds the LLVM IR standard JSON and returns the standard JSON output.
 ///
 pub fn build_llvm_ir_standard_json(
-    input: SolcStandardJsonInput,
-) -> anyhow::Result<SolcStandardJsonOutput> {
+    input: era_solc::StandardJsonInput,
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -365,11 +356,11 @@ pub fn build_llvm_ir_standard_json(
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
-    let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
+    let mut output = era_solc::StandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
     let project = Project::try_from_llvm_ir_sources(
         input.sources,
-        SolcStandardJsonInputSettingsLibraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         Some(&mut output),
     )?;
     let build = project.compile_to_eravm(
@@ -393,8 +384,8 @@ pub fn build_llvm_ir_standard_json(
 /// Builds the EraVM assembly standard JSON and returns the standard JSON output.
 ///
 pub fn build_eravm_assembly_standard_json(
-    input: SolcStandardJsonInput,
-) -> anyhow::Result<SolcStandardJsonOutput> {
+    input: era_solc::StandardJsonInput,
+) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
     era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
@@ -402,7 +393,7 @@ pub fn build_eravm_assembly_standard_json(
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
 
-    let mut output = SolcStandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
+    let mut output = era_solc::StandardJsonOutput::new(&BTreeMap::new(), &mut vec![]);
 
     let project = Project::try_from_eravm_assembly_sources(input.sources, Some(&mut output))?;
     let build = project.compile_to_eravm(
@@ -428,12 +419,12 @@ pub fn build_eravm_assembly_standard_json(
 pub fn check_solidity_message(
     source_code: &str,
     warning_substring: &str,
-    libraries: SolcStandardJsonInputSettingsLibraries,
+    libraries: era_solc::StandardJsonInputLibraries,
     solc_version: &semver::Version,
-    solc_codegen: SolcStandardJsonInputSettingsCodegen,
+    solc_codegen: era_solc::StandardJsonInputCodegen,
     solc_use_upstream: bool,
-    suppressed_errors: Vec<ErrorType>,
-    suppressed_warnings: Vec<WarningType>,
+    suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
+    suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
 ) -> anyhow::Result<bool> {
     self::setup()?;
 
@@ -442,19 +433,19 @@ pub fn check_solidity_message(
     let mut sources = BTreeMap::new();
     sources.insert(
         "test.sol".to_string(),
-        SolcStandardJsonInputSource::from(source_code.to_string()),
+        era_solc::StandardJsonInputSource::from(source_code.to_string()),
     );
 
-    let mut solc_input = SolcStandardJsonInput::try_from_solidity_sources(
+    let mut solc_input = era_solc::StandardJsonInput::try_from_solidity_sources(
         sources,
         libraries,
         BTreeSet::new(),
-        SolcStandardJsonInputSettingsOptimizer::default(),
+        era_solc::StandardJsonInputOptimizer::default(),
         Some(solc_codegen),
         None,
         false,
-        SolcStandardJsonInputSettingsSelection::new_required(solc_codegen),
-        SolcStandardJsonInputSettingsMetadata::default(),
+        era_solc::StandardJsonInputSelection::new_required(solc_codegen),
+        era_solc::StandardJsonInputMetadata::default(),
         vec![],
         suppressed_errors,
         suppressed_warnings,

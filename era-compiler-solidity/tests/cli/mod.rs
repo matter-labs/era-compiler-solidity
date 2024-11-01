@@ -291,11 +291,9 @@ pub fn execute_zksolc_with_target(
 /// Execute solc with the given arguments and return the result.
 ///
 pub fn execute_solc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Assert> {
-    let solc_compiler = crate::common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?
+            .executable;
     let mut cmd = Command::new(solc_compiler);
     Ok(cmd.args(args).assert())
 }

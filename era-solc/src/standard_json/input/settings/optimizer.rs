@@ -54,15 +54,3 @@ impl Optimizer {
         true
     }
 }
-
-impl TryFrom<&Optimizer> for era_compiler_llvm_context::OptimizerSettings {
-    type Error = anyhow::Error;
-
-    fn try_from(optimizer: &Optimizer) -> Result<Self, Self::Error> {
-        let mut settings = Self::try_from_cli(optimizer.mode)?;
-        if optimizer.fallback_to_optimizing_for_size {
-            settings.enable_fallback_to_size();
-        }
-        Ok(settings)
-    }
-}

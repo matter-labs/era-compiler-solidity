@@ -9,8 +9,6 @@ use std::path::PathBuf;
 use path_slash::PathExt;
 use structopt::StructOpt;
 
-use era_compiler_solidity::SolcStandardJsonOutputError;
-
 ///
 /// Compiles the provided Solidity input files (or use the standard input if no files
 /// are given or "-" is specified as a file name). Outputs the components based on the
@@ -157,7 +155,7 @@ pub struct Arguments {
     /// Specify the `solc` codegen.
     /// Available options: `evmla`, `yul`.
     #[structopt(long = "codegen")]
-    pub codegen: Option<era_compiler_solidity::SolcStandardJsonInputSettingsCodegen>,
+    pub codegen: Option<era_solc::StandardJsonInputCodegen>,
 
     /// Forcibly switch to EVM legacy assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
@@ -240,24 +238,24 @@ impl Arguments {
     ///
     /// Validates the arguments.
     ///
-    pub fn validate(&self) -> Vec<SolcStandardJsonOutputError> {
+    pub fn validate(&self) -> Vec<era_solc::StandardJsonOutputError> {
         let mut messages = vec![];
 
         if self.system_mode {
-            messages.push(SolcStandardJsonOutputError::new_warning(
+            messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "`--system-mode` flag is deprecated: please use `--enable-eravm-extensions` instead.",
                 None, None,
             ));
         }
         if self.disable_solc_optimizer {
-            messages.push(SolcStandardJsonOutputError::new_warning(
+            messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "`--disable-solc-optimizer` flag is deprecated: the `solc` optimizer is not used by `zksolc` anymore.",
                 None,
                 None,
             ));
         }
         if self.force_evmla {
-            messages.push(SolcStandardJsonOutputError::new_warning(
+            messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "`--force-evmla` flag is deprecated: please use `--codegen 'evmla'` instead.",
                 None,
                 None,
@@ -265,7 +263,7 @@ impl Arguments {
         }
 
         if self.version && std::env::args().count() > 2 {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "No other options are allowed while getting the compiler version.",
                 None,
                 None,
@@ -275,7 +273,7 @@ impl Arguments {
         if self.recursive_process
             && std::env::args().count() > 2 + (self.target.is_some() as usize) * 2
         {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "No other options are allowed in recursive mode.",
                 None,
                 None,
@@ -295,27 +293,27 @@ impl Arguments {
         .filter(|&&x| x)
         .count();
         if modes_count > 1 {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, linker, combined JSON, standard JSON.", None, None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
             if self.base_path.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "`base-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
             if !self.include_path.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "`include-path` is only allowed in Solidity mode.",
                     None,
                     None,
                 ));
             }
             if self.allow_paths.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "`allow-paths` is only allowed in Solidity mode.",
                     None,
                     None,
@@ -323,7 +321,7 @@ impl Arguments {
             }
 
             if self.evm_version.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "EVM version is only allowed in Solidity mode.",
                     None,
                     None,
@@ -331,7 +329,7 @@ impl Arguments {
             }
 
             if self.force_evmla || self.codegen.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Codegen settings are only available in Solidity mode.",
                     None,
                     None,
@@ -341,7 +339,7 @@ impl Arguments {
 
         if self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
             if self.solc.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Using `solc` is only allowed in Solidity and Yul modes.",
                     None,
                     None,
@@ -349,7 +347,7 @@ impl Arguments {
             }
 
             if self.enable_eravm_extensions || self.system_mode {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "EraVM extensions are only supported in Solidity and Yul modes.",
                     None,
                     None,
@@ -358,7 +356,7 @@ impl Arguments {
         }
 
         if (self.llvm_ir || self.eravm_assembly || self.disassemble) && !self.libraries.is_empty() {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "Libraries are only supported in Solidity, Yul, and linker modes.",
                 None,
                 None,
@@ -367,7 +365,7 @@ impl Arguments {
 
         if self.eravm_assembly {
             if Some(era_compiler_common::Target::EVM.to_string()) == self.target {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "EraVM assembly cannot be compiled to EVM bytecode.",
                     None,
                     None,
@@ -375,14 +373,14 @@ impl Arguments {
             }
 
             if self.optimization.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "LLVM optimizations are not supported in EraVM assembly mode.",
                     None,
                     None,
                 ));
             }
             if self.fallback_to_optimizing_for_size {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Falling back to -Oz is not supported in EraVM assembly mode.",
                     None,
                     None,
@@ -394,7 +392,7 @@ impl Arguments {
             && std::env::args().count()
                 > 2 + self.inputs.len() + (self.target.is_some() as usize) * 2
         {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "No other options except input files and `--target` are allowed in disassembler mode.",
                 None,
                 None,
@@ -408,7 +406,7 @@ impl Arguments {
                     + ((!self.libraries.is_empty()) as usize)
                     + self.libraries.len()
         {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
                 None,
                 None,
@@ -418,7 +416,7 @@ impl Arguments {
         if self.combined_json.is_some()
             && (self.output_assembly || self.output_metadata || self.output_binary)
         {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "Cannot output data outside of JSON in combined JSON mode.",
                 None,
                 None,
@@ -426,14 +424,14 @@ impl Arguments {
         }
 
         if self.standard_json.is_none() && self.detect_missing_libraries {
-            messages.push(SolcStandardJsonOutputError::new_error(
+            messages.push(era_solc::StandardJsonOutputError::new_error(
                 "Missing deployable libraries detection mode is only supported in standard JSON mode.", None, None
             ));
         }
 
         if self.standard_json.is_some() {
             if self.output_assembly || self.output_metadata || self.output_binary {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Cannot output data outside of JSON in standard JSON mode.",
                     None,
                     None,
@@ -441,14 +439,14 @@ impl Arguments {
             }
 
             if !self.inputs.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Input files must be passed via standard JSON input.",
                     None,
                     None,
                 ));
             }
             if !self.libraries.is_empty() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Libraries must be passed via standard JSON input.",
                     None,
                     None,
@@ -456,14 +454,14 @@ impl Arguments {
             }
 
             if self.codegen.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Codegen must be passed via standard JSON input.",
                     None,
                     None,
                 ));
             }
             if self.evm_version.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "EVM version must be passed via standard JSON input.",
                     None,
                     None,
@@ -471,49 +469,49 @@ impl Arguments {
             }
 
             if self.output_directory.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Output directory cannot be used in standard JSON mode.",
                     None,
                     None,
                 ));
             }
             if self.overwrite {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Overwriting flag cannot be used in standard JSON mode.",
                     None,
                     None,
                 ));
             }
             if self.optimization.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "LLVM optimizations must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
             if self.fallback_to_optimizing_for_size {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Falling back to -Oz must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
             if self.llvm_options.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "LLVM options must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
             if self.metadata_hash_type.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Metadata hash mode must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
             if self.metadata_literal {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Metadata literal content flag must be specified in standard JSON input settings.",
                     None,
                     None,
@@ -521,14 +519,14 @@ impl Arguments {
             }
 
             if self.suppressed_errors.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Suppressed errors must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
             if self.suppressed_warnings.is_some() {
-                messages.push(SolcStandardJsonOutputError::new_error(
+                messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Suppressed warnings must be specified in standard JSON input settings.",
                     None,
                     None,
@@ -536,17 +534,17 @@ impl Arguments {
             }
 
             if self.enable_eravm_extensions || self.system_mode {
-                messages.push(SolcStandardJsonOutputError::new_warning(
+                messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "EraVM extensions CLI flag `--enable-eravm-extensions` (`--system-mode`) is deprecated in standard JSON mode and must be passed in JSON as `settings.enableEraVMExtensions`.", None, None
                 ));
             }
             if self.force_evmla {
-                messages.push(SolcStandardJsonOutputError::new_warning(
+                messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "EVM legacy assembly codegen CLI flag `--force-evmla` is deprecated in standard JSON mode and must be passed in JSON as `settings.forceEVMLA`.", None, None
                 ));
             }
             if self.detect_missing_libraries {
-                messages.push(SolcStandardJsonOutputError::new_warning(
+                messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "Missing deployable libraries detection mode CLI flag `--detect-missing-libraries` is deprecated in standard JSON mode and must be passed in JSON as `settings.detectMissingLibraries`.", None, None
                 ));
             }

@@ -12,9 +12,6 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::sync::OnceLock;
 
-use crate::solc::standard_json::output::error::source_location::SourceLocation as SolcStandardJsonOutputSourceLocation;
-use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
-
 use self::input_eravm::Input as EraVMInput;
 use self::input_evm::Input as EVMInput;
 use self::output_eravm::Output as EraVMOutput;
@@ -36,7 +33,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
 
             let contract = input.contract.expect("Always exists");
             let source_location =
-                SolcStandardJsonOutputSourceLocation::new(contract.name.path.clone());
+                era_solc::StandardJsonOutputErrorSourceLocation::new(contract.name.path.clone());
             let result = contract
                 .compile_to_eravm(
                     input.dependency_data,
@@ -50,7 +47,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
                 )
                 .map(EraVMOutput::new)
                 .map_err(|error| {
-                    SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
+                    era_solc::StandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
             serde_json::to_writer(std::io::stdout(), &result)
                 .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
@@ -63,7 +60,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
 
             let contract = input.contract.expect("Always exists");
             let source_location =
-                SolcStandardJsonOutputSourceLocation::new(contract.name.path.clone());
+                era_solc::StandardJsonOutputErrorSourceLocation::new(contract.name.path.clone());
             let result = contract
                 .compile_to_evm(
                     input.dependency_data,
@@ -74,7 +71,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
                 )
                 .map(EVMOutput::new)
                 .map_err(|error| {
-                    SolcStandardJsonOutputError::new_error(error, Some(source_location), None)
+                    era_solc::StandardJsonOutputError::new_error(error, Some(source_location), None)
                 });
             serde_json::to_writer(std::io::stdout(), &result)
                 .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
@@ -129,9 +126,11 @@ where
             String::from_utf8_lossy(result.stdout.as_slice()),
             String::from_utf8_lossy(result.stderr.as_slice()),
         );
-        return Err(SolcStandardJsonOutputError::new_error(
+        return Err(era_solc::StandardJsonOutputError::new_error(
             message,
-            Some(SolcStandardJsonOutputSourceLocation::new(path.to_owned())),
+            Some(era_solc::StandardJsonOutputErrorSourceLocation::new(
+                path.to_owned(),
+            )),
             None,
         ));
     }

@@ -5,9 +5,6 @@
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
-use crate::solc::standard_json::output::Output as StandardJsonOutput;
-use crate::solc::version::Version as SolcVersion;
-
 ///
 /// The missing libraries.
 ///
@@ -29,8 +26,8 @@ impl MissingLibraries {
     ///
     pub fn write_to_standard_json(
         mut self,
-        standard_json: &mut StandardJsonOutput,
-        solc_version: Option<&SolcVersion>,
+        standard_json: &mut era_solc::StandardJsonOutput,
+        solc_version: Option<&era_solc::Version>,
     ) {
         for (path, file) in standard_json.contracts.iter_mut() {
             for (name, contract) in file.iter_mut() {

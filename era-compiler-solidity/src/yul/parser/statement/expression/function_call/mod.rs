@@ -515,13 +515,13 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm::<D, 1>(context)?;
 
                 match context
-                    .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
+                    .code_segment()
+                    .ok_or_else(|| anyhow::anyhow!("Contract code segment is undefined"))?
                 {
-                    era_compiler_llvm_context::CodeType::Deploy => {
+                    era_compiler_common::CodeSegment::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
                     }
-                    era_compiler_llvm_context::CodeType::Runtime => {
+                    era_compiler_common::CodeSegment::Runtime => {
                         era_compiler_llvm_context::eravm_evm_calldata::load(
                             context,
                             arguments[0].into_int_value(),
@@ -532,13 +532,13 @@ impl FunctionCall {
             }
             Name::CallDataSize => {
                 match context
-                    .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
+                    .code_segment()
+                    .ok_or_else(|| anyhow::anyhow!("Contract code segment is undefined"))?
                 {
-                    era_compiler_llvm_context::CodeType::Deploy => {
+                    era_compiler_common::CodeSegment::Deploy => {
                         Ok(Some(context.field_const(0).as_basic_value_enum()))
                     }
-                    era_compiler_llvm_context::CodeType::Runtime => {
+                    era_compiler_common::CodeSegment::Runtime => {
                         era_compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
                     }
                 }
@@ -547,10 +547,10 @@ impl FunctionCall {
                 let arguments = self.pop_arguments_llvm::<D, 3>(context)?;
 
                 match context
-                    .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
+                    .code_segment()
+                    .ok_or_else(|| anyhow::anyhow!("Contract code segment is undefined"))?
                 {
-                    era_compiler_llvm_context::CodeType::Deploy => {
+                    era_compiler_common::CodeSegment::Deploy => {
                         let calldata_size =
                             era_compiler_llvm_context::eravm_evm_calldata::size(context)?;
 
@@ -562,7 +562,7 @@ impl FunctionCall {
                         )
                         .map(|_| None)
                     }
-                    era_compiler_llvm_context::CodeType::Runtime => {
+                    era_compiler_common::CodeSegment::Runtime => {
                         era_compiler_llvm_context::eravm_evm_calldata::copy(
                             context,
                             arguments[0].into_int_value(),
@@ -575,13 +575,13 @@ impl FunctionCall {
             }
             Name::CodeSize => {
                 match context
-                    .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
+                    .code_segment()
+                    .ok_or_else(|| anyhow::anyhow!("Contract code segment is undefined"))?
                 {
-                    era_compiler_llvm_context::CodeType::Deploy => {
+                    era_compiler_common::CodeSegment::Deploy => {
                         era_compiler_llvm_context::eravm_evm_calldata::size(context).map(Some)
                     }
-                    era_compiler_llvm_context::CodeType::Runtime => {
+                    era_compiler_common::CodeSegment::Runtime => {
                         let code_source =
                             era_compiler_llvm_context::eravm_general::code_source(context)?;
                         era_compiler_llvm_context::eravm_evm_ext_code::size(
@@ -593,9 +593,9 @@ impl FunctionCall {
                 }
             }
             Name::CodeCopy => {
-                if let era_compiler_llvm_context::CodeType::Runtime = context
-                    .code_type()
-                    .ok_or_else(|| anyhow::anyhow!("Contract code part type is undefined"))?
+                if let era_compiler_common::CodeSegment::Runtime = context
+                    .code_segment()
+                    .ok_or_else(|| anyhow::anyhow!("Contract code segment is undefined"))?
                 {
                     anyhow::bail!(
                         "{location} The `CODECOPY` instruction is not supported in the runtime code"

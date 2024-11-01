@@ -52,17 +52,6 @@ impl Data {
             Self::Path(_) => HashSet::new(),
         }
     }
-
-    ///
-    /// Gets the contract `keccak256` hash.
-    ///
-    pub fn keccak256(&self) -> String {
-        match self {
-            Self::Assembly(assembly) => assembly.keccak256(),
-            Self::Hash(hash) => panic!("Expected assembly, found hash `{hash}`"),
-            Self::Path(path) => panic!("Expected assembly, found path `{path}`"),
-        }
-    }
 }
 
 impl std::fmt::Display for Data {

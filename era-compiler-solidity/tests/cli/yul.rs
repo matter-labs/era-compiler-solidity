@@ -136,11 +136,8 @@ fn with_yul_and_standard_json() -> anyhow::Result<()> {
 fn with_yul_and_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         cli::TEST_YUL_CONTRACT_PATH,
@@ -161,11 +158,8 @@ fn with_yul_and_solc() -> anyhow::Result<()> {
 fn with_yul_and_solc_and_eravm_extensions() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         cli::TEST_YUL_CONTRACT_PATH,
@@ -187,11 +181,8 @@ fn with_yul_and_solc_and_eravm_extensions() -> anyhow::Result<()> {
 fn with_standard_json_and_solc_invalid_by_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",
@@ -229,11 +220,8 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
 fn with_standard_json_and_solc_invalid_by_zksolc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",

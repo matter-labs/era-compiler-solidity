@@ -6,12 +6,12 @@ use std::collections::BTreeMap;
 
 use boolinator::Boolinator;
 
-use crate::error_type::ErrorType;
-use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
-use crate::solc::standard_json::output::error::Error as SolcStandardJsonOutputError;
-use crate::solc::version::Version as SolcVersion;
-use crate::warning_type::WarningType;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
+use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
+use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
+use crate::standard_json::input::source::Source as StandardJSONInputSource;
+use crate::standard_json::output::error::Error as StandardJsonOutputError;
+use crate::version::Version;
 
 ///
 /// The `solc --standard-json` output source.
@@ -40,11 +40,11 @@ impl Source {
     /// Checks the AST node for the usage of `<address payable>`'s `send` and `transfer` methods.
     ///
     pub fn check_send_and_transfer(
-        solc_version: &SolcVersion,
+        solc_version: &Version,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<SolcStandardJsonOutputError> {
+    ) -> Option<StandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         (ast.get("nodeType")?.as_str()? == "FunctionCall").as_option()?;
@@ -63,7 +63,7 @@ impl Source {
         }
         affected_types.contains(&type_identifier).as_option()?;
 
-        Some(SolcStandardJsonOutputError::error_send_and_transfer(
+        Some(StandardJsonOutputError::error_send_and_transfer(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -77,7 +77,7 @@ impl Source {
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<SolcStandardJsonOutputError> {
+    ) -> Option<StandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         (ast.get("nodeType")?.as_str()? == "MemberAccess").as_option()?;
@@ -91,7 +91,7 @@ impl Source {
             .starts_with("t_magic_meta_type")
             .as_option()?;
 
-        Some(SolcStandardJsonOutputError::error_runtime_code(
+        Some(StandardJsonOutputError::error_runtime_code(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -105,7 +105,7 @@ impl Source {
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<SolcStandardJsonOutputError> {
+    ) -> Option<StandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         (ast.get("nodeType")?.as_str()? == "VariableDeclaration").as_option()?;
@@ -117,13 +117,11 @@ impl Source {
             .contains("function_internal")
             .as_option()?;
 
-        Some(
-            SolcStandardJsonOutputError::error_internal_function_pointer(
-                ast.get("src")?.as_str(),
-                id_paths,
-                sources,
-            ),
-        )
+        Some(StandardJsonOutputError::error_internal_function_pointer(
+            ast.get("src")?.as_str(),
+            id_paths,
+            sources,
+        ))
     }
 
     ///
@@ -133,7 +131,7 @@ impl Source {
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<SolcStandardJsonOutputError> {
+    ) -> Option<StandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         (ast.get("nodeType")?.as_str()? == "MemberAccess").as_option()?;
@@ -143,7 +141,7 @@ impl Source {
         (expression.get("nodeType")?.as_str()? == "Identifier").as_option()?;
         (expression.get("name")?.as_str()? == "tx").as_option()?;
 
-        Some(SolcStandardJsonOutputError::warning_tx_origin(
+        Some(StandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -154,11 +152,11 @@ impl Source {
     /// Checks the AST node for the `origin` assembly instruction usage.
     ///
     pub fn check_assembly_origin(
-        solc_version: &SolcVersion,
+        solc_version: &Version,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<SolcStandardJsonOutputError> {
+    ) -> Option<StandardJsonOutputError> {
         let ast = ast.as_object()?;
 
         match ast.get("nodeType")?.as_str()? {
@@ -179,7 +177,7 @@ impl Source {
             _ => return None,
         }
 
-        Some(SolcStandardJsonOutputError::warning_tx_origin(
+        Some(StandardJsonOutputError::warning_tx_origin(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -193,13 +191,13 @@ impl Source {
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-        solc_version: &SolcVersion,
-        solc_codegen: SolcStandardJsonInputSettingsCodegen,
-        suppressed_errors: &[ErrorType],
-        suppressed_warnings: &[WarningType],
-    ) -> Vec<SolcStandardJsonOutputError> {
+        solc_version: &Version,
+        solc_codegen: StandardJsonInputSettingsCodegen,
+        suppressed_errors: &[StandardJsonInputSettingsErrorType],
+        suppressed_warnings: &[StandardJsonInputSettingsWarningType],
+    ) -> Vec<StandardJsonOutputError> {
         let mut messages = Vec::new();
-        if !suppressed_errors.contains(&ErrorType::SendTransfer) {
+        if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
             if let Some(message) =
                 Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
             {
@@ -209,14 +207,14 @@ impl Source {
         if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
             messages.push(message);
         }
-        if SolcStandardJsonInputSettingsCodegen::EVMLA == solc_codegen
+        if StandardJsonInputSettingsCodegen::EVMLA == solc_codegen
             && solc_version.l2_revision.is_none()
         {
             if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
                 messages.push(message);
             }
         }
-        if !suppressed_warnings.contains(&WarningType::TxOrigin) {
+        if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
             if let Some(message) = Self::check_assembly_origin(solc_version, ast, id_paths, sources)
             {
                 messages.push(message);

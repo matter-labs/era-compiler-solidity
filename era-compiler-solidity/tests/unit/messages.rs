@@ -2,12 +2,6 @@
 //! The Solidity compiler unit tests for messages.
 //!
 
-use era_compiler_solidity::error_type::ErrorType;
-use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
-use era_compiler_solidity::warning_type::WarningType;
-
 use crate::common;
 
 #[test]
@@ -15,7 +9,7 @@ use crate::common;
 fn send_04_evmla() {
     send(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_04,
     );
 }
@@ -24,7 +18,7 @@ fn send_04_evmla() {
 fn send_05_evmla() {
     send(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
@@ -32,7 +26,7 @@ fn send_05_evmla() {
 fn send_06_evmla() {
     send(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
@@ -40,23 +34,23 @@ fn send_06_evmla() {
 fn send_07_evmla() {
     send(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
 #[test]
 fn send_08_evmla() {
     send(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE,
     );
 }
 #[test]
 fn send_08_yul() {
     send(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
         SEND_TEST_SOURCE,
     );
 }
@@ -66,7 +60,7 @@ fn send_08_yul() {
 fn send_suppressed_04_evmla() {
     send_suppressed(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_04,
     );
 }
@@ -75,7 +69,7 @@ fn send_suppressed_04_evmla() {
 fn send_suppressed_05_evmla() {
     send_suppressed(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
@@ -83,7 +77,7 @@ fn send_suppressed_05_evmla() {
 fn send_suppressed_06_evmla() {
     send_suppressed(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
@@ -91,23 +85,23 @@ fn send_suppressed_06_evmla() {
 fn send_suppressed_07_evmla() {
     send_suppressed(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE_05_07,
     );
 }
 #[test]
 fn send_suppressed_08_evmla() {
     send_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         SEND_TEST_SOURCE,
     );
 }
 #[test]
 fn send_suppressed_08_yul() {
     send_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
         SEND_TEST_SOURCE,
     );
 }
@@ -117,7 +111,7 @@ fn send_suppressed_08_yul() {
 fn transfer_04_evmla() {
     transfer(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_04,
     );
 }
@@ -126,7 +120,7 @@ fn transfer_04_evmla() {
 fn transfer_05_evmla() {
     transfer(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
@@ -134,7 +128,7 @@ fn transfer_05_evmla() {
 fn transfer_06_evmla() {
     transfer(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
@@ -142,23 +136,23 @@ fn transfer_06_evmla() {
 fn transfer_07_evmla() {
     transfer(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
 #[test]
 fn transfer_08_evmla() {
     transfer(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE,
     );
 }
 #[test]
 fn transfer_08_yul() {
     transfer(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
         TRANSFER_TEST_SOURCE,
     );
 }
@@ -168,7 +162,7 @@ fn transfer_08_yul() {
 fn transfer_suppressed_04_evmla() {
     transfer_suppressed(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_04,
     );
 }
@@ -177,7 +171,7 @@ fn transfer_suppressed_04_evmla() {
 fn transfer_suppressed_05_evmla() {
     transfer_suppressed(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
@@ -185,7 +179,7 @@ fn transfer_suppressed_05_evmla() {
 fn transfer_suppressed_06_evmla() {
     transfer_suppressed(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
@@ -193,23 +187,23 @@ fn transfer_suppressed_06_evmla() {
 fn transfer_suppressed_07_evmla() {
     transfer_suppressed(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE_05_07,
     );
 }
 #[test]
 fn transfer_suppressed_08_evmla() {
     transfer_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         TRANSFER_TEST_SOURCE,
     );
 }
 #[test]
 fn transfer_suppressed_08_yul() {
     transfer_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
         TRANSFER_TEST_SOURCE,
     );
 }
@@ -219,35 +213,35 @@ fn transfer_suppressed_08_yul() {
 fn runtime_code_05_evmla() {
     runtime_code(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn runtime_code_06_evmla() {
     runtime_code(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn runtime_code_07_evmla() {
     runtime_code(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn runtime_code_08_evmla() {
     runtime_code(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn runtime_code_08_yul() {
     runtime_code(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -292,7 +286,7 @@ fn internal_function_pointer_argument_07() {
 #[test]
 #[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_argument_08() {
-    internal_function_pointer_argument(SolcCompiler::LAST_SUPPORTED_VERSION);
+    internal_function_pointer_argument(era_solc::Compiler::LAST_SUPPORTED_VERSION);
 }
 
 #[test]
@@ -336,7 +330,7 @@ fn internal_function_pointer_stack_07() {
 #[test]
 #[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_stack_08() {
-    internal_function_pointer_stack(SolcCompiler::LAST_SUPPORTED_VERSION);
+    internal_function_pointer_stack(era_solc::Compiler::LAST_SUPPORTED_VERSION);
 }
 
 #[test]
@@ -380,7 +374,7 @@ fn internal_function_pointer_storage_07() {
 #[test]
 #[cfg_attr(all(target_arch = "aarch64", target_os = "linux"), ignore)]
 fn internal_function_pointer_storage_08() {
-    internal_function_pointer_storage(SolcCompiler::LAST_SUPPORTED_VERSION);
+    internal_function_pointer_storage(era_solc::Compiler::LAST_SUPPORTED_VERSION);
 }
 
 #[test]
@@ -388,7 +382,7 @@ fn internal_function_pointer_storage_08() {
 fn tx_origin_04_evmla() {
     tx_origin(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -396,35 +390,35 @@ fn tx_origin_04_evmla() {
 fn tx_origin_05_evmla() {
     tx_origin(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_06_evmla() {
     tx_origin(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_07_evmla() {
     tx_origin(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_08_evmla() {
     tx_origin(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_08_yul() {
     tx_origin(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -433,7 +427,7 @@ fn tx_origin_08_yul() {
 fn tx_origin_suppressed_04_evmla() {
     tx_origin_suppressed(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -441,35 +435,35 @@ fn tx_origin_suppressed_04_evmla() {
 fn tx_origin_suppressed_05_evmla() {
     tx_origin_suppressed(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_suppressed_06_evmla() {
     tx_origin_suppressed(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_suppressed_07_evmla() {
     tx_origin_suppressed(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_suppressed_08_evmla() {
     tx_origin_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_suppressed_08_yul() {
     tx_origin_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -478,7 +472,7 @@ fn tx_origin_suppressed_08_yul() {
 fn tx_origin_assembly_04_evmla() {
     tx_origin_assembly(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -486,35 +480,35 @@ fn tx_origin_assembly_04_evmla() {
 fn tx_origin_assembly_05_evmla() {
     tx_origin_assembly(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_06_evmla() {
     tx_origin_assembly(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_07_evmla() {
     tx_origin_assembly(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_08_evmla() {
     tx_origin_assembly(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_08_yul() {
     tx_origin_assembly(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -523,7 +517,7 @@ fn tx_origin_assembly_08_yul() {
 fn tx_origin_assembly_suppressed_04_evmla() {
     tx_origin_assembly_suppressed(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -531,35 +525,35 @@ fn tx_origin_assembly_suppressed_04_evmla() {
 fn tx_origin_assembly_suppressed_05_evmla() {
     tx_origin_assembly_suppressed(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_suppressed_06_evmla() {
     tx_origin_assembly_suppressed(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_suppressed_07_evmla() {
     tx_origin_assembly_suppressed(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_suppressed_08_evmla() {
     tx_origin_assembly_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn tx_origin_assembly_suppressed_08_yul() {
     tx_origin_assembly_suppressed(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -590,15 +584,11 @@ contract SendExample {
 }
 "#;
 
-fn send(
-    version: semver::Version,
-    codegen: SolcStandardJsonInputSettingsCodegen,
-    source_code: &str,
-) {
+fn send(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen, source_code: &str) {
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
@@ -610,17 +600,17 @@ fn send(
 
 fn send_suppressed(
     version: semver::Version,
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
-        vec![ErrorType::SendTransfer],
+        vec![era_solc::StandardJsonInputErrorType::SendTransfer],
         vec![],
     )
     .expect("Test failure"));
@@ -655,13 +645,13 @@ contract TransferExample {
 
 fn transfer(
     version: semver::Version,
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
     assert!(common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
@@ -673,17 +663,17 @@ fn transfer(
 
 fn transfer_suppressed(
     version: semver::Version,
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
     assert!(!common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
-        vec![ErrorType::SendTransfer],
+        vec![era_solc::StandardJsonInputErrorType::SendTransfer],
         vec![],
     )
     .expect("Test failure"));
@@ -702,11 +692,11 @@ contract Test {
 }
 "#;
 
-fn runtime_code(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn runtime_code(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     assert!(common::check_solidity_message(
         RUNTIME_CODE_SOURCE_CODE,
         "Deploy and runtime code are merged together on ZKsync",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
@@ -751,9 +741,9 @@ contract InternalFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         true,
         vec![],
         vec![],
@@ -790,9 +780,9 @@ contract StackFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         true,
         vec![],
         vec![],
@@ -836,9 +826,9 @@ contract StorageFunctionPointerExample {
     assert!(common::check_solidity_message(
         source_code,
         "Internal function pointers are not supported in the EVM assembly codegen.",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         true,
         vec![],
         vec![],
@@ -854,11 +844,11 @@ contract TxOriginExample {
 }
 "#;
 
-fn tx_origin(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn tx_origin(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
@@ -868,16 +858,16 @@ fn tx_origin(version: semver::Version, codegen: SolcStandardJsonInputSettingsCod
     .expect("Test failure"));
 }
 
-fn tx_origin_suppressed(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn tx_origin_suppressed(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     assert!(!common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
         vec![],
-        vec![WarningType::TxOrigin],
+        vec![era_solc::StandardJsonInputWarningType::TxOrigin],
     )
     .expect("Test failure"));
 }
@@ -892,11 +882,11 @@ contract TxOriginExample {
 }
 "#;
 
-fn tx_origin_assembly(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn tx_origin_assembly(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     assert!(common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
@@ -908,17 +898,17 @@ fn tx_origin_assembly(version: semver::Version, codegen: SolcStandardJsonInputSe
 
 fn tx_origin_assembly_suppressed(
     version: semver::Version,
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
 ) {
     assert!(!common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
         false,
         vec![],
-        vec![WarningType::TxOrigin],
+        vec![era_solc::StandardJsonInputWarningType::TxOrigin],
     )
     .expect("Test failure"));
 }

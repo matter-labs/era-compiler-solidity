@@ -4,7 +4,7 @@
 
 use std::io::Write;
 
-use crate::solc::standard_json::output::error::Error;
+use crate::standard_json::output::error::Error;
 
 ///
 /// The collectable errors trait.

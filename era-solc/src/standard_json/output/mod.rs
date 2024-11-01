@@ -8,20 +8,17 @@ pub mod source;
 
 use std::collections::BTreeMap;
 
-use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
-use crate::error_type::ErrorType;
-use crate::evmla::assembly::instruction::Instruction;
-use crate::evmla::assembly::Assembly;
-use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use crate::solc::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
-use crate::solc::standard_json::input::settings::selection::Selection;
-use crate::solc::standard_json::input::source::Source as StandardJSONInputSource;
-use crate::solc::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
-use crate::solc::version::Version as SolcVersion;
-use crate::warning_type::WarningType;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
+use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
+use crate::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::standard_json::input::settings::selection::Selection;
+use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
+use crate::standard_json::input::source::Source as StandardJSONInputSource;
+use crate::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
+use crate::version::Version;
 
 use self::contract::Contract;
 use self::error::collectable::Collectable as CollectableError;
@@ -124,10 +121,10 @@ impl Output {
             }
             if let Some(ref mut evm) = contract.evm {
                 if selection_to_prune.contains(&SelectionFlag::EVMLA) {
-                    evm.legacy_assembly = None;
+                    evm.legacy_assembly = serde_json::Value::Null;
                 }
                 if selection_to_prune.contains(&SelectionFlag::MethodIdentifiers) {
-                    evm.method_identifiers = None;
+                    evm.method_identifiers.clear();
                 }
                 evm.extra_metadata = None;
             }
@@ -182,10 +179,10 @@ impl Output {
     pub fn preprocess_ast(
         &mut self,
         sources: &BTreeMap<String, StandardJSONInputSource>,
-        version: &SolcVersion,
-        codegen: SolcStandardJsonInputSettingsCodegen,
-        suppressed_errors: &[ErrorType],
-        suppressed_warnings: &[WarningType],
+        version: &Version,
+        codegen: StandardJsonInputSettingsCodegen,
+        suppressed_errors: &[StandardJsonInputSettingsErrorType],
+        suppressed_warnings: &[StandardJsonInputSettingsWarningType],
     ) -> anyhow::Result<()> {
         let id_paths: BTreeMap<usize, &String> = self
             .sources
@@ -216,91 +213,6 @@ impl Output {
             .flatten()
             .collect();
         self.errors.extend(messages);
-
-        Ok(())
-    }
-
-    ///
-    /// The pass, which replaces with dependency indexes with actual data.
-    ///
-    pub fn preprocess_dependencies(&mut self) -> anyhow::Result<()> {
-        let mut hash_path_mapping = BTreeMap::new();
-
-        for (path, file) in self.contracts.iter() {
-            for (name, contract) in file.iter() {
-                let full_path = format!("{path}:{name}");
-                let hash = match contract
-                    .evm
-                    .as_ref()
-                    .and_then(|evm| evm.legacy_assembly.as_ref())
-                    .map(|assembly| assembly.keccak256())
-                {
-                    Some(hash) => hash,
-                    None => continue,
-                };
-
-                hash_path_mapping.insert(hash, full_path);
-            }
-        }
-
-        let mut assemblies = BTreeMap::new();
-        for (path, file) in self.contracts.iter_mut() {
-            for (name, contract) in file.iter_mut() {
-                let full_path = format!("{path}:{name}");
-                let assembly = match contract
-                    .evm
-                    .as_mut()
-                    .and_then(|evm| evm.legacy_assembly.as_mut())
-                {
-                    Some(assembly) => assembly,
-                    None => continue,
-                };
-                assemblies.insert(full_path, assembly);
-            }
-        }
-        assemblies
-            .into_par_iter()
-            .map(|(full_path, assembly)| {
-                Self::preprocess_dependency_level(full_path.as_str(), assembly, &hash_path_mapping)
-            })
-            .collect::<anyhow::Result<()>>()?;
-
-        Ok(())
-    }
-
-    ///
-    /// Preprocesses an assembly JSON structure dependency data map.
-    ///
-    fn preprocess_dependency_level(
-        full_path: &str,
-        assembly: &mut Assembly,
-        hash_path_mapping: &BTreeMap<String, String>,
-    ) -> anyhow::Result<()> {
-        assembly.set_full_path(full_path.to_owned());
-
-        let deploy_code_index_path_mapping =
-            assembly.deploy_dependencies_pass(full_path, hash_path_mapping)?;
-        if let Some(deploy_code_instructions) = assembly.code.as_deref_mut() {
-            Instruction::replace_data_aliases(
-                deploy_code_instructions,
-                &deploy_code_index_path_mapping,
-            )?;
-        };
-
-        let runtime_code_index_path_mapping =
-            assembly.runtime_dependencies_pass(full_path, hash_path_mapping)?;
-        if let Some(runtime_code_instructions) = assembly
-            .data
-            .as_mut()
-            .and_then(|data_map| data_map.get_mut("0"))
-            .and_then(|data| data.get_assembly_mut())
-            .and_then(|assembly| assembly.code.as_deref_mut())
-        {
-            Instruction::replace_data_aliases(
-                runtime_code_instructions,
-                &runtime_code_index_path_mapping,
-            )?;
-        }
 
         Ok(())
     }

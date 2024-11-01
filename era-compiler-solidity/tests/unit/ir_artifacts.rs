@@ -7,10 +7,6 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
-use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
-
 use crate::common;
 
 #[test]
@@ -33,11 +29,11 @@ fn default_07_evmla() {
 }
 #[test]
 fn default_08_evmla() {
-    evmla(SolcCompiler::LAST_SUPPORTED_VERSION);
+    evmla(era_solc::Compiler::LAST_SUPPORTED_VERSION);
 }
 #[test]
 fn default_08_yul() {
-    yul(SolcCompiler::LAST_SUPPORTED_VERSION);
+    yul(era_solc::Compiler::LAST_SUPPORTED_VERSION);
 }
 
 pub const SOURCE_CODE: &str = r#"
@@ -57,11 +53,11 @@ fn yul(version: semver::Version) {
 
     let build = common::build_solidity(
         sources.clone(),
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::StandardJsonInputCodegen::Yul,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
@@ -88,7 +84,7 @@ fn yul(version: semver::Version) {
             .as_ref()
             .expect("EVM object is missing")
             .legacy_assembly
-            .is_none(),
+            .is_null(),
         "EVM assembly is present although not requested"
     );
 }
@@ -99,16 +95,16 @@ fn evmla(version: semver::Version) {
 
     let build = common::build_solidity(
         sources.clone(),
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
     assert!(
-        build
+        !build
             .contracts
             .get("test.sol")
             .expect("Always exists")
@@ -118,7 +114,7 @@ fn evmla(version: semver::Version) {
             .as_ref()
             .expect("EVM object is missing")
             .legacy_assembly
-            .is_some(),
+            .is_null(),
         "EVM assembly is missing",
     );
     assert!(

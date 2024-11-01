@@ -15,16 +15,16 @@ use crate::evmla::ethereal_ir::EtherealIR;
 ///
 #[derive(Debug, Clone)]
 pub struct EntryLink {
-    /// The code part type.
-    pub code_type: era_compiler_llvm_context::CodeType,
+    /// The code segment.
+    pub code_segment: era_compiler_common::CodeSegment,
 }
 
 impl EntryLink {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(code_type: era_compiler_llvm_context::CodeType) -> Self {
-        Self { code_type }
+    pub fn new(code_segment: era_compiler_common::CodeSegment) -> Self {
+        Self { code_segment }
     }
 }
 
@@ -41,11 +41,11 @@ where
             .expect("Always exists")
             .borrow()
             .declaration();
-        let is_deploy_code = match self.code_type {
-            era_compiler_llvm_context::CodeType::Deploy => context
+        let is_deploy_code = match self.code_segment {
+            era_compiler_common::CodeSegment::Deploy => context
                 .integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN)
                 .const_int(1, false),
-            era_compiler_llvm_context::CodeType::Runtime => context
+            era_compiler_common::CodeSegment::Runtime => context
                 .integer_type(era_compiler_common::BIT_LENGTH_BOOLEAN)
                 .const_int(0, false),
         };

@@ -12,7 +12,6 @@ use std::collections::HashMap;
 use era_compiler_llvm_context::IContext;
 
 use crate::evmla::assembly::instruction::Instruction;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::function::block::Block;
 use self::function::r#type::Type as FunctionType;
@@ -50,12 +49,12 @@ impl EtherealIR {
     ///
     pub fn new(
         solc_version: semver::Version,
-        extra_metadata: ExtraMetadata,
-        code_type: Option<era_compiler_llvm_context::CodeType>,
+        extra_metadata: era_solc::StandardJsonOutputContractEVMExtraMetadata,
+        code_segment: Option<era_compiler_common::CodeSegment>,
         blocks: HashMap<era_compiler_llvm_context::BlockKey, Block>,
     ) -> anyhow::Result<Self> {
         let mut entry_function =
-            Function::new(solc_version, code_type, FunctionType::new_initial());
+            Function::new(solc_version, code_segment, FunctionType::new_initial());
         let mut recursive_functions = BTreeMap::new();
         let mut visited_functions = BTreeSet::new();
         entry_function.traverse(
@@ -76,7 +75,7 @@ impl EtherealIR {
     ///
     pub fn get_blocks(
         solc_version: semver::Version,
-        code_type: era_compiler_llvm_context::CodeType,
+        code_segment: era_compiler_common::CodeSegment,
         instructions: &[Instruction],
     ) -> anyhow::Result<HashMap<era_compiler_llvm_context::BlockKey, Block>> {
         let mut blocks = HashMap::with_capacity(Self::BLOCKS_HASHMAP_DEFAULT_CAPACITY);
@@ -85,11 +84,11 @@ impl EtherealIR {
         while offset < instructions.len() {
             let (block, size) = Block::try_from_instructions(
                 solc_version.clone(),
-                code_type,
+                code_segment,
                 &instructions[offset..],
             )?;
             blocks.insert(
-                era_compiler_llvm_context::BlockKey::new(code_type, block.key.tag.clone()),
+                era_compiler_llvm_context::BlockKey::new(code_segment, block.key.tag.clone()),
                 block,
             );
             offset += size;

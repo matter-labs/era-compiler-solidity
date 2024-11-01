@@ -11,12 +11,7 @@ use std::path::PathBuf;
 
 use normpath::PathExt;
 
-use crate::solc::combined_json::CombinedJson;
-use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
-use crate::solc::standard_json::output::error::collectable::Collectable as CollectableError;
-use crate::solc::standard_json::output::error::Error as StandardJsonOutputError;
-use crate::solc::standard_json::output::Output as StandardJsonOutput;
-use crate::solc::version::Version as SolcVersion;
+use era_solc::CollectableError;
 
 use self::contract::Contract;
 
@@ -26,9 +21,9 @@ use self::contract::Contract;
 #[derive(Debug)]
 pub struct Build {
     /// The contract data,
-    pub contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
+    pub contracts: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
     /// The additional message to output.
-    pub messages: Vec<StandardJsonOutputError>,
+    pub messages: Vec<era_solc::StandardJsonOutputError>,
 }
 
 impl Build {
@@ -36,8 +31,8 @@ impl Build {
     /// A shortcut constructor.
     ///
     pub fn new(
-        contracts: BTreeMap<String, Result<Contract, StandardJsonOutputError>>,
-        messages: &mut Vec<StandardJsonOutputError>,
+        contracts: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
+        messages: &mut Vec<era_solc::StandardJsonOutputError>,
     ) -> Self {
         Self {
             contracts,
@@ -113,8 +108,8 @@ impl Build {
     ///
     pub fn write_to_standard_json(
         self,
-        standard_json: &mut StandardJsonOutput,
-        solc_version: Option<&SolcVersion>,
+        standard_json: &mut era_solc::StandardJsonOutput,
+        solc_version: Option<&era_solc::Version>,
     ) -> anyhow::Result<()> {
         let mut errors = Vec::with_capacity(self.contracts.len());
         for (full_path, build) in self.contracts.into_iter() {
@@ -133,7 +128,7 @@ impl Build {
                     }
                     None => {
                         let contracts = standard_json.contracts.entry(path.to_owned()).or_default();
-                        let mut contract = StandardJsonOutputContract::default();
+                        let mut contract = era_solc::StandardJsonOutputContract::default();
                         build.write_to_standard_json(&mut contract)?;
                         contracts.insert(name.to_owned(), contract);
                     }
@@ -156,7 +151,7 @@ impl Build {
     ///
     pub fn write_to_combined_json(
         mut self,
-        combined_json: &mut CombinedJson,
+        combined_json: &mut era_solc::CombinedJson,
     ) -> anyhow::Result<()> {
         self.take_and_write_warnings();
         self.exit_on_error();
@@ -191,15 +186,15 @@ impl Build {
     }
 }
 
-impl CollectableError for Build {
-    fn errors(&self) -> Vec<&StandardJsonOutputError> {
+impl era_solc::CollectableError for Build {
+    fn errors(&self) -> Vec<&era_solc::StandardJsonOutputError> {
         self.contracts
             .values()
             .filter_map(|build| build.as_ref().err())
             .collect()
     }
 
-    fn warnings(&self) -> Vec<&StandardJsonOutputError> {
+    fn warnings(&self) -> Vec<&era_solc::StandardJsonOutputError> {
         self.messages.iter().collect()
     }
 

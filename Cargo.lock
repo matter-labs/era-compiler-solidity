@@ -518,7 +518,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#11cc7ed039fb96ef04d45d71c009e8dc8fffda9a"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#32637b83bf23b7b177c7d711992a6f6f101ac399"
 dependencies = [
  "anyhow",
  "base58",
@@ -534,7 +534,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-downloader"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#11cc7ed039fb96ef04d45d71c009e8dc8fffda9a"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#32637b83bf23b7b177c7d711992a6f6f101ac399"
 dependencies = [
  "anyhow",
  "colored",
@@ -547,7 +547,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#67bb2349e221627f15b09893e59f807094ab81ca"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#5350b284c14ff19309d02c9c38a0fe88c93e037b"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -565,10 +565,10 @@ version = "1.5.7"
 dependencies = [
  "anyhow",
  "assert_cmd",
- "boolinator",
  "era-compiler-common",
  "era-compiler-downloader",
  "era-compiler-llvm-context",
+ "era-solc",
  "era-yul",
  "hex",
  "inkwell",
@@ -578,21 +578,33 @@ dependencies = [
  "num_cpus",
  "path-slash",
  "predicates",
- "rand",
  "rayon",
- "regex",
  "reqwest",
  "rusty_pool",
  "semver",
  "serde",
  "serde_json",
- "sha3 0.10.8",
  "structopt",
  "tempfile",
  "test-case",
  "thiserror",
- "which",
  "zkevm_opcode_defs",
+]
+
+[[package]]
+name = "era-solc"
+version = "1.5.7"
+dependencies = [
+ "anyhow",
+ "boolinator",
+ "era-compiler-common",
+ "hex",
+ "num",
+ "rayon",
+ "semver",
+ "serde",
+ "serde_json",
+ "which",
 ]
 
 [[package]]
@@ -1040,7 +1052,7 @@ source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c50692
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]
@@ -1414,7 +1426,7 @@ checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]
@@ -1984,7 +1996,7 @@ checksum = "243902eda00fad750862fc144cea25caca5e20d615af0a81bee94ca738f1df1f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]
@@ -2193,9 +2205,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.85"
+version = "2.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5023162dfcd14ef8f32034d8bcd4cc5ddc61ef7a247c024a33e24e1f24d21b56"
+checksum = "e89275301d38033efb81a6e60e3497e734dfcc62571f2854bf4b16690398824c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2272,7 +2284,7 @@ dependencies = [
  "cfg-if",
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]
@@ -2283,7 +2295,7 @@ checksum = "5c89e72a01ed4c579669add59014b9a524d609c0c88c6a585ce37485879f6ffb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
  "test-case-core",
 ]
 
@@ -2313,7 +2325,7 @@ checksum = "08904e7672f5eb876eaaf87e0ce17857500934f4981c4a0ab2b4aa98baac7fc3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]
@@ -2558,7 +2570,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
  "wasm-bindgen-shared",
 ]
 
@@ -2592,7 +2604,7 @@ checksum = "26c6ab57572f7a24a4985830b120de1594465e5d500f24afe89e16b4e833ef68"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -2825,7 +2837,7 @@ checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.85",
+ "syn 2.0.86",
 ]
 
 [[package]]

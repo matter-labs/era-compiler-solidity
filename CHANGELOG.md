@@ -1,5 +1,12 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Changed
+
+- Moved the `solc` client to another crate at `era-solc`
+- Updated to Rust v1.82.0
+
 ## [1.5.7] - 2024-10-31
 
 ### Added

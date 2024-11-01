@@ -2,25 +2,28 @@
 //! The Solidity compiler.
 //!
 
-pub mod combined_json;
-pub mod standard_json;
-pub mod version;
-
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
-use self::combined_json::CombinedJson;
-use self::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
-use self::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
-use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
-use self::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
-use self::standard_json::input::Input as StandardJsonInput;
-use self::standard_json::output::error::Error as StandardJsonOutputError;
-use self::standard_json::output::Output as StandardJsonOutput;
-use self::version::Version;
+use crate::combined_json::CombinedJson;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
+use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
+use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
+use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
+use crate::standard_json::input::Input as StandardJsonInput;
+use crate::standard_json::output::error::Error as StandardJsonOutputError;
+use crate::standard_json::output::Output as StandardJsonOutput;
+use crate::version::Version;
+
+///
+/// The compiler version default function.
+///
+pub fn version() -> String {
+    env!("CARGO_PKG_VERSION").to_owned()
+}
 
 ///
 /// The Solidity compiler.

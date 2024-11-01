@@ -3,21 +3,22 @@
 //!
 
 pub mod codegen;
+pub mod error_type;
 pub mod libraries;
 pub mod metadata;
 pub mod optimizer;
 pub mod selection;
+pub mod warning_type;
 
 use std::collections::BTreeSet;
 
-use crate::error_type::ErrorType;
-use crate::warning_type::WarningType;
-
 use self::codegen::Codegen;
+use self::error_type::ErrorType;
 use self::libraries::Libraries;
 use self::metadata::Metadata;
 use self::optimizer::Optimizer;
 use self::selection::Selection;
+use self::warning_type::WarningType;
 
 ///
 /// The `solc --standard-json` input settings.
