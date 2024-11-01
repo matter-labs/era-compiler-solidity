@@ -4,10 +4,6 @@
 
 use std::collections::BTreeMap;
 
-use era_compiler_solidity::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use era_compiler_solidity::solc::standard_json::input::settings::libraries::Libraries;
-use era_compiler_solidity::solc::Compiler as SolcCompiler;
-
 use crate::common;
 
 #[test]
@@ -15,7 +11,7 @@ use crate::common;
 fn not_specified_04_evmla() {
     not_specified(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -23,35 +19,35 @@ fn not_specified_04_evmla() {
 fn not_specified_05_evmla() {
     not_specified(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn not_specified_06_evmla() {
     not_specified(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn not_specified_07_evmla() {
     not_specified(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn not_specified_08_evmla() {
     not_specified(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn not_specified_08_yul() {
     not_specified(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -60,7 +56,7 @@ fn not_specified_08_yul() {
 fn specified_04_evmla() {
     specified(
         semver::Version::new(0, 4, 26),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
@@ -68,35 +64,35 @@ fn specified_04_evmla() {
 fn specified_05_evmla() {
     specified(
         semver::Version::new(0, 5, 17),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn specified_06_evmla() {
     specified(
         semver::Version::new(0, 6, 12),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn specified_07_evmla() {
     specified(
         semver::Version::new(0, 7, 6),
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn specified_08_evmla() {
     specified(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::EVMLA,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::EVMLA,
     );
 }
 #[test]
 fn specified_08_yul() {
     specified(
-        SolcCompiler::LAST_SUPPORTED_VERSION,
-        SolcStandardJsonInputSettingsCodegen::Yul,
+        era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
     );
 }
 
@@ -127,13 +123,13 @@ contract SimpleContract {
 }
     "#;
 
-fn not_specified(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
     let output = common::build_solidity_and_detect_missing_libraries(
         sources.clone(),
-        Libraries::default(),
+        era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
     )
@@ -153,7 +149,7 @@ fn not_specified(version: semver::Version, codegen: SolcStandardJsonInputSetting
     );
 }
 
-fn specified(version: semver::Version, codegen: SolcStandardJsonInputSettingsCodegen) {
+fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), LIBRARY_TEST_SOURCE.to_owned());
 
@@ -163,7 +159,7 @@ fn specified(version: semver::Version, codegen: SolcStandardJsonInputSettingsCod
         .or_insert_with(BTreeMap::new)
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
-    let libraries = Libraries::from(libraries);
+    let libraries = era_solc::StandardJsonInputLibraries::from(libraries);
 
     let output =
         common::build_solidity_and_detect_missing_libraries(sources, libraries, &version, codegen)

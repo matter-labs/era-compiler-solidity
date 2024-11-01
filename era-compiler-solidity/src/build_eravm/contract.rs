@@ -7,11 +7,6 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
-use crate::solc::standard_json::output::contract::eravm::EraVM as StandardJsonOutputContractEraVM;
-use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
-use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
-
 ///
 /// The Solidity contract build.
 ///
@@ -168,7 +163,7 @@ impl Contract {
     ///
     pub fn write_to_combined_json(
         self,
-        combined_json_contract: &mut CombinedJsonContract,
+        combined_json_contract: &mut era_solc::CombinedJsonContract,
     ) -> anyhow::Result<()> {
         let hexadecimal_bytecode = hex::encode(self.build.bytecode);
 
@@ -197,19 +192,19 @@ impl Contract {
     ///
     pub fn write_to_standard_json(
         self,
-        standard_json_contract: &mut StandardJsonOutputContract,
+        standard_json_contract: &mut era_solc::StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
         let bytecode = hex::encode(self.build.bytecode.as_slice());
         let assembly = self.build.assembly;
 
         standard_json_contract.metadata = self.metadata_json;
-        standard_json_contract.eravm = Some(StandardJsonOutputContractEraVM::new(
+        standard_json_contract.eravm = Some(era_solc::StandardJsonOutputContractEraVM::new(
             bytecode.clone(),
             assembly.clone(),
         ));
         standard_json_contract
             .evm
-            .get_or_insert_with(StandardJsonOutputContractEVM::default)
+            .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
         standard_json_contract
             .factory_dependencies

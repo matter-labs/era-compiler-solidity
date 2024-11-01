@@ -8,11 +8,13 @@ pub mod instruction;
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
+
 use era_compiler_llvm_context::IContext;
 
 use crate::evmla::ethereal_ir::entry_link::EntryLink;
 use crate::evmla::ethereal_ir::EtherealIR;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::data::Data;
 use self::instruction::name::Name as InstructionName;
@@ -41,18 +43,10 @@ pub struct Assembly {
     pub factory_dependencies: HashSet<String>,
     /// The EVMLA extra metadata.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extra_metadata: Option<ExtraMetadata>,
+    pub extra_metadata: Option<era_solc::StandardJsonOutputContractEVMExtraMetadata>,
 }
 
 impl Assembly {
-    ///
-    /// Gets the contract `keccak256` hash.
-    ///
-    pub fn keccak256(&self) -> String {
-        let json = serde_json::to_vec(self).expect("Always valid");
-        era_compiler_common::Hash::keccak256(json.as_slice()).to_string()
-    }
-
     ///
     /// Sets the full contract path.
     ///
@@ -114,9 +108,117 @@ impl Assembly {
     }
 
     ///
+    /// Returns the `keccak256` hash of the assembly representation.
+    ///
+    pub fn keccak256(&self) -> String {
+        let json: Vec<u8> = serde_json::to_vec(self).expect("Always valid");
+        era_compiler_common::Hash::keccak256(json.as_slice()).to_string()
+    }
+
+    ///
+    /// The pass, which replaces with dependency indexes with actual data.
+    ///
+    pub fn preprocess_dependencies(
+        contracts: &mut BTreeMap<String, BTreeMap<String, era_solc::StandardJsonOutputContract>>,
+    ) -> anyhow::Result<()> {
+        let mut hash_path_mapping = BTreeMap::new();
+
+        for (path, file) in contracts.iter() {
+            for (name, contract) in file.iter() {
+                let full_path = format!("{path}:{name}");
+                let hash = match contract
+                    .evm
+                    .as_ref()
+                    .map(|evm| &evm.legacy_assembly)
+                    .filter(|json| json.is_object())
+                    .map(|assembly| {
+                        Assembly::keccak256(
+                            &serde_json::from_value(assembly.to_owned()).expect("Always valid"),
+                        )
+                    }) {
+                    Some(hash) => hash,
+                    None => continue,
+                };
+
+                hash_path_mapping.insert(hash, full_path);
+            }
+        }
+
+        let mut assemblies = BTreeMap::new();
+        for (path, file) in contracts.iter_mut() {
+            for (name, contract) in file.iter_mut() {
+                let full_path = format!("{path}:{name}");
+                let assembly = match contract
+                    .evm
+                    .as_mut()
+                    .map(|evm| &mut evm.legacy_assembly)
+                    .filter(|json| json.is_object())
+                {
+                    Some(assembly) => assembly,
+                    None => continue,
+                };
+                assemblies.insert(full_path, assembly);
+            }
+        }
+        assemblies
+            .into_par_iter()
+            .map(|(full_path, assembly_json)| {
+                let mut assembly: Assembly =
+                    serde_json::from_value(assembly_json.to_owned()).expect("Always valid");
+                Self::preprocess_dependency_level(
+                    full_path.as_str(),
+                    &mut assembly,
+                    &hash_path_mapping,
+                )?;
+                *assembly_json = serde_json::to_value(&assembly).expect("Always valid");
+                Ok(())
+            })
+            .collect::<anyhow::Result<()>>()?;
+
+        Ok(())
+    }
+
+    ///
+    /// Preprocesses an assembly JSON structure dependency data map.
+    ///
+    fn preprocess_dependency_level(
+        full_path: &str,
+        assembly: &mut Assembly,
+        hash_path_mapping: &BTreeMap<String, String>,
+    ) -> anyhow::Result<()> {
+        assembly.set_full_path(full_path.to_owned());
+
+        let deploy_code_index_path_mapping =
+            assembly.deploy_dependencies_pass(full_path, hash_path_mapping)?;
+        if let Some(deploy_code_instructions) = assembly.code.as_deref_mut() {
+            Instruction::replace_data_aliases(
+                deploy_code_instructions,
+                &deploy_code_index_path_mapping,
+            )?;
+        };
+
+        let runtime_code_index_path_mapping =
+            assembly.runtime_dependencies_pass(full_path, hash_path_mapping)?;
+        if let Some(runtime_code_instructions) = assembly
+            .data
+            .as_mut()
+            .and_then(|data_map| data_map.get_mut("0"))
+            .and_then(|data| data.get_assembly_mut())
+            .and_then(|assembly| assembly.code.as_deref_mut())
+        {
+            Instruction::replace_data_aliases(
+                runtime_code_instructions,
+                &runtime_code_index_path_mapping,
+            )?;
+        }
+
+        Ok(())
+    }
+
+    ///
     /// Replaces the deploy code dependencies with full contract path and returns the list.
     ///
-    pub fn deploy_dependencies_pass(
+    fn deploy_dependencies_pass(
         &mut self,
         full_path: &str,
         hash_data_mapping: &BTreeMap<String, String>,
@@ -140,13 +242,13 @@ impl Assembly {
 
             *data = match data {
                 Data::Assembly(assembly) => {
-                    let hash = assembly.keccak256();
+                    let hash = Assembly::keccak256(assembly);
                     let full_path =
                         hash_data_mapping
                             .get(hash.as_str())
                             .cloned()
                             .ok_or_else(|| {
-                                anyhow::anyhow!("Contract path not found for hash `{}`", hash)
+                                anyhow::anyhow!("Contract path not found for hash `{hash}`")
                             })?;
                     self.factory_dependencies.insert(full_path.to_owned());
 
@@ -167,7 +269,7 @@ impl Assembly {
     ///
     /// Replaces the runtime code dependencies with full contract path and returns the list.
     ///
-    pub fn runtime_dependencies_pass(
+    fn runtime_dependencies_pass(
         &mut self,
         full_path: &str,
         hash_data_mapping: &BTreeMap<String, String>,
@@ -193,13 +295,13 @@ impl Assembly {
 
             *data = match data {
                 Data::Assembly(assembly) => {
-                    let hash = assembly.keccak256();
+                    let hash = Assembly::keccak256(assembly);
                     let full_path =
                         hash_data_mapping
                             .get(hash.as_str())
                             .cloned()
                             .ok_or_else(|| {
-                                anyhow::anyhow!("Contract path not found for hash `{}`", hash)
+                                anyhow::anyhow!("Contract path not found for hash `{hash}`")
                             })?;
                     self.factory_dependencies.insert(full_path.to_owned());
 
@@ -259,7 +361,7 @@ where
         }
         let deploy_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            era_compiler_llvm_context::CodeType::Deploy,
+            era_compiler_common::CodeSegment::Deploy,
             self.code
                 .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
@@ -286,7 +388,7 @@ where
         };
         let runtime_code_blocks = EtherealIR::get_blocks(
             context.evmla().version.to_owned(),
-            era_compiler_llvm_context::CodeType::Runtime,
+            era_compiler_common::CodeSegment::Runtime,
             runtime_code_instructions.as_slice(),
         )?;
 
@@ -305,11 +407,11 @@ where
         ethereal_ir.into_llvm(context)?;
 
         era_compiler_llvm_context::EraVMDeployCodeFunction::new(EntryLink::new(
-            era_compiler_llvm_context::CodeType::Deploy,
+            era_compiler_common::CodeSegment::Deploy,
         ))
         .into_llvm(context)?;
         era_compiler_llvm_context::EraVMRuntimeCodeFunction::new(EntryLink::new(
-            era_compiler_llvm_context::CodeType::Runtime,
+            era_compiler_common::CodeSegment::Runtime,
         ))
         .into_llvm(context)?;
 
@@ -337,10 +439,10 @@ where
             debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
         }
 
-        let (code_type, blocks) = if let Ok(runtime_code) = self.get_runtime_code() {
+        let (code_segment, blocks) = if let Ok(runtime_code) = self.get_runtime_code() {
             let deploy_code_blocks = EtherealIR::get_blocks(
                 context.evmla().version.to_owned(),
-                era_compiler_llvm_context::CodeType::Deploy,
+                era_compiler_common::CodeSegment::Deploy,
                 self.code
                     .as_deref()
                     .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
@@ -359,28 +461,28 @@ where
                 .ok_or_else(|| anyhow::anyhow!("Runtime code instructions not found"))?;
             let runtime_code_blocks = EtherealIR::get_blocks(
                 context.evmla().version.to_owned(),
-                era_compiler_llvm_context::CodeType::Runtime,
+                era_compiler_common::CodeSegment::Runtime,
                 runtime_code_instructions.as_slice(),
             )?;
 
             let mut blocks = deploy_code_blocks;
             blocks.extend(runtime_code_blocks);
-            (era_compiler_llvm_context::CodeType::Deploy, blocks)
+            (era_compiler_common::CodeSegment::Deploy, blocks)
         } else {
             let blocks = EtherealIR::get_blocks(
                 context.evmla().version.to_owned(),
-                era_compiler_llvm_context::CodeType::Runtime,
+                era_compiler_common::CodeSegment::Runtime,
                 self.code
                     .as_deref()
                     .ok_or_else(|| anyhow::anyhow!("Deploy code instructions not found"))?,
             )?;
-            (era_compiler_llvm_context::CodeType::Runtime, blocks)
+            (era_compiler_common::CodeSegment::Runtime, blocks)
         };
 
         let mut ethereal_ir = EtherealIR::new(
             context.evmla().version.to_owned(),
             self.extra_metadata.unwrap_or_default(),
-            Some(code_type),
+            Some(code_segment),
             blocks,
         )?;
         if let Some(debug_config) = context.debug_config() {
@@ -389,7 +491,8 @@ where
         ethereal_ir.declare(context)?;
         ethereal_ir.into_llvm(context)?;
 
-        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(EntryLink::new(code_type));
+        let mut entry =
+            era_compiler_llvm_context::EVMEntryFunction::new(EntryLink::new(code_segment));
         entry.declare(context)?;
         entry.into_llvm(context)?;
 

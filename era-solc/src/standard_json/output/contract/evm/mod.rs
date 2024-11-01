@@ -7,8 +7,6 @@ pub mod extra_metadata;
 
 use std::collections::BTreeMap;
 
-use crate::evmla::assembly::Assembly;
-
 use self::bytecode::Bytecode;
 use self::extra_metadata::ExtraMetadata;
 
@@ -19,20 +17,20 @@ use self::extra_metadata::ExtraMetadata;
 #[serde(rename_all = "camelCase")]
 pub struct EVM {
     /// The contract bytecode.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bytecode: Option<Bytecode>,
     /// The contract EVM legacy assembly code.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub legacy_assembly: Option<Assembly>,
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    pub legacy_assembly: serde_json::Value,
     /// The contract function signatures.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub method_identifiers: Option<BTreeMap<String, String>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub method_identifiers: BTreeMap<String, String>,
 
     /// The contract EraVM assembly code.
-    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub assembly: Option<String>,
     /// The extra EVMLA metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extra_metadata: Option<ExtraMetadata>,
 }
 
@@ -59,8 +57,8 @@ impl EVM {
     ///
     pub fn is_empty(&self) -> bool {
         self.bytecode.is_none()
-            && self.legacy_assembly.is_none()
-            && self.method_identifiers.is_none()
+            && self.legacy_assembly.is_null()
+            && self.method_identifiers.is_empty()
             && self.assembly.is_none()
             && self.extra_metadata.is_none()
     }

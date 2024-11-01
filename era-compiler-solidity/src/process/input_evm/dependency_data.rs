@@ -5,7 +5,6 @@
 use std::collections::BTreeMap;
 
 use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::solc::version::Version as SolcVersion;
 
 ///
 /// The EVM dependency data.
@@ -13,7 +12,7 @@ use crate::solc::version::Version as SolcVersion;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyData {
     /// The `solc` compiler version.
-    pub solc_version: Option<SolcVersion>,
+    pub solc_version: Option<era_solc::Version>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
     /// The dependencies required by specific contract.
@@ -25,7 +24,7 @@ impl DependencyData {
     /// A shortcut constructor.
     ///
     pub fn new(
-        solc_version: Option<SolcVersion>,
+        solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
     ) -> Self {
         Self {

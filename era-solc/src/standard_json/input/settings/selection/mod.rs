@@ -4,7 +4,7 @@
 
 pub mod file;
 
-use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 
 use self::file::flag::Flag as SelectionFlag;
 use self::file::File as FileSelection;
@@ -32,7 +32,7 @@ impl Selection {
     ///
     /// Creates the selection required by EraVM compilation process.
     ///
-    pub fn new_required(codegen: SolcStandardJsonInputSettingsCodegen) -> Self {
+    pub fn new_required(codegen: StandardJsonInputSettingsCodegen) -> Self {
         Self::new(vec![
             SelectionFlag::AST,
             SelectionFlag::MethodIdentifiers,

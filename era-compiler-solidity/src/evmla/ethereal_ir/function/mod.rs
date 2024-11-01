@@ -30,8 +30,6 @@ use crate::evmla::assembly::instruction::Instruction;
 use crate::evmla::ethereal_ir::function::block::element::stack::element::Element;
 use crate::evmla::ethereal_ir::function::block::element::stack::Stack;
 use crate::evmla::ethereal_ir::EtherealIR;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::recursive_function::RecursiveFunction;
-use crate::solc::standard_json::output::contract::evm::extra_metadata::ExtraMetadata;
 
 use self::block::element::stack::element::Element as StackElement;
 use self::block::element::Element as BlockElement;
@@ -49,8 +47,8 @@ pub struct Function {
     pub solc_version: semver::Version,
     /// The function name.
     pub name: String,
-    /// The optional code type. Only used for the EVM target.
-    pub code_type: Option<era_compiler_llvm_context::CodeType>,
+    /// The optional code segment. Only used for the EVM target.
+    pub code_segment: Option<era_compiler_common::CodeSegment>,
     /// The separately labelled blocks.
     pub blocks: BTreeMap<era_compiler_llvm_context::BlockKey, Vec<Block>>,
     /// The function type.
@@ -65,7 +63,7 @@ impl Function {
     ///
     pub fn new(
         solc_version: semver::Version,
-        code_type: Option<era_compiler_llvm_context::CodeType>,
+        code_segment: Option<era_compiler_common::CodeSegment>,
         r#type: Type,
     ) -> Self {
         let name = match r#type {
@@ -80,7 +78,7 @@ impl Function {
         Self {
             solc_version,
             name,
-            code_type,
+            code_segment,
             blocks: BTreeMap::new(),
             r#type,
             stack_size: 0,
@@ -94,22 +92,22 @@ impl Function {
         &mut self,
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
-        extra_metadata: &ExtraMetadata,
+        extra_metadata: &era_solc::StandardJsonOutputContractEVMExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
     ) -> anyhow::Result<()> {
         let mut visited_blocks = BTreeSet::new();
 
-        let code_types = match self.code_type {
-            Some(ref code_type) => vec![*code_type],
+        let code_segments = match self.code_segment {
+            Some(ref code_segment) => vec![*code_segment],
             None => vec![
-                era_compiler_llvm_context::CodeType::Deploy,
-                era_compiler_llvm_context::CodeType::Runtime,
+                era_compiler_common::CodeSegment::Deploy,
+                era_compiler_common::CodeSegment::Runtime,
             ],
         };
 
         match self.r#type {
             Type::Initial => {
-                for code_type in code_types {
+                for code_segment in code_segments {
                     self.consume_block(
                         blocks,
                         functions,
@@ -118,7 +116,7 @@ impl Function {
                         &mut visited_blocks,
                         QueueElement::new(
                             era_compiler_llvm_context::BlockKey::new(
-                                code_type,
+                                code_segment,
                                 num::BigUint::zero(),
                             ),
                             None,
@@ -165,7 +163,7 @@ impl Function {
         &mut self,
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
-        extra_metadata: &ExtraMetadata,
+        extra_metadata: &era_solc::StandardJsonOutputContractEVMExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
         visited_blocks: &mut BTreeSet<VisitedElement>,
         mut queue_element: QueueElement,
@@ -203,7 +201,7 @@ impl Function {
                 functions,
                 extra_metadata,
                 visited_functions,
-                block.key.code_type,
+                block.key.code_segment,
                 block.instance.unwrap_or_default(),
                 &mut block.stack,
                 block_element,
@@ -243,9 +241,9 @@ impl Function {
     fn handle_instruction(
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
-        extra_metadata: &ExtraMetadata,
+        extra_metadata: &era_solc::StandardJsonOutputContractEVMExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
-        code_type: era_compiler_llvm_context::CodeType,
+        code_segment: era_compiler_common::CodeSegment,
         instance: usize,
         block_stack: &mut Stack,
         block_element: &mut BlockElement,
@@ -275,13 +273,14 @@ impl Function {
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         era_compiler_llvm_context::BlockKey::new(
-                            era_compiler_llvm_context::CodeType::Runtime,
+                            era_compiler_common::CodeSegment::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
-                    Element::Tag(destination) => {
-                        era_compiler_llvm_context::BlockKey::new(code_type, destination.to_owned())
-                    }
+                    Element::Tag(destination) => era_compiler_llvm_context::BlockKey::new(
+                        code_segment,
+                        destination.to_owned(),
+                    ),
                     Element::ReturnAddress(output_size) => {
                         block_element.instruction =
                             Instruction::recursive_return(1 + output_size, instruction);
@@ -297,22 +296,23 @@ impl Function {
                     }
                 };
 
-                let (next_block_key, stack_output) =
-                    if let Some(recursive_function) = extra_metadata.get(&block_key) {
-                        Self::handle_recursive_function_call(
-                            recursive_function,
-                            blocks,
-                            functions,
-                            extra_metadata,
-                            visited_functions,
-                            block_key,
-                            block_stack,
-                            block_element,
-                            version,
-                        )?
-                    } else {
-                        (block_key, vec![])
-                    };
+                let (next_block_key, stack_output) = if let Some(recursive_function) =
+                    extra_metadata.get(block_key.code_segment, &block_key.tag)
+                {
+                    Self::handle_recursive_function_call(
+                        recursive_function,
+                        blocks,
+                        functions,
+                        extra_metadata,
+                        visited_functions,
+                        block_key,
+                        block_stack,
+                        block_element,
+                        version,
+                    )?
+                } else {
+                    (block_key, vec![])
+                };
 
                 (
                     stack_output,
@@ -336,13 +336,14 @@ impl Function {
                 {
                     Element::Tag(destination) if destination > &num::BigUint::from(u32::MAX) => {
                         era_compiler_llvm_context::BlockKey::new(
-                            era_compiler_llvm_context::CodeType::Runtime,
+                            era_compiler_common::CodeSegment::Runtime,
                             destination.to_owned() - num::BigUint::from(1u64 << 32),
                         )
                     }
-                    Element::Tag(destination) => {
-                        era_compiler_llvm_context::BlockKey::new(code_type, destination.to_owned())
-                    }
+                    Element::Tag(destination) => era_compiler_llvm_context::BlockKey::new(
+                        code_segment,
+                        destination.to_owned(),
+                    ),
                     element => {
                         return Err(anyhow::anyhow!(
                             "The {} instruction expected a tag or return address, found {}",
@@ -367,7 +368,7 @@ impl Function {
                 ..
             } => {
                 let tag: num::BigUint = tag.parse().expect("Always valid");
-                let block_key = era_compiler_llvm_context::BlockKey::new(code_type, tag);
+                let block_key = era_compiler_llvm_context::BlockKey::new(code_segment, tag);
 
                 queue_element.predecessor = Some((queue_element.block_key.clone(), instance));
                 queue_element.block_key = block_key.clone();
@@ -1028,10 +1029,10 @@ impl Function {
     /// Handles the recursive function call.
     ///
     fn handle_recursive_function_call(
-        recursive_function: &RecursiveFunction,
+        recursive_function: &era_solc::StandardJsonOutputContractEVMExtraMetadataRecursiveFunction,
         blocks: &HashMap<era_compiler_llvm_context::BlockKey, Block>,
         functions: &mut BTreeMap<era_compiler_llvm_context::BlockKey, Self>,
-        extra_metadata: &ExtraMetadata,
+        extra_metadata: &era_solc::StandardJsonOutputContractEVMExtraMetadata,
         visited_functions: &mut BTreeSet<VisitedElement>,
         block_key: era_compiler_llvm_context::BlockKey,
         block_stack: &mut Stack,
@@ -1044,7 +1045,7 @@ impl Function {
 
         let return_address = match block_stack.elements[return_address_offset] {
             Element::Tag(ref return_address) => era_compiler_llvm_context::BlockKey::new(
-                block_key.code_type,
+                block_key.code_segment,
                 return_address.to_owned(),
             ),
             ref element => anyhow::bail!("Expected the function return address, found {element}"),
@@ -1062,7 +1063,7 @@ impl Function {
         if !visited_functions.contains(&visited_element) {
             let mut function = Self::new(
                 version.to_owned(),
-                Some(block_key.code_type),
+                Some(block_key.code_segment),
                 Type::new_recursive(
                     recursive_function.name.to_owned(),
                     block_key.clone(),
@@ -1132,10 +1133,10 @@ impl Function {
         tag: &num::BigUint,
     ) -> bool {
         blocks.contains_key(&era_compiler_llvm_context::BlockKey::new(
-            era_compiler_llvm_context::CodeType::Deploy,
+            era_compiler_common::CodeSegment::Deploy,
             tag & num::BigUint::from(u32::MAX),
         )) || blocks.contains_key(&era_compiler_llvm_context::BlockKey::new(
-            era_compiler_llvm_context::CodeType::Runtime,
+            era_compiler_common::CodeSegment::Runtime,
             tag & num::BigUint::from(u32::MAX),
         ))
     }
@@ -1272,14 +1273,14 @@ where
                     .into_int_value();
                 let deploy_code_block = context.current_function().borrow().find_block(
                     &era_compiler_llvm_context::BlockKey::new(
-                        era_compiler_llvm_context::CodeType::Deploy,
+                        era_compiler_common::CodeSegment::Deploy,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
                 )?;
                 let runtime_code_block = context.current_function().borrow().find_block(
                     &era_compiler_llvm_context::BlockKey::new(
-                        era_compiler_llvm_context::CodeType::Runtime,
+                        era_compiler_common::CodeSegment::Runtime,
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),
@@ -1444,7 +1445,7 @@ where
             Type::Initial => {
                 let initial_block = context.current_function().borrow().find_block(
                     &era_compiler_llvm_context::BlockKey::new(
-                        context.code_type().expect("Must be set at this point"),
+                        context.code_segment().expect("Must be set at this point"),
                         num::BigUint::zero(),
                     ),
                     &Stack::default().hash(),

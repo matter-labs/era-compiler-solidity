@@ -1,11 +1,10 @@
 use crate::{cli, common};
-use era_compiler_solidity::SolcStandardJsonInputSettingsCodegen;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(SolcStandardJsonInputSettingsCodegen::EVMLA)]
-#[test_case(SolcStandardJsonInputSettingsCodegen::Yul)]
-fn with_codegen(codegen: SolcStandardJsonInputSettingsCodegen) -> anyhow::Result<()> {
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
+fn with_codegen(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -24,9 +23,9 @@ fn with_codegen(codegen: SolcStandardJsonInputSettingsCodegen) -> anyhow::Result
     Ok(())
 }
 
-#[test_case(SolcStandardJsonInputSettingsCodegen::EVMLA)]
-#[test_case(SolcStandardJsonInputSettingsCodegen::Yul)]
-fn with_codegen_yul_mode(codegen: SolcStandardJsonInputSettingsCodegen) -> anyhow::Result<()> {
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
+fn with_codegen_yul_mode(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -46,9 +45,9 @@ fn with_codegen_yul_mode(codegen: SolcStandardJsonInputSettingsCodegen) -> anyho
     Ok(())
 }
 
-#[test_case(SolcStandardJsonInputSettingsCodegen::EVMLA)]
-#[test_case(SolcStandardJsonInputSettingsCodegen::Yul)]
-fn with_codegen_llvm_ir_mode(codegen: SolcStandardJsonInputSettingsCodegen) -> anyhow::Result<()> {
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
+fn with_codegen_llvm_ir_mode(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -68,10 +67,10 @@ fn with_codegen_llvm_ir_mode(codegen: SolcStandardJsonInputSettingsCodegen) -> a
     Ok(())
 }
 
-#[test_case(SolcStandardJsonInputSettingsCodegen::EVMLA)]
-#[test_case(SolcStandardJsonInputSettingsCodegen::Yul)]
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
 fn with_codegen_eravm_assembly_mode(
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
 ) -> anyhow::Result<()> {
     common::setup()?;
 
@@ -92,10 +91,10 @@ fn with_codegen_eravm_assembly_mode(
     Ok(())
 }
 
-#[test_case(SolcStandardJsonInputSettingsCodegen::EVMLA)]
-#[test_case(SolcStandardJsonInputSettingsCodegen::Yul)]
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
 fn with_codegen_standard_json_mode(
-    codegen: SolcStandardJsonInputSettingsCodegen,
+    codegen: era_solc::StandardJsonInputCodegen,
 ) -> anyhow::Result<()> {
     common::setup()?;
 

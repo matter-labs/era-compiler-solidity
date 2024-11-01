@@ -2,8 +2,6 @@
 //! The Solidity libraries.
 //!
 
-pub mod missing;
-
 use std::collections::BTreeMap;
 
 ///

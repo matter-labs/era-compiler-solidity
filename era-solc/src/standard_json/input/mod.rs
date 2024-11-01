@@ -15,13 +15,13 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::iter::ParallelIterator;
 
-use crate::error_type::ErrorType;
-use crate::solc::standard_json::input::settings::codegen::Codegen as SolcStandardJsonInputSettingsCodegen;
-use crate::solc::standard_json::input::settings::libraries::Libraries as SolcStandardJsonInputSettingsLibraries;
-use crate::solc::standard_json::input::settings::metadata::Metadata as SolcStandardJsonInputSettingsMetadata;
-use crate::solc::standard_json::input::settings::optimizer::Optimizer as SolcStandardJsonInputSettingsOptimizer;
-use crate::solc::standard_json::input::settings::selection::Selection as SolcStandardJsonInputSettingsSelection;
-use crate::warning_type::WarningType;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
+use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
+use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
+use crate::standard_json::input::settings::metadata::Metadata as StandardJsonInputSettingsMetadata;
+use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
+use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
+use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
 
 use self::language::Language;
 use self::settings::Settings;
@@ -42,10 +42,10 @@ pub struct Input {
 
     /// The suppressed errors.
     #[serde(default, skip_serializing)]
-    pub suppressed_errors: Vec<ErrorType>,
+    pub suppressed_errors: Vec<StandardJsonInputSettingsErrorType>,
     /// The suppressed warnings.
     #[serde(default, skip_serializing)]
-    pub suppressed_warnings: Vec<WarningType>,
+    pub suppressed_warnings: Vec<StandardJsonInputSettingsWarningType>,
 }
 
 impl Input {
@@ -78,20 +78,20 @@ impl Input {
         paths: &[PathBuf],
         libraries: &[String],
         remappings: BTreeSet<String>,
-        optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
+        optimizer: StandardJsonInputSettingsOptimizer,
+        codegen: Option<StandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
-        output_selection: SolcStandardJsonInputSettingsSelection,
-        metadata: SolcStandardJsonInputSettingsMetadata,
+        output_selection: StandardJsonInputSettingsSelection,
+        metadata: StandardJsonInputSettingsMetadata,
         llvm_options: Vec<String>,
-        suppressed_errors: Vec<ErrorType>,
-        suppressed_warnings: Vec<WarningType>,
+        suppressed_errors: Vec<StandardJsonInputSettingsErrorType>,
+        suppressed_warnings: Vec<StandardJsonInputSettingsWarningType>,
         detect_missing_libraries: bool,
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
-        let libraries = SolcStandardJsonInputSettingsLibraries::try_from(libraries)?;
+        let libraries = StandardJsonInputSettingsLibraries::try_from(libraries)?;
         for library_file in libraries.as_inner().keys() {
             paths.insert(PathBuf::from(library_file));
         }
@@ -127,17 +127,17 @@ impl Input {
     ///
     pub fn try_from_solidity_sources(
         sources: BTreeMap<String, Source>,
-        libraries: SolcStandardJsonInputSettingsLibraries,
+        libraries: StandardJsonInputSettingsLibraries,
         remappings: BTreeSet<String>,
-        optimizer: SolcStandardJsonInputSettingsOptimizer,
-        codegen: Option<SolcStandardJsonInputSettingsCodegen>,
+        optimizer: StandardJsonInputSettingsOptimizer,
+        codegen: Option<StandardJsonInputSettingsCodegen>,
         evm_version: Option<era_compiler_common::EVMVersion>,
         enable_eravm_extensions: bool,
-        output_selection: SolcStandardJsonInputSettingsSelection,
-        metadata: SolcStandardJsonInputSettingsMetadata,
+        output_selection: StandardJsonInputSettingsSelection,
+        metadata: StandardJsonInputSettingsMetadata,
         llvm_options: Vec<String>,
-        suppressed_errors: Vec<ErrorType>,
-        suppressed_warnings: Vec<WarningType>,
+        suppressed_errors: Vec<StandardJsonInputSettingsErrorType>,
+        suppressed_warnings: Vec<StandardJsonInputSettingsWarningType>,
         detect_missing_libraries: bool,
         via_ir: bool,
     ) -> anyhow::Result<Self> {
@@ -169,11 +169,11 @@ impl Input {
     ///
     pub fn from_yul_sources(
         sources: BTreeMap<String, Source>,
-        libraries: SolcStandardJsonInputSettingsLibraries,
-        optimizer: SolcStandardJsonInputSettingsOptimizer,
+        libraries: StandardJsonInputSettingsLibraries,
+        optimizer: StandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
-        let output_selection = SolcStandardJsonInputSettingsSelection::new_yul_validation();
+        let output_selection = StandardJsonInputSettingsSelection::new_yul_validation();
 
         Self {
             language: Language::Yul,
@@ -186,7 +186,7 @@ impl Input {
                 None,
                 false,
                 output_selection,
-                SolcStandardJsonInputSettingsMetadata::default(),
+                StandardJsonInputSettingsMetadata::default(),
                 llvm_options,
                 vec![],
                 vec![],
@@ -203,8 +203,8 @@ impl Input {
     ///
     pub fn from_yul_paths(
         paths: &[PathBuf],
-        libraries: SolcStandardJsonInputSettingsLibraries,
-        optimizer: SolcStandardJsonInputSettingsOptimizer,
+        libraries: StandardJsonInputSettingsLibraries,
+        optimizer: StandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
         let sources = paths
@@ -222,7 +222,7 @@ impl Input {
     ///
     /// Extends the output selection with another one.
     ///
-    pub fn extend_selection(&mut self, selection: SolcStandardJsonInputSettingsSelection) {
+    pub fn extend_selection(&mut self, selection: StandardJsonInputSettingsSelection) {
         self.settings.extend_selection(selection);
     }
 

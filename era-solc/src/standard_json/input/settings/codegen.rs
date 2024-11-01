@@ -4,8 +4,8 @@
 
 use std::str::FromStr;
 
-use crate::solc::version::Version as SolcVersion;
-use crate::solc::Compiler as SolcCompiler;
+use crate::solc::Compiler;
+use crate::version::Version;
 
 ///
 /// The Solidity compiler codegen.
@@ -23,8 +23,8 @@ impl Codegen {
     ///
     /// We always use EVMLA for Solidity <=0.7, or if the user does not want to compile via Yul.
     ///
-    pub fn new(solc_version: &SolcVersion, explicit: Option<Self>) -> Self {
-        if solc_version.default < SolcCompiler::FIRST_YUL_VERSION || explicit == Some(Self::EVMLA) {
+    pub fn new(solc_version: &Version, explicit: Option<Self>) -> Self {
+        if solc_version.default < Compiler::FIRST_YUL_VERSION || explicit == Some(Self::EVMLA) {
             Self::EVMLA
         } else {
             Self::Yul

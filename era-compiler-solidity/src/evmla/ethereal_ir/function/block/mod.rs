@@ -48,7 +48,7 @@ impl Block {
     ///
     pub fn try_from_instructions(
         solc_version: semver::Version,
-        code_type: era_compiler_llvm_context::CodeType,
+        code_segment: era_compiler_common::CodeSegment,
         slice: &[Instruction],
     ) -> anyhow::Result<(Self, usize)> {
         let mut cursor = 0;
@@ -68,7 +68,7 @@ impl Block {
         };
 
         let mut block = Self {
-            key: era_compiler_llvm_context::BlockKey::new(code_type, tag),
+            key: era_compiler_llvm_context::BlockKey::new(code_segment, tag),
             instance: None,
             elements: Vec::with_capacity(Self::ELEMENTS_VECTOR_DEFAULT_CAPACITY),
             predecessors: HashSet::with_capacity(Self::PREDECESSORS_HASHSET_DEFAULT_CAPACITY),
@@ -128,7 +128,7 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        context.set_code_type(self.key.code_type);
+        context.set_code_segment(self.key.code_segment);
 
         for element in self.elements.into_iter() {
             element.into_llvm(context)?;

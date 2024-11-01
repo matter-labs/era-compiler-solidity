@@ -28,6 +28,6 @@
       "libraries": {},
       "enableEraVMExtensions": true,
       "forceEVMLA": false,
-      "areLibrariesMissing": false
+      "areera_solc::StandardJsonInputLibrariesMissing": false
     }
   }

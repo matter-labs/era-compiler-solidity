@@ -23,23 +23,24 @@ impl ExtraMetadata {
     ///
     pub fn get(
         &self,
-        block_key: &era_compiler_llvm_context::BlockKey,
+        code_segment: era_compiler_common::CodeSegment,
+        tag: &num::BigUint,
     ) -> Option<&RecursiveFunction> {
         for function in self.recursive_functions.iter() {
-            match block_key.code_type {
-                era_compiler_llvm_context::CodeType::Deploy => {
+            match code_segment {
+                era_compiler_common::CodeSegment::Deploy => {
                     if function
                         .creation_tag
-                        .map(|creation_tag| num::BigUint::from(creation_tag) == block_key.tag)
+                        .map(|creation_tag| &num::BigUint::from(creation_tag) == tag)
                         .unwrap_or_default()
                     {
                         return Some(function);
                     }
                 }
-                era_compiler_llvm_context::CodeType::Runtime => {
+                era_compiler_common::CodeSegment::Runtime => {
                     if function
                         .runtime_tag
-                        .map(|runtime_tag| num::BigUint::from(runtime_tag) == block_key.tag)
+                        .map(|runtime_tag| &num::BigUint::from(runtime_tag) == tag)
                         .unwrap_or_default()
                     {
                         return Some(function);

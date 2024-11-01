@@ -6,10 +6,6 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::solc::combined_json::contract::Contract as CombinedJsonContract;
-use crate::solc::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
-use crate::solc::standard_json::output::contract::Contract as StandardJsonOutputContract;
-
 ///
 /// The Solidity contract build.
 ///
@@ -103,15 +99,15 @@ impl Contract {
         std::fs::create_dir_all(output_path.as_path())?;
 
         if output_binary {
-            for (code_type, bytecode) in [
-                era_compiler_llvm_context::CodeType::Deploy,
-                era_compiler_llvm_context::CodeType::Runtime,
+            for (code_segment, bytecode) in [
+                era_compiler_common::CodeSegment::Deploy,
+                era_compiler_common::CodeSegment::Runtime,
             ]
             .into_iter()
             .zip([self.deploy_build, self.runtime_build].into_iter())
             {
                 let output_name = format!(
-                    "{}.{code_type}.{}",
+                    "{}.{code_segment}.{}",
                     self.name.name.as_deref().unwrap_or(file_name),
                     era_compiler_common::EXTENSION_EVM_BINARY
                 );
@@ -142,7 +138,7 @@ impl Contract {
     ///
     pub fn write_to_combined_json(
         self,
-        combined_json_contract: &mut CombinedJsonContract,
+        combined_json_contract: &mut era_solc::CombinedJsonContract,
     ) -> anyhow::Result<()> {
         if let Some(metadata) = combined_json_contract.metadata.as_mut() {
             *metadata = self.metadata_json.to_string();
@@ -177,7 +173,7 @@ impl Contract {
     ///
     pub fn write_to_standard_json(
         self,
-        standard_json_contract: &mut StandardJsonOutputContract,
+        standard_json_contract: &mut era_solc::StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
         let deploy_bytecode = hex::encode(self.deploy_build.as_slice());
         let runtime_bytecode = hex::encode(self.runtime_build.as_slice());
@@ -185,7 +181,7 @@ impl Contract {
         standard_json_contract.metadata = self.metadata_json;
         standard_json_contract
             .evm
-            .get_or_insert_with(StandardJsonOutputContractEVM::default)
+            .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_evm(deploy_bytecode, runtime_bytecode);
 
         Ok(())

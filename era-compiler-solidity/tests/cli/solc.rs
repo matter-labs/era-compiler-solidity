@@ -7,11 +7,8 @@ use predicates::prelude::predicate;
 fn with_solc() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -48,11 +45,8 @@ fn without_solc() -> anyhow::Result<()> {
 fn with_solc_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",
@@ -90,11 +84,8 @@ fn without_solc_standard_json_mode() -> anyhow::Result<()> {
 fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",
@@ -116,11 +107,8 @@ fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
 fn with_solc_eravm_assembly_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",
@@ -181,7 +169,7 @@ fn with_solc_version_too_old() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_TOO_OLD_PATH,
     ];
 
-    let version_supported = era_compiler_solidity::SolcCompiler::FIRST_SUPPORTED_VERSION;
+    let version_supported = era_solc::Compiler::FIRST_SUPPORTED_VERSION;
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch -= 1;
 
@@ -203,7 +191,7 @@ fn with_solc_version_too_new() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_TOO_NEW_PATH,
     ];
 
-    let version_supported = era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION;
+    let version_supported = era_solc::Compiler::LAST_SUPPORTED_VERSION;
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch += 1;
 

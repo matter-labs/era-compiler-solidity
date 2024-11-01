@@ -2,6 +2,7 @@
 members = [
     "era-compiler-solidity",
     "era-yul",
+    "era-solc",
 ]
 resolver = "2"
 

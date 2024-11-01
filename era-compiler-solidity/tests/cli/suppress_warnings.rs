@@ -5,7 +5,7 @@ use predicates::prelude::*;
 fn with_suppressed_warnings() -> anyhow::Result<()> {
     common::setup()?;
 
-    let warning_type = era_compiler_solidity::WarningType::TxOrigin.to_string();
+    let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
     let args = &[
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -25,7 +25,7 @@ fn with_suppressed_warnings() -> anyhow::Result<()> {
 fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let warning_type = era_compiler_solidity::WarningType::TxOrigin.to_string();
+    let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
     let args = &[
         "--standard-json",
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,

@@ -5,7 +5,7 @@ use predicates::prelude::*;
 fn with_suppressed_errors() -> anyhow::Result<()> {
     common::setup()?;
 
-    let error_type = era_compiler_solidity::ErrorType::SendTransfer.to_string();
+    let error_type = era_solc::StandardJsonInputErrorType::SendTransfer.to_string();
     let args = &[
         "--bin",
         cli::TEST_SOLIDITY_CONTRACT_PATH,
@@ -25,7 +25,7 @@ fn with_suppressed_errors() -> anyhow::Result<()> {
 fn with_suppressed_errors_standard_json_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let error_type = era_compiler_solidity::ErrorType::SendTransfer.to_string();
+    let error_type = era_solc::StandardJsonInputErrorType::SendTransfer.to_string();
     let args = &[
         "--standard-json",
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
@@ -64,11 +64,8 @@ fn with_suppressed_errors_invalid() -> anyhow::Result<()> {
 fn with_suppressed_warnings_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",
@@ -89,11 +86,8 @@ fn with_suppressed_warnings_invalid_standard_json() -> anyhow::Result<()> {
 fn with_suppressed_errors_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
-    let solc_compiler = common::get_solc_compiler(
-        &era_compiler_solidity::SolcCompiler::LAST_SUPPORTED_VERSION,
-        false,
-    )?
-    .executable;
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
 
     let args = &[
         "--solc",

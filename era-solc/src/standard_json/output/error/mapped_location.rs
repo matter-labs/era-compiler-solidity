@@ -2,7 +2,7 @@
 //! The mapped error location.
 //!
 
-use crate::solc::standard_json::output::error::source_location::SourceLocation;
+use crate::standard_json::output::error::source_location::SourceLocation;
 
 ///
 /// The mapped error location.
