@@ -14,10 +14,10 @@ use self::flag::Flag as SelectionFlag;
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct File {
     /// The per-file output selections.
-    #[serde(rename = "", skip_serializing_if = "HashSet::is_empty")]
+    #[serde(default, rename = "", skip_serializing_if = "HashSet::is_empty")]
     pub per_file: HashSet<SelectionFlag>,
     /// The per-contract output selections.
-    #[serde(rename = "*", skip_serializing_if = "HashSet::is_empty")]
+    #[serde(default, rename = "*", skip_serializing_if = "HashSet::is_empty")]
     pub per_contract: HashSet<SelectionFlag>,
 }
 
