@@ -544,23 +544,26 @@ pub fn standard_json_eravm(
         }
     };
 
+    let missing_libraries = project.get_missing_libraries();
     if detect_missing_libraries {
-        let missing_libraries = project.get_missing_libraries();
         missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
-    } else {
-        let build = project.compile_to_eravm(
-            messages,
-            enable_eravm_extensions,
-            linker_symbols,
-            metadata_hash_type,
-            optimizer_settings,
-            llvm_options,
-            output_assembly,
-            threads,
-            debug_config,
-        )?;
-        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+        solc_output.write_and_exit(prune_output);
     }
+
+    let build = project.compile_to_eravm(
+        messages,
+        enable_eravm_extensions,
+        linker_symbols,
+        metadata_hash_type,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
+        threads,
+        debug_config,
+    )?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+    missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
+
     solc_output.write_and_exit(prune_output);
 }
 

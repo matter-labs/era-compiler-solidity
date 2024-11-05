@@ -51,10 +51,9 @@ pub struct Contract {
     /// The contract factory dependencies.
     #[serde(default, skip_deserializing)]
     pub factory_dependencies: BTreeMap<String, String>,
-
     /// The contract missing libraries.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
-    pub missing_libraries: Option<HashSet<String>>,
+    #[serde(default, skip_deserializing)]
+    pub missing_libraries: HashSet<String>,
 }
 
 impl Contract {
@@ -73,6 +72,6 @@ impl Contract {
             && self.eravm.is_none()
             && self.hash.is_none()
             && self.factory_dependencies.is_empty()
-            && self.missing_libraries.is_none()
+            && self.missing_libraries.is_empty()
     }
 }
