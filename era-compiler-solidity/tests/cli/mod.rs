@@ -69,10 +69,16 @@ pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Tes
 pub const TEST_SOLIDITY_CONTRACT_GREETER_PATH: &str = "tests/data/contracts/solidity/Greeter.sol";
 
 /// A test input file.
-pub const SOLIDITY_BIN_OUTPUT_NAME: &str = "C.zbin";
+pub const SOLIDITY_BIN_OUTPUT_NAME_ERAVM: &str = "C.zbin";
 
 /// A test input file.
-pub const SOLIDITY_ASM_OUTPUT_NAME: &str = "C.zasm";
+pub const SOLIDITY_BIN_OUTPUT_NAME_EVM: &str = "C.bin";
+
+/// A test input file.
+pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "C.zasm";
+
+/// A test input file.
+pub const SOLIDITY_ASM_OUTPUT_NAME_EVM: &str = "C.asm";
 
 /// A test input file.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
@@ -194,7 +200,7 @@ pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.hex";
 /// A test input file.
 /// The linker hexadecimal string bytecode sample path.
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards.
-pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/bytecodes/linker_copy.hex";
+pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/temp/linker_copy.hex";
 
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
@@ -311,5 +317,6 @@ pub fn is_file_empty(file_path: &str) -> anyhow::Result<bool> {
 ///
 pub fn is_output_same_as_file(file_path: &str, output: &str) -> anyhow::Result<bool> {
     let file_content = std::fs::read_to_string(file_path)?;
+    dbg!(&file_content, &output);
     Ok(file_content.trim().contains(output.trim()) || output.trim().contains(file_content.trim()))
 }

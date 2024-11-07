@@ -4,7 +4,7 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM)]
-/// TODO: EVM
+#[test_case(Target::EVM)]
 fn with_bin(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 

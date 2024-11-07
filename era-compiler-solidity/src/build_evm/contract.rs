@@ -78,12 +78,10 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to files.
     ///
-    /// TODO: output assembly
-    ///
     pub fn write_to_directory(
         self,
         output_path: &Path,
-        _output_assembly: bool,
+        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -98,33 +96,43 @@ impl Contract {
         output_path.push(file_name);
         std::fs::create_dir_all(output_path.as_path())?;
 
-        if output_binary {
-            for (code_segment, bytecode) in [
-                era_compiler_common::CodeSegment::Deploy,
-                era_compiler_common::CodeSegment::Runtime,
-            ]
-            .into_iter()
-            .zip([self.deploy_build, self.runtime_build].into_iter())
-            {
-                let output_name = format!(
-                    "{}.{code_segment}.{}",
-                    self.name.name.as_deref().unwrap_or(file_name),
-                    era_compiler_common::EXTENSION_EVM_BINARY
-                );
-                let mut output_path = output_path.clone();
-                output_path.push(output_name.as_str());
+        if output_assembly {
+            let output_name = format!(
+                "{}.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                "asm"
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
 
-                if output_path.exists() && !overwrite {
-                    anyhow::bail!(
-                        "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
-                    );
-                } else {
-                    std::fs::write(
-                        output_path.as_path(),
-                        hex::encode(bytecode.as_slice()).as_bytes(),
-                    )
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                std::fs::write(output_path.as_path(), [])
                     .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
-                }
+            }
+        }
+
+        if output_binary {
+            let output_name = format!(
+                "{}.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                era_compiler_common::EXTENSION_EVM_BINARY
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
+
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                let mut bytecode_hexadecimal = hex::encode(self.deploy_build.as_slice());
+                bytecode_hexadecimal.push_str(hex::encode(self.runtime_build.as_slice()).as_str());
+                std::fs::write(output_path.as_path(), bytecode_hexadecimal.as_bytes())
+                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
