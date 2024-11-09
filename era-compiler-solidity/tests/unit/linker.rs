@@ -5,164 +5,16 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
+use test_case::test_case;
+
 use crate::common;
-
-#[test]
-fn library_not_passed_compile_time_08_evmla() {
-    library_not_passed_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_not_passed_compile_time_08_yul() {
-    library_not_passed_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_not_passed_post_compile_time_08_evmla() {
-    library_not_passed_post_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_not_passed_post_compile_time_08_yul() {
-    library_not_passed_post_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_passed_compile_time_08_evmla() {
-    library_passed_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_passed_compile_time_08_yul() {
-    library_passed_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_08_evmla() {
-    library_passed_post_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_08_yul() {
-    library_passed_post_compile_time(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_second_call_08_evmla() {
-    library_passed_post_compile_time_second_call(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_second_call_08_yul() {
-    library_passed_post_compile_time_second_call(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_redundant_args_08_evmla() {
-    library_passed_post_compile_time_redundant_args(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_passed_post_compile_time_redundant_args_08_yul() {
-    library_passed_post_compile_time_redundant_args(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-#[should_panic(expected = "Input binary is not an EraVM ELF file")]
-fn library_passed_post_compile_time_non_elf_08_evmla() {
-    library_passed_post_compile_time_non_elf(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "Input binary is not an EraVM ELF file")]
-fn library_passed_post_compile_time_non_elf_08_yul() {
-    library_passed_post_compile_time_non_elf(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-#[test]
-fn library_produce_equal_bytecode_in_both_cases_08_evmla() {
-    library_produce_equal_bytecode_in_both_cases(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn library_produce_equal_bytecode_in_both_cases_08_yul() {
-    library_produce_equal_bytecode_in_both_cases(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-
-pub const SOURCE_CODE: &str = r#"
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
-
-library GreaterHelper {
-    function addPrefix(Greeter greeter, string memory great) public view returns (string memory) {
-        return string.concat(greeter.prefix(),great);
-    }
-}
-
-contract Greeter {
-    string private greeting;
-    string private _prefix;
-
-    constructor(string memory _greeting) {
-        greeting = _greeting;
-        _prefix = "The greating is:";
-    }
-
-    function prefix() public view returns (string memory) {
-        return _prefix;
-    }
-
-    function greet() public view returns (string memory) {
-        return GreaterHelper.addPrefix(this, greeting);
-    }
-
-    function setGreeting(string memory _greeting) public {
-        greeting = _greeting;
-    }
-}
-"#;
 
 fn get_bytecode(
     libraries: era_solc::StandardJsonInputLibraries,
     version: &semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) -> Vec<u8> {
-    let mut sources = BTreeMap::new();
-    sources.insert("test.sol".to_owned(), SOURCE_CODE.to_owned());
+    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
     let build = common::build_solidity(
         sources,
@@ -176,10 +28,10 @@ fn get_bytecode(
     .expect("Build failure");
     let bytecode_hexadecimal = build
         .contracts
-        .get("test.sol")
-        .expect("Missing file `test.sol`")
-        .get("Greeter")
-        .expect("Missing contract `test.sol:Greeter`")
+        .get(common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH)
+        .expect("Missing file")
+        .get("SimpleContract")
+        .expect("Missing contract")
         .evm
         .as_ref()
         .expect("Missing EVM data")
@@ -191,10 +43,38 @@ fn get_bytecode(
     hex::decode(bytecode_hexadecimal).expect("Invalid bytecode")
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_not_passed_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let bytecode = get_bytecode(
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -212,10 +92,38 @@ fn library_not_passed_compile_time(
     );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_not_passed_post_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let bytecode = get_bytecode(
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -236,12 +144,40 @@ fn library_not_passed_post_compile_time(
     );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_passed_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments =
-        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+        vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
         .expect("Always valid");
 
@@ -255,12 +191,40 @@ fn library_passed_compile_time(
     assert!(!memory_buffer.is_elf_eravm(), "The bytecode is an ELF file");
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_passed_post_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments =
-        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+        vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let linker_symbols =
         era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
             .expect("Always valid")
@@ -287,12 +251,40 @@ fn library_passed_post_compile_time(
     );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_passed_post_compile_time_second_call(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments =
-        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+        vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let linker_symbols =
         era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
             .expect("Always valid")
@@ -322,14 +314,42 @@ fn library_passed_post_compile_time_second_call(
     );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_passed_post_compile_time_redundant_args(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments = vec![
-        "fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
-        "scam.sol:Scam=0x0000000000000000000000000000000000000000".to_owned(),
-        "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
+        "tests/data/contracts/solidity/fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
+        "tests/data/contracts/solidity/scam.sol:Scam=0x0000000000000000000000000000000000000000".to_owned(),
+        "tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
     ];
     let linker_symbols =
         era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
@@ -357,12 +377,41 @@ fn library_passed_post_compile_time_redundant_args(
     );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
+#[should_panic(expected = "Input binary is not an EraVM ELF file")]
 fn library_passed_post_compile_time_non_elf(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments =
-        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+        vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
         .expect("Always valid")
         .as_linker_symbols()
@@ -382,21 +431,45 @@ fn library_passed_post_compile_time_non_elf(
     let memory_buffer_linked = memory_buffer
         .link_module_eravm(&libraries)
         .expect("Link failure");
-    let memory_buffer_linked_non_elf = memory_buffer_linked
+    let _memory_buffer_linked_non_elf = memory_buffer_linked
         .link_module_eravm(&libraries)
         .expect("Link failure");
-    assert!(
-        !memory_buffer_linked_non_elf.is_elf_eravm(),
-        "The bytecode is an ELF file"
-    );
 }
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
 fn library_produce_equal_bytecode_in_both_cases(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
     let library_arguments =
-        vec!["test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
+        vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
         .expect("Always valid");
     let linker_symbols = libraries.as_linker_symbols().expect("Always valid");
@@ -423,10 +496,6 @@ fn library_produce_equal_bytecode_in_both_cases(
         .link_module_eravm(&linker_symbols)
         .expect("Link failure");
 
-    dbg!(
-        hex::encode(memory_buffer_compile_time.as_slice()),
-        hex::encode(memory_buffer_linked_post_compile_time.as_slice())
-    );
     assert!(
         memory_buffer_compile_time.as_slice() == memory_buffer_linked_post_compile_time.as_slice(),
         "The bytecodes are not equal"

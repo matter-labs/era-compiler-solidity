@@ -97,7 +97,7 @@ impl Contract {
             dependency_data
                 .solc_version
                 .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
+                .map(|version| version.l2_revision.to_owned()),
             optimizer.settings().to_owned(),
             llvm_options.as_slice(),
         );
@@ -265,7 +265,7 @@ impl Contract {
                 .map(|version| version.default.to_owned()),
             solc_version
                 .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
+                .map(|version| version.l2_revision.to_owned()),
             optimizer.settings().to_owned(),
             llvm_options.as_slice(),
         );

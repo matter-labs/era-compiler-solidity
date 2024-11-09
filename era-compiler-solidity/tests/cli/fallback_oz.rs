@@ -8,7 +8,11 @@ use test_case::test_case;
 fn with_fallback_oz(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--fallback-Oz", "--bin"];
+    let args = &[
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--fallback-Oz",
+        "--bin",
+    ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result
@@ -25,7 +29,7 @@ fn with_fallback_oz_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--fallback-Oz",
     ];
 

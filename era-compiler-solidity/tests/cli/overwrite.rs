@@ -13,14 +13,14 @@ fn with_overwrite_bin(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
         "--overwrite",
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -55,13 +55,13 @@ fn without_overwrite_bin(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -97,14 +97,14 @@ fn with_overwrite_asm(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--asm",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
         "--overwrite",
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--asm",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -139,13 +139,13 @@ fn without_overwrite_asm(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--asm",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--asm",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -181,14 +181,14 @@ fn with_overwrite_metadata(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--metadata",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
         "--overwrite",
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--metadata",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -223,13 +223,13 @@ fn without_overwrite_metadata(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--metadata",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--metadata",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -265,7 +265,7 @@ fn with_overwrite_all(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -274,7 +274,7 @@ fn with_overwrite_all(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -311,7 +311,7 @@ fn without_overwrite_all(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -319,7 +319,7 @@ fn without_overwrite_all(target: Target) -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -357,7 +357,7 @@ fn with_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin,asm,metadata",
         "--output-dir",
@@ -365,7 +365,7 @@ fn with_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin,asm,metadata",
         "--output-dir",
@@ -401,14 +401,14 @@ fn without_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin,asm,metadata",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin,asm,metadata",
         "--output-dir",
@@ -443,7 +443,7 @@ fn with_overwrite_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--output-dir",
         "output",
         "--overwrite",

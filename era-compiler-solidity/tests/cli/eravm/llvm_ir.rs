@@ -4,7 +4,7 @@ use predicates::prelude::*;
 #[test]
 fn with_llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[cli::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir"];
+    let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir"];
 
     let result = cli::execute_zksolc(args)?;
 
@@ -18,7 +18,7 @@ fn with_llvm_ir() -> anyhow::Result<()> {
 #[test]
 fn with_llvm_ir_duplicate_flag() -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[cli::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
+    let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
@@ -32,7 +32,7 @@ fn with_llvm_ir_duplicate_flag() -> anyhow::Result<()> {
 fn with_llvm_ir_invalid() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--llvm-ir", cli::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
+    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
@@ -45,7 +45,7 @@ fn with_llvm_ir_invalid() -> anyhow::Result<()> {
 #[test]
 fn with_wrong_input_format() -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
+    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
 
     let result = cli::execute_zksolc(args)?;
     result
@@ -59,7 +59,7 @@ fn with_wrong_input_format() -> anyhow::Result<()> {
 fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--eravm-assembly", cli::TEST_BROKEN_INPUT_PATH];
+    let args = &["--eravm-assembly", common::TEST_BROKEN_INPUT_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result
@@ -73,7 +73,7 @@ fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
 fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
         "--combined-json",
         "anyarg",
@@ -91,7 +91,7 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
 fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
         "--standard-json",
     ];
@@ -110,7 +110,7 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
+        common::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -127,7 +127,7 @@ fn with_standard_json_missing_file() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
+        common::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;

@@ -8,7 +8,7 @@ fn with_suppressed_warnings() -> anyhow::Result<()> {
     let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
     let args = &[
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-warnings",
         warning_type.as_str(),
     ];
@@ -28,7 +28,7 @@ fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
     let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--suppress-warnings",
         warning_type.as_str(),
     ];
@@ -47,7 +47,7 @@ fn with_suppressed_warnings_invalid() -> anyhow::Result<()> {
 
     let args = &[
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-warnings",
         "mega-ultra-warning",
     ];

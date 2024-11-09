@@ -8,8 +8,8 @@ use test_case::test_case;
 fn with_yul_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul"];
-    let solc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
+    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul"];
+    let solc_args = &[common::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
@@ -55,7 +55,7 @@ fn with_yul_invalid_against_solc(target: Target) -> anyhow::Result<()> {
 fn with_yul_double_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
+    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
@@ -79,7 +79,7 @@ fn with_yul_double_against_solc(target: Target) -> anyhow::Result<()> {
 fn with_yul_invalid_input_file(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
+    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
@@ -102,7 +102,7 @@ fn with_yul_and_combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
         "--yul",
         "--combined-json",
         "anyarg",
@@ -130,7 +130,7 @@ fn with_yul_and_combined_json(target: Target) -> anyhow::Result<()> {
 fn with_yul_and_standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
+    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
@@ -146,10 +146,10 @@ fn with_yul_and_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
         "--yul",
         "--solc",
         solc_compiler.as_str(),
@@ -169,13 +169,13 @@ fn with_standard_json_and_solc_invalid_by_solc(target: Target) -> anyhow::Result
     common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
+        common::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -193,7 +193,7 @@ fn with_standard_json_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -210,13 +210,13 @@ fn with_standard_json_and_solc_invalid_by_zksolc(target: Target) -> anyhow::Resu
     common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

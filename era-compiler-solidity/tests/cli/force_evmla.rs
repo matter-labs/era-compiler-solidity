@@ -8,7 +8,11 @@ use test_case::test_case;
 fn with_force_evmla(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--force-evmla", "--bin", cli::TEST_SOLIDITY_CONTRACT_PATH];
+    let args = &[
+        "--force-evmla",
+        "--bin",
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
@@ -27,7 +31,7 @@ fn with_force_evmla_yul_mode(target: Target) -> anyhow::Result<()> {
         "--force-evmla",
         "--yul",
         "--bin",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -47,7 +51,7 @@ fn with_force_evmla_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
         "--force-evmla",
         "--llvm-ir",
         "--bin",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -67,7 +71,7 @@ fn with_force_evmla_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
         "--force-evmla",
         "--eravm-assembly",
         "--bin",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -85,7 +89,7 @@ fn with_force_evmla_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--force-evmla",
     ];
 

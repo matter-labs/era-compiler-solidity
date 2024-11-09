@@ -11,7 +11,7 @@ fn with_disable_solc_optimizer(target: Target) -> anyhow::Result<()> {
     let args = &[
         "--disable-solc-optimizer",
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

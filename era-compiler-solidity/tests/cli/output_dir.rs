@@ -14,13 +14,13 @@ fn with_output_dir(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -50,7 +50,7 @@ fn with_output_dir_yul(target: Target, extension: &str) -> anyhow::Result<()> {
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
-    let input_path = PathBuf::from(cli::TEST_YUL_CONTRACT_PATH);
+    let input_path = PathBuf::from(common::TEST_YUL_CONTRACT_PATH);
     let input_file = input_path
         .file_name()
         .expect("Always exists")
@@ -79,8 +79,8 @@ fn with_output_dir_yul(target: Target, extension: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, cli::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
-#[test_case(Target::EVM, cli::SOLIDITY_ASM_OUTPUT_NAME_EVM)]
+#[test_case(Target::EraVM, common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
+#[test_case(Target::EVM, common::SOLIDITY_ASM_OUTPUT_NAME_EVM)]
 fn with_output_dir_with_asm_and_metadata(
     target: Target,
     asm_file_name: &str,
@@ -91,15 +91,15 @@ fn with_output_dir_with_asm_and_metadata(
     let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
 
     let mut asm_path = tmp_dir_zksolc.path().to_path_buf();
-    asm_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
+    asm_path.push(common::TEST_SOLIDITY_CONTRACT_NAME);
     asm_path.push(asm_file_name);
 
     let mut metadata_path = tmp_dir_zksolc.path().to_path_buf();
-    metadata_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
-    metadata_path.push("C_meta.json");
+    metadata_path.push(common::TEST_SOLIDITY_CONTRACT_NAME);
+    metadata_path.push("Test_meta.json");
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -107,7 +107,7 @@ fn with_output_dir_with_asm_and_metadata(
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--asm",
         "--metadata",
@@ -140,7 +140,7 @@ fn with_output_dir_with_asm_and_metadata(
 fn with_output_dir_invalid_arg_no_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--output-dir"];
+    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--output-dir"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
@@ -197,13 +197,13 @@ fn with_output_dir_specific_symbols(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--bin",
         "--output-dir",
         tmp_dir_solc.path().to_str().unwrap(),
@@ -235,14 +235,14 @@ fn with_output_dir_combined_json_mode(target: Target) -> anyhow::Result<()> {
     let tmp_dir_solc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin",
         "--output-dir",
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
     let solc_args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin",
         "--output-dir",
@@ -273,7 +273,7 @@ fn with_output_dir_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--output-dir",
         "output",
     ];

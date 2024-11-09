@@ -22,7 +22,7 @@ fn with_combined_json_loop_args(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     for arg in JSON_ARGS {
-        let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
+        let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
 
         let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
@@ -46,8 +46,8 @@ fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
-        cli::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
         "--combined-json",
         "bin",
     ];
@@ -97,7 +97,7 @@ fn with_combined_json_and_invalid_arg(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "unknown",
     ];
@@ -124,7 +124,7 @@ fn with_multiple_combined_json_flags(target: Target) -> anyhow::Result<()> {
 
     for &arg in JSON_ARGS {
         let args = &[
-            cli::TEST_SOLIDITY_CONTRACT_PATH,
+            common::TEST_SOLIDITY_CONTRACT_PATH,
             "--combined-json",
             arg,
             "--combined-json",
@@ -153,7 +153,7 @@ fn with_combined_json_and_yul_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     for &arg in JSON_ARGS {
-        let args = &[cli::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
+        let args = &[common::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
 
         let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result

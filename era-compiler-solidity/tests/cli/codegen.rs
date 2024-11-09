@@ -16,7 +16,7 @@ fn with_codegen(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Re
         "--codegen",
         codegen.as_str(),
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -43,7 +43,7 @@ fn with_codegen_yul_mode(
         codegen.as_str(),
         "--yul",
         "--bin",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -70,7 +70,7 @@ fn with_codegen_llvm_ir_mode(
         codegen.as_str(),
         "--llvm-ir",
         "--bin",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -95,7 +95,7 @@ fn with_codegen_eravm_assembly_mode(
         codegen.as_str(),
         "--eravm-assembly",
         "--bin",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -117,7 +117,7 @@ fn with_codegen_standard_json_mode(
     let codegen = codegen.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--codegen",
         codegen.as_str(),
     ];
@@ -139,7 +139,7 @@ fn with_codegen_invalid(target: Target) -> anyhow::Result<()> {
         "--codegen",
         "invalid",
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

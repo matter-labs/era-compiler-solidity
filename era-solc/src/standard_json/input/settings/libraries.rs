@@ -52,10 +52,17 @@ impl Libraries {
     }
 
     ///
-    /// Returns the reference to the inner value.
+    /// Returns a reference to the inner value.
     ///
     pub fn as_inner(&self) -> &BTreeMap<String, BTreeMap<String, String>> {
         &self.inner
+    }
+
+    ///
+    /// Returns a mutable reference to the inner value.
+    ///
+    pub fn as_inner_mut(&mut self) -> &mut BTreeMap<String, BTreeMap<String, String>> {
+        &mut self.inner
     }
 }
 

@@ -27,14 +27,14 @@ fn without_any_args() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, cli::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
-#[test_case(Target::EVM, cli::SOLIDITY_BIN_OUTPUT_NAME_EVM)]
+#[test_case(Target::EraVM, common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
+#[test_case(Target::EVM, common::SOLIDITY_BIN_OUTPUT_NAME_EVM)]
 fn with_args_from_help_example(target: Target, bin_output_file_name: &str) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir = TempDir::new()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "-O3",
         "--bin",
         "--output-dir",
@@ -50,7 +50,7 @@ fn with_args_from_help_example(target: Target, bin_output_file_name: &str) -> an
 
     let bin_output_file = tmp_dir
         .path()
-        .join(cli::TEST_SOLIDITY_CONTRACT_NAME)
+        .join(common::TEST_SOLIDITY_CONTRACT_NAME)
         .join(bin_output_file_name);
 
     assert!(bin_output_file.exists());
@@ -61,13 +61,13 @@ fn with_args_from_help_example(target: Target, bin_output_file_name: &str) -> an
 
 #[test_case(
     Target::EraVM,
-    cli::SOLIDITY_BIN_OUTPUT_NAME_ERAVM,
-    cli::SOLIDITY_ASM_OUTPUT_NAME_ERAVM
+    common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM,
+    common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM
 )]
 #[test_case(
     Target::EVM,
-    cli::SOLIDITY_BIN_OUTPUT_NAME_EVM,
-    cli::SOLIDITY_ASM_OUTPUT_NAME_EVM
+    common::SOLIDITY_BIN_OUTPUT_NAME_EVM,
+    common::SOLIDITY_ASM_OUTPUT_NAME_EVM
 )]
 fn with_multiple_output_options(
     target: Target,
@@ -77,7 +77,7 @@ fn with_multiple_output_options(
     common::setup()?;
     let tmp_dir = TempDir::new()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "-O3",
         "--bin",
         "--asm",
@@ -94,11 +94,11 @@ fn with_multiple_output_options(
 
     let bin_output_file = tmp_dir
         .path()
-        .join(cli::TEST_SOLIDITY_CONTRACT_NAME)
+        .join(common::TEST_SOLIDITY_CONTRACT_NAME)
         .join(bin_output_file_name);
     let asm_output_file = tmp_dir
         .path()
-        .join(cli::TEST_SOLIDITY_CONTRACT_NAME)
+        .join(common::TEST_SOLIDITY_CONTRACT_NAME)
         .join(asm_output_file_name);
 
     assert!(bin_output_file.exists());
@@ -109,8 +109,8 @@ fn with_multiple_output_options(
     Ok(())
 }
 
-#[test_case(Target::EraVM, cli::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
-#[test_case(Target::EVM, cli::SOLIDITY_BIN_OUTPUT_NAME_EVM)]
+#[test_case(Target::EraVM, common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
+#[test_case(Target::EVM, common::SOLIDITY_BIN_OUTPUT_NAME_EVM)]
 fn with_bin_output_same_file_and_cli(
     target: Target,
     bin_output_file_name: &str,
@@ -119,7 +119,7 @@ fn with_bin_output_same_file_and_cli(
 
     let tmp_dir = TempDir::new()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "-O3",
         "--bin",
         "--output-dir",
@@ -133,11 +133,11 @@ fn with_bin_output_same_file_and_cli(
 
     let bin_output_file = tmp_dir
         .path()
-        .join(cli::TEST_SOLIDITY_CONTRACT_NAME)
+        .join(common::TEST_SOLIDITY_CONTRACT_NAME)
         .join(bin_output_file_name);
     assert!(bin_output_file.exists());
 
-    let cli_args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "-O3", "--bin"];
+    let cli_args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "-O3", "--bin"];
     let cli_result = cli::execute_zksolc_with_target(cli_args, target)?;
 
     let stdout = String::from_utf8_lossy(cli_result.get_output().stdout.as_slice());

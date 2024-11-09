@@ -9,7 +9,7 @@ fn with_remappings(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "./path/to/1.sol=./path/to/2.sol",
         "--bin",
     ];
@@ -29,7 +29,7 @@ fn with_remappings_extra_equals_sign(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "./path/to/1.sol=./path/to/2.sol=./path/to/3.sol",
         "--bin",
     ];
@@ -51,7 +51,7 @@ fn with_remappings_standard_json_mode(target: Target) -> anyhow::Result<()> {
     let args = &[
         "./path/to/1.sol=./path/to/2.sol",
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

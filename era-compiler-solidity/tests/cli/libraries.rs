@@ -8,9 +8,9 @@ use test_case::test_case;
 fn with_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_DEFAULT,
+        common::LIBRARY_DEFAULT,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -42,9 +42,9 @@ fn with_libraries_llvm_ir_assembly_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--llvm-ir",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_DEFAULT,
+        common::LIBRARY_DEFAULT,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -62,9 +62,9 @@ fn with_libraries_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--eravm-assembly",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_DEFAULT,
+        common::LIBRARY_DEFAULT,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -82,9 +82,9 @@ fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--libraries",
-        cli::LIBRARY_DEFAULT,
+        common::LIBRARY_DEFAULT,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -103,9 +103,9 @@ fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--yul",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_CONTRACT_NAME_MISSING,
+        common::LIBRARY_CONTRACT_NAME_MISSING,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -124,9 +124,9 @@ fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--yul",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_ADDRESS_MISSING,
+        common::LIBRARY_ADDRESS_MISSING,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -145,9 +145,9 @@ fn with_libraries_invalid_address(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--yul",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        cli::LIBRARY_ADDRESS_INVALID,
+        common::LIBRARY_ADDRESS_INVALID,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

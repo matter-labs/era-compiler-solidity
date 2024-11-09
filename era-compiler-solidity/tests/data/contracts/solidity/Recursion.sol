@@ -2,7 +2,7 @@
 
 pragma solidity >=0.4.16;
 
-contract Test {
+contract Recursion {
     uint64 x;
 
     constructor(uint8 i) public {

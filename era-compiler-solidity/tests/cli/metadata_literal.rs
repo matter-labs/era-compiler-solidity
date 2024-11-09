@@ -9,7 +9,7 @@ fn with_metadata_literal(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--metadata-literal",
         "--bin",
     ];
@@ -29,7 +29,7 @@ fn with_metadata_literal_standard_json_mode(target: Target) -> anyhow::Result<()
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--metadata-literal",
     ];
 

@@ -5,212 +5,9 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
+use test_case::test_case;
+
 use crate::common;
-
-#[test]
-#[cfg_attr(target_os = "windows", ignore)]
-fn codecopy_runtime_04_evmla() {
-    codecopy_runtime(
-        semver::Version::new(0, 4, 26),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[cfg_attr(target_os = "windows", ignore)]
-fn codecopy_runtime_05_evmla() {
-    codecopy_runtime(
-        semver::Version::new(0, 5, 17),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn codecopy_runtime_06_evmla() {
-    codecopy_runtime(
-        semver::Version::new(0, 6, 12),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn codecopy_runtime_07_evmla() {
-    codecopy_runtime(
-        semver::Version::new(0, 7, 6),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-fn codecopy_runtime_08_evmla() {
-    codecopy_runtime(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CODECOPY` instruction is not supported")]
-fn codecopy_runtime_08_yul() {
-    codecopy_runtime(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn callcode_04_evmla() {
-    callcode(
-        semver::Version::new(0, 4, 26),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn callcode_05_evmla() {
-    callcode(
-        semver::Version::new(0, 5, 17),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-fn callcode_06_evmla() {
-    callcode(
-        semver::Version::new(0, 6, 12),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-fn callcode_07_evmla() {
-    callcode(
-        semver::Version::new(0, 7, 6),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-fn callcode_08_evmla() {
-    callcode(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
-fn callcode_08_yul() {
-    callcode(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn extcodecopy_04_evmla() {
-    extcodecopy(
-        semver::Version::new(0, 4, 26),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn extcodecopy_05_evmla() {
-    extcodecopy(
-        semver::Version::new(0, 5, 17),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_06_evmla() {
-    extcodecopy(
-        semver::Version::new(0, 6, 12),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_07_evmla() {
-    extcodecopy(
-        semver::Version::new(0, 7, 6),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_08_evmla() {
-    extcodecopy(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-    );
-}
-#[test]
-#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
-fn extcodecopy_08_yul() {
-    extcodecopy(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-    );
-}
-
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn selfdestruct_04_evmla() {
-    selfdestruct(
-        semver::Version::new(0, 4, 26),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-        SELFDESTRUCT_TEST_SOURCE_04,
-    );
-}
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-#[cfg_attr(target_os = "windows", ignore)]
-fn selfdestruct_05_evmla() {
-    selfdestruct(
-        semver::Version::new(0, 5, 17),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-        SELFDESTRUCT_TEST_SOURCE_05,
-    );
-}
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-fn selfdestruct_06_evmla() {
-    selfdestruct(
-        semver::Version::new(0, 6, 12),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-        SELFDESTRUCT_TEST_SOURCE_06,
-    );
-}
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-fn selfdestruct_07_evmla() {
-    selfdestruct(
-        semver::Version::new(0, 7, 6),
-        era_solc::StandardJsonInputCodegen::EVMLA,
-        SELFDESTRUCT_TEST_SOURCE,
-    );
-}
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-fn selfdestruct_08_evmla() {
-    selfdestruct(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::EVMLA,
-        SELFDESTRUCT_TEST_SOURCE,
-    );
-}
-#[test]
-#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
-fn selfdestruct_08_yul() {
-    selfdestruct(
-        era_solc::Compiler::LAST_SUPPORTED_VERSION,
-        era_solc::StandardJsonInputCodegen::Yul,
-        SELFDESTRUCT_TEST_SOURCE,
-    );
-}
 
 #[test]
 #[should_panic(expected = "The `PC` instruction is not supported")]
@@ -239,9 +36,12 @@ object "ProgramCounter" {
     common::build_yul(sources).expect("Test failure");
 }
 
-fn codecopy_runtime(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
+#[test]
+#[should_panic(expected = "The `CODECOPY` instruction is not supported")]
+fn codecopy_runtime() {
     let source_code = r#"
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
+
 pragma solidity >=0.4.12;
 
 contract FixedCodeCopy {
@@ -266,15 +66,16 @@ contract FixedCodeCopy {
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
-        &version,
-        codegen,
+        &era_solc::Compiler::LAST_SUPPORTED_VERSION,
+        era_solc::StandardJsonInputCodegen::Yul,
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 }
 
 pub const CALLCODE_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
+
 pragma solidity >=0.4.12;
 
 contract CallcodeTest {
@@ -296,6 +97,31 @@ contract CallcodeTest {
 }
     "#;
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
+#[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
@@ -313,7 +139,8 @@ fn callcode(version: semver::Version, codegen: era_solc::StandardJsonInputCodege
 }
 
 pub const EXTCODECOPY_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
+
 pragma solidity >=0.4.12;
 
 contract ExternalCodeCopy {
@@ -329,6 +156,31 @@ contract ExternalCodeCopy {
 }
     "#;
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
+#[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
@@ -346,7 +198,8 @@ fn extcodecopy(version: semver::Version, codegen: era_solc::StandardJsonInputCod
 }
 
 pub const SELFDESTRUCT_TEST_SOURCE_04: &str = r#"
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
+
 pragma solidity >=0.4.12;
 
 contract MinimalDestructible {
@@ -364,43 +217,46 @@ contract MinimalDestructible {
     "#;
 
 pub const SELFDESTRUCT_TEST_SOURCE_05: &str = r#"
-    // SPDX-License-Identifier: MIT
-    pragma solidity >=0.5.0;
-    
-    contract MinimalDestructible {
-        address payable public owner;
-    
-        constructor() public {
-            owner = msg.sender;
-        }
-    
-        function destroy() public {
-            require(msg.sender == owner, "Only the owner can call this function.");
-            selfdestruct(owner);
-        }
+// SPDX-License-Identifier: Unlicensed
+
+pragma solidity >=0.5.0;
+
+contract MinimalDestructible {
+    address payable public owner;
+
+    constructor() public {
+        owner = msg.sender;
     }
-        "#;
+
+    function destroy() public {
+        require(msg.sender == owner, "Only the owner can call this function.");
+        selfdestruct(owner);
+    }
+}
+    "#;
 
 pub const SELFDESTRUCT_TEST_SOURCE_06: &str = r#"
-        // SPDX-License-Identifier: MIT
-        pragma solidity >=0.6.0;
-        
-        contract MinimalDestructible {
-            address payable public owner;
-        
-            constructor() public {
-                owner = payable(msg.sender);
-            }
-        
-            function destroy() public {
-                require(msg.sender == owner, "Only the owner can call this function.");
-                selfdestruct(owner);
-            }
-        }
-            "#;
+// SPDX-License-Identifier: Unlicensed
+
+pragma solidity >=0.6.0;
+
+contract MinimalDestructible {
+    address payable public owner;
+
+    constructor() public {
+        owner = payable(msg.sender);
+    }
+
+    function destroy() public {
+        require(msg.sender == owner, "Only the owner can call this function.");
+        selfdestruct(owner);
+    }
+}
+    "#;
 
 pub const SELFDESTRUCT_TEST_SOURCE: &str = r#"
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
+
 pragma solidity >=0.7.0;
 
 contract MinimalDestructible {
@@ -417,6 +273,37 @@ contract MinimalDestructible {
 }
     "#;
 
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA,
+    SELFDESTRUCT_TEST_SOURCE_04
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA,
+    SELFDESTRUCT_TEST_SOURCE_05
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA,
+    SELFDESTRUCT_TEST_SOURCE_06
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA,
+    SELFDESTRUCT_TEST_SOURCE
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA,
+    SELFDESTRUCT_TEST_SOURCE
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul,
+    SELFDESTRUCT_TEST_SOURCE
+)]
+#[should_panic(expected = "The `SELFDESTRUCT` instruction is not supported")]
 fn selfdestruct(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,

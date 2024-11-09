@@ -8,7 +8,7 @@ fn with_detect_missing_libraries() -> anyhow::Result<()> {
     let args = &[
         "--detect-missing-libraries",
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -27,7 +27,7 @@ fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
         "--detect-missing-libraries",
         "--llvm-ir",
         "--bin",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -46,7 +46,7 @@ fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
         "--detect-missing-libraries",
         "--eravm-assembly",
         "--bin",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -63,7 +63,7 @@ fn with_detect_missing_libraries_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--detect-missing-libraries",
     ];
 
@@ -81,7 +81,7 @@ fn with_detect_missing_libraries_standard_json_mode_missing_sources() -> anyhow:
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
         "--detect-missing-libraries",
     ];
 
@@ -99,7 +99,7 @@ fn with_detect_missing_libraries_standard_json_mode_llvm_ir() -> anyhow::Result<
 
     let args = &[
         "--standard-json",
-        cli::TEST_LLVM_IR_STANDARD_JSON_PATH,
+        common::TEST_LLVM_IR_STANDARD_JSON_PATH,
         "--detect-missing-libraries",
     ];
 
@@ -117,7 +117,7 @@ fn with_detect_missing_libraries_standard_json_mode_eravm_assembly() -> anyhow::
 
     let args = &[
         "--standard-json",
-        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
+        common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
         "--detect-missing-libraries",
     ];
 

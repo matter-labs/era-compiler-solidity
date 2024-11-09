@@ -5,7 +5,7 @@ use predicates::prelude::*;
 fn detect_missing_libraries() -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--detect-missing-libraries",
     ];
 

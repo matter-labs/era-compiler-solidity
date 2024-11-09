@@ -37,9 +37,8 @@ fn standard_json_yul_solc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)
-            .expect("`solc` initialization error");
+    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+        .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
@@ -90,9 +89,8 @@ fn standard_json_yul_solc_urls_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)
-            .expect("`solc` initialization error");
+    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+        .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
@@ -143,9 +141,8 @@ fn standard_json_yul_zksolc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)
-            .expect("`solc` initialization error");
+    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+        .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 
@@ -195,9 +192,8 @@ fn standard_json_yul_zksolc_urls_validated() {
         PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)
-            .expect("`solc` initialization error");
+    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+        .expect("`solc` initialization error");
     let solc_output =
         common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
 

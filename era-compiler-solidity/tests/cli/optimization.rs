@@ -7,10 +7,11 @@ use test_case::test_case;
 // TODO: #[test_case(Target::EVM)]
 fn with_optimization_levels(target: Target) -> anyhow::Result<()> {
     common::setup()?;
-    let optimization_args = ["0", "1", "2", "3", "s", "z"];
 
-    for opt in &optimization_args {
-        let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, &format!("-O{}", opt)];
+    let levels = ["0", "1", "2", "3", "s", "z"];
+
+    for level in levels.into_iter() {
+        let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, &format!("-O{}", level)];
 
         let result = cli::execute_zksolc_with_target(args, target)?;
         result
@@ -25,6 +26,7 @@ fn with_optimization_levels(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_optimization_no_input_file(target: Target) -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &["-O", "0"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -39,7 +41,8 @@ fn with_optimization_no_input_file(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EVM)]
 fn with_invalid_optimization_option(target: Target) -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "-O", "99"];
+
+    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "-O", "99"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(
@@ -57,7 +60,7 @@ fn with_optimization_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "-O",
         "3",
     ];

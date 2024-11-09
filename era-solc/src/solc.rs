@@ -9,7 +9,6 @@ use std::sync::OnceLock;
 use std::sync::RwLock;
 
 use crate::combined_json::CombinedJson;
-use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
@@ -98,7 +97,6 @@ impl Compiler {
     pub fn standard_json(
         &self,
         input: &mut StandardJsonInput,
-        codegen: Option<StandardJsonInputSettingsCodegen>,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
         include_paths: Vec<String>,
@@ -190,22 +188,19 @@ impl Compiler {
             ));
         }
 
-        if let Some(codegen) = codegen {
-            let mut suppressed_errors = input.suppressed_errors.clone();
-            suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
+        let mut suppressed_errors = input.suppressed_errors.clone();
+        suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());
 
-            let mut suppressed_warnings = input.suppressed_warnings.clone();
-            suppressed_warnings.extend_from_slice(input.settings.suppressed_warnings.as_slice());
+        let mut suppressed_warnings = input.suppressed_warnings.clone();
+        suppressed_warnings.extend_from_slice(input.settings.suppressed_warnings.as_slice());
 
-            input.resolve_sources();
-            solc_output.preprocess_ast(
-                &input.sources,
-                &self.version,
-                codegen,
-                suppressed_errors.as_slice(),
-                suppressed_warnings.as_slice(),
-            )?;
-        }
+        input.resolve_sources();
+        solc_output.preprocess_ast(
+            &input.sources,
+            &self.version,
+            suppressed_errors.as_slice(),
+            suppressed_warnings.as_slice(),
+        )?;
         solc_output.remove_evm();
 
         Ok(solc_output)
@@ -326,7 +321,7 @@ impl Compiler {
         }
 
         solc_input.extend_selection(StandardJsonInputSettingsSelection::new_yul_validation());
-        let solc_output = self.standard_json(solc_input, None, messages, None, vec![], None)?;
+        let solc_output = self.standard_json(solc_input, messages, None, vec![], None)?;
         Ok(solc_output)
     }
 
@@ -372,12 +367,28 @@ impl Compiler {
             .parse()
             .map_err(|error| anyhow::anyhow!("`{executable}` version parsing: {error}."))?;
 
-        let l2_revision: Option<semver::Version> = stdout
+        let l2_revision: semver::Version = stdout
             .lines()
             .nth(2)
-            .and_then(|line| line.split(' ').nth(1))
-            .and_then(|line| line.split('-').last())
-            .and_then(|version| version.parse().ok());
+            .ok_or_else(|| anyhow::anyhow!("`{executable}` ZKsync revision parsing: missing line."))
+            .and_then(|line| {
+                line.split(' ').nth(1).ok_or_else(|| {
+                    anyhow::anyhow!("`{executable}` ZKsync revision parsing: missing version.")
+                })
+            })
+            .and_then(|line| {
+                line.split('-').last().ok_or_else(|| {
+                    anyhow::anyhow!("`{executable}` ZKsync revision parsing: missing revision.")
+                })
+            })
+            .and_then(|version| {
+                version.parse().map_err(|error| {
+                    anyhow::anyhow!("`{executable}` ZKsync revision parsing: {error}.")
+                })
+            })
+            .map_err(|error| {
+                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}.")
+            })?;
 
         let version = Version::new(long, default, l2_revision);
         if version.default < Self::FIRST_SUPPORTED_VERSION {

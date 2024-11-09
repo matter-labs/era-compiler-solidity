@@ -10,9 +10,9 @@ fn with_base_path(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--base-path",
-        cli::TEST_CONTRACTS_PATH,
+        common::TEST_CONTRACTS_PATH,
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -30,10 +30,10 @@ fn with_base_path_yul_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--base-path",
-        cli::TEST_CONTRACTS_PATH,
+        common::TEST_CONTRACTS_PATH,
         "--yul",
         "--bin",
-        cli::TEST_YUL_CONTRACT_PATH,
+        common::TEST_YUL_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -51,10 +51,10 @@ fn with_base_path_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--base-path",
-        cli::TEST_CONTRACTS_PATH,
+        common::TEST_CONTRACTS_PATH,
         "--llvm-ir",
         "--bin",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
@@ -72,10 +72,10 @@ fn with_base_path_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--base-path",
-        cli::TEST_CONTRACTS_PATH,
+        common::TEST_CONTRACTS_PATH,
         "--eravm-assembly",
         "--bin",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;

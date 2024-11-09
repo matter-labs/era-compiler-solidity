@@ -8,7 +8,7 @@ fn with_suppressed_errors() -> anyhow::Result<()> {
     let error_type = era_solc::StandardJsonInputErrorType::SendTransfer.to_string();
     let args = &[
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-errors",
         error_type.as_str(),
     ];
@@ -28,7 +28,7 @@ fn with_suppressed_errors_standard_json_mode() -> anyhow::Result<()> {
     let error_type = era_solc::StandardJsonInputErrorType::SendTransfer.to_string();
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--suppress-errors",
         error_type.as_str(),
     ];
@@ -47,7 +47,7 @@ fn with_suppressed_errors_invalid() -> anyhow::Result<()> {
 
     let args = &[
         "--bin",
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--suppress-errors",
         "mega-ultra-error",
     ];
@@ -65,13 +65,13 @@ fn with_suppressed_warnings_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID,
+        common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -87,13 +87,13 @@ fn with_suppressed_errors_invalid_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        cli::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_INVALID,
+        common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_INVALID,
     ];
 
     let result = cli::execute_zksolc(args)?;
