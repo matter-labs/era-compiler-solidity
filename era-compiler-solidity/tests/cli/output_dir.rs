@@ -1,10 +1,13 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
 use std::path::PathBuf;
 use tempfile::TempDir;
+use test_case::test_case;
 
-#[test]
-fn with_output_dir() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -23,7 +26,7 @@ fn with_output_dir() -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -40,8 +43,9 @@ fn with_output_dir() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_yul() -> anyhow::Result<()> {
+#[test_case(Target::EraVM, era_compiler_common::EXTENSION_ERAVM_BINARY)]
+#[test_case(Target::EVM, era_compiler_common::EXTENSION_EVM_BINARY)]
+fn with_output_dir_yul(target: Target, extension: &str) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -61,92 +65,26 @@ fn with_output_dir_yul() -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
 
-    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
-        "{input_file}.{}",
-        era_compiler_common::EXTENSION_ERAVM_BINARY
-    ));
+    let output_file = tmp_dir_zksolc
+        .path()
+        .join(input_file)
+        .join(format!("{input_file}.{extension}"));
     assert!(output_file.exists());
 
     Ok(())
 }
 
-#[test]
-fn with_output_dir_llvm_ir() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
-
-    let input_path = PathBuf::from(cli::TEST_LLVM_IR_CONTRACT_PATH);
-    let input_file = input_path
-        .file_name()
-        .expect("Always exists")
-        .to_str()
-        .expect("Always valid");
-
-    let args = &[
-        input_path.to_str().expect("Always valid"),
-        "--llvm-ir",
-        "--bin",
-        "--output-dir",
-        tmp_dir_zksolc.path().to_str().unwrap(),
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stderr(predicate::str::contains("Compiler run successful"));
-
-    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
-        "{input_file}.{}",
-        era_compiler_common::EXTENSION_ERAVM_BINARY
-    ));
-    assert!(output_file.exists());
-
-    Ok(())
-}
-
-#[test]
-fn with_output_dir_eravm_assembly() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
-
-    let input_path = PathBuf::from(cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH);
-    let input_file = input_path
-        .file_name()
-        .expect("Always exists")
-        .to_str()
-        .expect("Always valid");
-
-    let args = &[
-        input_path.to_str().expect("Always valid"),
-        "--eravm-assembly",
-        "--bin",
-        "--output-dir",
-        tmp_dir_zksolc.path().to_str().unwrap(),
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stderr(predicate::str::contains("Compiler run successful"));
-
-    let output_file = tmp_dir_zksolc.path().join(input_file).join(format!(
-        "{input_file}.{}",
-        era_compiler_common::EXTENSION_ERAVM_BINARY
-    ));
-    assert!(output_file.exists());
-
-    Ok(())
-}
-
-#[test]
-fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
+#[test_case(Target::EraVM, cli::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
+#[test_case(Target::EVM, cli::SOLIDITY_ASM_OUTPUT_NAME_EVM)]
+fn with_output_dir_with_asm_and_metadata(
+    target: Target,
+    asm_file_name: &str,
+) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -154,7 +92,7 @@ fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
 
     let mut asm_path = tmp_dir_zksolc.path().to_path_buf();
     asm_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
-    asm_path.push("C.zasm");
+    asm_path.push(asm_file_name);
 
     let mut metadata_path = tmp_dir_zksolc.path().to_path_buf();
     metadata_path.push(cli::TEST_SOLIDITY_CONTRACT_NAME);
@@ -177,7 +115,7 @@ fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -197,13 +135,14 @@ fn with_output_dir_with_asm_and_metadata() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_invalid_arg_no_path() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir_invalid_arg_no_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--output-dir"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains("error: The argument '--output-dir <output-directory>' requires a value but none was supplied"))
@@ -215,8 +154,9 @@ fn with_output_dir_invalid_arg_no_path() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir_invalid_args_no_source(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -233,7 +173,7 @@ fn with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains("No input sources specified"))
@@ -248,8 +188,9 @@ fn with_output_dir_invalid_args_no_source() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_specific_symbols() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir_specific_symbols(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -268,7 +209,7 @@ fn with_output_dir_specific_symbols() -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -285,8 +226,9 @@ fn with_output_dir_specific_symbols() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_combined_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir_combined_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -307,7 +249,7 @@ fn with_output_dir_combined_json_mode() -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -324,8 +266,9 @@ fn with_output_dir_combined_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_output_dir_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_output_dir_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -335,7 +278,7 @@ fn with_output_dir_standard_json_mode() -> anyhow::Result<()> {
         "output",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
 
     result.success().stdout(predicate::str::contains(
         "Output directory cannot be used in standard JSON mode.",

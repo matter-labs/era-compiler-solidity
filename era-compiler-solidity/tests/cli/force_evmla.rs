@@ -1,13 +1,16 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_force_evmla() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_force_evmla(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--force-evmla", "--bin", cli::TEST_SOLIDITY_CONTRACT_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
         "Warning: `--force-evmla` flag is deprecated: please use `--codegen 'evmla'` instead.",
     ));
@@ -15,8 +18,9 @@ fn with_force_evmla() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_force_evmla_yul_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_force_evmla_yul_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -26,7 +30,7 @@ fn with_force_evmla_yul_mode() -> anyhow::Result<()> {
         cli::TEST_YUL_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode",
     ));
@@ -34,8 +38,9 @@ fn with_force_evmla_yul_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_force_evmla_llvm_ir_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_force_evmla_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -45,7 +50,7 @@ fn with_force_evmla_llvm_ir_mode() -> anyhow::Result<()> {
         cli::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode",
     ));
@@ -53,8 +58,9 @@ fn with_force_evmla_llvm_ir_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_force_evmla_eravm_assembly_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_force_evmla_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -64,7 +70,7 @@ fn with_force_evmla_eravm_assembly_mode() -> anyhow::Result<()> {
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode",
     ));
@@ -72,8 +78,9 @@ fn with_force_evmla_eravm_assembly_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_force_evmla_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_force_evmla_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -82,7 +89,7 @@ fn with_force_evmla_standard_json_mode() -> anyhow::Result<()> {
         "--force-evmla",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "is deprecated in standard JSON mode and must be passed in JSON as",
     ));

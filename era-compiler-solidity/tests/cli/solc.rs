@@ -1,10 +1,12 @@
-use assert_cmd::Command;
-
 use crate::{cli, common};
+use assert_cmd::Command;
+use era_compiler_common::Target;
 use predicates::prelude::predicate;
+use test_case::test_case;
 
-#[test]
-fn with_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -16,7 +18,7 @@ fn with_solc() -> anyhow::Result<()> {
         solc_compiler.as_str(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -24,14 +26,17 @@ fn with_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn without_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn without_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
 
     let result = zksolc
         .arg(cli::TEST_SOLIDITY_CONTRACT_PATH)
+        .arg("--target")
+        .arg(target.to_string())
         .env("PATH", "./solc-bin")
         .assert();
     result
@@ -41,8 +46,9 @@ fn without_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -55,7 +61,7 @@ fn with_solc_standard_json_mode() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -63,8 +69,9 @@ fn with_solc_standard_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn without_solc_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn without_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -72,7 +79,7 @@ fn without_solc_standard_json_mode() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -80,8 +87,9 @@ fn without_solc_standard_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -95,7 +103,7 @@ fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
         cli::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Using `solc` is only allowed in Solidity and Yul modes.",
     ));
@@ -103,8 +111,9 @@ fn with_solc_llvm_ir_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_eravm_assembly_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -118,7 +127,7 @@ fn with_solc_eravm_assembly_mode() -> anyhow::Result<()> {
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Using `solc` is only allowed in Solidity and Yul modes.",
     ));
@@ -126,14 +135,15 @@ fn with_solc_eravm_assembly_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_not_found() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_not_found(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let path = "solc-not-found";
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--solc", path];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         format!("The `{path}` executable not found:").as_str(),
     ));
@@ -141,8 +151,9 @@ fn with_solc_not_found() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_output_error() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_output_error(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -151,7 +162,7 @@ fn with_solc_version_output_error() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains("version getting:"));
@@ -159,8 +170,9 @@ fn with_solc_version_output_error() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_too_old() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_too_old(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -173,7 +185,7 @@ fn with_solc_version_too_old() -> anyhow::Result<()> {
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch -= 1;
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains(format!("versions older than {version_supported} are not supported, found {version_not_supported}.").as_str()));
@@ -181,8 +193,9 @@ fn with_solc_version_too_old() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_too_new() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_too_new(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -195,7 +208,7 @@ fn with_solc_version_too_new() -> anyhow::Result<()> {
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch += 1;
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains(format!("versions newer than {version_supported} are not supported, found {version_not_supported}.").as_str()));
@@ -203,8 +216,9 @@ fn with_solc_version_too_new() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_not_enough_lines() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -213,7 +227,7 @@ fn with_solc_version_not_enough_lines() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_LINES_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "version parsing: not enough lines.",
     ));
@@ -221,8 +235,9 @@ fn with_solc_version_not_enough_lines() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_not_enough_words_in_2nd_line() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -231,7 +246,7 @@ fn with_solc_version_not_enough_words_in_2nd_line() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_WORDS_IN_2ND_LINE_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "version parsing: not enough words in the 2nd line.",
     ));
@@ -239,8 +254,9 @@ fn with_solc_version_not_enough_words_in_2nd_line() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_solc_version_parsing_error() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_solc_version_parsing_error(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -249,7 +265,7 @@ fn with_solc_version_parsing_error() -> anyhow::Result<()> {
         cli::TEST_SCRIPT_SOLC_VERSION_PARSING_ERROR_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains("version parsing:"));

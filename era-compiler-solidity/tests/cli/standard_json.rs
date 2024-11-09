@@ -1,8 +1,11 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_standard_json() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -19,7 +22,7 @@ fn with_standard_json() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -34,13 +37,14 @@ fn with_standard_json() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_incompatible_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json", cli::TEST_YUL_CONTRACT_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("parsing: expected value"))
@@ -55,8 +59,9 @@ fn with_standard_json_incompatible_input() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_invalid_by_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -73,7 +78,7 @@ fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -90,8 +95,9 @@ fn with_standard_json_invalid_by_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -108,7 +114,7 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "You are using \'<address payable>.send/transfer(<X>)\' without providing the gas amount.",
     ));
@@ -119,8 +125,9 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_with_suppressed_messages(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -137,7 +144,7 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
         cli::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -152,8 +159,9 @@ fn with_standard_json_with_suppressed_messages() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_recursion() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_recursion(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -161,7 +169,7 @@ fn with_standard_json_recursion() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -169,8 +177,9 @@ fn with_standard_json_recursion() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_internal_function_pointers() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_internal_function_pointers(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -178,7 +187,7 @@ fn with_standard_json_internal_function_pointers() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INTERNAL_FUNCTION_POINTERS_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -186,8 +195,9 @@ fn with_standard_json_internal_function_pointers() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_non_existent() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_non_existent(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -199,7 +209,7 @@ fn with_standard_json_non_existent() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains(
@@ -213,8 +223,9 @@ fn with_standard_json_non_existent() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_invalid_utf8() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_invalid_utf8(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -226,7 +237,7 @@ fn with_standard_json_invalid_utf8() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -243,14 +254,15 @@ fn with_standard_json_invalid_utf8() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_stdin_missing() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_stdin_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json"];
     let args_solc = &["--standard-json"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -267,8 +279,9 @@ fn with_standard_json_stdin_missing() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_empty_sources() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_empty_sources(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -280,7 +293,7 @@ fn with_standard_json_empty_sources() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("No input sources specified."))
@@ -295,8 +308,9 @@ fn with_standard_json_empty_sources() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_missing_sources() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_missing_sources(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -308,7 +322,7 @@ fn with_standard_json_missing_sources() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -325,14 +339,15 @@ fn with_standard_json_missing_sources() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_yul() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_yul(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
     let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -347,8 +362,9 @@ fn with_standard_json_yul() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_both_urls_and_content() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_both_urls_and_content(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -360,7 +376,7 @@ fn with_standard_json_both_urls_and_content() -> anyhow::Result<()> {
         cli::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -377,8 +393,9 @@ fn with_standard_json_both_urls_and_content() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_neither_urls_nor_content() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -390,7 +407,7 @@ fn with_standard_json_neither_urls_nor_content() -> anyhow::Result<()> {
         cli::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -407,8 +424,9 @@ fn with_standard_json_neither_urls_nor_content() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_yul_with_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_yul_with_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -422,7 +440,7 @@ fn with_standard_json_yul_with_solc() -> anyhow::Result<()> {
     ];
     let args_solc = &["--standard-json", cli::TEST_YUL_STANDARD_JSON_SOLC_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -433,81 +451,6 @@ fn with_standard_json_yul_with_solc() -> anyhow::Result<()> {
 
     let solc_result = cli::execute_solc(args_solc)?;
     solc_result.code(status);
-
-    Ok(())
-}
-
-#[test]
-fn with_standard_json_llvm_ir() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--standard-json", cli::TEST_LLVM_IR_STANDARD_JSON_PATH];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stdout(predicate::str::contains("bytecode"));
-
-    Ok(())
-}
-
-#[test]
-fn with_standard_json_llvm_ir_with_solc() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
-
-    let args = &[
-        "--standard-json",
-        cli::TEST_LLVM_IR_STANDARD_JSON_PATH,
-        "--solc",
-        solc_compiler.as_str(),
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result.success().stdout(predicate::str::contains(
-        "LLVM IR projects cannot be compiled with `solc`",
-    ));
-
-    Ok(())
-}
-
-#[test]
-fn with_standard_json_eravm_assembly() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[
-        "--standard-json",
-        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .success()
-        .stdout(predicate::str::contains("bytecode"));
-
-    Ok(())
-}
-
-#[test]
-fn with_standard_json_eravm_assembly_with_solc() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
-
-    let args = &[
-        "--standard-json",
-        cli::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
-        "--solc",
-        solc_compiler.as_str(),
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result.success().stdout(predicate::str::contains(
-        "EraVM assembly projects cannot be compiled with `solc`",
-    ));
 
     Ok(())
 }

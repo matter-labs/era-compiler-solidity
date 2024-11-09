@@ -78,6 +78,7 @@ impl Build {
     pub fn write_to_directory(
         mut self,
         output_directory: &Path,
+        output_metadata: bool,
         output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
@@ -90,6 +91,7 @@ impl Build {
         for build in self.contracts.into_values() {
             build.expect("Always valid").write_to_directory(
                 output_directory,
+                output_metadata,
                 output_assembly,
                 output_binary,
                 overwrite,

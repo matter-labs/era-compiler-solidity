@@ -113,6 +113,7 @@ pub fn yul_to_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let _linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {

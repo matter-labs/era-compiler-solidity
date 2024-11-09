@@ -383,6 +383,7 @@ fn main_inner(
             if let Some(output_directory) = arguments.output_directory {
                 build.write_to_directory(
                     &output_directory,
+                    arguments.output_metadata,
                     arguments.output_assembly,
                     arguments.output_binary,
                     arguments.overwrite,

@@ -1,8 +1,11 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_include_path() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_include_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -14,7 +17,7 @@ fn with_include_path() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -22,8 +25,9 @@ fn with_include_path() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_include_path_yul_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_include_path_yul_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -36,7 +40,7 @@ fn with_include_path_yul_mode() -> anyhow::Result<()> {
         cli::TEST_YUL_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "`include-path` is only allowed in Solidity mode",
     ));
@@ -44,8 +48,9 @@ fn with_include_path_yul_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_include_path_llvm_ir_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_include_path_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -58,7 +63,7 @@ fn with_include_path_llvm_ir_mode() -> anyhow::Result<()> {
         cli::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "`include-path` is only allowed in Solidity mode",
     ));
@@ -66,8 +71,9 @@ fn with_include_path_llvm_ir_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_include_path_eravm_assembly_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_include_path_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -80,7 +86,7 @@ fn with_include_path_eravm_assembly_mode() -> anyhow::Result<()> {
         cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "`include-path` is only allowed in Solidity mode",
     ));

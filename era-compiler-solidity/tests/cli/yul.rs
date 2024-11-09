@@ -1,14 +1,17 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_yul_against_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let zksolc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul"];
+    let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul"];
     let solc_args = &[cli::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
 
-    let result = cli::execute_zksolc(zksolc_args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
         .success()
         .stderr(predicate::str::contains(
@@ -25,13 +28,14 @@ fn with_yul_against_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_invalid_against_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_invalid_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--yul", "anyarg"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains("Error"))
@@ -46,13 +50,14 @@ fn with_yul_invalid_against_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_double_against_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_double_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -69,13 +74,14 @@ fn with_yul_double_against_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_invalid_input_file() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_invalid_input_file(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
         .failure()
         .stderr(predicate::str::contains("Yul parsing"))
@@ -90,8 +96,9 @@ fn with_yul_invalid_input_file() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_and_combined_json() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_and_combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -101,7 +108,7 @@ fn with_yul_and_combined_json() -> anyhow::Result<()> {
         "anyarg",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -118,13 +125,14 @@ fn with_yul_and_combined_json() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_and_standard_json() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_and_standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time:",
     ));
@@ -132,8 +140,9 @@ fn with_yul_and_standard_json() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_and_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_yul_and_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -146,7 +155,7 @@ fn with_yul_and_solc() -> anyhow::Result<()> {
         solc_compiler.as_str(),
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested",
     ));
@@ -154,31 +163,9 @@ fn with_yul_and_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_yul_and_solc_and_eravm_extensions() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION, false)?.executable;
-
-    let args = &[
-        cli::TEST_YUL_CONTRACT_PATH,
-        "--yul",
-        "--solc",
-        solc_compiler.as_str(),
-        "--enable-eravm-extensions",
-    ];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`."));
-
-    Ok(())
-}
-
-#[test]
-fn with_standard_json_and_solc_invalid_by_solc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_and_solc_invalid_by_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -191,7 +178,7 @@ fn with_standard_json_and_solc_invalid_by_solc() -> anyhow::Result<()> {
         cli::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "DeclarationError: Function \\\"mdelete\\\" not found.",
     ));
@@ -199,8 +186,9 @@ fn with_standard_json_and_solc_invalid_by_solc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -208,7 +196,7 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
         cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));
@@ -216,8 +204,9 @@ fn with_standard_json_invalid_by_zksolc() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_and_solc_invalid_by_zksolc() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_and_solc_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -230,7 +219,7 @@ fn with_standard_json_and_solc_invalid_by_zksolc() -> anyhow::Result<()> {
         cli::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));

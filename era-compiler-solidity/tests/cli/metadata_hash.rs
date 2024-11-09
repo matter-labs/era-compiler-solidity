@@ -1,13 +1,16 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_metadata_hash_default() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--metadata-hash", "none"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_result = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -22,13 +25,14 @@ fn with_metadata_hash_default() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_no_argument() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_no_argument(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--metadata-hash"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_result = result
         .failure()
         .stderr(predicate::str::contains(
@@ -45,13 +49,14 @@ fn with_metadata_hash_no_argument() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_no_input_file() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_no_input_file(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--metadata-hash", "none"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_result = result
         .failure()
         .stderr(predicate::str::contains("No input sources specified"))
@@ -66,8 +71,9 @@ fn with_metadata_hash_no_input_file() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_none() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_none(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -77,7 +83,7 @@ fn with_metadata_hash_none() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -85,8 +91,9 @@ fn with_metadata_hash_none() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_keccak256() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_keccak256(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -96,7 +103,7 @@ fn with_metadata_hash_keccak256() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -104,8 +111,9 @@ fn with_metadata_hash_keccak256() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_ipfs() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_ipfs(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -115,7 +123,7 @@ fn with_metadata_hash_ipfs() -> anyhow::Result<()> {
         cli::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -123,8 +131,9 @@ fn with_metadata_hash_ipfs() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_none_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_none_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -134,7 +143,7 @@ fn with_metadata_hash_none_standard_json_mode() -> anyhow::Result<()> {
         "none",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Metadata hash mode must be specified in standard JSON input settings.",
     ));
@@ -142,8 +151,9 @@ fn with_metadata_hash_none_standard_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_keccak256_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_keccak256_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -153,7 +163,7 @@ fn with_metadata_hash_keccak256_standard_json_mode() -> anyhow::Result<()> {
         "keccak256",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Metadata hash mode must be specified in standard JSON input settings.",
     ));
@@ -161,8 +171,9 @@ fn with_metadata_hash_keccak256_standard_json_mode() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_metadata_hash_ipfs_standard_json_mode() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_metadata_hash_ipfs_standard_json_mode(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -172,7 +183,7 @@ fn with_metadata_hash_ipfs_standard_json_mode() -> anyhow::Result<()> {
         "ipfs",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Metadata hash mode must be specified in standard JSON input settings.",
     ));

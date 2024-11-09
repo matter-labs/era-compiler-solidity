@@ -82,6 +82,7 @@ impl Contract {
     pub fn write_to_directory(
         self,
         output_path: &Path,
+        output_metadata: bool,
         output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
@@ -96,6 +97,28 @@ impl Contract {
         let mut output_path = output_path.to_owned();
         output_path.push(file_name);
         std::fs::create_dir_all(output_path.as_path())?;
+
+        if output_metadata {
+            let output_name = format!(
+                "{}_meta.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                era_compiler_common::EXTENSION_JSON,
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
+
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                std::fs::write(
+                    output_path.as_path(),
+                    self.metadata_json.to_string().as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
+            }
+        }
 
         if output_assembly {
             let output_name = format!(
