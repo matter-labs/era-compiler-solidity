@@ -407,7 +407,7 @@ fn library_passed_post_compile_time_non_elf(
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
     if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
+        panic!("Input binary is not an EraVM ELF file");
     }
 
     let library_arguments =

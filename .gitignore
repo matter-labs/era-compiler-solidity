@@ -14,7 +14,7 @@
 /.vscode/
 
 # Test artifacts
-/**/tests/data/temp/
+/**/tests/data/temp/*
 
 # Accidentally created backup files
 *.bak

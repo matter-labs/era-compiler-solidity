@@ -167,6 +167,9 @@ pub const TEST_DISASSEMBLER_BYTECODE_PATH: &str = "tests/data/bytecodes/disassem
 /// A test input file.
 pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.zbin";
 
+/// The temporary directory for data created by tests.
+pub const TEST_TEMP_DIRECTORY: &str = "tests/data/temp";
+
 /// A test input file.
 /// The linker hexadecimal string bytecode sample path.
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards.

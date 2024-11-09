@@ -6,6 +6,7 @@ use predicates::prelude::*;
 fn with_libraries() -> anyhow::Result<()> {
     common::setup()?;
 
+    std::fs::create_dir_all(common::TEST_TEMP_DIRECTORY)?;
     std::fs::copy(
         common::TEST_LINKER_BYTECODE_PATH,
         common::TEST_LINKER_BYTECODE_COPY_PATH,
