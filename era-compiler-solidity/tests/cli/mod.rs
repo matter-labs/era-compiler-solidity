@@ -188,19 +188,15 @@ pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID: &str =
     "tests/data/standard_json_input/suppressed_warnings_invalid.json";
 
 /// A test input file.
-pub const TEST_DISASSEMBLER_HEXADECIMAL_BYTECODE_PATH: &str =
-    "tests/data/bytecodes/disassembler.hex";
+pub const TEST_DISASSEMBLER_BYTECODE_PATH: &str = "tests/data/bytecodes/disassembler.zbin";
 
 /// A test input file.
-pub const TEST_DISASSEMBLER_BINARY_BYTECODE_PATH: &str = "tests/data/bytecodes/disassembler.zbin";
-
-/// A test input file.
-pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.hex";
+pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.zbin";
 
 /// A test input file.
 /// The linker hexadecimal string bytecode sample path.
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards.
-pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/temp/linker_copy.hex";
+pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/temp/linker_copy.zbin";
 
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
@@ -246,20 +242,20 @@ pub const LIBRARY_ADDRESS_INVALID: &str =
 
 /// A test constant.
 pub const LIBRARY_LINKER: &str =
-    "test.sol:GreaterHelper=0x1234567890abcdef1234567890abcdef12345678";
+    "Greeter.sol:GreeterHelper=0x1234567890abcdef1234567890abcdef12345678";
 
 /// A test constant.
 pub const LIBRARY_LINKER_CONTRACT_NAME_MISSING: &str =
-    "test.sol=0x1234567890abcdef1234567890abcdef12345678";
+    "Greeter.sol=0x1234567890abcdef1234567890abcdef12345678";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "test.sol:GreaterHelper";
+pub const LIBRARY_LINKER_ADDRESS_MISSING: &str = "Greeter.sol:GreeterHelper";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "test.sol:GreaterHelper=XINVALID";
+pub const LIBRARY_LINKER_ADDRESS_INVALID: &str = "Greeter.sol:GreeterHelper=XINVALID";
 
 /// A test constant.
-pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "test.sol:GreaterHelper=0x12345678";
+pub const LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE: &str = "Greeter.sol:GreeterHelper=0x12345678";
 
 ///
 /// Execute zksolc with the given arguments and return the result.

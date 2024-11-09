@@ -55,7 +55,7 @@ impl Contract {
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======",)?;
         if let Some(assembly) = self.build.assembly {
-            writeln!(std::io::stdout(), "EraVM assembly:\n{assembly}")?;
+            writeln!(std::io::stdout(), "Assembly:\n{assembly}")?;
         }
         if output_metadata {
             writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;

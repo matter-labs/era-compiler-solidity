@@ -3,9 +3,9 @@ use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-/// TODO: EVM
-fn with_asm(target: Target) -> anyhow::Result<()> {
+#[test_case(Target::EraVM, "__entry:")]
+#[test_case(Target::EVM, "Coming soon")]
+fn with_asm(target: Target, pattern: &str) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--asm"];
@@ -15,7 +15,7 @@ fn with_asm(target: Target) -> anyhow::Result<()> {
     let result = cli::execute_zksolc_with_target(args, target)?;
     let result_status_code = result
         .success()
-        .stdout(predicate::str::contains("__entry:"))
+        .stdout(predicate::str::contains(pattern))
         .get_output()
         .status
         .code()
@@ -26,7 +26,7 @@ fn with_asm(target: Target) -> anyhow::Result<()> {
     solc_result.code(result_status_code);
 
     // Run invalid: zksolc --asm
-    let invalid_result = cli::execute_zksolc(invalid_args)?;
+    let invalid_result = cli::execute_zksolc_with_target(invalid_args, target)?;
     let invalid_result_status_code = invalid_result
         .failure()
         .stderr(

@@ -846,21 +846,9 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
         .into_par_iter()
         .map(|path| {
             let pathbuf = PathBuf::from(path.as_str());
-            let bytecode = match pathbuf.extension().and_then(|extension| extension.to_str()) {
-                Some("hex") => {
-                    let string = std::fs::read_to_string(pathbuf)?;
-                    let hexadecimal_string =
-                        string.trim().strip_prefix("0x").unwrap_or(string.as_str());
-                    hex::decode(hexadecimal_string)?
-                }
-                Some("zbin") => std::fs::read(pathbuf)?,
-                Some(extension) => anyhow::bail!(
-                    "Invalid file extension: {extension}. Supported extensions: *.hex, *.zbin"
-                ),
-                None => {
-                    anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin")
-                }
-            };
+            let string = std::fs::read_to_string(pathbuf)?;
+            let hexadecimal_string = string.trim().strip_prefix("0x").unwrap_or(string.as_str());
+            let bytecode = hex::decode(hexadecimal_string)?;
             Ok((path, bytecode))
         })
         .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;

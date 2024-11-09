@@ -20,12 +20,12 @@ fn with_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"linked\":{\"tests/data/bytecodes/linker_copy.hex\":",
+        "\"linked\":{\"tests/data/temp/linker_copy.zbin\":",
     ));
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"ignored\":{\"tests/data/bytecodes/linker_copy.hex\":",
+        "\"ignored\":{\"tests/data/temp/linker_copy.zbin\":",
     ));
 
     std::fs::remove_file(cli::TEST_LINKER_BYTECODE_COPY_PATH)?;
@@ -41,7 +41,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}}",
     ));
 
     Ok(())
@@ -80,7 +80,7 @@ fn with_libraries_contract_name_missing() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Library `test.sol` contract name is missing.",
+        "Error: Library `Greeter.sol` contract name is missing.",
     ));
 
     Ok(())
@@ -99,7 +99,7 @@ fn with_libraries_address_missing() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Library `test.sol:GreaterHelper` address is missing.",
+        "Error: Library `Greeter.sol:GreeterHelper` address is missing.",
     ));
 
     Ok(())
@@ -118,7 +118,7 @@ fn with_libraries_address_invalid() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Invalid address `XINVALID` of library `test.sol:GreaterHelper`: Invalid character \'X\' at position 0.",
+        "Error: Invalid address `XINVALID` of library `Greeter.sol:GreeterHelper`: Invalid character \'X\' at position 0.",
     ));
 
     Ok(())
@@ -137,7 +137,7 @@ fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Incorrect size of address `0x12345678` of library `test.sol:GreaterHelper`: expected 20, found 4.",
+        "Error: Incorrect size of address `0x12345678` of library `Greeter.sol:GreeterHelper`: expected 20, found 4.",
     ));
 
     Ok(())

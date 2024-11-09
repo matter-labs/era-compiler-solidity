@@ -64,11 +64,11 @@ fn with_args_from_help_example(target: Target, bin_output_file_name: &str) -> an
     cli::SOLIDITY_BIN_OUTPUT_NAME_ERAVM,
     cli::SOLIDITY_ASM_OUTPUT_NAME_ERAVM
 )]
-// #[test_case(
-//     Target::EVM,
-//     cli::SOLIDITY_BIN_OUTPUT_NAME_EVM,
-//     cli::SOLIDITY_ASM_OUTPUT_NAME_EVM
-// )] TODO: assembly
+#[test_case(
+    Target::EVM,
+    cli::SOLIDITY_BIN_OUTPUT_NAME_EVM,
+    cli::SOLIDITY_ASM_OUTPUT_NAME_EVM
+)]
 fn with_multiple_output_options(
     target: Target,
     bin_output_file_name: &str,

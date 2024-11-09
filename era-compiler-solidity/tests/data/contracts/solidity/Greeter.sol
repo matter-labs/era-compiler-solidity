@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-library GreaterHelper {
+library GreeterHelper {
     function addPrefix(Greeter greeter, string memory great) public view returns (string memory) {
         return string.concat(greeter.prefix(),great);
     }
@@ -22,7 +22,7 @@ contract Greeter {
     }
 
     function greet() public view returns (string memory) {
-        return GreaterHelper.addPrefix(this, greeting);
+        return GreeterHelper.addPrefix(this, greeting);
     }
 
     function setGreeting(string memory _greeting) public {
