@@ -2,8 +2,6 @@ name: Deploy docs
 
 on:
   push:
-    branches:
-      - "main"
     tags:
       - "*.*.*"
     paths:
@@ -18,8 +16,7 @@ on:
       version:
         type: string
         description: "Version of the documentation to deploy"
-        required: false
-        default: "latest"
+        required: true
       docs-dir:
         type: string
         description: "Directory with the documentation"
@@ -50,3 +47,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           enable-tests: true
           deploy: ${{ github.event_name != 'pull_request' }}
+          create-latest-symlink: true
