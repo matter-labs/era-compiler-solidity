@@ -98,6 +98,13 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || '' }}
 
+      - name: Check LLVM version
+        if: github.ref_type == 'tag'
+        run: |
+          LLVM_BRANCH=$(grep "^branch" LLVM.lock | awk -F ' = ' '{print $2}' | tr -d '"')
+          [[ "${LLVM_BRANCH}" =~ ^v[0-9]+(\.[0-9]+)+(\.[0-9]+).*$ ]] || \
+             { echo "LLVM branch is not semver: '${LLVM_BRANCH}'. Please, update LLVM.lock file."; exit 1; }
+
       - name: Prepare Windows env
         if: runner.os == 'Windows'
         uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@v1
