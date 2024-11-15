@@ -97,7 +97,7 @@ impl Contract {
             dependency_data
                 .solc_version
                 .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
+                .map(|version| version.l2_revision.to_owned()),
             optimizer.settings().to_owned(),
             llvm_options.as_slice(),
         );
@@ -265,7 +265,7 @@ impl Contract {
                 .map(|version| version.default.to_owned()),
             solc_version
                 .as_ref()
-                .and_then(|version| version.l2_revision.to_owned()),
+                .map(|version| version.l2_revision.to_owned()),
             optimizer.settings().to_owned(),
             llvm_options.as_slice(),
         );
@@ -372,6 +372,10 @@ impl Contract {
                 let mut deploy_code_assembly = evmla.assembly;
                 runtime_code_assembly.set_full_path(deploy_code_assembly.full_path().to_owned());
 
+                let evmla_data = era_compiler_llvm_context::EVMContextEVMLAData::new(
+                    solc_version.expect("Always exists").default,
+                );
+
                 let runtime_code_segment = era_compiler_common::CodeSegment::Runtime;
                 let runtime_llvm = inkwell::context::Context::create();
                 let runtime_module = runtime_llvm
@@ -385,11 +389,7 @@ impl Contract {
                     Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
-                runtime_context.set_evmla_data(
-                    era_compiler_llvm_context::EVMContextEVMLAData::new(
-                        solc_version.expect("Always exists").default,
-                    ),
-                );
+                runtime_context.set_evmla_data(evmla_data.clone());
                 runtime_code_assembly
                     .declare(&mut runtime_context)
                     .map_err(|error| {
@@ -419,6 +419,7 @@ impl Contract {
                     Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
+                deploy_context.set_evmla_data(evmla_data);
                 deploy_code_assembly
                     .declare(&mut deploy_context)
                     .map_err(|error| {

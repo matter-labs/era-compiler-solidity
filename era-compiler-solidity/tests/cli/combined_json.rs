@@ -1,5 +1,7 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
 const JSON_ARGS: &[&str] = &[
     "abi",
@@ -14,14 +16,15 @@ const JSON_ARGS: &[&str] = &[
     "bin-runtime",
 ];
 
-#[test]
-fn with_combined_json_loop_args() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_combined_json_loop_args(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     for arg in JSON_ARGS {
-        let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
+        let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
 
-        let result = cli::execute_zksolc(args)?;
+        let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
             .success()
             .stdout(predicate::str::contains("contracts"))
@@ -37,18 +40,19 @@ fn with_combined_json_loop_args() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_combined_json_two_files() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
-        cli::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
         "--combined-json",
         "bin",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .success()
         .stdout(predicate::str::contains("contracts"))
@@ -63,13 +67,14 @@ fn with_combined_json_two_files() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_combined_json_no_args() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_combined_json_no_args(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--combined-json"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
@@ -86,17 +91,18 @@ fn with_combined_json_no_args() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_combined_json_and_invalid_arg() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_combined_json_and_invalid_arg(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "unknown",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains("Invalid option").or(predicate::str::contains("error")))
@@ -111,20 +117,21 @@ fn with_combined_json_and_invalid_arg() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_multiple_combined_json_flags() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_multiple_combined_json_flags(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     for &arg in JSON_ARGS {
         let args = &[
-            cli::TEST_SOLIDITY_CONTRACT_PATH,
+            common::TEST_SOLIDITY_CONTRACT_PATH,
             "--combined-json",
             arg,
             "--combined-json",
             arg,
         ];
 
-        let result = cli::execute_zksolc(args)?;
+        let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
             .failure()
             .stderr(predicate::str::contains("cannot be used multiple times"))
@@ -140,14 +147,15 @@ fn with_multiple_combined_json_flags() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_combined_json_and_yul_input() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_combined_json_and_yul_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     for &arg in JSON_ARGS {
-        let args = &[cli::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
+        let args = &[common::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
 
-        let result = cli::execute_zksolc(args)?;
+        let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
             .failure()
             .stderr(predicate::str::contains("Expected identifier"))

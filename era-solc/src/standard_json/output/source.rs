@@ -6,7 +6,6 @@ use std::collections::BTreeMap;
 
 use boolinator::Boolinator;
 
-use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
 use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
 use crate::standard_json::input::source::Source as StandardJSONInputSource;
@@ -99,32 +98,6 @@ impl Source {
     }
 
     ///
-    /// Checks the AST node for the usage of internal function pointers.
-    ///
-    pub fn check_internal_function_pointer(
-        ast: &serde_json::Value,
-        id_paths: &BTreeMap<usize, &String>,
-        sources: &BTreeMap<String, StandardJSONInputSource>,
-    ) -> Option<StandardJsonOutputError> {
-        let ast = ast.as_object()?;
-
-        (ast.get("nodeType")?.as_str()? == "VariableDeclaration").as_option()?;
-
-        let type_descriptions = ast.get("typeDescriptions")?.as_object()?;
-        type_descriptions
-            .get("typeIdentifier")?
-            .as_str()?
-            .contains("function_internal")
-            .as_option()?;
-
-        Some(StandardJsonOutputError::error_internal_function_pointer(
-            ast.get("src")?.as_str(),
-            id_paths,
-            sources,
-        ))
-    }
-
-    ///
     /// Checks the AST node for the `tx.origin` value usage.
     ///
     pub fn check_tx_origin(
@@ -192,7 +165,6 @@ impl Source {
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         solc_version: &Version,
-        solc_codegen: StandardJsonInputSettingsCodegen,
         suppressed_errors: &[StandardJsonInputSettingsErrorType],
         suppressed_warnings: &[StandardJsonInputSettingsWarningType],
     ) -> Vec<StandardJsonOutputError> {
@@ -206,13 +178,6 @@ impl Source {
         }
         if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
             messages.push(message);
-        }
-        if StandardJsonInputSettingsCodegen::EVMLA == solc_codegen
-            && solc_version.l2_revision.is_none()
-        {
-            if let Some(message) = Self::check_internal_function_pointer(ast, id_paths, sources) {
-                messages.push(message);
-            }
         }
         if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
             if let Some(message) = Self::check_assembly_origin(solc_version, ast, id_paths, sources)
@@ -232,7 +197,6 @@ impl Source {
                         id_paths,
                         sources,
                         solc_version,
-                        solc_codegen,
                         suppressed_errors,
                         suppressed_warnings,
                     ));
@@ -245,7 +209,6 @@ impl Source {
                         id_paths,
                         sources,
                         solc_version,
-                        solc_codegen,
                         suppressed_errors,
                         suppressed_warnings,
                     ));

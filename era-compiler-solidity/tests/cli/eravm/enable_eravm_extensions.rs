@@ -6,7 +6,7 @@ fn with_eravm_extensions() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
-        cli::TEST_SOLIDITY_CONTRACT_PATH,
+        common::TEST_SOLIDITY_CONTRACT_PATH,
         "--enable-eravm-extensions",
         "--bin",
     ];
@@ -27,7 +27,7 @@ fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
         "--enable-eravm-extensions",
         "--llvm-ir",
         "--bin",
-        cli::TEST_LLVM_IR_CONTRACT_PATH,
+        common::TEST_LLVM_IR_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -46,7 +46,7 @@ fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
         "--enable-eravm-extensions",
         "--eravm-assembly",
         "--bin",
-        cli::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
     let result = cli::execute_zksolc(args)?;
@@ -63,7 +63,7 @@ fn with_enable_eravm_extensions_standard_json_mode() -> anyhow::Result<()> {
 
     let args = &[
         "--standard-json",
-        cli::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--enable-eravm-extensions",
     ];
 
@@ -79,7 +79,11 @@ fn with_enable_eravm_extensions_standard_json_mode() -> anyhow::Result<()> {
 fn with_system_mode() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[cli::TEST_SOLIDITY_CONTRACT_PATH, "--system-mode", "--bin"];
+    let args = &[
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--system-mode",
+        "--bin",
+    ];
 
     let result = cli::execute_zksolc(args)?;
     result

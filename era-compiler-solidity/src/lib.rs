@@ -113,6 +113,7 @@ pub fn yul_to_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let _linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -279,7 +280,6 @@ pub fn standard_output_eravm(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -357,7 +357,6 @@ pub fn standard_output_evm(
 
     let mut solc_output = solc_compiler.standard_json(
         &mut solc_input,
-        Some(solc_codegen),
         messages,
         base_path,
         include_paths,
@@ -450,7 +449,6 @@ pub fn standard_json_eravm(
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -611,7 +609,6 @@ pub fn standard_json_evm(
 
             let mut solc_output = solc_compiler.standard_json(
                 &mut solc_input,
-                Some(solc_codegen),
                 messages,
                 base_path,
                 include_paths,
@@ -846,21 +843,9 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
         .into_par_iter()
         .map(|path| {
             let pathbuf = PathBuf::from(path.as_str());
-            let bytecode = match pathbuf.extension().and_then(|extension| extension.to_str()) {
-                Some("hex") => {
-                    let string = std::fs::read_to_string(pathbuf)?;
-                    let hexadecimal_string =
-                        string.trim().strip_prefix("0x").unwrap_or(string.as_str());
-                    hex::decode(hexadecimal_string)?
-                }
-                Some("zbin") => std::fs::read(pathbuf)?,
-                Some(extension) => anyhow::bail!(
-                    "Invalid file extension: {extension}. Supported extensions: *.hex, *.zbin"
-                ),
-                None => {
-                    anyhow::bail!("Missing file extension. Supported extensions: *.hex, *.zbin")
-                }
-            };
+            let string = std::fs::read_to_string(pathbuf)?;
+            let hexadecimal_string = string.trim().strip_prefix("0x").unwrap_or(string.as_str());
+            let bytecode = hex::decode(hexadecimal_string)?;
             Ok((path, bytecode))
         })
         .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
