@@ -1454,10 +1454,20 @@ where
             )
             .map(Some),
             InstructionName::PUSH_ContractHash => {
-                Ok(Some(context.field_const(0).as_basic_value_enum()))
+                let object_name = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Data offset identifier is missing"))?;
+                era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
+                    .map(Some)
             }
             InstructionName::PUSH_ContractHashSize => {
-                Ok(Some(context.field_const(0).as_basic_value_enum()))
+                let object_name = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Data size identifier is missing"))?;
+                era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
+                    .map(Some)
             }
             InstructionName::PUSHLIB => Ok(Some(context.field_const(0).as_basic_value_enum())),
             InstructionName::PUSH_Data => Ok(Some(context.field_const(0).as_basic_value_enum())),

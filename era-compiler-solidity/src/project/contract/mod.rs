@@ -440,8 +440,8 @@ impl Contract {
                     inkwell::memory_buffer::MemoryBuffer::link_module_evm(
                         &[&deploy_buffer, &runtime_buffer],
                         &[
-                            self.name.path.as_str(),
-                            format!("{}.deployed", self.name.path.as_str()).as_str(),
+                            self.name.full_path.as_str(),
+                            format!("{}.deployed", self.name.full_path).as_str(),
                         ],
                     )
                     .map_err(|error| anyhow::anyhow!("linking: {error}"))?;

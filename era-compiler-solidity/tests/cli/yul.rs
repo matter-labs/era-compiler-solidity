@@ -8,15 +8,13 @@ use test_case::test_case;
 fn with_yul_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul"];
+    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul", "--bin"];
     let solc_args = &[common::TEST_YUL_CONTRACT_PATH, "--strict-assembly"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
         .success()
-        .stderr(predicate::str::contains(
-            "Compiler run successful. No output requested",
-        ))
+        .stdout(predicate::str::contains("Binary:\n"))
         .get_output()
         .status
         .code()
@@ -33,7 +31,7 @@ fn with_yul_against_solc(target: Target) -> anyhow::Result<()> {
 fn with_yul_invalid_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--yul", "anyarg"];
+    let args = &["--yul", "anyarg", "--bin"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
