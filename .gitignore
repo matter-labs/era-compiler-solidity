@@ -14,9 +14,7 @@
 /.vscode/
 
 # Test artifacts
-**/cli-tests/node_modules
-**/cli-tests/artifacts
-*.xml
+/**/tests/data/temp/*
 
 # Accidentally created backup files
 *.bak

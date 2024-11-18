@@ -11,7 +11,6 @@ use std::collections::BTreeMap;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
-use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
 use crate::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
 use crate::standard_json::input::settings::selection::Selection;
@@ -180,7 +179,6 @@ impl Output {
         &mut self,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &Version,
-        codegen: StandardJsonInputSettingsCodegen,
         suppressed_errors: &[StandardJsonInputSettingsErrorType],
         suppressed_warnings: &[StandardJsonInputSettingsWarningType],
     ) -> anyhow::Result<()> {
@@ -203,7 +201,6 @@ impl Output {
                             &id_paths,
                             sources,
                             version,
-                            codegen,
                             suppressed_errors,
                             suppressed_warnings,
                         )

@@ -5,6 +5,8 @@
 ### Changed
 
 - Moved the `solc` client to another crate at `era-solc`
+- Prohibited usage of the upstream `solc` compiler
+- Disassembler now only works with files with hexadecimal strings
 - Updated to Rust v1.82.0
 
 ## [1.5.7] - 2024-10-31

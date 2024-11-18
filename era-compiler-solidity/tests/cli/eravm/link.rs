@@ -6,29 +6,30 @@ use predicates::prelude::*;
 fn with_libraries() -> anyhow::Result<()> {
     common::setup()?;
 
+    std::fs::create_dir_all(common::TEST_TEMP_DIRECTORY)?;
     std::fs::copy(
-        cli::TEST_LINKER_BYTECODE_PATH,
-        cli::TEST_LINKER_BYTECODE_COPY_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_COPY_PATH,
     )?;
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_COPY_PATH,
+        common::TEST_LINKER_BYTECODE_COPY_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER,
+        common::LIBRARY_LINKER,
     ];
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"linked\":{\"tests/data/bytecodes/linker_copy.hex\":",
+        "\"linked\":{\"tests/data/temp/linker_copy.zbin\":",
     ));
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"ignored\":{\"tests/data/bytecodes/linker_copy.hex\":",
+        "\"ignored\":{\"tests/data/temp/linker_copy.zbin\":",
     ));
 
-    std::fs::remove_file(cli::TEST_LINKER_BYTECODE_COPY_PATH)?;
+    std::fs::remove_file(common::TEST_LINKER_BYTECODE_COPY_PATH)?;
 
     Ok(())
 }
@@ -37,11 +38,11 @@ fn with_libraries() -> anyhow::Result<()> {
 fn without_libraries() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--link", cli::TEST_LINKER_BYTECODE_PATH];
+    let args = &["--link", common::TEST_LINKER_BYTECODE_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.hex\":[\"test.sol:GreaterHelper\"]}}",
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}}",
     ));
 
     Ok(())
@@ -53,9 +54,9 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER,
+        common::LIBRARY_LINKER,
         "--bin",
     ];
 
@@ -73,14 +74,14 @@ fn with_libraries_contract_name_missing() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER_CONTRACT_NAME_MISSING,
+        common::LIBRARY_LINKER_CONTRACT_NAME_MISSING,
     ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Library `test.sol` contract name is missing.",
+        "Error: Library `Greeter.sol` contract name is missing.",
     ));
 
     Ok(())
@@ -92,14 +93,14 @@ fn with_libraries_address_missing() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER_ADDRESS_MISSING,
+        common::LIBRARY_LINKER_ADDRESS_MISSING,
     ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Library `test.sol:GreaterHelper` address is missing.",
+        "Error: Library `Greeter.sol:GreeterHelper` address is missing.",
     ));
 
     Ok(())
@@ -111,14 +112,14 @@ fn with_libraries_address_invalid() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER_ADDRESS_INVALID,
+        common::LIBRARY_LINKER_ADDRESS_INVALID,
     ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Invalid address `XINVALID` of library `test.sol:GreaterHelper`: Invalid character \'X\' at position 0.",
+        "Error: Invalid address `XINVALID` of library `Greeter.sol:GreeterHelper`: Invalid character \'X\' at position 0.",
     ));
 
     Ok(())
@@ -130,14 +131,14 @@ fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
 
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--libraries",
-        cli::LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE,
+        common::LIBRARY_LINKER_ADDRESS_INCORRECT_SIZE,
     ];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: Incorrect size of address `0x12345678` of library `test.sol:GreaterHelper`: expected 20, found 4.",
+        "Error: Incorrect size of address `0x12345678` of library `Greeter.sol:GreeterHelper`: expected 20, found 4.",
     ));
 
     Ok(())
@@ -150,7 +151,7 @@ fn with_target_evm() -> anyhow::Result<()> {
     let target = Target::EVM.to_string();
     let args = &[
         "--link",
-        cli::TEST_LINKER_BYTECODE_PATH,
+        common::TEST_LINKER_BYTECODE_PATH,
         "--target",
         target.as_str(),
     ];

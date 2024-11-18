@@ -19,7 +19,7 @@ fn with_version() -> anyhow::Result<()> {
 fn with_version_and_extra_args() -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--version", cli::TEST_SOLIDITY_CONTRACT_PATH];
+    let args = &["--version", common::TEST_SOLIDITY_CONTRACT_PATH];
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(

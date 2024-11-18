@@ -50,16 +50,17 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to terminal.
     ///
-    /// TODO: output assembly
-    ///
     pub fn write_to_terminal(
         self,
         path: String,
         output_metadata: bool,
-        _output_assembly: bool,
+        output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======")?;
+        if output_assembly {
+            writeln!(std::io::stdout(), "Assembly:\nComing soon")?;
+        }
         if output_metadata {
             writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
         }
@@ -78,12 +79,11 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to files.
     ///
-    /// TODO: output assembly
-    ///
     pub fn write_to_directory(
         self,
         output_path: &Path,
-        _output_assembly: bool,
+        output_metadata: bool,
+        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -98,33 +98,65 @@ impl Contract {
         output_path.push(file_name);
         std::fs::create_dir_all(output_path.as_path())?;
 
-        if output_binary {
-            for (code_segment, bytecode) in [
-                era_compiler_common::CodeSegment::Deploy,
-                era_compiler_common::CodeSegment::Runtime,
-            ]
-            .into_iter()
-            .zip([self.deploy_build, self.runtime_build].into_iter())
-            {
-                let output_name = format!(
-                    "{}.{code_segment}.{}",
-                    self.name.name.as_deref().unwrap_or(file_name),
-                    era_compiler_common::EXTENSION_EVM_BINARY
-                );
-                let mut output_path = output_path.clone();
-                output_path.push(output_name.as_str());
+        if output_metadata {
+            let output_name = format!(
+                "{}_meta.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                era_compiler_common::EXTENSION_JSON,
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
 
-                if output_path.exists() && !overwrite {
-                    anyhow::bail!(
-                        "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
-                    );
-                } else {
-                    std::fs::write(
-                        output_path.as_path(),
-                        hex::encode(bytecode.as_slice()).as_bytes(),
-                    )
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                std::fs::write(
+                    output_path.as_path(),
+                    self.metadata_json.to_string().as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
+            }
+        }
+
+        if output_assembly {
+            let output_name = format!(
+                "{}.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                "asm"
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
+
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                std::fs::write(output_path.as_path(), "Coming soon".as_bytes())
                     .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
-                }
+            }
+        }
+
+        if output_binary {
+            let output_name = format!(
+                "{}.{}",
+                self.name.name.as_deref().unwrap_or(file_name),
+                era_compiler_common::EXTENSION_EVM_BINARY
+            );
+            let mut output_path = output_path.clone();
+            output_path.push(output_name.as_str());
+
+            if output_path.exists() && !overwrite {
+                anyhow::bail!(
+                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
+                );
+            } else {
+                let mut bytecode_hexadecimal = hex::encode(self.deploy_build.as_slice());
+                bytecode_hexadecimal.push_str(hex::encode(self.runtime_build.as_slice()).as_str());
+                std::fs::write(output_path.as_path(), bytecode_hexadecimal.as_bytes())
+                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -134,8 +166,6 @@ impl Contract {
     ///
     /// Writes the contract text assembly and bytecode to the combined JSON.
     ///
-    /// TODO: output assembly
-    ///
     pub fn write_to_combined_json(
         self,
         combined_json_contract: &mut era_solc::CombinedJsonContract,
@@ -144,32 +174,16 @@ impl Contract {
             *metadata = self.metadata_json.to_string();
         }
 
-        let hexadecimal_deploy_bytecode = hex::encode(self.deploy_build);
-        let hexadecimal_runtime_bytecode = hex::encode(self.runtime_build);
-        match (
-            combined_json_contract.bin.as_mut(),
-            combined_json_contract.bin_runtime.as_mut(),
-        ) {
-            (Some(bin), Some(bin_runtime)) => {
-                *bin = hexadecimal_deploy_bytecode;
-                *bin_runtime = hexadecimal_runtime_bytecode;
-            }
-            (Some(bin), None) => {
-                *bin = hexadecimal_deploy_bytecode;
-            }
-            (None, Some(bin_runtime)) => {
-                *bin_runtime = hexadecimal_runtime_bytecode;
-            }
-            (None, None) => {}
-        }
+        combined_json_contract.bin = Some(hex::encode(self.deploy_build));
+        combined_json_contract.bin_runtime = Some(hex::encode(self.runtime_build));
+
+        combined_json_contract.assembly = serde_json::Value::String("Coming soon".to_owned());
 
         Ok(())
     }
 
     ///
     /// Writes the contract text assembly and bytecode to the standard JSON.
-    ///
-    /// TODO: output assembly
     ///
     pub fn write_to_standard_json(
         self,
