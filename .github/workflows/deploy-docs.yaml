@@ -48,3 +48,16 @@ jobs:
           enable-tests: true
           deploy: ${{ github.event_name != 'pull_request' }}
           create-latest-symlink: true
+
+  # Special job that allows some of the jobs to be skipped or failed
+  # requiring others to be successful
+  pr-checks:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - deploy-docs
+    steps:
+      - name: Decide on PR checks
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
