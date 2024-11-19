@@ -9,7 +9,7 @@ Combined JSON is an I/O mode designed to provide a middle-ground experience betw
 To use combined JSON, pass the `--combined-json` flag to *zksolc* with the desired comma-separated output selectors:
 
 ```shell
-zksolc MyContract.sol --combined-json ast,abi,metadata
+zksolc './MyContract.sol' --combined-json ast,abi,metadata
 ```
 
 The following selectors are supported:
@@ -80,6 +80,6 @@ The format below is a modification of the original combined JSON [output](https:
   // Required: Version of solc.
   "version": "0.8.28+commit.acc7d8f9.Darwin.appleclang",
   // Required, zksolc: Version of zksolc.
-  "zk_version": "1.5.6"
+  "zk_version": "1.5.8"
 }
 ```

@@ -181,10 +181,12 @@ fn main_inner(
             } else if arguments.disassemble {
                 return era_compiler_solidity::disassemble_eravm(arguments.inputs);
             } else if arguments.link {
-                return era_compiler_solidity::link_eravm(
-                    arguments.inputs,
-                    arguments.libraries.as_slice(),
-                );
+                return match arguments.standard_json {
+                    Some(path) => era_compiler_solidity::link_eravm_json(path),
+                    None => {
+                        era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries)
+                    }
+                };
             } else if let Some(standard_json) = arguments.standard_json {
                 let solc_compiler = match arguments.solc.as_deref() {
                     Some(executable) => Some(era_solc::Compiler::try_from_path(executable)?),

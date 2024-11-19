@@ -2,10 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- JSON interface for the EraVM linker
+- Missing libraries output in standard JSON mode
+
 ### Changed
 
 - Moved the `solc` client to another crate at `era-solc`
-- Prohibited usage of the upstream `solc` compiler
+- Prohibited the usage of the upstream `solc` compiler
 - Disassembler now only works with files with hexadecimal strings
 - Updated to Rust v1.82.0
 
