@@ -147,8 +147,8 @@ pub struct Arguments {
     pub disassemble: bool,
 
     /// Specify the bytecode file to link.
-    /// Only `--libraries` is allowed as an additional argument.
-    /// The bytecode files are modified in place.
+    /// In default mode, input bytecode files and `--libraries` are required, and the input files are modified in place.
+    /// In standard JSON mode, the result of linking is returned via stdout in a JSON.
     #[structopt(long = "link")]
     pub link: bool,
 
@@ -292,9 +292,9 @@ impl Arguments {
         .iter()
         .filter(|&&x| x)
         .count();
-        if modes_count > 1 {
+        if modes_count > 1 + ((self.link && self.standard_json.is_some()) as usize) {
             messages.push(era_solc::StandardJsonOutputError::new_error(
-                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, linker, combined JSON, standard JSON.", None, None));
+                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, combined JSON, standard JSON. Only linker can be used with `--standard-json`.", None, None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {
@@ -399,15 +399,15 @@ impl Arguments {
             ));
         }
 
-        if self.link
-            && std::env::args().count()
-                > 2 + self.inputs.len()
-                    + (self.target.is_some() as usize) * 2
-                    + ((!self.libraries.is_empty()) as usize)
-                    + self.libraries.len()
-        {
+        let mut linker_default_arguments_count = 2 + (self.target.is_some() as usize) * 2;
+        linker_default_arguments_count += match self.standard_json {
+            Some(Some(_)) => 2,
+            Some(None) => 1,
+            _ => self.inputs.len() + ((!self.libraries.is_empty()) as usize) + self.libraries.len(),
+        };
+        if self.link && std::env::args().count() > linker_default_arguments_count {
             messages.push(era_solc::StandardJsonOutputError::new_error(
-                "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
+                "Error: No other options except bytecode files, `--libraries`, `--standard-json`, `--target` are allowed in linker mode.",
                 None,
                 None,
             ));

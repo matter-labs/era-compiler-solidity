@@ -42,7 +42,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}}",
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
     ));
 
     Ok(())
@@ -62,7 +62,7 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
+        "Error: No other options except bytecode files, `--libraries`, `--standard-json`, `--target` are allowed in linker mode.",
     ));
 
     Ok(())
@@ -139,6 +139,42 @@ fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Incorrect size of address `0x12345678` of library `Greeter.sol:GreeterHelper`: expected 20, found 4.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_libraries_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_WITH_LIBRARIES_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "\"linked\":{\"tests/data/bytecodes/linker.zbin\":",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn without_libraries_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
     ));
 
     Ok(())

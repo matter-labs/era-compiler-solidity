@@ -195,7 +195,7 @@ fn with_standard_json_non_existent(target: Target) -> anyhow::Result<()> {
     result
         .success()
         .stdout(predicate::str::contains(
-            "Standard JSON file \\\"tests/data/standard_json_input/non_existent.json\\\" opening",
+            "Standard JSON file \\\"tests/data/standard_json_input/non_existent.json\\\" reading",
         ))
         .code(era_compiler_common::EXIT_CODE_SUCCESS);
 

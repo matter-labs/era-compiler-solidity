@@ -35,7 +35,7 @@ impl MissingLibraries {
                 let missing_libraries = self.contract_libraries.remove(full_name.as_str());
 
                 if let Some(missing_libraries) = missing_libraries {
-                    contract.missing_libraries = Some(missing_libraries);
+                    contract.missing_libraries = missing_libraries;
                 }
             }
         }

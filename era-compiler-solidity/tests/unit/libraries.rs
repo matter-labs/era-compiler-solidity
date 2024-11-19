@@ -53,8 +53,6 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
             .get("SimpleContract")
             .expect("Always exists")
             .missing_libraries
-            .as_ref()
-            .expect("Always exists")
             .contains(
                 format!(
                     "{}:SimpleLibrary",
@@ -116,9 +114,6 @@ fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
             .get("SimpleContract")
             .expect("Always exists")
             .missing_libraries
-            .as_ref()
-            .cloned()
-            .unwrap_or_default()
             .is_empty(),
         "The list of missing libraries must be empty"
     );

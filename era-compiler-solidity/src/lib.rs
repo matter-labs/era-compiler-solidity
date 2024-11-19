@@ -13,6 +13,7 @@ pub mod build_eravm;
 pub mod build_evm;
 pub mod r#const;
 pub mod evmla;
+pub mod linker;
 pub mod missing_libraries;
 pub mod process;
 pub mod project;
@@ -22,6 +23,9 @@ pub use self::build_eravm::contract::Contract as EraVMContractBuild;
 pub use self::build_eravm::Build as EraVMBuild;
 pub use self::build_evm::contract::Contract as EVMContractBuild;
 pub use self::build_evm::Build as EVMBuild;
+pub use self::linker::input::Input as LinkerInput;
+pub use self::linker::output::Output as LinkerOutput;
+pub use self::linker::Linker;
 pub use self::process::input_eravm::Input as EraVMProcessInput;
 pub use self::process::input_evm::Input as EVMProcessInput;
 pub use self::process::output_eravm::Output as EraVMProcessOutput;
@@ -38,6 +42,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
 use era_solc::CollectableError;
@@ -542,23 +547,26 @@ pub fn standard_json_eravm(
         }
     };
 
+    let missing_libraries = project.get_missing_libraries();
     if detect_missing_libraries {
-        let missing_libraries = project.get_missing_libraries();
         missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
-    } else {
-        let build = project.compile_to_eravm(
-            messages,
-            enable_eravm_extensions,
-            linker_symbols,
-            metadata_hash_type,
-            optimizer_settings,
-            llvm_options,
-            output_assembly,
-            threads,
-            debug_config,
-        )?;
-        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+        solc_output.write_and_exit(prune_output);
     }
+
+    let build = project.compile_to_eravm(
+        messages,
+        enable_eravm_extensions,
+        linker_symbols,
+        metadata_hash_type,
+        optimizer_settings,
+        llvm_options,
+        output_assembly,
+        threads,
+        debug_config,
+    )?;
+    build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+    missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
+
     solc_output.write_and_exit(prune_output);
 }
 
@@ -874,79 +882,48 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
 }
 
 ///
-/// Runs the linker for EraVM bytecode file, modifying it in place.
+/// Links EraVM bytecode files.
 ///
-pub fn link_eravm(paths: Vec<String>, libraries: &[String]) -> anyhow::Result<()> {
+pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<()> {
     let bytecodes = paths
         .into_par_iter()
         .map(|path| {
-            let bytecode_string = std::fs::read_to_string(path.as_str())?;
-            let bytecode = hex::decode(
-                bytecode_string
-                    .strip_prefix("0x")
-                    .unwrap_or(bytecode_string.as_str()),
-            )?;
+            let bytecode = std::fs::read_to_string(path.as_str())?;
             Ok((path, bytecode))
         })
-        .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
+        .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
 
-    let linker_symbols =
-        era_solc::StandardJsonInputLibraries::try_from(libraries)?.as_linker_symbols()?;
-    let mut linked_objects = serde_json::Map::new();
-    let mut unlinked_objects = serde_json::Map::new();
-    let mut ignored_objects = serde_json::Map::new();
+    let input = LinkerInput::new(bytecodes, libraries);
+    let output = Linker::link_eravm(input)?;
 
-    bytecodes
-        .into_iter()
-        .try_for_each(|(path, bytecode)| -> anyhow::Result<()> {
-            let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                bytecode.as_slice(),
-                "bytecode",
-                false,
-            );
-            let already_linked = !memory_buffer.is_elf_eravm();
-
-            let (memory_buffer_linked, bytecode_hash) =
-                era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
-
-            if let Some(bytecode_hash) = bytecode_hash {
-                if already_linked {
-                    ignored_objects.insert(
-                        path.clone(),
-                        serde_json::Value::String(hex::encode(bytecode_hash)),
-                    );
-                } else {
-                    linked_objects.insert(
-                        path.clone(),
-                        serde_json::Value::String(hex::encode(bytecode_hash)),
-                    );
-                }
-            }
-            if memory_buffer_linked.is_elf_eravm() {
-                unlinked_objects.insert(
-                    path.clone(),
-                    serde_json::Value::Array(
-                        memory_buffer_linked
-                            .get_undefined_symbols_eravm()
-                            .iter()
-                            .map(|symbol| serde_json::Value::String(symbol.to_string()))
-                            .collect(),
-                    ),
-                );
-            }
-
-            std::fs::write(path, hex::encode(memory_buffer_linked.as_slice()))?;
-
+    output
+        .linked
+        .par_iter()
+        .map(|(path, contract)| {
+            std::fs::write(path, contract.bytecode.as_bytes())?;
             Ok(())
-        })?;
+        })
+        .collect::<anyhow::Result<()>>()?;
 
-    serde_json::to_writer(
-        std::io::stdout(),
-        &serde_json::json!({
-            "linked": linked_objects,
-            "unlinked": unlinked_objects,
-            "ignored": ignored_objects,
-        }),
-    )?;
+    serde_json::to_writer(std::io::stdout(), &output)?;
+    std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
+}
+
+///
+/// Links EraVM bytecode files received as JSON input.
+///
+pub fn link_eravm_json(path: Option<String>) -> anyhow::Result<()> {
+    let input_json = match path.map(PathBuf::from) {
+        Some(path) => std::fs::read_to_string(path.as_path())
+            .map_err(|error| anyhow::anyhow!("JSON file {path:?} reading: {error}")),
+        None => std::io::read_to_string(std::io::stdin())
+            .map_err(|error| anyhow::anyhow!("JSON stdin reading: {error}")),
+    }?;
+
+    let input = era_compiler_common::deserialize_from_str::<LinkerInput>(input_json.as_str())
+        .map_err(|error| anyhow::anyhow!("JSON parsing: {error}"))?;
+    let output = Linker::link_eravm(input)?;
+
+    serde_json::to_writer(std::io::stdout(), &output)?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
 }
