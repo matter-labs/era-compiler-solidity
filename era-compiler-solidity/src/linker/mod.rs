@@ -6,6 +6,7 @@ pub mod input;
 pub mod output;
 
 use self::input::Input;
+use self::output::contract::Contract as OutputContract;
 use self::output::Output;
 
 ///
@@ -18,7 +19,7 @@ impl Linker {
     ///
     /// Links EraVM bytecode files.
     ///
-    pub fn link_eravm(input: Input, modify_in_place: bool) -> anyhow::Result<Output> {
+    pub fn link_eravm(input: Input) -> anyhow::Result<Output> {
         let linker_symbols =
             era_solc::StandardJsonInputLibraries::try_from(input.libraries.as_slice())?
                 .as_linker_symbols()?;
@@ -42,14 +43,14 @@ impl Linker {
                     era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
 
                 if let Some(bytecode_hash) = bytecode_hash {
+                    let contract = OutputContract::new(
+                        hex::encode(memory_buffer_linked.as_slice()),
+                        hex::encode(bytecode_hash),
+                    );
                     if already_linked {
-                        output
-                            .ignored
-                            .insert(path.clone(), hex::encode(bytecode_hash));
+                        output.ignored.insert(path.clone(), contract);
                     } else {
-                        output
-                            .linked
-                            .insert(path.clone(), hex::encode(bytecode_hash));
+                        output.linked.insert(path.clone(), contract);
                     }
                 }
                 if memory_buffer_linked.is_elf_eravm() {
@@ -57,10 +58,6 @@ impl Linker {
                         path.clone(),
                         memory_buffer_linked.get_undefined_symbols_eravm(),
                     );
-                }
-
-                if modify_in_place {
-                    std::fs::write(path, hex::encode(memory_buffer_linked.as_slice()))?;
                 }
 
                 Ok(())

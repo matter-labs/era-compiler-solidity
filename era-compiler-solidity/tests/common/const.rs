@@ -175,6 +175,14 @@ pub const TEST_TEMP_DIRECTORY: &str = "tests/data/temp";
 /// This file must be copied from `TEST_LINKER_BYTECODE_PATH` before linking and removed afterwards.
 pub const TEST_LINKER_BYTECODE_COPY_PATH: &str = "tests/data/temp/linker_copy.zbin";
 
+/// A test input file.
+pub const TEST_LINKER_STANDARD_JSON_INPUT_WITH_LIBRARIES_PATH: &str =
+    "tests/data/standard_json_input/linker/with_libraries.json";
+
+/// A test input file.
+pub const TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH: &str =
+    "tests/data/standard_json_input/linker/without_libraries.json";
+
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 

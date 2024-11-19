@@ -42,6 +42,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
 use era_solc::CollectableError;
@@ -893,7 +894,16 @@ pub fn link_eravm(paths: Vec<String>, libraries: Vec<String>) -> anyhow::Result<
         .collect::<anyhow::Result<BTreeMap<String, String>>>()?;
 
     let input = LinkerInput::new(bytecodes, libraries);
-    let output = Linker::link_eravm(input, true)?;
+    let output = Linker::link_eravm(input)?;
+
+    output
+        .linked
+        .par_iter()
+        .map(|(path, contract)| {
+            std::fs::write(path, contract.bytecode.as_bytes())?;
+            Ok(())
+        })
+        .collect::<anyhow::Result<()>>()?;
 
     serde_json::to_writer(std::io::stdout(), &output)?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);
@@ -912,7 +922,7 @@ pub fn link_eravm_json(path: Option<String>) -> anyhow::Result<()> {
 
     let input = era_compiler_common::deserialize_from_str::<LinkerInput>(input_json.as_str())
         .map_err(|error| anyhow::anyhow!("JSON parsing: {error}"))?;
-    let output = Linker::link_eravm(input, true)?;
+    let output = Linker::link_eravm(input)?;
 
     serde_json::to_writer(std::io::stdout(), &output)?;
     std::process::exit(era_compiler_common::EXIT_CODE_SUCCESS);

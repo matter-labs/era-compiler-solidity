@@ -292,9 +292,9 @@ impl Arguments {
         .iter()
         .filter(|&&x| x)
         .count();
-        if modes_count > 1 {
+        if modes_count > 1 + ((self.link && self.standard_json.is_some()) as usize) {
             messages.push(era_solc::StandardJsonOutputError::new_error(
-                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, linker, combined JSON, standard JSON.", None, None));
+                "Only one mode is allowed at the same time: Yul, LLVM IR, EraVM Assembly, disassembler, combined JSON, standard JSON. Only linker can be used with `--standard-json`.", None, None));
         }
 
         if self.yul || self.llvm_ir || self.eravm_assembly || self.disassemble || self.link {

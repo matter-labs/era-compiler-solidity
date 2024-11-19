@@ -145,6 +145,42 @@ fn with_libraries_address_incorrect_size() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_libraries_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_WITH_LIBRARIES_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "\"linked\":{\"tests/data/bytecodes/linker.zbin\":",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn without_libraries_standard_json() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 
