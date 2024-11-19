@@ -56,14 +56,8 @@ impl Input {
     ///
     pub fn try_from(path: Option<&Path>) -> anyhow::Result<Self> {
         let input_json = match path {
-            Some(path) => {
-                let file = std::fs::File::open(path).map_err(|error| {
-                    anyhow::anyhow!("Standard JSON file {path:?} opening: {error}")
-                })?;
-                std::io::read_to_string(file).map_err(|error| {
-                    anyhow::anyhow!("Standard JSON file {path:?} reading: {error}")
-                })
-            }
+            Some(path) => std::fs::read_to_string(path)
+                .map_err(|error| anyhow::anyhow!("Standard JSON file {path:?} reading: {error}")),
             None => std::io::read_to_string(std::io::stdin())
                 .map_err(|error| anyhow::anyhow!("Standard JSON reading from stdin: {error}")),
         }?;

@@ -42,7 +42,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}}",
+        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
     ));
 
     Ok(())
@@ -62,7 +62,7 @@ fn with_libraries_and_extra_args() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: No other options except bytecode files, `--libraries`, and `--target` are allowed in linker mode.",
+        "Error: No other options except bytecode files, `--libraries`, `--standard-json`, `--target` are allowed in linker mode.",
     ));
 
     Ok(())
