@@ -294,8 +294,9 @@ impl Contract {
 
                 let runtime_code_segment = era_compiler_common::CodeSegment::Runtime;
                 let runtime_llvm = inkwell::context::Context::create();
-                let runtime_module = runtime_llvm
-                    .create_module(format!("{}.{runtime_code_segment}", self.name.path).as_str());
+                let runtime_module = runtime_llvm.create_module(
+                    format!("{}.{runtime_code_segment}", self.name.full_path).as_str(),
+                );
                 let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
@@ -323,8 +324,9 @@ impl Contract {
 
                 let deploy_code_segment = era_compiler_common::CodeSegment::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
-                let deploy_module = deploy_llvm
-                    .create_module(format!("{}.{deploy_code_segment}", self.name.path).as_str());
+                let deploy_module = deploy_llvm.create_module(
+                    format!("{}.{deploy_code_segment}", self.name.full_path).as_str(),
+                );
                 let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
@@ -378,8 +380,9 @@ impl Contract {
 
                 let runtime_code_segment = era_compiler_common::CodeSegment::Runtime;
                 let runtime_llvm = inkwell::context::Context::create();
-                let runtime_module = runtime_llvm
-                    .create_module(format!("{}.{runtime_code_segment}", self.name.path).as_str());
+                let runtime_module = runtime_llvm.create_module(
+                    format!("{}.{runtime_code_segment}", self.name.full_path).as_str(),
+                );
                 let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
@@ -408,8 +411,9 @@ impl Contract {
 
                 let deploy_code_segment = era_compiler_common::CodeSegment::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
-                let deploy_module = deploy_llvm
-                    .create_module(format!("{}.{deploy_code_segment}", self.name.path).as_str());
+                let deploy_module = deploy_llvm.create_module(
+                    format!("{}.{deploy_code_segment}", self.name.full_path).as_str(),
+                );
                 let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
@@ -440,8 +444,8 @@ impl Contract {
                     inkwell::memory_buffer::MemoryBuffer::link_module_evm(
                         &[&deploy_buffer, &runtime_buffer],
                         &[
-                            self.name.full_path.as_str(),
-                            format!("{}.deployed", self.name.full_path).as_str(),
+                            format!("{}.{deploy_code_segment}", self.name.full_path).as_str(),
+                            format!("{}.{runtime_code_segment}", self.name.full_path).as_str(),
                         ],
                     )
                     .map_err(|error| anyhow::anyhow!("linking: {error}"))?;
