@@ -39,10 +39,10 @@ This guide assumes the build with `AddressSanitizer` enabled.
 
 ### Build LLVM with sanitizer enabled
 
-When building LLVM, please, use `--sanitizer <sanitizer>` option:
+When building LLVM, use `--sanitizer <sanitizer>` option and set build type to `RelWithDebInfo`:
 
 ```shell
-zksync-llvm build --sanitizer=Address
+zksync-llvm build --sanitizer=Address --build-type=RelWithDebInfo
 ```
 
 <div class="warning">
@@ -75,9 +75,13 @@ Please, check the table below to find the correct target for your platform.
 | macOS x86  | `x86_64-apple-darwin`         |
 
 
+Additionally, for proper reports symbolization it is recommended to set the `ASAN_SYMBOLIZER_PATH` environment variable.
+For more info, see [symbolizing reports](https://clang.llvm.org/docs/AddressSanitizer.html#id4) section of LLVM documentation.
+
 For example, to build the ZKsync compiler for macOS arm64 with `AddressSanitizer` enabled, run the following command:
 ```shell
 export RUSTC_BOOTSTRAP=1
+export ASAN_SYMBOLIZER_PATH=$(which llvm-symbolizer) # check the path to llvm-symbolizer
 TARGET=aarch64-apple-darwin # Change to your target
 RUSTFLAGS="-Z sanitizer=address" cargo test --target=${TARGET}
 ```
