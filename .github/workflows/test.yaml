@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@aba-use-sccache
         with:
           target-env: 'gnu'
           build-type: 'Release'
@@ -37,7 +37,7 @@ jobs:
           save-ccache: 'false'
 
       - name: Cargo checks
-        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@aba-use-sccache
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,7 +84,7 @@ jobs:
         uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@v1
 
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@aba-use-sccache
         with:
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'true'
@@ -93,7 +93,7 @@ jobs:
           save-ccache: 'false'
 
       - name: Run tests
-        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@aba-use-sccache
         with:
           target: ${{ matrix.target || '' }}
           enable-coverage: ${{ matrix.enable-coverage || 'false' }}
