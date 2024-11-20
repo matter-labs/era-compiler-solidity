@@ -65,6 +65,9 @@ pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 pub const TEST_LLVM_IR_CONTRACT_PATH: &str = "tests/data/contracts/llvm_ir/Test.ll";
 
 /// A test input file.
+pub const TEST_LLVM_IR_CONTRACT_EVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.evm.ll";
+
+/// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_INVALID_PATH: &str = "tests/data/contracts/llvm_ir/Invalid.ll";
 
 /// A test input file.
