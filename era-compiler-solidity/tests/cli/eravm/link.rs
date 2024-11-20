@@ -181,6 +181,24 @@ fn without_libraries_standard_json() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_standard_json_missing() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("Error: JSON file"));
+
+    Ok(())
+}
+
+#[test]
 fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 

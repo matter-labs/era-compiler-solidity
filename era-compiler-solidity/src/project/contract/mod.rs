@@ -335,12 +335,12 @@ impl Contract {
                     Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
-                yul.object.declare(&mut deploy_context).map_err(|error| {
+                yul.declare(&mut deploy_context).map_err(|error| {
                     anyhow::anyhow!(
                         "{deploy_code_segment} code LLVM IR generator declaration pass: {error}",
                     )
                 })?;
-                yul.object.into_llvm(&mut deploy_context).map_err(|error| {
+                yul.into_llvm(&mut deploy_context).map_err(|error| {
                     anyhow::anyhow!(
                         "{deploy_code_segment} code LLVM IR generator definition pass: {error}",
                     )
@@ -480,9 +480,7 @@ impl Contract {
                     metadata_json,
                 ))
             }
-            IR::EraVMAssembly(_) => {
-                anyhow::bail!("EraVM assembly cannot be compiled to the EVM target")
-            }
+            IR::EraVMAssembly(_) => unreachable!(),
         }
     }
 
