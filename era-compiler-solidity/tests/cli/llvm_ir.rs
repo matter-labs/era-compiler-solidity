@@ -26,7 +26,7 @@ fn with_llvm_ir_duplicate_flag(target: Target) -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
-        "The argument '--llvm-ir' was provided more than once",
+        "error: the argument '--llvm-ir' cannot be used multiple times",
     ));
 
     Ok(())

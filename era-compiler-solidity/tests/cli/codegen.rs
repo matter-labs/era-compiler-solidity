@@ -145,7 +145,7 @@ fn with_codegen_invalid(target: Target) -> anyhow::Result<()> {
     let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
-        .stderr(predicate::str::contains("Invalid value for \'--codegen <codegen>\': Invalid codegen: `invalid`. Available options: evmla, yul"));
+        .stderr(predicate::str::contains("error: invalid value 'invalid' for '--codegen <CODEGEN>': Invalid codegen: `invalid`. Available options: evmla, yul"));
 
     Ok(())
 }

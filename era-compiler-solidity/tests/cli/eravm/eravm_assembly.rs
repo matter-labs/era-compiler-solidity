@@ -31,7 +31,7 @@ fn with_eravm_assembly_duplicate_flag() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "The argument '--eravm-assembly' was provided more than once",
+        "error: the argument \'--eravm-assembly\' cannot be used multiple times",
     ));
 
     Ok(())

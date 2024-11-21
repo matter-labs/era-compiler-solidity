@@ -50,7 +50,7 @@ fn with_yul_invalid_against_solc(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_yul_double_against_solc(target: Target) -> anyhow::Result<()> {
+fn with_yul_duplicate_flag_against_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul", "--yul"];
@@ -59,7 +59,7 @@ fn with_yul_double_against_solc(target: Target) -> anyhow::Result<()> {
     let status = result
         .failure()
         .stderr(predicate::str::contains(
-            "The argument '--yul' was provided more than once",
+            "the argument '--yul' cannot be used multiple times",
         ))
         .get_output()
         .status
