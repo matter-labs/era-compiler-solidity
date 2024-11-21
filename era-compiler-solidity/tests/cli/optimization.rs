@@ -47,7 +47,7 @@ fn with_invalid_optimization_option(target: Target) -> anyhow::Result<()> {
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(
         predicate::str::contains("Unexpected optimization option")
-            .or(predicate::str::contains("Invalid value for")),
+            .or(predicate::str::contains("error: invalid value \'99\' for \'--optimization <OPTIMIZATION>\': too many characters in string")),
     );
 
     Ok(())

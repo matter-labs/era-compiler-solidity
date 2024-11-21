@@ -29,7 +29,7 @@ fn without_input(target: Target) -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
-        "requires a value but none was supplied",
+        "error: a value is required for '--libraries <LIBRARIES>' but none was supplied",
     ));
 
     Ok(())

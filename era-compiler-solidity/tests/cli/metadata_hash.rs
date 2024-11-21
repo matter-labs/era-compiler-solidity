@@ -38,7 +38,7 @@ fn with_metadata_hash_no_argument(target: Target) -> anyhow::Result<()> {
     let zksolc_result = result
         .failure()
         .stderr(predicate::str::contains(
-            "requires a value but none was supplied",
+            "error: a value is required for '--metadata-hash <METADATA_HASH>' but none was supplied",
         ))
         .get_output()
         .status
