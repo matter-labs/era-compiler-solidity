@@ -1,2 +1,2 @@
 url = "https://github.com/matter-labs/era-compiler-llvm"
-branch = "kpv-evm-use-keccak-linker-symbols"
+branch = "main"
