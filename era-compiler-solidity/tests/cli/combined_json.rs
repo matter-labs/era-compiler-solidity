@@ -69,7 +69,7 @@ fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_combined_json_no_args(target: Target) -> anyhow::Result<()> {
+fn with_combined_json_no_argument(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--combined-json"];
@@ -78,7 +78,7 @@ fn with_combined_json_no_args(target: Target) -> anyhow::Result<()> {
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
-            "requires a value but none was supplied",
+            "error: a value is required for \'--combined-json <COMBINED_JSON>\' but none was supplied",
         ))
         .get_output()
         .status

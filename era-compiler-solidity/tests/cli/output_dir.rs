@@ -145,8 +145,13 @@ fn with_output_dir_invalid_arg_no_path(target: Target) -> anyhow::Result<()> {
     let result = cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
-        .stderr(predicate::str::contains("error: The argument '--output-dir <output-directory>' requires a value but none was supplied"))
-        .get_output().status.code().expect("No exit code.");
+        .stderr(predicate::str::contains(
+            "error: a value is required for '--output-dir <OUTPUT_DIR>' but none was supplied",
+        ))
+        .get_output()
+        .status
+        .code()
+        .expect("No exit code.");
 
     let solc_result = cli::execute_solc(args)?;
     solc_result.code(status);

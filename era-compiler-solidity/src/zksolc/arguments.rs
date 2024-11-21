@@ -6,8 +6,8 @@ use std::collections::BTreeSet;
 use std::path::Path;
 use std::path::PathBuf;
 
+use clap::Parser;
 use path_slash::PathExt;
-use structopt::StructOpt;
 
 ///
 /// Compiles the provided Solidity input files (or use the standard input if no files
@@ -17,14 +17,11 @@ use structopt::StructOpt;
 ///
 /// Example: zksolc ERC20.sol -O3 --bin --output-dir "./build/"
 ///
-#[derive(Debug, StructOpt)]
-#[structopt(
-    name = "Solidity compiler for ZKsync",
-    global_settings = &[structopt::clap::AppSettings::ArgRequiredElseHelp],
-)]
+#[derive(Debug, Parser)]
+#[command(about, long_about = None)]
 pub struct Arguments {
     /// Print the version and exit.
-    #[structopt(long = "version")]
+    #[arg(long)]
     pub version: bool,
 
     /// Specify the input paths and remappings.
@@ -35,203 +32,197 @@ pub struct Arguments {
 
     /// Set the given path as the root of the source tree instead of the root of the filesystem.
     /// Passed to `solc` without changes.
-    #[structopt(long = "base-path")]
+    #[arg(long)]
     pub base_path: Option<String>,
 
     /// Make an additional source directory available to the default import callback.
     /// Can be used multiple times. Can only be used if the base path has a non-empty value.
     /// Passed to `solc` without changes.
-    #[structopt(long = "include-path")]
+    #[arg(long)]
     pub include_path: Vec<String>,
 
     /// Allow a given path for imports. A list of paths can be supplied by separating them with a comma.
     /// Passed to `solc` without changes.
-    #[structopt(long = "allow-paths")]
+    #[arg(long)]
     pub allow_paths: Option<String>,
 
     /// Create one file per component and contract/file at the specified directory, if given.
-    #[structopt(short = "o", long = "output-dir")]
-    pub output_directory: Option<PathBuf>,
+    #[arg(short, long)]
+    pub output_dir: Option<PathBuf>,
 
     /// Overwrite existing files (used together with -o).
-    #[structopt(long = "overwrite")]
+    #[arg(long = "overwrite")]
     pub overwrite: bool,
 
     /// Set the optimization parameter -O[0 | 1 | 2 | 3 | s | z].
     /// Use `3` for best performance and `z` for minimal size.
-    #[structopt(short = "O", long = "optimization")]
+    #[arg(short = 'O', long)]
     pub optimization: Option<char>,
 
     /// Try to recompile with -Oz if the bytecode is too large.
-    #[structopt(long = "fallback-Oz")]
+    #[arg(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
     /// Pass arbitary space-separated options to LLVM.
     /// The argument must be a single quoted string following a `=` separator.
     /// Example: `--llvm-options='-eravm-jump-table-density-threshold=10'`.
-    #[structopt(long = "llvm-options")]
+    #[arg(long)]
     pub llvm_options: Option<String>,
 
     /// Deprecated.
     /// The `solc` optimizer is not used by `zksolc` anymore.
-    #[structopt(long = "disable-solc-optimizer")]
+    #[arg(long)]
     pub disable_solc_optimizer: bool,
 
     /// Specify the path to a `solc` executable.
     /// Solidity mode: if not provided, `solc` is also searched in `${PATH}`.
     /// Yul mode: `solc` is optional for additional Yul validation, as `zksolc` has limited Yul verification capabilities.
     /// LLVM IR and EraVM assembly modes: `solc` is unused.
-    #[structopt(long = "solc")]
+    #[arg(long)]
     pub solc: Option<String>,
 
     /// The EVM version to generate IR for.
     /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
-    #[structopt(long = "evm-version")]
+    #[arg(long)]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
 
     /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
-    #[structopt(short = "l", long = "libraries")]
+    #[arg(short, long)]
     pub libraries: Vec<String>,
 
     /// Output a single JSON document containing the specified information.
     /// Available arguments: `abi`, `hashes`, `metadata`, `devdoc`, `userdoc`, `storage-layout`, `ast`, `asm`, `bin`, `bin-runtime`.
-    #[structopt(long = "combined-json")]
+    #[arg(long)]
     pub combined_json: Option<String>,
 
     /// Switch to standard JSON input/output mode. Read from stdin or specified file, write the result to stdout.
     /// This is the default used by the Hardhat plugin.
-    #[structopt(long = "standard-json")]
+    #[arg(long)]
     pub standard_json: Option<Option<String>>,
 
     /// Specify the target machine.
     /// Available arguments: `eravm`, `evm`.
     /// The default is `eravm`.
-    #[structopt(long = "target")]
+    #[arg(long)]
     pub target: Option<String>,
 
     /// Sets the number of threads, where each thread compiles its own translation unit in a child process.
-    #[structopt(short = "t", long = "threads")]
+    #[arg(short, long)]
     pub threads: Option<usize>,
 
     /// Switch to missing deployable libraries detection mode.
     /// Only available for standard JSON input/output mode.
     /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
-    #[structopt(long = "detect-missing-libraries")]
+    #[arg(long)]
     pub detect_missing_libraries: bool,
 
     /// Switch to Yul mode.
     /// Only one input Yul file is allowed.
     /// Cannot be used with combined and standard JSON modes.
-    #[structopt(long = "yul")]
+    #[arg(long)]
     pub yul: bool,
 
     /// Switch to LLVM IR mode.
     /// Only one input LLVM IR file is allowed.
     /// Cannot be used with combined and standard JSON modes.
     /// Use this mode at your own risk, as LLVM IR input validation is not implemented.
-    #[structopt(long = "llvm-ir")]
+    #[arg(long)]
     pub llvm_ir: bool,
 
     /// Switch to EraVM assembly mode.
     /// Only one input EraVM assembly file is allowed.
     /// Cannot be used with combined and standard JSON modes.
     /// Use this mode at your own risk, as EraVM assembly input validation is not implemented.
-    #[structopt(long = "eravm-assembly")]
+    #[arg(long)]
     pub eravm_assembly: bool,
 
     /// Specify the bytecode file to disassemble.
     /// Two file types are allowed: raw binary bytecode (*.zbin), and hexadecimal string (*.hex).
     /// Cannot be used with combined and standard JSON modes.
-    #[structopt(long = "disassemble")]
+    #[arg(long)]
     pub disassemble: bool,
 
     /// Specify the bytecode file to link.
     /// In default mode, input bytecode files and `--libraries` are required, and the input files are modified in place.
     /// In standard JSON mode, the result of linking is returned via stdout in a JSON.
-    #[structopt(long = "link")]
+    #[arg(long)]
     pub link: bool,
 
     /// Specify the `solc` codegen.
     /// Available options: `evmla`, `yul`.
-    #[structopt(long = "codegen")]
+    #[arg(long)]
     pub codegen: Option<era_solc::StandardJsonInputCodegen>,
 
     /// Forcibly switch to EVM legacy assembly codegen.
     /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
     /// and contained more bugs than today.
     /// Deprecated: use `--codegen` instead.
-    #[structopt(long = "force-evmla")]
+    #[arg(long)]
     pub force_evmla: bool,
 
     /// Deprecated: use `--enable-eravm-extensions` instead.
-    #[structopt(long = "system-mode")]
+    #[arg(long)]
     pub system_mode: bool,
 
     /// Enable EraVM extensions.
     /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
     /// In the Yul mode, the `verbatim_*` instruction family becomes available.
-    #[structopt(long = "enable-eravm-extensions")]
+    #[arg(long)]
     pub enable_eravm_extensions: bool,
 
     /// Set the metadata hash type.
     /// Available types: `none`, `keccak256`, `ipfs`.
     /// The default is `keccak256`.
-    #[structopt(long = "metadata-hash")]
-    pub metadata_hash_type: Option<era_compiler_common::HashType>,
+    #[arg(long)]
+    pub metadata_hash: Option<era_compiler_common::HashType>,
 
     /// Sets the literal content flag for contract metadata.
     /// If enabled, the metadata will contain the literal content of the source files.
-    #[structopt(long = "metadata-literal")]
+    #[arg(long)]
     pub metadata_literal: bool,
 
     /// Output assembly of the compiled contracts.
-    #[structopt(long = "asm")]
+    #[arg(long = "asm")]
     pub output_assembly: bool,
 
     /// Output metadata of the compiled project.
-    #[structopt(long = "metadata")]
+    #[arg(long = "metadata")]
     pub output_metadata: bool,
 
     /// Output bytecode of the compiled contracts.
-    #[structopt(long = "bin")]
+    #[arg(long = "bin")]
     pub output_binary: bool,
 
     /// Suppress specified errors.
     /// Available arguments: `sendtransfer`.
-    #[structopt(long = "suppress-errors")]
-    pub suppressed_errors: Option<Vec<String>>,
+    #[arg(long)]
+    pub suppress_errors: Option<Vec<String>>,
 
     /// Suppress specified warnings.
     /// Available arguments: `txorigin`.
-    #[structopt(long = "suppress-warnings")]
-    pub suppressed_warnings: Option<Vec<String>>,
+    #[arg(long)]
+    pub suppress_warnings: Option<Vec<String>>,
 
     /// Dump all IRs to files in the specified directory.
     /// Only for testing and debugging.
-    #[structopt(long = "debug-output-dir")]
-    pub debug_output_directory: Option<PathBuf>,
+    #[arg(long)]
+    pub debug_output_dir: Option<PathBuf>,
 
     /// Set the verify-each option in LLVM.
     /// Only for testing and debugging.
-    #[structopt(long = "llvm-verify-each")]
+    #[arg(long)]
     pub llvm_verify_each: bool,
 
     /// Set the debug-logging option in LLVM.
     /// Only for testing and debugging.
-    #[structopt(long = "llvm-debug-logging")]
+    #[arg(long)]
     pub llvm_debug_logging: bool,
 
     /// Run this process recursively and provide JSON input to compile a single contract.
     /// Only for usage from within the compiler.
-    #[structopt(long = "recursive-process")]
+    #[arg(long)]
     pub recursive_process: bool,
-}
-
-impl Default for Arguments {
-    fn default() -> Self {
-        Self::from_args()
-    }
 }
 
 impl Arguments {
@@ -468,7 +459,7 @@ impl Arguments {
                 ));
             }
 
-            if self.output_directory.is_some() {
+            if self.output_dir.is_some() {
                 messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Output directory cannot be used in standard JSON mode.",
                     None,
@@ -503,7 +494,7 @@ impl Arguments {
                     None,
                 ));
             }
-            if self.metadata_hash_type.is_some() {
+            if self.metadata_hash.is_some() {
                 messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Metadata hash mode must be specified in standard JSON input settings.",
                     None,
@@ -518,14 +509,14 @@ impl Arguments {
                 ));
             }
 
-            if self.suppressed_errors.is_some() {
+            if self.suppress_errors.is_some() {
                 messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Suppressed errors must be specified in standard JSON input settings.",
                     None,
                     None,
                 ));
             }
-            if self.suppressed_warnings.is_some() {
+            if self.suppress_warnings.is_some() {
                 messages.push(era_solc::StandardJsonOutputError::new_error(
                     "Suppressed warnings must be specified in standard JSON input settings.",
                     None,
