@@ -8,9 +8,9 @@ This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
 
 ## Installation
 
-To install the *zksolc* compiler, follow the [installation guide](./docs/01-installation.md).
+To install the *zksolc* compiler, follow the [installation guide](./docs/src/01-installation.md).
 
-For local development, [build zksolc from sources](./docs/01-installation.md#building-from-source).
+For local development, [build zksolc from sources](./docs/src/01-installation.md#building-from-source).
 
 ## Usage
 
