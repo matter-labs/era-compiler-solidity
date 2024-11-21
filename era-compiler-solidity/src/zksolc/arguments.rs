@@ -81,8 +81,8 @@ pub struct Arguments {
     #[arg(long)]
     pub solc: Option<String>,
 
-    /// The EVM version to generate IR for.
-    /// See https://github.com/matter-labs/era-compiler-common/blob/main/src/evm_version.rs for reference.
+    /// EVM version `solc` will produce Yul or EVM assembly for.
+    /// The default is chosen by `solc`.
     #[arg(long)]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
 
