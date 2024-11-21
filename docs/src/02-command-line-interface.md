@@ -32,7 +32,7 @@ Specifies the path to the *solc* compiler. Useful when the *solc* compiler is no
 Usage:
 
 ```bash
-zksolc Simple.sol --bin --solc '/path/to/solc'
+zksolc './Simple.sol' --bin --solc '/path/to/solc'
 ```
 
 > Examples in the subsequent sections assume that *solc* [is installed and available](./01-installation.md#installing-solc) in the system path.
@@ -130,7 +130,7 @@ __entry:
 The `--asm` option can be combined with other output options, such as `--bin`:
 
 ```bash
-zksolc Simple.sol --asm --bin
+zksolc './Simple.sol' --asm --bin
 ```
 
 
@@ -144,7 +144,7 @@ The *zksolc* metadata format is compatible with the [Solidity metadata format](h
 Usage:
 
 ```bash
-zksolc Simple.sol --metadata
+zksolc './Simple.sol' --metadata
 ```
 
 Output:
@@ -173,6 +173,43 @@ For the combined JSON mode usage, see the [Combined JSON](./04-combined-json.md)
 
 
 
+## Compilation Settings
+
+
+
+### `--evm-version`
+
+Specifies the EVM version *solc* will produce artifacts for. Only artifacts such as Yul and EVM assembly are known to be affected by this option. For instance, if the EVM version is set to *cancun*, then Yul and EVM assembly may contain `MCOPY` instructions.
+
+> EVM version only affects IR artifacts produced by *solc* and does not affect EraVM bytecode produced by *zksolc*.
+
+The default value is chosen by *solc*. For instance, *solc* v0.8.24 and older use *shanghai* by default, whereas newer ones use *cancun*.
+
+The following values are allowed, however have in mind that newer EVM versions are only supported by newer versions of *solc*:
+- homestead
+- tangerineWhistle
+- spuriousDragon
+- byzantium
+- constantinople
+- petersburg
+- istanbul
+- berlin
+- london
+- paris
+- shanghai
+- cancun
+- prague
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --evm-version 'cancun'
+```
+
+For more information on how *solc* handles EVM versions, see its [EVM version documentation](https://docs.soliditylang.org/en/latest/using-the-compiler.html#setting-the-evm-version-to-target).
+
+
+
 ## Multi-Language Support
 
 *zksolc* supports input in multiple programming languages:
@@ -193,7 +230,7 @@ Enables the Yul mode. In this mode, input is expected to be in the Yul language.
 Usage:
 
 ```bash
-zksolc --yul Simple.yul --bin
+zksolc --yul './Simple.yul' --bin
 ```
 
 Output:
@@ -207,7 +244,7 @@ Binary:
 *zksolc* is able to compile Yul without *solc*. However, using *solc* is still recommended as it provides additional validation, diagnostics and better error messages:
 
 ```bash
-zksolc --yul Simple.yul --bin --solc '/path/to/solc'
+zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
 ```
 
 *zksolc* features its own dialect of Yul with extensions for EraVM. If such extensions (TODO) are used, it is not possible to use *solc* for validation.
@@ -223,7 +260,7 @@ Unlike *solc*, *zksolc* is an LLVM-based compiler toolchain, so it uses LLVM IR 
 Usage:
 
 ```bash
-zksolc --llvm-ir Simple.ll --bin
+zksolc --llvm-ir './Simple.ll' --bin
 ```
 
 Output:
@@ -247,7 +284,7 @@ For the EraVM assembly specification, visit the [EraVM documentation](https://do
 Usage:
 
 ```bash
-zksolc --eravm-assembly Simple.zasm --bin
+zksolc --eravm-assembly './Simple.zasm' --bin
 ```
 
 Output:
@@ -281,12 +318,12 @@ Enables the disassembler mode.
 
 *zksolc* includes an LLVM-based disassembler that can be used to disassemble compiled bytecode.
 
-The disassembler input can be either a binary file or a file with a hexadecimal string. The disassembler output is a human-readable representation of the bytecode, also known as EraVM assembly.
+The disassembler input must be files with a hexadecimal string. The disassembler output is a human-readable representation of the bytecode, also known as EraVM assembly.
 
-Usage with a hexadecimal string file:
+Usage:
 
 ```bash
-cat './input.hex'
+cat './input.zbin'
 ```
 
 Output:
@@ -295,16 +332,14 @@ Output:
 0x0000008003000039000000400030043f0000000100200190000000140000c13d00000000020...
 ```
 
-> The `0x` prefix in the front of the hexadecimal string is optional.
-
 ```bash
-zksolc --disassemble './input.hex'
+zksolc --disassemble './input.zbin'
 ```
 
 Output:
 
 ```text
-File `input.hex` disassembly:
+File `input.zbin` disassembly:
 
        0: 00 00 00 80 03 00 00 39       add     128, r0, r3
        8: 00 00 00 40 00 30 04 3f       stm.h   64, r3
@@ -314,12 +349,6 @@ File `input.hex` disassembly:
       28: 00 00 00 0b 00 20 01 98       and!    code[11], r2, r0
       30: 00 00 00 23 00 00 61 3d       jump.eq 35
       38: 00 00 00 00 01 01 04 3b       ldp     r1, r1
-```
-
-Usage with a binary file:
-
-```bash
-zksolc --disassemble input.bin
 ```
 
 
