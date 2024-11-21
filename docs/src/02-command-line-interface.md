@@ -210,6 +210,44 @@ For more information on how *solc* handles EVM versions, see its [EVM version do
 
 
 
+### `--metadata-hash`
+
+Specifies the hash function used for contract metadata.
+
+The following values are allowed:
+
+|     Value    |  Size  | Padding | Reference |
+|:------------:|:------:|:-------:|:---------:|
+| none         |  0 B   | 0-32 B  | 
+| keccak256    | 32 B   | 0-32 B  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
+| ipfs         | 44 B   | 20-52 B | [IPFS Documentation](https://docs.ipfs.tech/)
+
+The default value is `keccak256`.
+
+> EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is *prepended* with zeros according to the *Padding* column in the table above.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --metadata-hash 'ipfs'
+```
+
+
+
+### `--metadata-literal`
+
+Tells *solc* to store referenced sources as literal data in the metadata output.
+
+> This option only affects the contract metadata output produced by *solc*, and does not affect artifacts produced by *zksolc*.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --metadata-literal
+```
+
+
+
 ## Multi-Language Support
 
 *zksolc* supports input in multiple programming languages:
