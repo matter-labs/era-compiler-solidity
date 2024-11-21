@@ -89,3 +89,13 @@ jobs:
           save-ccache: 'true'
           clone-llvm: 'false'
           ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, contains(matrix.target, 'musl') && 'musl' || 'gnu') }}
+
+      - name: Cargo checks
+        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
+        with:
+          target: ${{ matrix.target || '' }}
