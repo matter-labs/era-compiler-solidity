@@ -23,6 +23,7 @@ mod fallback_oz;
 mod force_evmla;
 mod include_path;
 mod libraries;
+mod llvm_ir;
 mod llvm_options;
 mod metadata;
 mod metadata_hash;

@@ -6,7 +6,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-// TODO: #[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
+#[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
 fn with_codegen(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;

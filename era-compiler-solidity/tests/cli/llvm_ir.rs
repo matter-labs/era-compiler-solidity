@@ -1,12 +1,15 @@
 use crate::{cli, common};
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn with_llvm_ir() -> anyhow::Result<()> {
+#[test_case(Target::EraVM, common::TEST_LLVM_IR_CONTRACT_PATH)]
+#[test_case(Target::EVM, common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
+fn with_llvm_ir(target: Target, path: &str) -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir"];
+    let args = &[path, "--llvm-ir"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
 
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested.",
@@ -15,12 +18,13 @@ fn with_llvm_ir() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_llvm_ir_duplicate_flag() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_llvm_ir_duplicate_flag(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "error: the argument '--llvm-ir' cannot be used multiple times",
     ));
@@ -28,13 +32,14 @@ fn with_llvm_ir_duplicate_flag() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_llvm_ir_invalid() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_llvm_ir_invalid(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "error: use of undefined value \'%runtime\'",
     ));
@@ -42,12 +47,13 @@ fn with_llvm_ir_invalid() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_wrong_input_format() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_wrong_input_format(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains("expected top-level entity"));
@@ -55,22 +61,24 @@ fn with_wrong_input_format() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_incompatible_input_format_without_output(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--eravm-assembly", common::TEST_BROKEN_INPUT_PATH];
+    let args = &["--llvm-ir", common::TEST_BROKEN_INPUT_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
-        .stderr(predicate::str::contains("error: cannot parse operand"));
+        .stderr(predicate::str::contains("error: expected top-level entity"));
 
     Ok(())
 }
 
-#[test]
-fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_incompatible_json_modes_combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         common::TEST_LLVM_IR_CONTRACT_PATH,
@@ -79,7 +87,7 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
         "anyarg",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -87,8 +95,9 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_incompatible_json_modes_standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         common::TEST_LLVM_IR_CONTRACT_PATH,
@@ -96,7 +105,7 @@ fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
         "--standard-json",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -104,8 +113,9 @@ fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_invalid() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_invalid(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -113,7 +123,7 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
         common::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("error: use of undefined value"));
@@ -121,8 +131,9 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn with_standard_json_missing_file() -> anyhow::Result<()> {
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn with_standard_json_missing_file(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -130,7 +141,7 @@ fn with_standard_json_missing_file() -> anyhow::Result<()> {
         common::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Error: File \\\"tests/data/contracts/llvm_ir/Missing.ll\\\" reading:",
     ));
