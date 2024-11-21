@@ -14,7 +14,7 @@ fn without_any_args() -> anyhow::Result<()> {
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
-            "Compiles the provided Solidity input files",
+            "Error: No input sources specified",
         ))
         .get_output()
         .status

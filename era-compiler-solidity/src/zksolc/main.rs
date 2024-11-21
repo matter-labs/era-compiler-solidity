@@ -8,6 +8,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use clap::Parser;
+
 use self::arguments::Arguments;
 
 /// The rayon worker stack size.
@@ -21,7 +23,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 /// The application entry point.
 ///
 fn main() -> anyhow::Result<()> {
-    let arguments = Arguments::default();
+    let arguments = Arguments::try_parse()?;
     let is_standard_json = arguments.standard_json.is_some();
     let mut messages = arguments.validate();
     if messages.iter().all(|error| error.severity != "error") {
@@ -118,13 +120,13 @@ fn main_inner(
         .unwrap_or_default();
 
     let suppressed_errors = era_solc::StandardJsonInputErrorType::try_from_strings(
-        arguments.suppressed_errors.unwrap_or_default().as_slice(),
+        arguments.suppress_errors.unwrap_or_default().as_slice(),
     )?;
     let suppressed_warnings = era_solc::StandardJsonInputWarningType::try_from_strings(
-        arguments.suppressed_warnings.unwrap_or_default().as_slice(),
+        arguments.suppress_warnings.unwrap_or_default().as_slice(),
     )?;
 
-    let debug_config = match arguments.debug_output_directory {
+    let debug_config = match arguments.debug_output_dir {
         Some(ref debug_output_directory) => {
             std::fs::create_dir_all(debug_output_directory.as_path())?;
             Some(era_compiler_llvm_context::DebugConfig::new(
@@ -137,7 +139,7 @@ fn main_inner(
     let enable_eravm_extensions = arguments.enable_eravm_extensions || arguments.system_mode;
 
     let metadata_hash_type = arguments
-        .metadata_hash_type
+        .metadata_hash
         .unwrap_or(era_compiler_common::HashType::Keccak256);
 
     match target {
@@ -227,7 +229,7 @@ fn main_inner(
                     arguments.include_path,
                     arguments.allow_paths,
                     remappings,
-                    arguments.output_directory,
+                    arguments.output_dir,
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
@@ -268,7 +270,7 @@ fn main_inner(
                 )
             }?;
 
-            if let Some(output_directory) = arguments.output_directory {
+            if let Some(output_directory) = arguments.output_dir {
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_metadata,
@@ -348,7 +350,7 @@ fn main_inner(
                     arguments.include_path,
                     arguments.allow_paths,
                     remappings,
-                    arguments.output_directory,
+                    arguments.output_dir,
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
@@ -382,7 +384,7 @@ fn main_inner(
                 )
             }?;
 
-            if let Some(output_directory) = arguments.output_directory {
+            if let Some(output_directory) = arguments.output_dir {
                 build.write_to_directory(
                     &output_directory,
                     arguments.output_metadata,

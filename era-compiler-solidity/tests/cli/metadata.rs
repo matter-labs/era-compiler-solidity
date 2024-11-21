@@ -60,7 +60,7 @@ fn with_metadata_duplicate_flag(target: Target) -> anyhow::Result<()> {
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
-            "The argument '--metadata' was provided more than once",
+            "error: the argument '--metadata' cannot be used multiple times",
         ))
         .get_output()
         .status

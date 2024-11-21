@@ -56,7 +56,7 @@ fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
-            "The argument '--bin' was provided more than once",
+            "error: the argument '--bin' cannot be used multiple times",
         ))
         .get_output()
         .status
