@@ -4,6 +4,7 @@ use predicates::prelude::*;
 #[test]
 fn with_eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[
         "--eravm-assembly",
         "--bin",
@@ -21,6 +22,7 @@ fn with_eravm_assembly() -> anyhow::Result<()> {
 #[test]
 fn with_eravm_assembly_duplicate_flag() -> anyhow::Result<()> {
     common::setup()?;
+
     let args = &[
         "--eravm-assembly",
         "--eravm-assembly",

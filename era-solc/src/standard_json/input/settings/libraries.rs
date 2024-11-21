@@ -81,17 +81,17 @@ impl TryFrom<&[String]> for Libraries {
             let mut path_and_address = library.split('=');
             let path = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("Library #{} path is missing.", index))?;
+                .ok_or_else(|| anyhow::anyhow!("Library #{index} path is missing."))?;
             let mut file_and_contract = path.split(':');
             let file = file_and_contract
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("Library `{}` file name is missing.", path))?;
+                .ok_or_else(|| anyhow::anyhow!("Library `{path}` file name is missing."))?;
             let contract = file_and_contract
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("Library `{}` contract name is missing.", path))?;
+                .ok_or_else(|| anyhow::anyhow!("Library `{path}` contract name is missing."))?;
             let address = path_and_address
                 .next()
-                .ok_or_else(|| anyhow::anyhow!("Library `{}` address is missing.", path))?;
+                .ok_or_else(|| anyhow::anyhow!("Library `{path}` address is missing."))?;
             libraries
                 .entry(file.to_owned())
                 .or_insert_with(BTreeMap::new)

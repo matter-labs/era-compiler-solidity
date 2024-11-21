@@ -18,13 +18,6 @@ use crate::standard_json::output::Output as StandardJsonOutput;
 use crate::version::Version;
 
 ///
-/// The compiler version default function.
-///
-pub fn version() -> String {
-    env!("CARGO_PKG_VERSION").to_owned()
-}
-
-///
 /// The Solidity compiler.
 ///
 #[derive(Debug, Clone)]
@@ -313,13 +306,6 @@ impl Compiler {
         solc_input: &mut StandardJsonInput,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
-        if self.version.default != Self::LAST_SUPPORTED_VERSION {
-            anyhow::bail!(
-                "Yul validation is only supported with the latest supported version of the Solidity compiler: {}",
-                Self::LAST_SUPPORTED_VERSION,
-            );
-        }
-
         solc_input.extend_selection(StandardJsonInputSettingsSelection::new_yul_validation());
         let solc_output = self.standard_json(solc_input, messages, None, vec![], None)?;
         Ok(solc_output)
