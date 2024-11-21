@@ -1,17 +1,10 @@
-all-features = false
-no-default-features = false
-
 [advisories]
-vulnerability = "deny"
-unmaintained = "warn"
 yanked = "warn"
-notice = "warn"
 ignore = [
     #"RUSTSEC-0000-0000",
 ]
 
 [licenses]
-unlicensed = "deny"
 allow = [
     #"Apache-2.0 WITH LLVM-exception",
     "MIT",
@@ -20,17 +13,12 @@ allow = [
     "Unlicense",
     "MPL-2.0",
     "Unicode-DFS-2016",
+    "Unicode-3.0",
     "CC0-1.0",
     "BSD-2-Clause",
     "BSD-3-Clause",
     "Zlib",
 ]
-deny = [
-    #"Nokia",
-]
-copyleft = "warn"
-allow-osi-fsf-free = "neither"
-default = "deny"
 confidence-threshold = 0.8
 exceptions = [
     # Each entry is the crate and version constraint, and its specific allow
