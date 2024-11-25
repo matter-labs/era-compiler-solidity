@@ -70,7 +70,7 @@ impl Contract {
     /// Compiles the specified contract to EraVM, returning its build artifacts.
     ///
     pub fn compile_to_eravm(
-        mut self,
+        self,
         dependency_data: EraVMProcessInputDependencyData,
         enable_eravm_extensions: bool,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
@@ -83,7 +83,6 @@ impl Contract {
         use era_compiler_llvm_context::EraVMWriteLLVM;
 
         let identifier = self.identifier().to_owned();
-        let factory_dependencies = self.drain_factory_dependencies();
 
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
@@ -113,6 +112,17 @@ impl Contract {
             }
         };
 
+        let factory_dependencies = dependency_data
+            .dependencies
+            .iter()
+            .filter_map(|(path, build)| {
+                build
+                    .build
+                    .bytecode_hash
+                    .map(|bytecode_hash| (path.clone(), bytecode_hash))
+            })
+            .collect();
+
         let build = match self.ir {
             IR::Yul(mut yul) => {
                 let module = llvm.create_module(self.name.full_path.as_str());
@@ -139,6 +149,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     &linker_symbols,
+                    &factory_dependencies,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -174,6 +185,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     &linker_symbols,
+                    &factory_dependencies,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -199,6 +211,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     &linker_symbols,
+                    &factory_dependencies,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -224,6 +237,7 @@ impl Contract {
                 era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
                     &linker_symbols,
+                    &factory_dependencies,
                     metadata_hash,
                     assembly_text,
                 )?
@@ -235,7 +249,6 @@ impl Contract {
             identifier,
             build,
             metadata_json,
-            factory_dependencies,
         ))
     }
 

@@ -487,7 +487,8 @@ impl FunctionCall {
 
                 let offset = context
                     .solidity_mut()
-                    .get_or_allocate_immutable(key.as_str());
+                    .map(|data| data.get_or_allocate_immutable(key.as_str()))
+                    .unwrap_or_default();
 
                 let index = context.field_const(offset as u64);
 
@@ -503,7 +504,10 @@ impl FunctionCall {
                     return Ok(None);
                 }
 
-                let offset = context.solidity_mut().allocate_immutable(key.as_str());
+                let offset = context
+                    .solidity_mut()
+                    .map(|data| data.allocate_immutable(key.as_str()))
+                    .unwrap_or_default();
 
                 let index = context.field_const(offset as u64);
                 let value = arguments[2].value.into_int_value();

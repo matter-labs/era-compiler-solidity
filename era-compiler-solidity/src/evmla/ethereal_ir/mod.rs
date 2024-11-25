@@ -119,7 +119,7 @@ where
         self,
         context: &mut era_compiler_llvm_context::EraVMContext<D>,
     ) -> anyhow::Result<()> {
-        context.evmla_mut().stack = vec![];
+        context.evmla_mut().expect("Always exists").stack = vec![];
 
         self.entry_function.into_llvm(context)?;
 
@@ -152,7 +152,7 @@ where
         self,
         context: &mut era_compiler_llvm_context::EVMContext<D>,
     ) -> anyhow::Result<()> {
-        context.evmla_mut().stack = vec![];
+        context.evmla_mut().expect("Always exists").stack = vec![];
 
         self.entry_function.into_llvm(context)?;
 

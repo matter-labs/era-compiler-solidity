@@ -2,7 +2,6 @@
 //! The Solidity contract build.
 //!
 
-use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -20,8 +19,6 @@ pub struct Contract {
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
-    /// The factory dependencies.
-    pub factory_dependencies: HashSet<String>,
 }
 
 impl Contract {
@@ -33,14 +30,12 @@ impl Contract {
         identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
-        factory_dependencies: HashSet<String>,
     ) -> Self {
         Self {
             name,
             identifier,
             build,
             metadata_json,
-            factory_dependencies,
         }
     }
 
@@ -180,9 +175,6 @@ impl Contract {
             .assembly
             .map(serde_json::Value::String)
             .unwrap_or_default();
-        combined_json_contract
-            .factory_deps
-            .extend(self.build.factory_dependencies);
 
         Ok(())
     }
@@ -206,9 +198,6 @@ impl Contract {
             .evm
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
-        standard_json_contract
-            .factory_dependencies
-            .extend(self.build.factory_dependencies);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
 
         Ok(())

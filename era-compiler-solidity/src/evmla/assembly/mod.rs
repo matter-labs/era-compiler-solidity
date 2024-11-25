@@ -360,7 +360,7 @@ where
             debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
         }
         let deploy_code_blocks = EtherealIR::get_blocks(
-            context.evmla().version.to_owned(),
+            context.evmla().expect("Always exists").version.to_owned(),
             era_compiler_common::CodeSegment::Deploy,
             self.code
                 .as_deref()
@@ -387,7 +387,7 @@ where
             }
         };
         let runtime_code_blocks = EtherealIR::get_blocks(
-            context.evmla().version.to_owned(),
+            context.evmla().expect("Always exists").version.to_owned(),
             era_compiler_common::CodeSegment::Runtime,
             runtime_code_instructions.as_slice(),
         )?;
@@ -395,7 +395,7 @@ where
         let mut blocks = deploy_code_blocks;
         blocks.extend(runtime_code_blocks);
         let mut ethereal_ir = EtherealIR::new(
-            context.evmla().version.to_owned(),
+            context.evmla().expect("Always exists").version.to_owned(),
             self.extra_metadata.unwrap_or_default(),
             None,
             blocks,
@@ -441,7 +441,7 @@ where
 
         let (code_segment, blocks) = if let Ok(runtime_code) = self.get_runtime_code() {
             let deploy_code_blocks = EtherealIR::get_blocks(
-                context.evmla().version.to_owned(),
+                context.evmla().expect("Always exists").version.to_owned(),
                 era_compiler_common::CodeSegment::Deploy,
                 self.code
                     .as_deref()
@@ -460,7 +460,7 @@ where
                 .as_ref()
                 .ok_or_else(|| anyhow::anyhow!("Runtime code instructions not found"))?;
             let runtime_code_blocks = EtherealIR::get_blocks(
-                context.evmla().version.to_owned(),
+                context.evmla().expect("Always exists").version.to_owned(),
                 era_compiler_common::CodeSegment::Runtime,
                 runtime_code_instructions.as_slice(),
             )?;
@@ -470,7 +470,7 @@ where
             (era_compiler_common::CodeSegment::Deploy, blocks)
         } else {
             let blocks = EtherealIR::get_blocks(
-                context.evmla().version.to_owned(),
+                context.evmla().expect("Always exists").version.to_owned(),
                 era_compiler_common::CodeSegment::Runtime,
                 self.code
                     .as_deref()
@@ -480,7 +480,7 @@ where
         };
 
         let mut ethereal_ir = EtherealIR::new(
-            context.evmla().version.to_owned(),
+            context.evmla().expect("Always exists").version.to_owned(),
             self.extra_metadata.unwrap_or_default(),
             Some(code_segment),
             blocks,

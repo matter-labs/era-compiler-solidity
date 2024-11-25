@@ -1262,7 +1262,7 @@ where
                 pointer.value.as_basic_value_enum(),
             ));
         }
-        context.evmla_mut().stack = stack_variables;
+        context.evmla_mut().expect("Always exists").stack = stack_variables;
 
         match self.r#type {
             Type::Initial => {
@@ -1439,7 +1439,7 @@ where
                 pointer.value.as_basic_value_enum(),
             ));
         }
-        context.evmla_mut().stack = stack_variables;
+        context.evmla_mut().expect("Always exists").stack = stack_variables;
 
         match self.r#type {
             Type::Initial => {

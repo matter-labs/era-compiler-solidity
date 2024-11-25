@@ -36,21 +36,6 @@ impl DependencyData {
 }
 
 impl era_compiler_llvm_context::Dependency for DependencyData {
-    fn get(&self, identifier: &str) -> anyhow::Result<String> {
-        let path = self.resolve_path(identifier)?;
-        let contract = self
-            .dependencies
-            .get(path.as_str())
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("dependency `{path}` not found in the project"))?;
-        match contract.build.bytecode_hash {
-            Some(bytecode_hash) => Ok(hex::encode(bytecode_hash)),
-            None => anyhow::bail!(
-                "dependency `{path}` has no bytecode hash, as it may require library linkage"
-            ),
-        }
-    }
-
     fn resolve_path(&self, identifier: &str) -> anyhow::Result<String> {
         self.identifier_paths
             .get(identifier.strip_suffix("_deployed").unwrap_or(identifier))

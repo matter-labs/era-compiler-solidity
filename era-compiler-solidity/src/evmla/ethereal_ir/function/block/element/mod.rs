@@ -57,11 +57,13 @@ impl Element {
     where
         D: era_compiler_llvm_context::Dependency,
     {
-        let input_size = self.instruction.input_size(&context.evmla().version);
+        let input_size = self
+            .instruction
+            .input_size(&context.evmla().expect("Always exists").version);
         let output_size = self.instruction.output_size();
         let mut arguments = Vec::with_capacity(input_size);
         for index in 0..input_size {
-            let pointer = context.evmla().stack
+            let pointer = context.evmla().expect("Always exists").stack
                 [self.stack.elements.len() + input_size - output_size - 1 - index]
                 .to_llvm()
                 .into_pointer_value();
@@ -86,11 +88,13 @@ impl Element {
     where
         D: era_compiler_llvm_context::Dependency,
     {
-        let input_size = self.instruction.input_size(&context.evmla().version);
+        let input_size = self
+            .instruction
+            .input_size(&context.evmla().expect("Always exists").version);
         let output_size = self.instruction.output_size();
         let mut arguments = Vec::with_capacity(input_size);
         for index in 0..input_size {
-            let pointer = context.evmla().stack
+            let pointer = context.evmla().expect("Always exists").stack
                 [self.stack.elements.len() + input_size - output_size - 1 - index]
                 .to_llvm()
                 .into_pointer_value();
@@ -801,6 +805,7 @@ where
 
                 let offset = context
                     .solidity_mut()
+                    .expect("Always exists")
                     .get_or_allocate_immutable(key.as_str());
 
                 let index = context.field_const(offset as u64);
@@ -814,7 +819,10 @@ where
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
 
-                let offset = context.solidity_mut().allocate_immutable(key.as_str());
+                let offset = context
+                    .solidity_mut()
+                    .expect("Always exists")
+                    .allocate_immutable(key.as_str());
 
                 let index = context.field_const(offset as u64);
                 let value = arguments.pop().expect("Always exists").into_int_value();
@@ -1301,7 +1309,7 @@ where
                 )?;
                 match result {
                     Some(value) if value.is_int_value() => {
-                        let pointer = context.evmla().stack
+                        let pointer = context.evmla().expect("Always exists").stack
                             [self.stack.elements.len() - output_size]
                             .to_llvm()
                             .into_pointer_value();
@@ -1324,7 +1332,7 @@ where
                             let pointer = era_compiler_llvm_context::Pointer::new(
                                 context.field_type(),
                                 era_compiler_llvm_context::EraVMAddressSpace::Stack,
-                                context.evmla().stack
+                                context.evmla().expect("Always exists").stack
                                     [self.stack.elements.len() - output_size + index]
                                     .to_llvm()
                                     .into_pointer_value(),
@@ -1382,14 +1390,16 @@ where
         }?;
 
         if let Some(result) = result {
-            let pointer = context.evmla().stack[self.stack.elements.len() - 1]
+            let pointer = context.evmla().expect("Always exists").stack
+                [self.stack.elements.len() - 1]
                 .to_llvm()
                 .into_pointer_value();
             context.build_store(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 result,
             )?;
-            context.evmla_mut().stack[self.stack.elements.len() - 1].original = original;
+            context.evmla_mut().expect("Always exists").stack[self.stack.elements.len() - 1]
+                .original = original;
         }
 
         Ok(())
@@ -2441,7 +2451,7 @@ where
                 )?;
                 match result {
                     Some(value) if value.is_int_value() => {
-                        let pointer = context.evmla().stack
+                        let pointer = context.evmla().expect("Always exists").stack
                             [self.stack.elements.len() - output_size]
                             .to_llvm()
                             .into_pointer_value();
@@ -2461,7 +2471,7 @@ where
                             let pointer = era_compiler_llvm_context::Pointer::new(
                                 context.field_type(),
                                 era_compiler_llvm_context::EVMAddressSpace::Stack,
-                                context.evmla().stack
+                                context.evmla().expect("Always exists").stack
                                     [self.stack.elements.len() - output_size + index]
                                     .to_llvm()
                                     .into_pointer_value(),
@@ -2519,14 +2529,16 @@ where
         }?;
 
         if let Some(result) = result {
-            let pointer = context.evmla().stack[self.stack.elements.len() - 1]
+            let pointer = context.evmla().expect("Always exists").stack
+                [self.stack.elements.len() - 1]
                 .to_llvm()
                 .into_pointer_value();
             context.build_store(
                 era_compiler_llvm_context::Pointer::new_stack_field(context, pointer),
                 result,
             )?;
-            context.evmla_mut().stack[self.stack.elements.len() - 1].original = original;
+            context.evmla_mut().expect("Always exists").stack[self.stack.elements.len() - 1]
+                .original = original;
         }
 
         Ok(())

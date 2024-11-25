@@ -65,6 +65,7 @@ where
 
     let condition_pointer = context
         .evmla()
+        .expect("Always exists")
         .get_element(stack_height)
         .to_llvm()
         .into_pointer_value();
