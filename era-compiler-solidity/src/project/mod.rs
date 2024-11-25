@@ -7,7 +7,6 @@ pub mod thread_pool_eravm;
 pub mod thread_pool_evm;
 
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -379,9 +378,8 @@ impl Project {
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let identifier_paths = self.identifier_paths.clone();
         let dependency_data =
-            EraVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths.clone());
+            EraVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths);
 
         let input_template = EraVMProcessInput::new(
             None,
@@ -398,39 +396,6 @@ impl Project {
         pool.start();
         let results = pool.finish();
 
-        let mut hashes = HashMap::with_capacity(results.len());
-        for (path, result) in results.iter() {
-            if let Some(bytecode_hash) = result
-                .as_ref()
-                .ok()
-                .and_then(|contract| contract.build.bytecode_hash)
-            {
-                hashes.insert(path.to_owned(), bytecode_hash.to_owned());
-            }
-        }
-
-        let results = results
-            .into_iter()
-            .map(|(path, mut result)| {
-                if let Ok(ref mut contract) = result {
-                    for dependency in contract.factory_dependencies.drain() {
-                        let dependency_path = identifier_paths
-                            .get(dependency.as_str())
-                            .cloned()
-                            .unwrap_or_else(|| {
-                                panic!("dependency `{dependency}` full path not found")
-                            });
-                        if let Some(hash) = hashes.get(dependency_path.as_str()) {
-                            contract
-                                .build
-                                .factory_dependencies
-                                .insert(hex::encode(hash), dependency_path);
-                        }
-                    }
-                }
-                (path, result)
-            })
-            .collect();
         Ok(EraVMBuild::new(results, messages))
     }
 

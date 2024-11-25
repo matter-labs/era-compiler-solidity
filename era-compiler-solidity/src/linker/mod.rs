@@ -5,6 +5,8 @@
 pub mod input;
 pub mod output;
 
+use std::collections::BTreeMap;
+
 use self::input::Input;
 use self::output::contract::Contract as OutputContract;
 use self::output::Output;
@@ -39,8 +41,11 @@ impl Linker {
                 );
                 let already_linked = !memory_buffer.is_elf_eravm();
 
-                let (memory_buffer_linked, bytecode_hash) =
-                    era_compiler_llvm_context::eravm_link(memory_buffer, &linker_symbols)?;
+                let (memory_buffer_linked, bytecode_hash) = era_compiler_llvm_context::eravm_link(
+                    memory_buffer,
+                    &linker_symbols,
+                    &BTreeMap::new(),
+                )?;
 
                 if let Some(bytecode_hash) = bytecode_hash {
                     let contract = OutputContract::new(
@@ -53,11 +58,10 @@ impl Linker {
                         output.linked.insert(path.clone(), contract);
                     }
                 }
+                let (linker_symbols, _factory_dependencies) =
+                    memory_buffer_linked.get_undefined_references_eravm();
                 if memory_buffer_linked.is_elf_eravm() {
-                    output.unlinked.insert(
-                        path.clone(),
-                        memory_buffer_linked.get_undefined_symbols_eravm(),
-                    );
+                    output.unlinked.insert(path.clone(), linker_symbols);
                 }
 
                 Ok(())

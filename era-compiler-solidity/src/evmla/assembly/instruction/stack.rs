@@ -56,7 +56,10 @@ pub fn dup<'ctx, C>(
 where
     C: era_compiler_llvm_context::IContext<'ctx>,
 {
-    let element = context.evmla().get_element(height - offset - 1);
+    let element = context
+        .evmla()
+        .expect("Always exists")
+        .get_element(height - offset - 1);
     let value = context.build_load(
         era_compiler_llvm_context::Pointer::new_stack_field(
             context,
@@ -77,14 +80,22 @@ pub fn swap<'ctx, C>(context: &mut C, offset: usize, height: usize) -> anyhow::R
 where
     C: era_compiler_llvm_context::IContext<'ctx>,
 {
-    let top_element = context.evmla().get_element(height - 1).to_owned();
+    let top_element = context
+        .evmla()
+        .expect("Always exists")
+        .get_element(height - 1)
+        .to_owned();
     let top_pointer = era_compiler_llvm_context::Pointer::new_stack_field(
         context,
         top_element.to_llvm().into_pointer_value(),
     );
     let top_value = context.build_load(top_pointer, format!("swap{offset}_top_value").as_str())?;
 
-    let swap_element = context.evmla().get_element(height - offset - 1).to_owned();
+    let swap_element = context
+        .evmla()
+        .expect("Always exists")
+        .get_element(height - offset - 1)
+        .to_owned();
     let swap_pointer = era_compiler_llvm_context::Pointer::new_stack_field(
         context,
         swap_element.to_llvm().into_pointer_value(),
@@ -95,11 +106,13 @@ where
     if let Some(original) = swap_element.original {
         context
             .evmla_mut()
+            .expect("Always exists")
             .set_original(height - 1, original.to_owned());
     }
     if let Some(original) = top_element.original {
         context
             .evmla_mut()
+            .expect("Always exists")
             .set_original(height - offset - 1, original.to_owned());
     }
 
