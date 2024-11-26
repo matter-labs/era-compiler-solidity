@@ -123,9 +123,28 @@ impl Build {
 
             let mut linked_contracts = 0;
             for (path, (memory_buffer_linked, bytecode_hash)) in linkage_data.into_iter() {
+                let contract = contracts.get(path.as_str()).expect("Always exists");
+                let factory_dependencies_resolved = contract
+                    .factory_dependencies
+                    .iter()
+                    .map(|dependency| {
+                        (
+                            contracts
+                                .get(dependency)
+                                .expect("Always exists")
+                                .build
+                                .bytecode_hash
+                                .to_owned()
+                                .expect("Always exists"),
+                            dependency.to_owned(),
+                        )
+                    })
+                    .collect();
+
                 let contract = contracts.get_mut(path.as_str()).expect("Always exists");
                 contract.build.bytecode = memory_buffer_linked.as_slice().to_vec();
                 contract.build.bytecode_hash = bytecode_hash;
+                contract.factory_dependencies_resolved = factory_dependencies_resolved;
                 contract.object_format = if memory_buffer_linked.is_elf_eravm() {
                     ObjectFormat::ELF
                 } else {
