@@ -607,7 +607,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "era-compiler-common"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#e30988010c2061d889a88700bf33390e0df6fc02"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#88c658dbd40a1611a31b991c7f427cb33cc97139"
 dependencies = [
  "anyhow",
  "base58",
@@ -623,7 +623,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-downloader"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#e30988010c2061d889a88700bf33390e0df6fc02"
+source = "git+https://github.com/matter-labs/era-compiler-common?branch=main#88c658dbd40a1611a31b991c7f427cb33cc97139"
 dependencies = [
  "anyhow",
  "colored",
@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#dff83a631a57bf261e94e071e1384aef23023cf9"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#8559d9a2d133638ebb15c5b129f29c6b26a7782c"
 dependencies = [
  "anyhow",
  "era-compiler-common",

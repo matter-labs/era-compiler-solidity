@@ -68,6 +68,13 @@ impl Build {
                                 .object_format
                                 == ObjectFormat::Raw
                         })
+                        && contract.factory_dependencies.iter().all(|dependency| {
+                            contracts
+                                .get(dependency)
+                                .expect("Always exists")
+                                .object_format
+                                == ObjectFormat::Raw
+                        })
                 })
                 .collect();
             if unlinked_satisfied_contracts.is_empty() {
@@ -114,6 +121,7 @@ impl Build {
                 }
             }
 
+            let mut linked_contracts = 0;
             for (path, (memory_buffer_linked, bytecode_hash)) in linkage_data.into_iter() {
                 let contract = contracts.get_mut(path.as_str()).expect("Always exists");
                 contract.build.bytecode = memory_buffer_linked.as_slice().to_vec();
@@ -121,8 +129,14 @@ impl Build {
                 contract.object_format = if memory_buffer_linked.is_elf_eravm() {
                     ObjectFormat::ELF
                 } else {
+                    if let ObjectFormat::ELF = contract.object_format {
+                        linked_contracts += 1;
+                    }
                     ObjectFormat::Raw
                 };
+            }
+            if linked_contracts == 0 {
+                break;
             }
         }
 
