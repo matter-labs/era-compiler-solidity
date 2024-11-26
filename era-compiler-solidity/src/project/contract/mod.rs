@@ -11,6 +11,7 @@ use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
 
+use crate::build_eravm::contract::object_format::ObjectFormat as EraVMObjectFormat;
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
@@ -72,8 +73,8 @@ impl Contract {
         self,
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
+        factory_dependencies: HashSet<String>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -81,8 +82,6 @@ impl Contract {
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMContractBuild> {
         use era_compiler_llvm_context::EraVMWriteLLVM;
-
-        let identifier = self.identifier().to_owned();
 
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
@@ -134,7 +133,6 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -165,7 +163,6 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -187,7 +184,6 @@ impl Contract {
                     >::new(&llvm, module, llvm_options, optimizer, debug_config);
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -212,7 +208,6 @@ impl Contract {
                 };
                 era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
-                    &linker_symbols,
                     metadata_hash,
                     assembly_text,
                 )?
@@ -221,9 +216,10 @@ impl Contract {
 
         Ok(EraVMContractBuild::new(
             self.name,
-            identifier,
             build,
             metadata_json,
+            factory_dependencies,
+            EraVMObjectFormat::ELF,
         ))
     }
 

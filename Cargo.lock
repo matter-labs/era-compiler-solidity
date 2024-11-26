@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#c4c591c35d5516fd41e69653e36a5a5a33e8385c"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#dff83a631a57bf261e94e071e1384aef23023cf9"
 dependencies = [
  "anyhow",
  "era-compiler-common",

@@ -5,6 +5,7 @@
 //!
 
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
 use crate::project::contract::Contract;
 
@@ -21,8 +22,8 @@ pub struct Input {
     pub identifier_paths: BTreeMap<String, String>,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
-    /// The linker symbols.
-    pub linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+    /// Factory dependencies.
+    pub factory_dependencies: HashSet<String>,
     /// The metadata hash type.
     pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
@@ -43,8 +44,8 @@ impl Input {
         contract: Contract,
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
+        factory_dependencies: HashSet<String>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -55,8 +56,8 @@ impl Input {
             contract,
             solc_version,
             identifier_paths,
+            factory_dependencies,
             enable_eravm_extensions,
-            linker_symbols,
             metadata_hash_type,
             optimizer_settings,
             llvm_options,

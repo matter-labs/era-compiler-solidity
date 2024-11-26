@@ -370,7 +370,6 @@ impl Project {
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -378,13 +377,17 @@ impl Project {
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
         let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
-            let factory_dependencies = contract.drain_factory_dependencies();
+            let factory_dependencies = contract
+                .drain_factory_dependencies()
+                .into_iter()
+                .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
+                .collect();
             let input = EraVMProcessInput::new(
                 contract,
                 self.solc_version.clone(),
                 self.identifier_paths.clone(),
+                factory_dependencies,
                 enable_eravm_extensions,
-                linker_symbols.clone(),
                 metadata_hash_type,
                 optimizer_settings.clone(),
                 llvm_options.clone(),
@@ -393,10 +396,7 @@ impl Project {
             );
             let result: crate::Result<EraVMOutput> =
                 crate::process::call(path.as_str(), input, era_compiler_common::Target::EraVM);
-            let result = result.map(|mut output| {
-                output.build.factory_dependencies = factory_dependencies;
-                output.build
-            });
+            let result = result.map(|output| output.build);
             (path, result)
         }).collect::<BTreeMap<String, Result<EraVMContractBuild, era_solc::StandardJsonOutputError>>>();
 

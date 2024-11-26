@@ -5,6 +5,7 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -13,6 +14,7 @@ use normpath::PathExt;
 
 use era_solc::CollectableError;
 
+use self::contract::object_format::ObjectFormat;
 use self::contract::Contract;
 
 ///
@@ -20,8 +22,8 @@ use self::contract::Contract;
 ///
 #[derive(Debug)]
 pub struct Build {
-    /// The contract data,
-    pub contracts: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
+    /// The contract build data,
+    pub results: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
     /// The additional message to output.
     pub messages: Vec<era_solc::StandardJsonOutputError>,
 }
@@ -31,13 +33,106 @@ impl Build {
     /// A shortcut constructor.
     ///
     pub fn new(
-        contracts: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
+        results: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
     ) -> Self {
         Self {
-            contracts,
+            results,
             messages: std::mem::take(messages),
         }
+    }
+
+    ///
+    /// Links the EraVM build.
+    ///
+    pub fn link(
+        mut self,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+    ) -> anyhow::Result<Self> {
+        let mut contracts: HashMap<String, Contract> = self
+            .results
+            .into_iter()
+            .map(|(path, result)| (path, result.expect("Cannot link a project with errors")))
+            .collect();
+
+        loop {
+            let mut linkage_data = BTreeMap::new();
+            let unlinked_satisfied_contracts: BTreeMap<&String, &Contract> = contracts
+                .iter()
+                .filter(|(_path, contract)| {
+                    contract.object_format == ObjectFormat::ELF
+                        && contract.factory_dependencies.iter().all(|dependency| {
+                            contracts
+                                .get(dependency)
+                                .expect("Always exists")
+                                .object_format
+                                == ObjectFormat::Raw
+                        })
+                })
+                .collect();
+            if unlinked_satisfied_contracts.is_empty() {
+                break;
+            }
+
+            for (path, contract) in unlinked_satisfied_contracts.into_iter() {
+                let factory_dependencies: BTreeMap<
+                    String,
+                    [u8; era_compiler_common::BYTE_LENGTH_FIELD],
+                > = contract
+                    .factory_dependencies
+                    .iter()
+                    .map(|dependency| {
+                        let bytecode_hash = contracts
+                            .get(dependency)
+                            .expect("Always exists")
+                            .build
+                            .bytecode_hash
+                            .to_owned()
+                            .expect("Always exists");
+                        (dependency.to_owned(), bytecode_hash)
+                    })
+                    .collect();
+
+                let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    contract.build.bytecode.as_slice(),
+                    path.as_str(),
+                    false,
+                );
+                match era_compiler_llvm_context::eravm_link(
+                    memory_buffer,
+                    &linker_symbols,
+                    &factory_dependencies,
+                ) {
+                    Ok((memory_buffer_linked, bytecode_hash)) => {
+                        linkage_data.insert(path.to_owned(), (memory_buffer_linked, bytecode_hash));
+                    }
+                    Err(error) => self
+                        .messages
+                        .push(era_solc::StandardJsonOutputError::new_error(
+                            error, None, None,
+                        )),
+                }
+            }
+
+            for (path, (memory_buffer_linked, bytecode_hash)) in linkage_data.into_iter() {
+                let contract = contracts.get_mut(path.as_str()).expect("Always exists");
+                contract.build.bytecode = memory_buffer_linked.as_slice().to_vec();
+                contract.build.bytecode_hash = bytecode_hash;
+                contract.object_format = if memory_buffer_linked.is_elf_eravm() {
+                    ObjectFormat::ELF
+                } else {
+                    ObjectFormat::Raw
+                };
+            }
+        }
+
+        Ok(Self::new(
+            contracts
+                .into_iter()
+                .map(|(path, contract)| (path, Ok(contract)))
+                .collect(),
+            &mut self.messages,
+        ))
     }
 
     ///
@@ -60,7 +155,7 @@ impl Build {
             return Ok(());
         }
 
-        for (path, build) in self.contracts.into_iter() {
+        for (path, build) in self.results.into_iter() {
             build
                 .expect("Always valid")
                 .write_to_terminal(path, output_metadata, output_binary)?;
@@ -84,7 +179,7 @@ impl Build {
 
         std::fs::create_dir_all(output_directory)?;
 
-        for build in self.contracts.into_values() {
+        for build in self.results.into_values() {
             build.expect("Always valid").write_to_directory(
                 output_directory,
                 output_metadata,
@@ -108,8 +203,8 @@ impl Build {
         standard_json: &mut era_solc::StandardJsonOutput,
         solc_version: Option<&era_solc::Version>,
     ) -> anyhow::Result<()> {
-        let mut errors = Vec::with_capacity(self.contracts.len());
-        for (full_path, build) in self.contracts.into_iter() {
+        let mut errors = Vec::with_capacity(self.results.len());
+        for (full_path, build) in self.results.into_iter() {
             let mut full_path_split = full_path.split(':');
             let path = full_path_split.next().expect("Always exists");
             let name = full_path_split.next().unwrap_or(path);
@@ -153,7 +248,7 @@ impl Build {
         self.take_and_write_warnings();
         self.exit_on_error();
 
-        for (path, build) in self.contracts.into_iter() {
+        for (path, build) in self.results.into_iter() {
             let combined_json_contract = combined_json
                 .contracts
                 .iter_mut()
@@ -185,7 +280,7 @@ impl Build {
 
 impl era_solc::CollectableError for Build {
     fn errors(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.contracts
+        self.results
             .values()
             .filter_map(|build| build.as_ref().err())
             .collect()

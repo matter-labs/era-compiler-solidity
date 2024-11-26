@@ -2,10 +2,14 @@
 //! The Solidity contract build.
 //!
 
+pub mod object_format;
+
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
+
+use self::object_format::ObjectFormat;
 
 ///
 /// The Solidity contract build.
@@ -14,14 +18,14 @@ use std::path::PathBuf;
 pub struct Contract {
     /// The contract name.
     pub name: era_compiler_common::ContractName,
-    /// The auxiliary identifier. Used to identify Yul objects.
-    pub identifier: String,
     /// The LLVM module build.
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
     /// The factory dependencies.
     pub factory_dependencies: HashSet<String>,
+    /// The binary object format.
+    pub object_format: ObjectFormat,
 }
 
 impl Contract {
@@ -30,16 +34,17 @@ impl Contract {
     ///
     pub fn new(
         name: era_compiler_common::ContractName,
-        identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
+        factory_dependencies: HashSet<String>,
+        object_format: ObjectFormat,
     ) -> Self {
         Self {
             name,
-            identifier,
             build,
             metadata_json,
-            factory_dependencies: HashSet::new(),
+            factory_dependencies,
+            object_format,
         }
     }
 

@@ -88,16 +88,19 @@ pub fn yul_to_eravm(
         debug_config.as_ref(),
     )?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let build = build.link(linker_symbols)?;
     Ok(build)
 }
 
@@ -164,16 +167,19 @@ pub fn llvm_ir_to_eravm(
 
     let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         false,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let build = build.link(linker_symbols)?;
     Ok(build)
 }
 
@@ -219,16 +225,19 @@ pub fn eravm_assembly(
     let project = Project::try_from_eravm_assembly_paths(paths, None)?;
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         false,
-        BTreeMap::new(),
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let build = build.link(BTreeMap::new())?;
     Ok(build)
 }
 
@@ -298,16 +307,19 @@ pub fn standard_output_eravm(
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let build = build.link(linker_symbols)?;
     Ok(build)
 }
 
@@ -547,16 +559,20 @@ pub fn standard_json_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
         debug_config,
     )?;
+    if build.has_errors() {
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+        solc_output.write_and_exit(prune_output);
+    }
+
+    let build = build.link(linker_symbols)?;
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
-
     solc_output.write_and_exit(prune_output);
 }
 
