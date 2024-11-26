@@ -3,22 +3,22 @@
 //!
 
 pub mod contract;
-pub mod thread_pool_eravm;
 pub mod thread_pool_evm;
 
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
+use contract::factory_dependency::FactoryDependency;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
 use crate::evmla::assembly::Assembly;
 use crate::missing_libraries::MissingLibraries;
-use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
@@ -28,8 +28,8 @@ use self::contract::ir::evmla::EVMLA as ContractEVMLA;
 use self::contract::ir::llvm_ir::LLVMIR as ContractLLVMIR;
 use self::contract::ir::yul::Yul as ContractYul;
 use self::contract::Contract;
-use self::thread_pool_eravm::ThreadPool as EraVMThreadPool;
 use self::thread_pool_evm::ThreadPool as EVMThreadPool;
+use crate::process::output_eravm::Output as EraVMOutput;
 
 ///
 /// The project representation.
@@ -375,26 +375,30 @@ impl Project {
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
-        threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let dependency_data =
-            EraVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths);
-
-        let input_template = EraVMProcessInput::new(
-            None,
-            dependency_data,
-            enable_eravm_extensions,
-            linker_symbols,
-            metadata_hash_type,
-            optimizer_settings,
-            llvm_options,
-            output_assembly,
-            debug_config,
-        );
-        let pool = EraVMThreadPool::new(threads, self.contracts, input_template);
-        pool.start();
-        let results = pool.finish();
+        let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
+            let factory_dependencies = contract.drain_factory_dependencies();
+            let input = EraVMProcessInput::new(
+                contract,
+                self.solc_version.clone(),
+                self.identifier_paths.clone(),
+                enable_eravm_extensions,
+                linker_symbols.clone(),
+                metadata_hash_type,
+                optimizer_settings.clone(),
+                llvm_options.clone(),
+                output_assembly,
+                debug_config.clone(),
+            );
+            let result: crate::Result<EraVMOutput> =
+                crate::process::call(path.as_str(), input, era_compiler_common::Target::EraVM);
+            let result = result.map(|mut output| {
+                output.build.factory_dependencies = factory_dependencies;
+                output.build
+            });
+            (path, result)
+        }).collect::<BTreeMap<String, Result<EraVMContractBuild, era_solc::StandardJsonOutputError>>>();
 
         Ok(EraVMBuild::new(results, messages))
     }

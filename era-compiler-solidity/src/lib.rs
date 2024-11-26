@@ -63,7 +63,6 @@ pub fn yul_to_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -97,7 +96,6 @@ pub fn yul_to_eravm(
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -159,7 +157,6 @@ pub fn llvm_ir_to_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -175,7 +172,6 @@ pub fn llvm_ir_to_eravm(
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -218,7 +214,6 @@ pub fn eravm_assembly(
     metadata_hash_type: era_compiler_common::HashType,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let project = Project::try_from_eravm_assembly_paths(paths, None)?;
@@ -232,7 +227,6 @@ pub fn eravm_assembly(
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -260,7 +254,6 @@ pub fn standard_output_eravm(
     output_assembly: bool,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
     suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -313,7 +306,6 @@ pub fn standard_output_eravm(
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -404,7 +396,6 @@ pub fn standard_json_eravm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let mut solc_input = era_solc::StandardJsonInput::try_from(json_path.as_deref())?;
@@ -561,7 +552,6 @@ pub fn standard_json_eravm(
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
@@ -734,7 +724,6 @@ pub fn combined_json_eravm(
     output_assembly: bool,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
     suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let build = standard_output_eravm(
@@ -756,7 +745,6 @@ pub fn combined_json_eravm(
         output_assembly,
         suppressed_errors,
         suppressed_warnings,
-        threads,
         debug_config,
     )?;
 

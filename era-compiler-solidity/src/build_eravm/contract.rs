@@ -2,6 +2,7 @@
 //! The Solidity contract build.
 //!
 
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -19,6 +20,8 @@ pub struct Contract {
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
+    /// The factory dependencies.
+    pub factory_dependencies: HashSet<String>,
 }
 
 impl Contract {
@@ -36,6 +39,7 @@ impl Contract {
             identifier,
             build,
             metadata_json,
+            factory_dependencies: HashSet::new(),
         }
     }
 
