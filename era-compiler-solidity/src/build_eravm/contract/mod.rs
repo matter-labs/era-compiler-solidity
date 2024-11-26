@@ -4,6 +4,7 @@
 
 pub mod object_format;
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
@@ -22,8 +23,11 @@ pub struct Contract {
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
-    /// The factory dependencies.
+    /// The unresolved factory dependencies.
     pub factory_dependencies: HashSet<String>,
+    /// The resolved factory dependencies.
+    pub factory_dependencies_resolved:
+        HashMap<[u8; era_compiler_common::BYTE_LENGTH_FIELD], String>,
     /// The binary object format.
     pub object_format: ObjectFormat,
 }
@@ -44,6 +48,7 @@ impl Contract {
             build,
             metadata_json,
             factory_dependencies,
+            factory_dependencies_resolved: HashMap::new(),
             object_format,
         }
     }
@@ -208,6 +213,11 @@ impl Contract {
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
+        standard_json_contract.factory_dependencies.extend(
+            self.factory_dependencies_resolved
+                .into_iter()
+                .map(|(hash, path)| (hex::encode(hash), path)),
+        );
 
         Ok(())
     }
