@@ -100,7 +100,9 @@ pub fn yul_to_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols)?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -179,7 +181,9 @@ pub fn llvm_ir_to_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols)?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -237,7 +241,9 @@ pub fn eravm_assembly(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let build = build.link(BTreeMap::new())?;
+    let mut build = build.link(BTreeMap::new())?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -319,7 +325,9 @@ pub fn standard_output_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols)?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
