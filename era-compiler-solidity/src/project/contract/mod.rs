@@ -112,11 +112,16 @@ impl Contract {
         let build = match self.ir {
             IR::Yul(mut yul) => {
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context =
-                    era_compiler_llvm_context::EraVMContext::<
-                        '_,
-                        era_compiler_llvm_context::DummyDependency,
-                    >::new(&llvm, module, llvm_options, optimizer, debug_config);
+                let mut context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    debug_config,
+                );
                 context.set_solidity_data(
                     era_compiler_llvm_context::EraVMContextSolidityData::default(),
                 );
@@ -144,11 +149,16 @@ impl Contract {
                     .expect("The EVM assembly codegen cannot be executed without `solc`");
 
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context =
-                    era_compiler_llvm_context::EraVMContext::<
-                        '_,
-                        era_compiler_llvm_context::DummyDependency,
-                    >::new(&llvm, module, llvm_options, optimizer, debug_config);
+                let mut context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    debug_config,
+                );
                 context.set_solidity_data(
                     era_compiler_llvm_context::EraVMContextSolidityData::default(),
                 );
@@ -177,11 +187,16 @@ impl Contract {
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let context =
-                    era_compiler_llvm_context::EraVMContext::<
-                        '_,
-                        era_compiler_llvm_context::DummyDependency,
-                    >::new(&llvm, module, llvm_options, optimizer, debug_config);
+                let context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
+                    &llvm,
+                    module,
+                    llvm_options,
+                    optimizer,
+                    debug_config,
+                );
                 context.build(
                     self.name.full_path.as_str(),
                     metadata_hash,

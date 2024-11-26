@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#3f83421367f57666e8e2cca19034fa6a3a13a21f"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-link-factory-dependencies#55185295a2f0fc57638a5d03089aad48994776ea"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1248,7 +1248,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-link-factory-dependencies#2026c61a299e3b155b4fa178da720102faed69ca"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c5d783f52b755f5382e99e3f1179039b9435e3cc"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1263,7 +1263,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-link-factory-dependencies#2026c61a299e3b155b4fa178da720102faed69ca"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c5d783f52b755f5382e99e3f1179039b9435e3cc"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1360,9 +1360,9 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
-version = "0.2.165"
+version = "0.2.166"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb4d3d38eab6c5239a362fa8bae48c03baf980a6e7079f063942d563ef3533e"
+checksum = "c2ccc108bbc0b1331bd061864e7cd823c0cab660bbe6970e66e2c0614decde36"
 
 [[package]]
 name = "libmimalloc-sys"
@@ -1400,7 +1400,7 @@ checksum = "4ee93343901ab17bd981295f2cf0026d4ad018c7c31ba84549a4ddbb47a45104"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-link-factory-dependencies#06e688f7aca46125bebce1bedc881e3a127ab65e"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#b65826dfdb19676637dbddb9f01bcc52ae2c4308"
 dependencies = [
  "anyhow",
  "cc",
