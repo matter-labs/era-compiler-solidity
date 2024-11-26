@@ -39,8 +39,8 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
                 .compile_to_eravm(
                     input.solc_version,
                     input.identifier_paths,
+                    input.factory_dependencies,
                     input.enable_eravm_extensions,
-                    input.linker_symbols,
                     input.metadata_hash_type,
                     input.optimizer_settings,
                     input.llvm_options,
