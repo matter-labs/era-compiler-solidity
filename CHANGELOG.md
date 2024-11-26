@@ -11,8 +11,8 @@
 
 - Moved the `solc` client to another crate at `era-solc`
 - Prohibited the usage of the upstream `solc` compiler
-- All dependencies are now resolved by the LLVM linker
-- Disassembler now only works with files with hexadecimal strings
+- All dependencies are now resolved by the LLVM linker, improving compilation times
+- The disassembler now only works with files with hexadecimal strings
 - Updated to Rust v1.82.0
 
 ### Fixed
