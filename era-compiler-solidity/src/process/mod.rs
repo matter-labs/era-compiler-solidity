@@ -31,12 +31,14 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
             let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
 
-            let contract = input.contract.expect("Always exists");
-            let source_location =
-                era_solc::StandardJsonOutputErrorSourceLocation::new(contract.name.path.clone());
-            let result = contract
+            let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
+                input.contract.name.path.clone(),
+            );
+            let result = input
+                .contract
                 .compile_to_eravm(
-                    input.dependency_data,
+                    input.solc_version,
+                    input.identifier_paths,
                     input.enable_eravm_extensions,
                     input.linker_symbols,
                     input.metadata_hash_type,
