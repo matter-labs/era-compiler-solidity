@@ -189,6 +189,11 @@ impl Contract {
             .assembly
             .map(serde_json::Value::String)
             .unwrap_or_default();
+        combined_json_contract.factory_deps.extend(
+            self.factory_dependencies_resolved
+                .into_iter()
+                .map(|(hash, path)| (hex::encode(hash), path)),
+        );
 
         Ok(())
     }

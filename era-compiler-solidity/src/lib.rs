@@ -100,7 +100,7 @@ pub fn yul_to_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let mut build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
     build.collect_errors()?;
     Ok(build)
@@ -181,7 +181,7 @@ pub fn llvm_ir_to_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let mut build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
     build.collect_errors()?;
     Ok(build)
@@ -241,7 +241,7 @@ pub fn eravm_assembly(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let mut build = build.link(BTreeMap::new())?;
+    let mut build = build.link(BTreeMap::new());
     build.take_and_write_warnings();
     build.collect_errors()?;
     Ok(build)
@@ -325,7 +325,7 @@ pub fn standard_output_eravm(
     build.take_and_write_warnings();
     build.collect_errors()?;
 
-    let mut build = build.link(linker_symbols)?;
+    let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
     build.collect_errors()?;
     Ok(build)
@@ -578,7 +578,7 @@ pub fn standard_json_eravm(
         solc_output.write_and_exit(prune_output);
     }
 
-    let build = build.link(linker_symbols)?;
+    let build = build.link(linker_symbols);
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
     solc_output.write_and_exit(prune_output);

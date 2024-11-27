@@ -9,7 +9,6 @@ use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
-use contract::factory_dependency::FactoryDependency;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
@@ -22,14 +21,15 @@ use crate::missing_libraries::MissingLibraries;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
+use crate::process::output_eravm::Output as EraVMOutput;
 
+use self::contract::factory_dependency::FactoryDependency;
 use self::contract::ir::eravm_assembly::EraVMAssembly as ContractEraVMAssembly;
 use self::contract::ir::evmla::EVMLA as ContractEVMLA;
 use self::contract::ir::llvm_ir::LLVMIR as ContractLLVMIR;
 use self::contract::ir::yul::Yul as ContractYul;
 use self::contract::Contract;
 use self::thread_pool_evm::ThreadPool as EVMThreadPool;
-use crate::process::output_eravm::Output as EraVMOutput;
 
 ///
 /// The project representation.

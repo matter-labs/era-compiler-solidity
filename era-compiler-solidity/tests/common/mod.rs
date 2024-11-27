@@ -164,7 +164,7 @@ pub fn build_solidity(
     )?;
     build.collect_errors()?;
 
-    let build = build.link(linker_symbols)?;
+    let build = build.link(linker_symbols);
     build.collect_errors()?;
 
     build.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version))?;
@@ -264,7 +264,7 @@ pub fn build_yul(
     )?;
     build.collect_errors()?;
 
-    let build = build.link(BTreeMap::new())?;
+    let build = build.link(BTreeMap::new());
     build.collect_errors()?;
 
     build.write_to_standard_json(&mut solc_output, None)?;
@@ -319,7 +319,7 @@ pub fn build_yul_standard_json(
     )?;
     build.collect_errors()?;
 
-    let build = build.link(BTreeMap::new())?;
+    let build = build.link(BTreeMap::new());
     build.collect_errors()?;
 
     build.write_to_standard_json(&mut solc_output, solc_version)?;
@@ -358,7 +358,7 @@ pub fn build_llvm_ir_standard_json(
     )?;
     build.collect_errors()?;
 
-    let build = build.link(BTreeMap::new())?;
+    let build = build.link(BTreeMap::new());
     build.collect_errors()?;
 
     build.write_to_standard_json(&mut output, None)?;
@@ -393,7 +393,7 @@ pub fn build_eravm_assembly_standard_json(
     )?;
     build.collect_errors()?;
 
-    let build = build.link(BTreeMap::new())?;
+    let build = build.link(BTreeMap::new());
     build.collect_errors()?;
 
     build.write_to_standard_json(&mut output, None)?;

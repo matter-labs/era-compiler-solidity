@@ -48,7 +48,7 @@ impl Build {
     pub fn link(
         mut self,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
-    ) -> anyhow::Result<Self> {
+    ) -> Self {
         let mut contracts: HashMap<String, Contract> = self
             .results
             .into_iter()
@@ -61,13 +61,6 @@ impl Build {
                 .iter()
                 .filter(|(_path, contract)| {
                     contract.object_format == ObjectFormat::ELF
-                        && contract.factory_dependencies.iter().all(|dependency| {
-                            contracts
-                                .get(dependency)
-                                .expect("Always exists")
-                                .object_format
-                                == ObjectFormat::Raw
-                        })
                         && contract.factory_dependencies.iter().all(|dependency| {
                             contracts
                                 .get(dependency)
@@ -159,13 +152,13 @@ impl Build {
             }
         }
 
-        Ok(Self::new(
+        Self::new(
             contracts
                 .into_iter()
                 .map(|(path, contract)| (path, Ok(contract)))
                 .collect(),
             &mut self.messages,
-        ))
+        )
     }
 
     ///
