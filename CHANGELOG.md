@@ -21,6 +21,7 @@
 
 - Cleared return data after calling `CREATE`/`CREATE2`
 - Standard JSON input parsing if `outputSelection` arrays are unset
+- Missing bytecode for files with multiple contracts in combined JSON mode
 
 ## [1.5.7] - 2024-10-31
 
