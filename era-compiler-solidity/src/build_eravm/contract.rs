@@ -2,15 +2,11 @@
 //! The Solidity contract build.
 //!
 
-pub mod object_format;
-
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
-
-use self::object_format::ObjectFormat;
 
 ///
 /// The Solidity contract build.
@@ -29,7 +25,7 @@ pub struct Contract {
     pub factory_dependencies_resolved:
         HashMap<[u8; era_compiler_common::BYTE_LENGTH_FIELD], String>,
     /// The binary object format.
-    pub object_format: ObjectFormat,
+    pub object_format: era_solc::StandardJsonOutputObjectFormat,
 }
 
 impl Contract {
@@ -41,7 +37,7 @@ impl Contract {
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
-        object_format: ObjectFormat,
+        object_format: era_solc::StandardJsonOutputObjectFormat,
     ) -> Self {
         Self {
             name,
@@ -194,6 +190,7 @@ impl Contract {
                 .into_iter()
                 .map(|(hash, path)| (hex::encode(hash), path)),
         );
+        combined_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }
@@ -223,6 +220,7 @@ impl Contract {
                 .into_iter()
                 .map(|(hash, path)| (hex::encode(hash), path)),
         );
+        standard_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }

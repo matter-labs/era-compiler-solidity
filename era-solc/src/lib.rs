@@ -35,6 +35,7 @@ pub use self::standard_json::output::contract::evm::bytecode::Bytecode as Standa
 pub use self::standard_json::output::contract::evm::extra_metadata::recursive_function::RecursiveFunction as StandardJsonOutputContractEVMExtraMetadataRecursiveFunction;
 pub use self::standard_json::output::contract::evm::extra_metadata::ExtraMetadata as StandardJsonOutputContractEVMExtraMetadata;
 pub use self::standard_json::output::contract::evm::EVM as StandardJsonOutputContractEVM;
+pub use self::standard_json::output::contract::object_format::ObjectFormat as StandardJsonOutputObjectFormat;
 pub use self::standard_json::output::contract::Contract as StandardJsonOutputContract;
 pub use self::standard_json::output::error::collectable::Collectable as CollectableError;
 pub use self::standard_json::output::error::source_location::SourceLocation as StandardJsonOutputErrorSourceLocation;

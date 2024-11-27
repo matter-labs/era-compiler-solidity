@@ -14,7 +14,6 @@ use normpath::PathExt;
 
 use era_solc::CollectableError;
 
-use self::contract::object_format::ObjectFormat;
 use self::contract::Contract;
 
 ///
@@ -60,13 +59,13 @@ impl Build {
             let unlinked_satisfied_contracts: BTreeMap<&String, &Contract> = contracts
                 .iter()
                 .filter(|(_path, contract)| {
-                    contract.object_format == ObjectFormat::ELF
+                    contract.object_format == era_solc::StandardJsonOutputObjectFormat::ELF
                         && contract.factory_dependencies.iter().all(|dependency| {
                             contracts
                                 .get(dependency)
                                 .expect("Always exists")
                                 .object_format
-                                == ObjectFormat::Raw
+                                == era_solc::StandardJsonOutputObjectFormat::Raw
                         })
                 })
                 .collect();
@@ -139,12 +138,12 @@ impl Build {
                 contract.build.bytecode_hash = bytecode_hash;
                 contract.factory_dependencies_resolved = factory_dependencies_resolved;
                 contract.object_format = if memory_buffer_linked.is_elf_eravm() {
-                    ObjectFormat::ELF
+                    era_solc::StandardJsonOutputObjectFormat::ELF
                 } else {
-                    if let ObjectFormat::ELF = contract.object_format {
+                    if let era_solc::StandardJsonOutputObjectFormat::ELF = contract.object_format {
                         linked_contracts += 1;
                     }
-                    ObjectFormat::Raw
+                    era_solc::StandardJsonOutputObjectFormat::Raw
                 };
             }
             if linked_contracts == 0 {

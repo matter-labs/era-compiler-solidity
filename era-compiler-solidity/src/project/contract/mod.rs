@@ -11,7 +11,6 @@ use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
 
-use crate::build_eravm::contract::object_format::ObjectFormat as EraVMObjectFormat;
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
@@ -234,7 +233,7 @@ impl Contract {
             build,
             metadata_json,
             factory_dependencies,
-            EraVMObjectFormat::ELF,
+            era_solc::StandardJsonOutputObjectFormat::ELF,
         ))
     }
 
