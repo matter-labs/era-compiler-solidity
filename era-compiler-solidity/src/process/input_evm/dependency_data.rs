@@ -4,6 +4,8 @@
 
 use std::collections::BTreeMap;
 
+use crate::build_evm::contract::Contract as EVMContractBuild;
+
 ///
 /// The EVM dependency data.
 ///
@@ -13,6 +15,8 @@ pub struct DependencyData {
     pub solc_version: Option<era_solc::Version>,
     /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
     pub identifier_paths: BTreeMap<String, String>,
+    /// The dependencies required by specific contract.
+    pub dependencies: BTreeMap<String, EVMContractBuild>,
 }
 
 impl DependencyData {
@@ -26,6 +30,7 @@ impl DependencyData {
         Self {
             solc_version,
             identifier_paths,
+            dependencies: BTreeMap::new(),
         }
     }
 }
