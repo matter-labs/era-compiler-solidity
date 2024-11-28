@@ -29,6 +29,9 @@ pub struct Contract {
     /// The `solc` storage layout output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub storage_layout: serde_json::Value,
+    /// The `solc` transient storage layout output.
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    pub transient_storage_layout: serde_json::Value,
     /// The `solc` AST output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub ast: serde_json::Value,
