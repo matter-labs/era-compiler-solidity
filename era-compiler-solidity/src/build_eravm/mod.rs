@@ -59,13 +59,13 @@ impl Build {
             let unlinked_satisfied_contracts: BTreeMap<&String, &Contract> = contracts
                 .iter()
                 .filter(|(_path, contract)| {
-                    contract.object_format == era_solc::StandardJsonOutputObjectFormat::ELF
+                    contract.object_format == era_compiler_common::ObjectFormat::ELF
                         && contract.factory_dependencies.iter().all(|dependency| {
                             contracts
                                 .get(dependency)
                                 .expect("Always exists")
                                 .object_format
-                                == era_solc::StandardJsonOutputObjectFormat::Raw
+                                == era_compiler_common::ObjectFormat::Raw
                         })
                 })
                 .collect();
@@ -102,9 +102,13 @@ impl Build {
                     &linker_symbols,
                     &factory_dependencies,
                 ) {
-                    Ok((memory_buffer_linked, bytecode_hash)) => {
+                    Ok((memory_buffer_linked, era_compiler_common::ObjectFormat::Raw)) => {
+                        let bytecode_hash =
+                            era_compiler_llvm_context::eravm_hash(&memory_buffer_linked)
+                                .expect("Always valid");
                         linkage_data.insert(path.to_owned(), (memory_buffer_linked, bytecode_hash));
                     }
+                    Ok((_memory_buffer_linked, era_compiler_common::ObjectFormat::ELF)) => {}
                     Err(error) => self
                         .messages
                         .push(era_solc::StandardJsonOutputError::new_error(
@@ -135,15 +139,15 @@ impl Build {
 
                 let contract = contracts.get_mut(path.as_str()).expect("Always exists");
                 contract.build.bytecode = memory_buffer_linked.as_slice().to_vec();
-                contract.build.bytecode_hash = bytecode_hash;
+                contract.build.bytecode_hash = Some(bytecode_hash);
                 contract.factory_dependencies_resolved = factory_dependencies_resolved;
                 contract.object_format = if memory_buffer_linked.is_elf_eravm() {
-                    era_solc::StandardJsonOutputObjectFormat::ELF
+                    era_compiler_common::ObjectFormat::ELF
                 } else {
-                    if let era_solc::StandardJsonOutputObjectFormat::ELF = contract.object_format {
+                    if let era_compiler_common::ObjectFormat::ELF = contract.object_format {
                         linked_contracts += 1;
                     }
-                    era_solc::StandardJsonOutputObjectFormat::Raw
+                    era_compiler_common::ObjectFormat::Raw
                 };
             }
             if linked_contracts == 0 {
