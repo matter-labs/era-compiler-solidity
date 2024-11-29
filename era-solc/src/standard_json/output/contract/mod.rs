@@ -4,14 +4,12 @@
 
 pub mod eravm;
 pub mod evm;
-pub mod object_format;
 
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 
 use self::eravm::EraVM;
 use self::evm::EVM;
-use self::object_format::ObjectFormat;
 
 ///
 /// The `solc --standard-json` output contract.
@@ -58,7 +56,7 @@ pub struct Contract {
     pub missing_libraries: HashSet<String>,
     /// The binary object format.
     #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
-    pub object_format: Option<ObjectFormat>,
+    pub object_format: Option<era_compiler_common::ObjectFormat>,
 }
 
 impl Contract {

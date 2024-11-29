@@ -60,5 +60,5 @@ pub struct Contract {
     pub missing_libraries: HashSet<String>,
     /// The binary object format.
     #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
-    pub object_format: Option<crate::StandardJsonOutputObjectFormat>,
+    pub object_format: Option<era_compiler_common::ObjectFormat>,
 }

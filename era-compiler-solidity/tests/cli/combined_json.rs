@@ -10,6 +10,7 @@ const JSON_ARGS: &[&str] = &[
     "devdoc",
     "userdoc",
     "storage-layout",
+    "transient-storage-layout",
     "ast",
     "asm",
     "bin",

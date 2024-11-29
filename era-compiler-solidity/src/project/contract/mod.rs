@@ -233,7 +233,7 @@ impl Contract {
             build,
             metadata_json,
             factory_dependencies,
-            era_solc::StandardJsonOutputObjectFormat::ELF,
+            era_compiler_common::ObjectFormat::ELF,
         ))
     }
 

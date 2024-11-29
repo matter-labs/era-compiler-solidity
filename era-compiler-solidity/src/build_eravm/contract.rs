@@ -25,7 +25,7 @@ pub struct Contract {
     pub factory_dependencies_resolved:
         HashMap<[u8; era_compiler_common::BYTE_LENGTH_FIELD], String>,
     /// The binary object format.
-    pub object_format: era_solc::StandardJsonOutputObjectFormat,
+    pub object_format: era_compiler_common::ObjectFormat,
 }
 
 impl Contract {
@@ -37,7 +37,7 @@ impl Contract {
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
-        object_format: era_solc::StandardJsonOutputObjectFormat,
+        object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,

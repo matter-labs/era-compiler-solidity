@@ -879,8 +879,13 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
     let disassemblies: Vec<(String, String)> = bytecodes
         .into_iter()
         .map(|(path, bytecode)| {
+            let bytecode_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                bytecode.as_slice(),
+                path.as_str(),
+                false,
+            );
             let disassembly =
-                era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
+                era_compiler_llvm_context::eravm_disassemble(&target_machine, &bytecode_buffer)?;
             Ok((path, disassembly))
         })
         .collect::<anyhow::Result<Vec<(String, String)>>>()?;
