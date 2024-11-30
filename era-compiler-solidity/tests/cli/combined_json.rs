@@ -57,9 +57,7 @@ fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
     let status_code = result
         .success()
         .stdout(
-            predicate::str::is_match(r#""bin":"[0-9a-z]*""#)
-                .expect("Always valid")
-                .count(2),
+            predicate::str::is_match([r#""bin":"[0-9a-f]*""#; 2].join(".*")).expect("Always valid"),
         )
         .get_output()
         .status

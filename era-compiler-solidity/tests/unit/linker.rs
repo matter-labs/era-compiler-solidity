@@ -18,7 +18,7 @@ fn get_bytecode(
 ) -> Vec<u8> {
     let sources = common::read_sources(&[path]);
 
-    let build = common::build_solidity(
+    let build = common::build_solidity_standard_json(
         sources,
         libraries,
         era_compiler_common::HashType::None,

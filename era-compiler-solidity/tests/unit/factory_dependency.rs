@@ -42,7 +42,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         common::TEST_SOLIDITY_CONTRACT_CALLER_CALLABLE_PATH,
     ]);
 
-    let output = common::build_solidity(
+    let output = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
