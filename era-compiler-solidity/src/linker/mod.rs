@@ -30,16 +30,20 @@ impl Linker {
         let mut unlinked_objects = Vec::new();
         let mut factory_dependencies = BTreeMap::new();
 
-        for (path, bytecode_string) in input.bytecodes.into_iter() {
-            let bytecode = hex::decode(
-                bytecode_string
-                    .strip_prefix("0x")
-                    .unwrap_or(bytecode_string.as_str()),
-            )
-            .map_err(|error| {
-                anyhow::anyhow!("Object `{path}` hexadecimal string decoding: {error}")
-            })?;
+        let bytecode_binary = input
+            .bytecodes
+            .iter()
+            .map(|(path, string)| {
+                let string_stripped = string.strip_prefix("0x").unwrap_or(string.as_str());
+                let bytecode = hex::decode(string_stripped).map_err(|error| {
+                    anyhow::anyhow!("Object `{path}` hexadecimal string decoding: {error}")
+                })?;
+                Ok((path.to_owned(), bytecode))
+            })
+            .collect::<anyhow::Result<BTreeMap<String, Vec<u8>>>>()?;
 
+        for (path, bytecode_string) in input.bytecodes.into_iter() {
+            let bytecode = bytecode_binary.get(path.as_str()).expect("Always exists");
             let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                 bytecode.as_slice(),
                 path.as_str(),
@@ -47,26 +51,23 @@ impl Linker {
             );
 
             if memory_buffer.is_elf_eravm() {
-                dbg!(hex::encode(memory_buffer.as_slice()));
                 unlinked_objects.push((path, memory_buffer));
-            } else {
-                let hash =
-                    era_compiler_llvm_context::eravm_hash(&memory_buffer).map_err(|error| {
-                        anyhow::anyhow!("Object `{path}` bytecode hashing: {error}")
-                    })?;
-                output.ignored.insert(
-                    path.clone(),
-                    OutputContract::new(bytecode_string, hex::encode(hash)),
-                );
-                factory_dependencies.insert(path, hash);
+                continue;
             }
+
+            let hash = era_compiler_llvm_context::eravm_hash(&memory_buffer)
+                .map_err(|error| anyhow::anyhow!("Object `{path}` bytecode hashing: {error}"))?;
+            output.ignored.insert(
+                path.clone(),
+                OutputContract::new(bytecode_string, hex::encode(hash)),
+            );
+            factory_dependencies.insert(path, hash);
         }
 
         loop {
             let mut linked_counter = 0;
             let mut remaining_objects = Vec::new();
             for (path, bytecode_buffer) in unlinked_objects.drain(..) {
-                dbg!(hex::encode(bytecode_buffer.as_slice()));
                 let (bytecode_buffer_after_linking, object_format) =
                     era_compiler_llvm_context::eravm_link(
                         bytecode_buffer,

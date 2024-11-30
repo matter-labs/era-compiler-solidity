@@ -42,7 +42,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
+        r#""unlinked":{"tests/data/bytecodes/linker.zbin":{"linker_symbols":["Greeter.sol:GreeterHelper"],"factory_dependencies":[]}}"#,
     ));
 
     Ok(())
@@ -174,7 +174,7 @@ fn without_libraries_standard_json() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
+        r#""unlinked":{"tests/data/bytecodes/linker.zbin":{"linker_symbols":["Greeter.sol:GreeterHelper"],"factory_dependencies":[]}}"#,
     ));
 
     Ok(())
