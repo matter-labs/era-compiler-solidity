@@ -3,11 +3,9 @@
 //!
 
 pub mod contract;
-pub mod thread_pool_eravm;
 pub mod thread_pool_evm;
 
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -15,21 +13,22 @@ use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
+use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_eravm::Build as EraVMBuild;
 use crate::build_evm::Build as EVMBuild;
 use crate::evmla::assembly::Assembly;
 use crate::missing_libraries::MissingLibraries;
-use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_eravm::Input as EraVMProcessInput;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
+use crate::process::output_eravm::Output as EraVMOutput;
 
+use self::contract::factory_dependency::FactoryDependency;
 use self::contract::ir::eravm_assembly::EraVMAssembly as ContractEraVMAssembly;
 use self::contract::ir::evmla::EVMLA as ContractEVMLA;
 use self::contract::ir::llvm_ir::LLVMIR as ContractLLVMIR;
 use self::contract::ir::yul::Yul as ContractYul;
 use self::contract::Contract;
-use self::thread_pool_eravm::ThreadPool as EraVMThreadPool;
 use self::thread_pool_evm::ThreadPool as EVMThreadPool;
 
 ///
@@ -371,66 +370,36 @@ impl Project {
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
-        threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
-        let identifier_paths = self.identifier_paths.clone();
-        let dependency_data =
-            EraVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths.clone());
+        let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
+            let factory_dependencies = contract
+                .drain_factory_dependencies()
+                .into_iter()
+                .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
+                .collect();
+            let input = EraVMProcessInput::new(
+                contract,
+                self.solc_version.clone(),
+                self.identifier_paths.clone(),
+                factory_dependencies,
+                enable_eravm_extensions,
+                metadata_hash_type,
+                optimizer_settings.clone(),
+                llvm_options.clone(),
+                output_assembly,
+                debug_config.clone(),
+            );
+            let result: crate::Result<EraVMOutput> =
+                crate::process::call(path.as_str(), input, era_compiler_common::Target::EraVM);
+            let result = result.map(|output| output.build);
+            (path, result)
+        }).collect::<BTreeMap<String, Result<EraVMContractBuild, era_solc::StandardJsonOutputError>>>();
 
-        let input_template = EraVMProcessInput::new(
-            None,
-            dependency_data,
-            enable_eravm_extensions,
-            linker_symbols,
-            metadata_hash_type,
-            optimizer_settings,
-            llvm_options,
-            output_assembly,
-            debug_config,
-        );
-        let pool = EraVMThreadPool::new(threads, self.contracts, input_template);
-        pool.start();
-        let results = pool.finish();
-
-        let mut hashes = HashMap::with_capacity(results.len());
-        for (path, result) in results.iter() {
-            if let Some(bytecode_hash) = result
-                .as_ref()
-                .ok()
-                .and_then(|contract| contract.build.bytecode_hash)
-            {
-                hashes.insert(path.to_owned(), bytecode_hash.to_owned());
-            }
-        }
-
-        let results = results
-            .into_iter()
-            .map(|(path, mut result)| {
-                if let Ok(ref mut contract) = result {
-                    for dependency in contract.factory_dependencies.drain() {
-                        let dependency_path = identifier_paths
-                            .get(dependency.as_str())
-                            .cloned()
-                            .unwrap_or_else(|| {
-                                panic!("dependency `{dependency}` full path not found")
-                            });
-                        if let Some(hash) = hashes.get(dependency_path.as_str()) {
-                            contract
-                                .build
-                                .factory_dependencies
-                                .insert(hex::encode(hash), dependency_path);
-                        }
-                    }
-                }
-                (path, result)
-            })
-            .collect();
         Ok(EraVMBuild::new(results, messages))
     }
 

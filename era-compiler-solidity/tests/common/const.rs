@@ -43,6 +43,14 @@ pub const TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH: &str =
     "tests/data/contracts/solidity/SimpleContract.sol";
 
 /// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH: &str =
+    "tests/data/contracts/solidity/LinkedMixedDeps.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH: &str =
+    "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol";
+
+/// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH: &str =
     "tests/data/contracts/solidity/Optimized.sol";
 
@@ -185,6 +193,10 @@ pub const TEST_LINKER_STANDARD_JSON_INPUT_WITH_LIBRARIES_PATH: &str =
 /// A test input file.
 pub const TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH: &str =
     "tests/data/standard_json_input/linker/without_libraries.json";
+
+/// A test input file.
+pub const TEST_LINKER_STANDARD_JSON_INPUT_INVALID_HEXADECIMAL_PATH: &str =
+    "tests/data/standard_json_input/linker/invalid_hexadecimal.json";
 
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";

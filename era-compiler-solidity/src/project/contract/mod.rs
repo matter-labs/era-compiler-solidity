@@ -13,7 +13,6 @@ use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::process::input_eravm::dependency_data::DependencyData as EraVMProcessInputDependencyData;
 use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::yul::parser::wrapper::Wrap;
 
@@ -70,10 +69,11 @@ impl Contract {
     /// Compiles the specified contract to EraVM, returning its build artifacts.
     ///
     pub fn compile_to_eravm(
-        mut self,
-        dependency_data: EraVMProcessInputDependencyData,
+        self,
+        solc_version: Option<era_solc::Version>,
+        identifier_paths: BTreeMap<String, String>,
+        factory_dependencies: HashSet<String>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -82,20 +82,15 @@ impl Contract {
     ) -> anyhow::Result<EraVMContractBuild> {
         use era_compiler_llvm_context::EraVMWriteLLVM;
 
-        let identifier = self.identifier().to_owned();
-        let factory_dependencies = self.drain_factory_dependencies();
-
         let llvm = inkwell::context::Context::create();
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
         let metadata = Metadata::new(
             self.source_metadata,
-            dependency_data
-                .solc_version
+            solc_version
                 .as_ref()
                 .map(|version| version.default.to_owned()),
-            dependency_data
-                .solc_version
+            solc_version
                 .as_ref()
                 .map(|version| version.l2_revision.to_owned()),
             optimizer.settings().to_owned(),
@@ -116,19 +111,23 @@ impl Contract {
         let build = match self.ir {
             IR::Yul(mut yul) => {
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context = era_compiler_llvm_context::EraVMContext::new(
+                let mut context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
                     &llvm,
                     module,
                     llvm_options,
                     optimizer,
-                    Some(dependency_data),
                     debug_config,
                 );
                 context.set_solidity_data(
                     era_compiler_llvm_context::EraVMContextSolidityData::default(),
                 );
-                let yul_data =
-                    era_compiler_llvm_context::EraVMContextYulData::new(enable_eravm_extensions);
+                let yul_data = era_compiler_llvm_context::EraVMContextYulData::new(
+                    enable_eravm_extensions,
+                    identifier_paths,
+                );
                 context.set_yul_data(yul_data);
 
                 yul.declare(&mut context)?;
@@ -138,25 +137,25 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
                 )?
             }
             IR::EVMLA(mut evmla) => {
-                let solc_version = dependency_data
-                    .solc_version
+                let solc_version = solc_version
                     .clone()
                     .expect("The EVM assembly codegen cannot be executed without `solc`");
 
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context = era_compiler_llvm_context::EraVMContext::new(
+                let mut context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
                     &llvm,
                     module,
                     llvm_options,
                     optimizer,
-                    Some(dependency_data),
                     debug_config,
                 );
                 context.set_solidity_data(
@@ -173,7 +172,6 @@ impl Contract {
 
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -188,17 +186,18 @@ impl Contract {
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let context = era_compiler_llvm_context::EraVMContext::new(
+                let context: era_compiler_llvm_context::EraVMContext<
+                    '_,
+                    era_compiler_llvm_context::DummyDependency,
+                > = era_compiler_llvm_context::EraVMContext::new(
                     &llvm,
                     module,
                     llvm_options,
                     optimizer,
-                    Some(dependency_data),
                     debug_config,
                 );
                 context.build(
                     self.name.full_path.as_str(),
-                    &linker_symbols,
                     metadata_hash,
                     output_assembly,
                     false,
@@ -223,7 +222,6 @@ impl Contract {
                 };
                 era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
-                    &linker_symbols,
                     metadata_hash,
                     assembly_text,
                 )?
@@ -232,10 +230,10 @@ impl Contract {
 
         Ok(EraVMContractBuild::new(
             self.name,
-            identifier,
             build,
             metadata_json,
             factory_dependencies,
+            era_compiler_common::ObjectFormat::ELF,
         ))
     }
 

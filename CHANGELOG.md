@@ -6,17 +6,21 @@
 
 - JSON interface for the EraVM linker
 - Missing libraries output in standard JSON mode
+- Transient storage layout to combined JSON output
 
 ### Changed
 
 - Moved the `solc` client to another crate at `era-solc`
 - Prohibited the usage of the upstream `solc` compiler
-- Disassembler now only works with files with hexadecimal strings
+- The CLI library from deprecated `structopt` to `clap`
+- All dependencies are now resolved by the LLVM linker, improving compilation times
+- The disassembler now only works with files with hexadecimal strings
 - Updated to Rust v1.82.0
 
 ### Fixed
 
 - Cleared return data after calling `CREATE`/`CREATE2`
+- Standard JSON input parsing if `outputSelection` arrays are unset
 
 ## [1.5.7] - 2024-10-31
 

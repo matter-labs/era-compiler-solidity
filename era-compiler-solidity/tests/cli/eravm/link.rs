@@ -42,7 +42,7 @@ fn without_libraries() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
+        r#""unlinked":{"tests/data/bytecodes/linker.zbin":{"linker_symbols":["Greeter.sol:GreeterHelper"],"factory_dependencies":[]}}"#,
     ));
 
     Ok(())
@@ -174,7 +174,7 @@ fn without_libraries_standard_json() -> anyhow::Result<()> {
 
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
-        "\"unlinked\":{\"tests/data/bytecodes/linker.zbin\":[\"Greeter.sol:GreeterHelper\"]}",
+        r#""unlinked":{"tests/data/bytecodes/linker.zbin":{"linker_symbols":["Greeter.sol:GreeterHelper"],"factory_dependencies":[]}}"#,
     ));
 
     Ok(())
@@ -194,6 +194,24 @@ fn with_standard_json_missing() -> anyhow::Result<()> {
     result
         .success()
         .stdout(predicate::str::contains("Error: JSON file"));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_INVALID_HEXADECIMAL_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "hexadecimal string decoding: Invalid character \'I\' at position 0",
+    ));
 
     Ok(())
 }

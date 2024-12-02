@@ -4,13 +4,10 @@
 //! The EraVM input data.
 //!
 
-pub mod dependency_data;
-
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 
 use crate::project::contract::Contract;
-
-use self::dependency_data::DependencyData;
 
 ///
 /// The EraVM input data.
@@ -18,13 +15,15 @@ use self::dependency_data::DependencyData;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Input {
     /// The input contract.
-    pub contract: Option<Contract>,
-    /// The dependency data.
-    pub dependency_data: DependencyData,
+    pub contract: Contract,
+    /// The `solc` compiler version.
+    pub solc_version: Option<era_solc::Version>,
+    /// The mapping of auxiliary identifiers, e.g. Yul object names, to full contract paths.
+    pub identifier_paths: BTreeMap<String, String>,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
-    /// The linker symbols.
-    pub linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+    /// Factory dependencies.
+    pub factory_dependencies: HashSet<String>,
     /// The metadata hash type.
     pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
@@ -42,10 +41,11 @@ impl Input {
     /// A shortcut constructor.
     ///
     pub fn new(
-        contract: Option<Contract>,
-        dependency_data: DependencyData,
+        contract: Contract,
+        solc_version: Option<era_solc::Version>,
+        identifier_paths: BTreeMap<String, String>,
+        factory_dependencies: HashSet<String>,
         enable_eravm_extensions: bool,
-        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -54,9 +54,10 @@ impl Input {
     ) -> Self {
         Self {
             contract,
-            dependency_data,
+            solc_version,
+            identifier_paths,
+            factory_dependencies,
             enable_eravm_extensions,
-            linker_symbols,
             metadata_hash_type,
             optimizer_settings,
             llvm_options,

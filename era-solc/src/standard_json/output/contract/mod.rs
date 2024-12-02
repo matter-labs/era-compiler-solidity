@@ -54,6 +54,9 @@ pub struct Contract {
     /// The contract missing libraries.
     #[serde(default, skip_deserializing)]
     pub missing_libraries: HashSet<String>,
+    /// The binary object format.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub object_format: Option<era_compiler_common::ObjectFormat>,
 }
 
 impl Contract {

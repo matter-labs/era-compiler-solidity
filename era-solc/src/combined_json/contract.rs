@@ -29,6 +29,9 @@ pub struct Contract {
     /// The `solc` storage layout output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub storage_layout: serde_json::Value,
+    /// The `solc` transient storage layout output.
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    pub transient_storage_layout: serde_json::Value,
     /// The `solc` AST output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub ast: serde_json::Value,
@@ -55,4 +58,7 @@ pub struct Contract {
     /// The missing libraries.
     #[serde(default, skip_serializing_if = "HashSet::is_empty", skip_deserializing)]
     pub missing_libraries: HashSet<String>,
+    /// The binary object format.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub object_format: Option<era_compiler_common::ObjectFormat>,
 }

@@ -2,6 +2,7 @@
 //! The Solidity contract build.
 //!
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
@@ -14,14 +15,17 @@ use std::path::PathBuf;
 pub struct Contract {
     /// The contract name.
     pub name: era_compiler_common::ContractName,
-    /// The auxiliary identifier. Used to identify Yul objects.
-    pub identifier: String,
     /// The LLVM module build.
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
-    /// The factory dependencies.
+    /// The unresolved factory dependencies.
     pub factory_dependencies: HashSet<String>,
+    /// The resolved factory dependencies.
+    pub factory_dependencies_resolved:
+        HashMap<[u8; era_compiler_common::BYTE_LENGTH_FIELD], String>,
+    /// The binary object format.
+    pub object_format: era_compiler_common::ObjectFormat,
 }
 
 impl Contract {
@@ -30,17 +34,18 @@ impl Contract {
     ///
     pub fn new(
         name: era_compiler_common::ContractName,
-        identifier: String,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
         factory_dependencies: HashSet<String>,
+        object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,
-            identifier,
             build,
             metadata_json,
             factory_dependencies,
+            factory_dependencies_resolved: HashMap::new(),
+            object_format,
         }
     }
 
@@ -180,9 +185,12 @@ impl Contract {
             .assembly
             .map(serde_json::Value::String)
             .unwrap_or_default();
-        combined_json_contract
-            .factory_deps
-            .extend(self.build.factory_dependencies);
+        combined_json_contract.factory_deps.extend(
+            self.factory_dependencies_resolved
+                .into_iter()
+                .map(|(hash, path)| (hex::encode(hash), path)),
+        );
+        combined_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }
@@ -206,10 +214,13 @@ impl Contract {
             .evm
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
-        standard_json_contract
-            .factory_dependencies
-            .extend(self.build.factory_dependencies);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
+        standard_json_contract.factory_dependencies.extend(
+            self.factory_dependencies_resolved
+                .into_iter()
+                .map(|(hash, path)| (hex::encode(hash), path)),
+        );
+        standard_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }

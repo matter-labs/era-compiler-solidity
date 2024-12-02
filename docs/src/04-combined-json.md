@@ -54,12 +54,18 @@ The format below is a modification of the original combined JSON [output](https:
       "userdoc": {/* ... */},
       // Optional: Emitted if "storage-layout" selector is provided.
       "storage-layout": {/* ... */},
+      // Optional: Emitted if "transient-storage-layout" selector is provided.
+      "transient-storage-layout": {/* ... */},
       // Required: Bytecode is always emitted.
       "bin": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
       // Required: Bytecode is always emitted.
       "bin-runtime": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
       // Required, zksolc: Mapping between bytecode hashes and full contract identifiers (e.g. "MyContract.sol:Test").
       "factory-deps": {/* ... */}
+      // Required, zksolc: Binary object format.
+      // Tells whether the bytecode has been linked.
+      // Possible values: "elf" (unlinked), "raw" (linked).
+      "objectFormat": "elf"
     }
   },
   // Optional: List of input files.

@@ -63,7 +63,6 @@ pub fn yul_to_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -89,17 +88,21 @@ pub fn yul_to_eravm(
         debug_config.as_ref(),
     )?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -159,7 +162,6 @@ pub fn llvm_ir_to_eravm(
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -167,17 +169,21 @@ pub fn llvm_ir_to_eravm(
 
     let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         false,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -218,23 +224,26 @@ pub fn eravm_assembly(
     metadata_hash_type: era_compiler_common::HashType,
     llvm_options: Vec<String>,
     output_assembly: bool,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let project = Project::try_from_eravm_assembly_paths(paths, None)?;
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         false,
-        BTreeMap::new(),
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let mut build = build.link(BTreeMap::new());
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -260,7 +269,6 @@ pub fn standard_output_eravm(
     output_assembly: bool,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
     suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -305,17 +313,21 @@ pub fn standard_output_eravm(
     solc_output.take_and_write_warnings();
     solc_output.collect_errors()?;
 
-    let build = project.compile_to_eravm(
+    let mut build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.collect_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.collect_errors()?;
     Ok(build)
 }
 
@@ -404,7 +416,6 @@ pub fn standard_json_eravm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let mut solc_input = era_solc::StandardJsonInput::try_from(json_path.as_deref())?;
@@ -556,17 +567,20 @@ pub fn standard_json_eravm(
     let build = project.compile_to_eravm(
         messages,
         enable_eravm_extensions,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         output_assembly,
-        threads,
         debug_config,
     )?;
+    if build.has_errors() {
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+        solc_output.write_and_exit(prune_output);
+    }
+
+    let build = build.link(linker_symbols);
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
-
     solc_output.write_and_exit(prune_output);
 }
 
@@ -734,7 +748,6 @@ pub fn combined_json_eravm(
     output_assembly: bool,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
     suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let build = standard_output_eravm(
@@ -756,7 +769,6 @@ pub fn combined_json_eravm(
         output_assembly,
         suppressed_errors,
         suppressed_warnings,
-        threads,
         debug_config,
     )?;
 
@@ -867,8 +879,13 @@ pub fn disassemble_eravm(paths: Vec<String>) -> anyhow::Result<()> {
     let disassemblies: Vec<(String, String)> = bytecodes
         .into_iter()
         .map(|(path, bytecode)| {
+            let bytecode_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                bytecode.as_slice(),
+                path.as_str(),
+                false,
+            );
             let disassembly =
-                era_compiler_llvm_context::eravm_disassemble(&target_machine, bytecode.as_slice())?;
+                era_compiler_llvm_context::eravm_disassemble(&target_machine, &bytecode_buffer)?;
             Ok((path, disassembly))
         })
         .collect::<anyhow::Result<Vec<(String, String)>>>()?;
