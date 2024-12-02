@@ -310,19 +310,20 @@ impl era_solc::CollectableError for Build {
         errors.extend(
             self.messages
                 .iter()
-                .filter(|message| message.r#type == "Error"),
+                .filter(|message| message.severity == "error"),
         );
         errors
     }
 
-    fn warnings(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.messages
+    fn take_warnings(&mut self) -> Vec<era_solc::StandardJsonOutputError> {
+        let warnings = self
+            .messages
             .iter()
-            .filter(|message| message.r#type == "Warning")
-            .collect()
-    }
-
-    fn remove_warnings(&mut self) {
-        self.messages.retain(|message| message.r#type != "Warning");
+            .filter(|message| message.severity == "warning")
+            .cloned()
+            .collect();
+        self.messages
+            .retain(|message| message.severity != "warning");
+        warnings
     }
 }

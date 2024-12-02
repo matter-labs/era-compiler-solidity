@@ -48,6 +48,20 @@ fn with_llvm_ir_invalid(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
+fn with_llvm_ir_linker_error(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "ld.lld: error: undefined symbol: foo",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn with_wrong_input_format(target: Target) -> anyhow::Result<()> {
     common::setup()?;
