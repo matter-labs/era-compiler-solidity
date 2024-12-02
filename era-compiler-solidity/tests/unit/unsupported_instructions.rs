@@ -61,7 +61,7 @@ contract FixedCodeCopy {
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), source_code.to_owned());
 
-    common::build_solidity(
+    common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -130,7 +130,7 @@ fn callcode(version: semver::Version, codegen: era_solc::StandardJsonInputCodege
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
 
-    common::build_solidity(
+    common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -193,7 +193,7 @@ fn extcodecopy(version: semver::Version, codegen: era_solc::StandardJsonInputCod
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
 
-    common::build_solidity(
+    common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -324,7 +324,7 @@ fn selfdestruct(
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), source.to_owned());
 
-    common::build_solidity(
+    common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,

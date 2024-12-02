@@ -259,15 +259,9 @@ impl Build {
                 .contracts
                 .iter_mut()
                 .find_map(|(json_path, contract)| {
-                    let path = PathBuf::from(&path[..path.rfind(':').expect("Always exists")])
-                        .normalize()
-                        .expect("Path normalization error");
-                    let json_path =
-                        PathBuf::from(&json_path[..json_path.rfind(':').expect("Always exists")])
-                            .normalize()
-                            .expect("Path normalization error");
-
-                    if path.ends_with(json_path) {
+                    if Self::normalize_full_path(path.as_str())
+                        .ends_with(Self::normalize_full_path(json_path).as_str())
+                    {
                         Some(contract)
                     } else {
                         None
@@ -282,21 +276,53 @@ impl Build {
 
         Ok(())
     }
+
+    ///
+    /// Normalizes full contract path.
+    ///
+    /// # Panics
+    /// If the path does not contain a colon.
+    ///
+    fn normalize_full_path(path: &str) -> String {
+        let mut iterator = path.split(':');
+        let path = iterator.next().expect("Always exists");
+        let name = iterator.next().expect("Always exists");
+
+        let mut full_path = PathBuf::from(path)
+            .normalize()
+            .expect("Path normalization error")
+            .as_os_str()
+            .to_string_lossy()
+            .into_owned();
+        full_path.push(':');
+        full_path.push_str(name);
+        full_path
+    }
 }
 
 impl era_solc::CollectableError for Build {
     fn errors(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.results
+        let mut errors: Vec<&era_solc::StandardJsonOutputError> = self
+            .results
             .values()
             .filter_map(|build| build.as_ref().err())
-            .collect()
+            .collect();
+        errors.extend(
+            self.messages
+                .iter()
+                .filter(|message| message.r#type == "Error"),
+        );
+        errors
     }
 
     fn warnings(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.messages.iter().collect()
+        self.messages
+            .iter()
+            .filter(|message| message.r#type == "Warning")
+            .collect()
     }
 
     fn remove_warnings(&mut self) {
-        self.messages.clear();
+        self.messages.retain(|message| message.r#type != "Warning");
     }
 }

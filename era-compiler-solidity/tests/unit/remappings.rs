@@ -45,7 +45,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     let mut remappings = BTreeSet::new();
     remappings.insert("libraries/default/=./".to_owned());
 
-    common::build_solidity(
+    common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,

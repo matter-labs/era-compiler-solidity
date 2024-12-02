@@ -22,7 +22,7 @@ fn evmla(version: semver::Version) {
 
     let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_PATH]);
 
-    let build = common::build_solidity(
+    let build = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -63,7 +63,7 @@ fn evmla(version: semver::Version) {
 fn yul(version: semver::Version) {
     let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_PATH]);
 
-    let build = common::build_solidity(
+    let build = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,

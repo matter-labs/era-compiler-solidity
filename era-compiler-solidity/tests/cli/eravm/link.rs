@@ -49,6 +49,20 @@ fn without_libraries() -> anyhow::Result<()> {
 }
 
 #[test]
+fn without_libraries_linker_error() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--link", common::TEST_LINKER_ERROR_BYTECODE_PATH];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "ld.lld: error: undefined symbol: foo",
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn with_libraries_and_extra_args() -> anyhow::Result<()> {
     common::setup()?;
 
@@ -211,6 +225,24 @@ fn with_standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "hexadecimal string decoding: Invalid character \'I\' at position 0",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn with_standard_json_linker_error() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_LINKER_ERROR_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "ld.lld: error: undefined symbol: foo",
     ));
 
     Ok(())

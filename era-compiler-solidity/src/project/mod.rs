@@ -10,7 +10,6 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
-use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
@@ -91,23 +90,22 @@ impl Project {
         let mut input_contracts = Vec::with_capacity(solc_output.contracts.len());
         for (path, file) in solc_output.contracts.iter() {
             for (name, contract) in file.iter() {
-                input_contracts.push((path, name, contract));
+                let name = era_compiler_common::ContractName::new(
+                    (*path).to_owned(),
+                    Some((*name).to_owned()),
+                );
+                input_contracts.push((name, contract));
             }
         }
 
         let results = input_contracts
-            .par_iter()
+            .into_par_iter()
             .map(
-                |(path, name, contract): &(
-                    &String,
-                    &String,
+                |(name, contract): (
+                    era_compiler_common::ContractName,
                     &era_solc::StandardJsonOutputContract,
                 )|
                  -> (String, anyhow::Result<Option<Contract>>) {
-                    let name = era_compiler_common::ContractName::new(
-                        (*path).to_owned(),
-                        Some((*name).to_owned()),
-                    );
                     let full_path = name.full_path.clone();
 
                     let result = match codegen {

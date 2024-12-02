@@ -178,6 +178,9 @@ pub const TEST_DISASSEMBLER_BYTECODE_PATH: &str = "tests/data/bytecodes/disassem
 /// A test input file.
 pub const TEST_LINKER_BYTECODE_PATH: &str = "tests/data/bytecodes/linker.zbin";
 
+/// A test input file.
+pub const TEST_LINKER_ERROR_BYTECODE_PATH: &str = "tests/data/bytecodes/linker_error.zbin";
+
 /// The temporary directory for data created by tests.
 pub const TEST_TEMP_DIRECTORY: &str = "tests/data/temp";
 
@@ -197,6 +200,10 @@ pub const TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH: &str =
 /// A test input file.
 pub const TEST_LINKER_STANDARD_JSON_INPUT_INVALID_HEXADECIMAL_PATH: &str =
     "tests/data/standard_json_input/linker/invalid_hexadecimal.json";
+
+/// A test input file.
+pub const TEST_LINKER_STANDARD_JSON_INPUT_LINKER_ERROR_PATH: &str =
+    "tests/data/standard_json_input/linker/linker_error.json";
 
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";

@@ -21,7 +21,7 @@ use self::contract::Contract;
 #[derive(Debug)]
 pub struct Build {
     /// The contract data,
-    pub contracts: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
+    pub results: BTreeMap<String, Result<Contract, era_solc::StandardJsonOutputError>>,
     /// The additional message to output.
     pub messages: Vec<era_solc::StandardJsonOutputError>,
 }
@@ -35,7 +35,7 @@ impl Build {
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
     ) -> Self {
         Self {
-            contracts,
+            results: contracts,
             messages: std::mem::take(messages),
         }
     }
@@ -60,7 +60,7 @@ impl Build {
             return Ok(());
         }
 
-        for (path, build) in self.contracts.into_iter() {
+        for (path, build) in self.results.into_iter() {
             build.expect("Always valid").write_to_terminal(
                 path,
                 output_metadata,
@@ -88,7 +88,7 @@ impl Build {
 
         std::fs::create_dir_all(output_directory)?;
 
-        for build in self.contracts.into_values() {
+        for build in self.results.into_values() {
             build.expect("Always valid").write_to_directory(
                 output_directory,
                 output_metadata,
@@ -113,8 +113,8 @@ impl Build {
         standard_json: &mut era_solc::StandardJsonOutput,
         solc_version: Option<&era_solc::Version>,
     ) -> anyhow::Result<()> {
-        let mut errors = Vec::with_capacity(self.contracts.len());
-        for (full_path, build) in self.contracts.into_iter() {
+        let mut errors = Vec::with_capacity(self.results.len());
+        for (full_path, build) in self.results.into_iter() {
             let mut full_path_split = full_path.split(':');
             let path = full_path_split.next().expect("Always exists");
             let name = full_path_split.next().unwrap_or(path);
@@ -158,7 +158,7 @@ impl Build {
         self.take_and_write_warnings();
         self.exit_on_error();
 
-        for (path, build) in self.contracts.into_iter() {
+        for (path, build) in self.results.into_iter() {
             let combined_json_contract = combined_json
                 .contracts
                 .iter_mut()
@@ -190,17 +190,27 @@ impl Build {
 
 impl era_solc::CollectableError for Build {
     fn errors(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.contracts
+        let mut errors: Vec<&era_solc::StandardJsonOutputError> = self
+            .results
             .values()
             .filter_map(|build| build.as_ref().err())
-            .collect()
+            .collect();
+        errors.extend(
+            self.messages
+                .iter()
+                .filter(|message| message.r#type == "Error"),
+        );
+        errors
     }
 
     fn warnings(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.messages.iter().collect()
+        self.messages
+            .iter()
+            .filter(|message| message.r#type == "Warning")
+            .collect()
     }
 
     fn remove_warnings(&mut self) {
-        self.messages.clear();
+        self.messages.retain(|message| message.r#type != "Warning");
     }
 }

@@ -101,7 +101,7 @@ pub fn read_sources(paths: &[&str]) -> BTreeMap<String, String> {
 ///
 /// Builds the Solidity project and returns the standard JSON output.
 ///
-pub fn build_solidity(
+pub fn build_solidity_standard_json(
     sources: BTreeMap<String, String>,
     libraries: era_solc::StandardJsonInputLibraries,
     metadata_hash_type: era_compiler_common::HashType,
@@ -170,6 +170,59 @@ pub fn build_solidity(
     build.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version))?;
     solc_output.collect_errors()?;
     Ok(solc_output)
+}
+
+///
+/// Builds the Solidity project and returns the combined JSON output.
+///
+pub fn build_solidity_combined_json(
+    sources: BTreeMap<String, String>,
+    libraries: era_solc::StandardJsonInputLibraries,
+    metadata_hash_type: era_compiler_common::HashType,
+    solc_version: &semver::Version,
+    solc_codegen: era_solc::StandardJsonInputCodegen,
+    optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
+) -> anyhow::Result<era_solc::CombinedJson> {
+    self::setup()?;
+
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+
+    let solc_compiler = get_solc_compiler(solc_version)?;
+    let paths: Vec<PathBuf> = sources.keys().map(PathBuf::from).collect();
+
+    let mut solc_output = self::build_solidity_standard_json(
+        sources,
+        libraries.clone(),
+        metadata_hash_type,
+        BTreeSet::new(),
+        solc_version,
+        solc_codegen,
+        optimizer_settings.clone(),
+    )?;
+
+    let project = Project::try_from_solc_output(
+        libraries,
+        solc_codegen,
+        &mut solc_output,
+        &solc_compiler,
+        None,
+    )?;
+    solc_output.collect_errors()?;
+
+    let build = project.compile_to_eravm(
+        &mut vec![],
+        true,
+        metadata_hash_type,
+        optimizer_settings,
+        vec![],
+        false,
+        None,
+    )?;
+    build.collect_errors()?;
+
+    let mut combined_json = solc_compiler.combined_json(paths.as_slice(), "bin")?;
+    build.write_to_combined_json(&mut combined_json)?;
+    Ok(combined_json)
 }
 
 ///

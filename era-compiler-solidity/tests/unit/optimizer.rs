@@ -39,7 +39,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
 
     let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH]);
 
-    let build_unoptimized = common::build_solidity(
+    let build_unoptimized = common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
@@ -49,7 +49,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
-    let build_optimized_for_cycles = common::build_solidity(
+    let build_optimized_for_cycles = common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
@@ -59,7 +59,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");
-    let build_optimized_for_size = common::build_solidity(
+    let build_optimized_for_size = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
