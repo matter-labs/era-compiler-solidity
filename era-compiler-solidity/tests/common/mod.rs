@@ -189,7 +189,6 @@ pub fn build_solidity_combined_json(
 
     let solc_compiler = get_solc_compiler(solc_version)?;
     let paths: Vec<PathBuf> = sources.keys().map(PathBuf::from).collect();
-    let linker_symbols = libraries.as_linker_symbols()?;
 
     let mut solc_output = self::build_solidity_standard_json(
         sources,
@@ -213,12 +212,10 @@ pub fn build_solidity_combined_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        linker_symbols,
         metadata_hash_type,
         optimizer_settings,
         vec![],
         false,
-        None,
         None,
     )?;
     build.collect_errors()?;

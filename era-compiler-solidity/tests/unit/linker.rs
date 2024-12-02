@@ -558,7 +558,7 @@ fn libraries_passed_post_compile_time_complex(
 ) {
     let sources = common::read_sources(sources);
 
-    let build = common::build_solidity(
+    let build = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::None,
@@ -625,7 +625,7 @@ fn libraries_not_passed_post_compile_time_complex(
 ) {
     let sources = common::read_sources(sources);
 
-    let build = common::build_solidity(
+    let build = common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::None,

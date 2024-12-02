@@ -302,17 +302,27 @@ impl Build {
 
 impl era_solc::CollectableError for Build {
     fn errors(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.results
+        let mut errors: Vec<&era_solc::StandardJsonOutputError> = self
+            .results
             .values()
             .filter_map(|build| build.as_ref().err())
-            .collect()
+            .collect();
+        errors.extend(
+            self.messages
+                .iter()
+                .filter(|message| message.r#type == "Error"),
+        );
+        errors
     }
 
     fn warnings(&self) -> Vec<&era_solc::StandardJsonOutputError> {
-        self.messages.iter().collect()
+        self.messages
+            .iter()
+            .filter(|message| message.r#type == "Warning")
+            .collect()
     }
 
     fn remove_warnings(&mut self) {
-        self.messages.clear();
+        self.messages.retain(|message| message.r#type != "Warning");
     }
 }
