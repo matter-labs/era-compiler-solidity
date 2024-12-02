@@ -38,7 +38,7 @@ pub struct Arguments {
     /// Make an additional source directory available to the default import callback.
     /// Can be used multiple times. Can only be used if the base path has a non-empty value.
     /// Passed to `solc` without changes.
-    #[arg(long)]
+    #[arg(long, num_args = 1..)]
     pub include_path: Vec<String>,
 
     /// Allow a given path for imports. A list of paths can be supplied by separating them with a comma.
@@ -86,9 +86,9 @@ pub struct Arguments {
     #[arg(long)]
     pub evm_version: Option<era_compiler_common::EVMVersion>,
 
-    /// Specify addresses of deployable libraries. Syntax: `<libraryName>=<address> [, or whitespace] ...`.
+    /// Specify addresses of deployable libraries. Syntax: `<libraryFullPath1>=<address1> ... <libraryFullPathN>=<addressN>`.
     /// Addresses are interpreted as hexadecimal strings prefixed with `0x`.
-    #[arg(short, long)]
+    #[arg(short, long, num_args = 1..)]
     pub libraries: Vec<String>,
 
     /// Output a single JSON document containing the specified information.
@@ -196,12 +196,12 @@ pub struct Arguments {
 
     /// Suppress specified errors.
     /// Available arguments: `sendtransfer`.
-    #[arg(long)]
+    #[arg(long, num_args = 1..)]
     pub suppress_errors: Option<Vec<String>>,
 
     /// Suppress specified warnings.
     /// Available arguments: `txorigin`.
-    #[arg(long)]
+    #[arg(long, num_args = 1..)]
     pub suppress_warnings: Option<Vec<String>>,
 
     /// Dump all IRs to files in the specified directory.

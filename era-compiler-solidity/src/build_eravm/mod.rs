@@ -56,39 +56,24 @@ impl Build {
 
         loop {
             let mut linkage_data = BTreeMap::new();
-            let unlinked_satisfied_contracts: BTreeMap<&String, &Contract> = contracts
-                .iter()
-                .filter(|(_path, contract)| {
-                    contract.object_format == era_compiler_common::ObjectFormat::ELF
-                        && contract.factory_dependencies.iter().all(|dependency| {
-                            contracts
-                                .get(dependency)
-                                .expect("Always exists")
-                                .object_format
-                                == era_compiler_common::ObjectFormat::Raw
-                        })
-                })
-                .collect();
-            if unlinked_satisfied_contracts.is_empty() {
-                break;
-            }
-
-            for (path, contract) in unlinked_satisfied_contracts.into_iter() {
+            for (path, contract) in contracts.iter().filter(|(_path, contract)| {
+                contract.object_format == era_compiler_common::ObjectFormat::ELF
+            }) {
                 let factory_dependencies: BTreeMap<
                     String,
                     [u8; era_compiler_common::BYTE_LENGTH_FIELD],
                 > = contract
                     .factory_dependencies
                     .iter()
-                    .map(|dependency| {
+                    .filter_map(|dependency| {
                         let bytecode_hash = contracts
                             .get(dependency)
-                            .expect("Always exists")
+                            .as_ref()?
                             .build
                             .bytecode_hash
-                            .to_owned()
-                            .expect("Always exists");
-                        (dependency.to_owned(), bytecode_hash)
+                            .as_ref()?
+                            .to_owned();
+                        Some((dependency.to_owned(), bytecode_hash))
                     })
                     .collect();
 
@@ -123,17 +108,17 @@ impl Build {
                 let factory_dependencies_resolved = contract
                     .factory_dependencies
                     .iter()
-                    .map(|dependency| {
-                        (
+                    .filter_map(|dependency| {
+                        Some((
                             contracts
                                 .get(dependency)
-                                .expect("Always exists")
+                                .as_ref()?
                                 .build
                                 .bytecode_hash
-                                .to_owned()
-                                .expect("Always exists"),
+                                .as_ref()?
+                                .to_owned(),
                             dependency.to_owned(),
-                        )
+                        ))
                     })
                     .collect();
 

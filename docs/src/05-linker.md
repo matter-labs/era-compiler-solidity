@@ -4,6 +4,8 @@
 
 For unlinked bytecode, the ZKsync compiler toolchain uses [an ELF wrapper](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format), which is the standard in the LLVM framework. ELF-wrapped bytecode cannot be deployed to the blockchain as-is; all library references must first be resolved. Once they are resolved, the ELF wrapper is stripped, leaving only the raw bytecode ready for deployment. This approach also results in unlinked and linked bytecode differing in size.
 
+> When compiling to EraVM, provide all build artifacts to the linker. Unlike EVM ones, EraVM dependencies are linked using the bytecode hash, so if you simply provide all the bytecode files of your project, the linker will automatically resolve all dependencies.
+
 The *zksolc* linker can be used in several ways:
 
 - [JSON Protocol](#json-protocol)
@@ -112,7 +114,7 @@ contract Greeter {
 zksolc './Greeter.sol' --output-dir './output' --bin
 ```
 
-2. Check for unlinked library references.
+2. Check for unlinked library and factory dependency references.
 
 It can be done with the following command, where the `--library` argument is intentionally omitted:
 
@@ -124,13 +126,14 @@ Output:
 
 ```json
 {
-  "ignored": {},
   "linked": {},
   "unlinked": {
-    "./output/Greeter.sol/Greeter.zbin": [
-      "Greeter.sol:GreeterHelper"
-    ]
-  }
+    "./output/Greeter.sol/Greeter.zbin": {
+      "linker_symbols": ["Greeter.sol:GreeterHelper"],
+      "factory_dependencies": []
+    }
+  },
+  "ignored": {}
 }
 ```
 
@@ -139,7 +142,7 @@ Output:
 The library addresses must be provided in the `--libraries` argument:
 
 ```bash
-zksolc --link './output/Greeter.sol/Greeter.zbin' --libraries 'Greeter.sol:GreaterHelper=0x1234567812345678123456781234567812345678'
+zksolc --link './output/Greeter.sol/Greeter.zbin' --libraries 'Greeter.sol:GreeterHelper=0x1234567812345678123456781234567812345678'
 ```
 
 Output:
