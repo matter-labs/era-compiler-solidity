@@ -43,6 +43,14 @@ pub const TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH: &str =
     "tests/data/contracts/solidity/SimpleContract.sol";
 
 /// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH: &str =
+    "tests/data/contracts/solidity/LinkedMixedDeps.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH: &str =
+    "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol";
+
+/// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH: &str =
     "tests/data/contracts/solidity/Optimized.sol";
 
