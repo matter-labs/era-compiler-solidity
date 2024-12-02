@@ -101,8 +101,10 @@ impl Build {
                         )),
                 }
             }
+            if linkage_data.is_empty() {
+                break;
+            }
 
-            let mut linked_contracts = 0;
             for (path, (memory_buffer_linked, bytecode_hash)) in linkage_data.into_iter() {
                 let contract = contracts.get(path.as_str()).expect("Always exists");
                 let factory_dependencies_resolved = contract
@@ -126,17 +128,7 @@ impl Build {
                 contract.build.bytecode = memory_buffer_linked.as_slice().to_vec();
                 contract.build.bytecode_hash = Some(bytecode_hash);
                 contract.factory_dependencies_resolved = factory_dependencies_resolved;
-                contract.object_format = if memory_buffer_linked.is_elf_eravm() {
-                    era_compiler_common::ObjectFormat::ELF
-                } else {
-                    if let era_compiler_common::ObjectFormat::ELF = contract.object_format {
-                        linked_contracts += 1;
-                    }
-                    era_compiler_common::ObjectFormat::Raw
-                };
-            }
-            if linked_contracts == 0 {
-                break;
+                contract.object_format = era_compiler_common::ObjectFormat::Raw;
             }
         }
 

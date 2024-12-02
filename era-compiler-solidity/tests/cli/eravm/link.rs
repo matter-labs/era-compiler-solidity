@@ -199,6 +199,24 @@ fn with_standard_json_missing() -> anyhow::Result<()> {
 }
 
 #[test]
+fn with_standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--link",
+        "--standard-json",
+        common::TEST_LINKER_STANDARD_JSON_INPUT_INVALID_HEXADECIMAL_PATH,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "hexadecimal string decoding: Invalid character \'I\' at position 0",
+    ));
+
+    Ok(())
+}
+
+#[test]
 fn with_target_evm() -> anyhow::Result<()> {
     common::setup()?;
 

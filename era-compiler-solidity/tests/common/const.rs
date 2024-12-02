@@ -194,6 +194,10 @@ pub const TEST_LINKER_STANDARD_JSON_INPUT_WITH_LIBRARIES_PATH: &str =
 pub const TEST_LINKER_STANDARD_JSON_INPUT_WITHOUT_LIBRARIES_PATH: &str =
     "tests/data/standard_json_input/linker/without_libraries.json";
 
+/// A test input file.
+pub const TEST_LINKER_STANDARD_JSON_INPUT_INVALID_HEXADECIMAL_PATH: &str =
+    "tests/data/standard_json_input/linker/invalid_hexadecimal.json";
+
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
 
