@@ -29,8 +29,8 @@ You can check the LLVM version used by `rustc` by running the following command 
 ## Build steps
 
 The general steps to have a sanitizer enabled build include:
-1. Build LLVM ("backend") with the required sanitizer enabled.
-2. Build ZKsync solidity Rust code ("frontend") with the LLVM build from the previous step.
+1. Build the LLVM framework with the required sanitizer enabled.
+2. Build `zksolc` with the LLVM build from the previous step.
 
 Please, follow the common [installation instructions](../01-installation.md#building-from-source)
 until the `zksync-llvm build` step.
@@ -52,7 +52,7 @@ For example:
 </div>
 
 ```shell
-zksync-llvm build --sansitizer=Address \
+zksync-llvm build --sanitizer=Address \
   --extra-args '\-DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang' \
                '\-DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++'
 ```

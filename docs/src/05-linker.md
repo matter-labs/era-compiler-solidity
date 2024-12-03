@@ -4,12 +4,14 @@
 
 For unlinked bytecode, the ZKsync compiler toolchain uses [an ELF wrapper](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format), which is the standard in the LLVM framework. ELF-wrapped bytecode cannot be deployed to the blockchain as-is; all library references must first be resolved. Once they are resolved, the ELF wrapper is stripped, leaving only the raw bytecode ready for deployment. This approach also results in unlinked and linked bytecode differing in size.
 
-> When compiling to EraVM, provide all build artifacts to the linker. Unlike EVM ones, EraVM dependencies are linked using the bytecode hash, so if you simply provide all the bytecode files of your project, the linker will automatically resolve all dependencies.
+> When compiling to EraVM, provide all build artifacts to the linker. Unlike EVM ones, EraVM dependencies are linked using the bytecode hash, so the linker must be able to derive the bytecode hash of all contracts in order to automatically resolve all dependencies.
 
 The *zksolc* linker can be used in several ways:
 
 - [JSON Protocol](#json-protocol)
 - [Basic CLI](#basic-cli)
+
+
 
 ## JSON Protocol
 
@@ -77,6 +79,8 @@ cat './input.json' | zksolc --link --standard-json
   }
 }
 ```
+
+
 
 ## Basic CLI
 
