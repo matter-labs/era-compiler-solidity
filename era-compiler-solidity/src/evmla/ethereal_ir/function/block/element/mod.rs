@@ -2124,7 +2124,11 @@ where
                 )?;
                 Ok(None)
             }
-            InstructionName::PUSHSIZE => Ok(Some(context.field_const(0).as_basic_value_enum())),
+            InstructionName::PUSHSIZE => {
+                let object_name = context.module().get_name().to_string_lossy().to_string();
+                era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
+                    .map(Some)
+            }
             InstructionName::RETURNDATASIZE => {
                 era_compiler_llvm_context::evm_return_data::size(context).map(Some)
             }
