@@ -89,12 +89,31 @@ Visit [the *solc* documentation](https://docs.soliditylang.org/en/latest/using-t
 
 
 
+### `--libraries`
+
+Specifies the libraries to link with compiled contracts. The option accepts multiple string arguments. The safest way is to wrap each argument in single quotes, and separate them with a space.
+
+The specifier has the following format: `<ContractPath>:<ContractName>=<LibraryAddress>`.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --libraries 'Simple.sol:Test=0x1234567890abcdef1234567890abcdef12345678'
+```
+
+There are two ways of linking libraries:
+1. At compile time, immediately after the contract is compiled.
+2. At deploy time (a.k.a. post-compile time), right before the contract is deployed.
+
+The use case above describes linking at compile time. For linking at deploy time, see the [linker documentation](./05-linker.md).
+
+
+
 ### `--base-path`, `--include-path`, `--allow-paths`
 
 These options are used to specify Solidity import resolution settings. They are not used by *zksolc* and only passed through to *solc* like import remappings.
 
 Visit [the *solc* documentation](https://docs.soliditylang.org/en/latest/path-resolution.html) to learn more about the processing of these options.
-
 
 
 
@@ -152,7 +171,87 @@ Output:
 ```text
 ======= Simple.sol:Simple =======
 Metadata:
-{"llvm_options":[],"optimizer_settings":{"is_debug_logging_enabled":false,"is_fallback_to_size_enabled":false,"is_verify_each_enabled":false,"level_back_end":"Aggressive","level_middle_end":"Aggressive","level_middle_end_size":"Zero"},"solc_version":"<masked>","solc_zkvm_edition":null,"source_metadata":{...},"zk_version":"<masked>"}
+{"llvm_options":[],"optimizer_settings":{"is_debug_logging_enabled":false,"is_fallback_to_size_enabled":false,"is_verify_each_enabled":false,"level_back_end":"Aggressive","level_middle_end":"Aggressive","level_middle_end_size":"Zero"},"solc_version":"x.y.z","solc_zkvm_edition":null,"source_metadata":{...},"zk_version":"x.y.z"}
+```
+
+
+
+### `--output-dir`
+
+Specifies the output directory for build artifacts. Can only be used with [basic CLI](#basic-cli) and [combined JSON](./04-combined-json.md) modes.
+
+Usage in basic CLI mode:
+
+```bash
+zksolc './Simple.sol' --bin --asm --metadata --output-dir './build/'
+ls './build/Simple.sol'
+```
+
+Output:
+
+```text
+Compiler run successful. Artifact(s) can be found in directory "build".
+...
+Test.zasm       Test.zbin       Test_meta.json
+```
+
+Usage in combined JSON mode:
+
+```bash
+zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/'
+ls './build/'
+```
+
+Output:
+
+```text
+Compiler run successful. Artifact(s) can be found in directory "build".
+...
+combined.json
+```
+
+
+
+### `--overwrite`
+
+Overwrites the output files if they already exist in the output directory. By default, *zksolc* does not overwrite existing files.
+
+Can only be used in combination with the [`--output-dir`](#--output-dir) option.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/' --overwrite
+```
+
+If the `--overwrite` option is not specified and the output files already exist, *zksolc* will print an error message and exit:
+
+```text
+Error: Refusing to overwrite an existing file "build/combined.json" (use --overwrite to force).
+```
+
+
+
+### `--version`
+
+Prints the version of *zksolc* and the hash of the LLVM commit it was built with.
+
+Usage:
+
+```bash
+zksolc --version
+```
+
+
+
+### `--help`
+
+Prints the help message.
+
+Usage:
+
+```bash
+zksolc --help
 ```
 
 
@@ -174,6 +273,90 @@ For the combined JSON mode usage, see the [Combined JSON](./04-combined-json.md)
 
 
 ## Compilation Settings
+
+
+
+### `--optimization / -O`
+
+Sets the optimization level of the LLVM optimizer. Available values are:
+
+| Level | Meaning                      | Hints                                            |
+|:-----:|:----------------------------:|:------------------------------------------------:|
+| 0     | No optimization              | Best compilation speed: for active development
+| 1     | Performance: basic           | For optimization research
+| 2     | Performance: default         | For optimization research
+| 3     | Performance: aggressive      | Default value. Best performance: for production
+| s     | Size: default                | For optimization research
+| z     | Size: aggressive             | Best size: for contracts with size constraints
+
+For most cases, it is fine to use the default value of `3`. You should only use the level `z` if you are ready to deliberately sacrifice performance and optimize for size.
+
+> Large contracts may hit the EraVM or EVM bytecode size limit. In this case, it is recommended to use the [`--fallback-Oz`](#--fallback-oz) option rather than set the `z` level.
+
+
+
+### `--fallback-Oz`
+
+Sets the optimization level to `z` for contracts that failed to compile due to overrunning the bytecode size constraints.
+
+Under the hood, this option automatically triggers recompilation of contracts with level `z`. Contracts that were successfully compiled with [the original `--optimization` setting](#--optimization---o) are not recompiled.
+
+> It is recommended to have this option always enabled to prevent compilation failures due to bytecode size constraints. There are no known downsides to using this option.
+
+
+
+### `--enable-eravm-extensions`
+
+Enables the EraVM extensions.
+
+If this flag is set, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
+
+In the Yul mode, the `verbatim_*` instruction family becomes available.
+
+The full list of EraVM extensions will be documented soon.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --enable-eravm-extensions
+```
+
+
+
+### `--llvm-options`
+
+Specifies additional options for the LLVM framework. The argument must be a single quoted string following a `=` separator.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --llvm-options='-eravm-jump-table-density-threshold=10'
+```
+
+> The `--llvm-options` option is experimental and must only be used by experienced users. All supported options will be documented in the future.
+
+
+
+### `--codegen`
+
+Specifies the *solc* codegen. The following values are allowed:
+
+| Value | Description                  | Hints                              |
+|:-----:|:----------------------------:|:----------------------------------:|
+| evmla | EVM legacy assembly          | *solc* default for EVM/L1          |
+| yul   | Yul a.k.a. IR                | *zksolc* default for ZKsync        |
+
+> *solc* uses the `evmla` codegen by default. However, *zksolc* uses the `yul` codegen by default for historical reasons.
+> Codegens are not equivalent and may lead to different behavior in production.
+> Make sure that this option is set to `evmla` if you want your contracts to behave as they would on L1.
+> For codegen differences, visit the [solc IR breaking changes page](https://docs.soliditylang.org/en/latest/ir-breaking-changes.html).
+> *zksolc* is going to switch to the `evmla` codegen by default in the future in order to have more parity with L1.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --codegen 'evmla'
+```
 
 
 
@@ -244,6 +427,34 @@ Usage:
 
 ```bash
 zksolc './Simple.sol' --bin --metadata-literal
+```
+
+
+
+### `--suppress-errors`
+
+Tells the compiler to suppress specified errors. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
+
+Only one error can be suppressed with this option: [`sendtransfer`](https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer).
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
+```
+
+
+
+### `--suppress-warnings`
+
+Tells the compiler to suppress specified warnings. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
+
+Only one warning can be suppressed with this option: [`txorigin`](https://docs.zksync.io/build/tooling/foundry/migration-guide/testing#origin-address).
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --suppress-warnings 'txorigin'
 ```
 
 
@@ -335,6 +546,37 @@ Binary:
 
 
 
+## Multi-Target Support
+
+*zksolc* is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:
+
+- `eravm` — [EraVM](https://docs.zksync.io/zk-stack/components/zksync-evm) (default).
+- `evm` — [EVM](https://ethereum.org/en/developers/docs/evm/) (under development and only available for testing).
+
+### `--target`
+
+Specifies the target architecture for the compiled contract.
+
+<div class="warning">
+The <code>--target</code> option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
+</div>
+
+Usage:
+
+```bash
+zksolc Simple.sol --bin --target evm
+```
+
+Output:
+
+```text
+======= Simple.sol:Simple =======
+Binary:
+0000008003000039000000400030043f0000000100200190000000130000c13d...
+```
+
+
+
 ## Integrated Tooling
 
 *zksolc* includes several tools provided by the LLVM framework out of the box, such as disassembler and linker. The following sections describe the usage of these tools.
@@ -391,39 +633,78 @@ File `input.zbin` disassembly:
 
 
 
-## Multi-Target Support
-
-*zksolc* is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:
-
-- `eravm` — [EraVM](https://docs.zksync.io/zk-stack/components/zksync-evm) (default).
-- `evm` — [EVM](https://ethereum.org/en/developers/docs/evm/) (under development and only available for testing).
-
-### `--target`
-
-Specifies the target architecture for the compiled contract.
-
-<div class="warning">
-The <code>--target</code> option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
-</div>
-
-Usage:
-
-```bash
-zksolc Simple.sol --bin --target evm
-```
-
-Output:
-
-```text
-======= Simple.sol:Simple =======
-Binary:
-0000008003000039000000400030043f0000000100200190000000130000c13d...
-```
-
-
-
 ### `--link`
 
 Enables the linker mode.
 
 For the linker usage, visit [the linker documentation](./05-linker.md).
+
+
+
+## Debugging
+
+
+
+### `--debug-output-dir`
+
+Specifies the directory to store intermediate build artifacts. The artifacts can be useful for debugging and research.
+
+The directory is created if it does not exist. If artifacts are already present in the directory, they are overwritten.
+
+The intermediate build artifacts can be:
+
+| Name            | Codegen         | File extension   |
+|:---------------:|:---------------:|:----------------:|
+| EVM assembly    | evmla           | *evmla*          |
+| EthIR           | evmla           | *ethir*          |  
+| Yul             | yul             | *yul*            |
+| LLVM IR         | evmla, yul      | *ll*             |
+| EraVM assembly  | evmla, yul      | *zasm*           |
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --debug-output-dir './debug/'
+ls './debug/'
+```
+
+Output:
+
+```text
+Compiler run successful. No output requested. Use flags --metadata, --asm, --bin.
+...
+Simple.sol.C.runtime.optimized.ll
+Simple.sol.C.runtime.unoptimized.ll
+Simple.sol.C.yul
+Simple.sol.C.zasm
+Simple.sol.Test.runtime.optimized.ll
+Simple.sol.Test.runtime.unoptimized.ll
+Simple.sol.Test.yul
+Simple.sol.Test.zasm
+```
+
+The output file name is constructed as follows: `<ContractPath>.<ContractName>.<Modifiers>.<Extension>`.
+
+
+
+### `--llvm-verify-each`
+
+Enables the verification of the LLVM IR after each optimization pass. This option is useful for debugging and research purposes.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --llvm-verify-each
+```
+
+
+
+### `--llvm-debug-logging`
+
+Enables the debug logging of the LLVM IR optimization passes. This option is useful for debugging and research purposes.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --llvm-debug-logging
+```

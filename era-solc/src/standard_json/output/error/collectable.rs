@@ -19,27 +19,15 @@ pub trait Collectable {
     fn errors(&self) -> Vec<&Error>;
 
     ///
-    /// Returns warnings as a list.
+    /// Extracts warnings from the list of messages.
     ///
-    fn warnings(&self) -> Vec<&Error>;
-
-    ///
-    /// Removes warnings from the list of messages.
-    ///
-    fn remove_warnings(&mut self);
+    fn take_warnings(&mut self) -> Vec<Error>;
 
     ///
     /// Checks if there is at least one error.
     ///
     fn has_errors(&self) -> bool {
         !self.errors().is_empty()
-    }
-
-    ///
-    /// Checks if there is at least one warning.
-    ///
-    fn has_warnings(&self) -> bool {
-        !self.warnings().is_empty()
     }
 
     ///
@@ -85,21 +73,19 @@ pub trait Collectable {
     /// Removes warnings from the list of messages and prints them to stderr.
     ///
     fn take_and_write_warnings(&mut self) {
-        if !self.has_warnings() {
+        let warnings = self.take_warnings();
+        if warnings.is_empty() {
             return;
         }
-
         writeln!(
             std::io::stderr(),
             "{}",
-            self.warnings()
-                .iter()
+            warnings
+                .into_iter()
                 .map(|error| error.to_string())
                 .collect::<Vec<String>>()
                 .join("\n")
         )
         .expect("Stderr writing error");
-
-        self.remove_warnings();
     }
 }

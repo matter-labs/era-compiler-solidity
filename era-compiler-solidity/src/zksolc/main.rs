@@ -27,6 +27,18 @@ fn main() -> anyhow::Result<()> {
     let is_standard_json = arguments.standard_json.is_some();
     let mut messages = arguments.validate();
     if messages.iter().all(|error| error.severity != "error") {
+        if !is_standard_json {
+            std::io::stderr()
+                .write_all(
+                    messages
+                        .drain(..)
+                        .map(|error| error.to_string())
+                        .collect::<Vec<String>>()
+                        .join("\n")
+                        .as_bytes(),
+                )
+                .expect("Stderr writing error");
+        }
         if let Err(error) = main_inner(arguments, &mut messages) {
             messages.push(era_solc::StandardJsonOutputError::new_error(
                 error, None, None,

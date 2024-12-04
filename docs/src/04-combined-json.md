@@ -9,20 +9,21 @@ Combined JSON is an I/O mode designed to provide a middle-ground experience betw
 To use combined JSON, pass the `--combined-json` flag to *zksolc* with the desired comma-separated output selectors:
 
 ```shell
-zksolc './MyContract.sol' --combined-json ast,abi,metadata
+zksolc './MyContract.sol' --combined-json 'ast,abi,metadata'
 ```
 
 The following selectors are supported:
 
-|         Selector        |                 Description                 |            Type           |
-|:-----------------------:|:-------------------------------------------:|:-------------------------:|
-| **ast**                 | AST of the source file                      | JSON                      |
-| **abi**                 | Solidity ABI                                | JSON                      |
-| **hashes**              | Solidity function hashes                    | JSON                      |
-| **storage-layout**      | Solidity storage layout                     | JSON                      |
-| **metadata**            | Metadata                                    | Stringified JSON          |
-| **devdoc**              | Developer documentation                     | JSON (NatSpec)            |
-| **userdoc**             | User documentation                          | JSON (NatSpec)            |
+|         Selector              |                 Description                |            Type           |
+|:-----------------------------:|:------------------------------------------:|:-------------------------:|
+| **ast**                       | AST of the source file                     | JSON                      |
+| **abi**                       | Solidity ABI                               | JSON                      |
+| **hashes**                    | Solidity function hashes                   | JSON                      |
+| **storage-layout**            | Solidity storage layout                    | JSON                      |
+| **transient-storage-layout**  | Solidity transientstorage layout           | JSON                      |
+| **metadata**                  | Metadata                                   | Stringified JSON          |
+| **devdoc**                    | Developer documentation                    | JSON (NatSpec)            |
+| **userdoc**                   | User documentation                         | JSON (NatSpec)            |
 
 <div class="warning">
 It is only possible to use Combined JSON with Solidity input, so the path to <b>solc</b> must be always provided to *zksolc*.

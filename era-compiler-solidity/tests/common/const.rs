@@ -79,6 +79,10 @@ pub const TEST_LLVM_IR_CONTRACT_EVM_PATH: &str = "tests/data/contracts/llvm_ir/T
 pub const TEST_LLVM_IR_CONTRACT_INVALID_PATH: &str = "tests/data/contracts/llvm_ir/Invalid.ll";
 
 /// A test input file.
+pub const TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH: &str =
+    "tests/data/contracts/llvm_ir/LinkerError.ll";
+
+/// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
 
 /// A test input file.

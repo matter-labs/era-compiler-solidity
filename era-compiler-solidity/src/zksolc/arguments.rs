@@ -64,15 +64,10 @@ pub struct Arguments {
     pub fallback_to_optimizing_for_size: bool,
 
     /// Pass arbitary space-separated options to LLVM.
-    /// The argument must be a single quoted string following a `=` separator.
+    /// The argument must be a single-quoted string following a `=` separator.
     /// Example: `--llvm-options='-eravm-jump-table-density-threshold=10'`.
     #[arg(long)]
     pub llvm_options: Option<String>,
-
-    /// Deprecated.
-    /// The `solc` optimizer is not used by `zksolc` anymore.
-    #[arg(long)]
-    pub disable_solc_optimizer: bool,
 
     /// Specify the path to a `solc` executable.
     /// Solidity mode: if not provided, `solc` is also searched in `${PATH}`.
@@ -111,12 +106,6 @@ pub struct Arguments {
     #[arg(short, long)]
     pub threads: Option<usize>,
 
-    /// Switch to missing deployable libraries detection mode.
-    /// Only available for standard JSON input/output mode.
-    /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
-    #[arg(long)]
-    pub detect_missing_libraries: bool,
-
     /// Switch to Yul mode.
     /// Only one input Yul file is allowed.
     /// Cannot be used with combined and standard JSON modes.
@@ -153,17 +142,6 @@ pub struct Arguments {
     /// Available options: `evmla`, `yul`.
     #[arg(long)]
     pub codegen: Option<era_solc::StandardJsonInputCodegen>,
-
-    /// Forcibly switch to EVM legacy assembly codegen.
-    /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
-    /// and contained more bugs than today.
-    /// Deprecated: use `--codegen` instead.
-    #[arg(long)]
-    pub force_evmla: bool,
-
-    /// Deprecated: use `--enable-eravm-extensions` instead.
-    #[arg(long)]
-    pub system_mode: bool,
 
     /// Enable EraVM extensions.
     /// In this mode, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
@@ -223,6 +201,29 @@ pub struct Arguments {
     /// Only for usage from within the compiler.
     #[arg(long)]
     pub recursive_process: bool,
+
+    /// Switch to missing deployable libraries detection mode.
+    /// Only available for standard JSON input/output mode.
+    /// Contracts are not compiled in this mode, and all compilation artifacts are not included.
+    /// Deprecated: missing libraries are now always returned in standard JSON output.
+    #[arg(long)]
+    pub detect_missing_libraries: bool,
+
+    /// Forcibly switch to EVM legacy assembly codegen.
+    /// It is useful for older revisions of `solc` 0.8, where Yul was considered highly experimental
+    /// and contained more bugs than today.
+    /// Deprecated: use `--codegen` instead.
+    #[arg(long)]
+    pub force_evmla: bool,
+
+    /// Deprecated: use `--enable-eravm-extensions` instead.
+    #[arg(long)]
+    pub system_mode: bool,
+
+    /// Deprecated.
+    /// The `solc` optimizer is not used by `zksolc` anymore.
+    #[arg(long)]
+    pub disable_solc_optimizer: bool,
 }
 
 impl Arguments {

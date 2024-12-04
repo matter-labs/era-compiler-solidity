@@ -223,14 +223,14 @@ impl CollectableError for Output {
             .collect()
     }
 
-    fn warnings(&self) -> Vec<&JsonOutputError> {
-        self.errors
+    fn take_warnings(&mut self) -> Vec<JsonOutputError> {
+        let warnings = self
+            .errors
             .iter()
-            .filter(|error| error.severity == "warning")
-            .collect()
-    }
-
-    fn remove_warnings(&mut self) {
-        self.errors.retain(|error| error.severity != "warning");
+            .filter(|message| message.severity == "warning")
+            .cloned()
+            .collect();
+        self.errors.retain(|message| message.severity != "warning");
+        warnings
     }
 }
