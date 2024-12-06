@@ -20,6 +20,7 @@
 ### Fixed
 
 - Cleared return data after calling `CREATE`/`CREATE2`
+- Calls to precompile `0x04` are not replaced with `memcopy` anymore
 - Standard JSON input parsing if `outputSelection` arrays are unset
 - Missing bytecode for files with multiple contracts in combined JSON mode
 
