@@ -178,7 +178,7 @@ Metadata:
 
 ### `--output-dir`
 
-Specifies the output directory for build artifacts. Can only be used with [basic CLI](#basic-cli) and [combined JSON](./04-combined-json.md) modes.
+Specifies the output directory for build artifacts. Can only be used in [basic CLI](#basic-cli) and [combined JSON](./04-combined-json.md) modes.
 
 Usage in basic CLI mode:
 
@@ -258,6 +258,15 @@ zksolc --help
 
 ## Other I/O Modes
 
+> The mode-altering CLI options are mutually exclusive. This means that only one of the options below can be enabled at a time:
+> - `--standard-json`
+> - `--combined-json`
+> - `--yul`
+> - `--llvm-ir`
+> - `--eravm-assembly`
+> - `--disassemble`
+> - `--link`
+
 
 
 ### `--standard-json`
@@ -272,7 +281,9 @@ For the combined JSON mode usage, see the [Combined JSON](./04-combined-json.md)
 
 
 
-## Compilation Settings
+## *zksolc* Compilation Settings
+
+The options in this section are only configuring the *zksolc* compiler and do not affect the underlying *solc* compiler.
 
 
 
@@ -305,6 +316,30 @@ Under the hood, this option automatically triggers recompilation of contracts wi
 
 
 
+### `--metadata-hash`
+
+Specifies the hash function used for contract metadata.
+
+The following values are allowed:
+
+|     Value    |  Size  | Padding | Reference |
+|:------------:|:------:|:-------:|:---------:|
+| none         |  0 B   | 0-32 B  | 
+| keccak256    | 32 B   | 0-32 B  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
+| ipfs         | 44 B   | 20-52 B | [IPFS Documentation](https://docs.ipfs.tech/)
+
+The default value is `keccak256`.
+
+> EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is *prepended* with zeros according to the *Padding* column in the table above.
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --metadata-hash 'ipfs'
+```
+
+
+
 ### `--enable-eravm-extensions`
 
 Enables the EraVM extensions.
@@ -323,6 +358,34 @@ zksolc './Simple.sol' --bin --enable-eravm-extensions
 
 
 
+### `--suppress-errors`
+
+Tells the compiler to suppress specified errors. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
+
+Only one error can be suppressed with this option: [`sendtransfer`](https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer).
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
+```
+
+
+
+### `--suppress-warnings`
+
+Tells the compiler to suppress specified warnings. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
+
+Only one warning can be suppressed with this option: [`txorigin`](https://docs.zksync.io/build/tooling/foundry/migration-guide/testing#origin-address).
+
+Usage:
+
+```bash
+zksolc './Simple.sol' --bin --suppress-warnings 'txorigin'
+```
+
+
+
 ### `--llvm-options`
 
 Specifies additional options for the LLVM framework. The argument must be a single quoted string following a `=` separator.
@@ -334,6 +397,12 @@ zksolc './Simple.sol' --bin --llvm-options='-eravm-jump-table-density-threshold=
 ```
 
 > The `--llvm-options` option is experimental and must only be used by experienced users. All supported options will be documented in the future.
+
+
+
+## *solc* Compilation Settings
+
+The options in this section are only configuring *solc*, so they are passed directly to its child process, and do not affect the *zksolc* compiler.
 
 
 
@@ -393,30 +462,6 @@ For more information on how *solc* handles EVM versions, see its [EVM version do
 
 
 
-### `--metadata-hash`
-
-Specifies the hash function used for contract metadata.
-
-The following values are allowed:
-
-|     Value    |  Size  | Padding | Reference |
-|:------------:|:------:|:-------:|:---------:|
-| none         |  0 B   | 0-32 B  | 
-| keccak256    | 32 B   | 0-32 B  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
-| ipfs         | 44 B   | 20-52 B | [IPFS Documentation](https://docs.ipfs.tech/)
-
-The default value is `keccak256`.
-
-> EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is *prepended* with zeros according to the *Padding* column in the table above.
-
-Usage:
-
-```bash
-zksolc './Simple.sol' --bin --metadata-hash 'ipfs'
-```
-
-
-
 ### `--metadata-literal`
 
 Tells *solc* to store referenced sources as literal data in the metadata output.
@@ -427,34 +472,6 @@ Usage:
 
 ```bash
 zksolc './Simple.sol' --bin --metadata-literal
-```
-
-
-
-### `--suppress-errors`
-
-Tells the compiler to suppress specified errors. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
-
-Only one error can be suppressed with this option: [`sendtransfer`](https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer).
-
-Usage:
-
-```bash
-zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
-```
-
-
-
-### `--suppress-warnings`
-
-Tells the compiler to suppress specified warnings. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
-
-Only one warning can be suppressed with this option: [`txorigin`](https://docs.zksync.io/build/tooling/foundry/migration-guide/testing#origin-address).
-
-Usage:
-
-```bash
-zksolc './Simple.sol' --bin --suppress-warnings 'txorigin'
 ```
 
 
@@ -580,15 +597,6 @@ Binary:
 ## Integrated Tooling
 
 *zksolc* includes several tools provided by the LLVM framework out of the box, such as disassembler and linker. The following sections describe the usage of these tools.
-
-> The mode-altering CLI options are mutually exclusive. This means that only one of the options below can be enabled at a time:
-> - `--standard-json`
-> - `--combined-json`
-> - `--yul`
-> - `--llvm-ir`
-> - `--eravm-assembly`
-> - `--disassemble`
-> - `--link`
 
 
 
