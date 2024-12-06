@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-identity-precompile-no-memcopy#3068d634773ec2074b9baf98be694d45782a17dc"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#0902a3c9e777e1f3b22ad54c81f1a74f475a375c"
 dependencies = [
  "anyhow",
  "era-compiler-common",
