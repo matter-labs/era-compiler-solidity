@@ -194,7 +194,7 @@ impl Compiler {
             suppressed_errors.as_slice(),
             suppressed_warnings.as_slice(),
         )?;
-        solc_output.remove_evm();
+        solc_output.remove_evm_artifacts();
 
         Ok(solc_output)
     }

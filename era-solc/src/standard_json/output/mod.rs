@@ -16,7 +16,6 @@ use crate::standard_json::input::settings::selection::file::flag::Flag as Select
 use crate::standard_json::input::settings::selection::Selection;
 use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
 use crate::standard_json::input::source::Source as StandardJSONInputSource;
-use crate::standard_json::output::contract::evm::EVM as StandardJSONOutputContractEVM;
 use crate::version::Version;
 
 use self::contract::Contract;
@@ -127,14 +126,6 @@ impl Output {
                 }
                 evm.extra_metadata = None;
             }
-            if contract
-                .evm
-                .as_ref()
-                .map(StandardJSONOutputContractEVM::is_empty)
-                .unwrap_or_default()
-            {
-                contract.evm = None;
-            }
         }
 
         self.contracts.retain(|_, contracts| {
@@ -149,7 +140,7 @@ impl Output {
     ///
     /// Removes EVM artifacts to prevent their accidental usage.
     ///
-    pub fn remove_evm(&mut self) {
+    pub fn remove_evm_artifacts(&mut self) {
         for (_, file) in self.contracts.iter_mut() {
             for (_, contract) in file.iter_mut() {
                 if let Some(evm) = contract.evm.as_mut() {
