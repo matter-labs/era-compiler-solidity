@@ -180,6 +180,22 @@ impl Compiler {
                 None,
             ));
         }
+        if input.settings.force_evmla {
+            solc_output
+                .errors
+                .push(StandardJsonOutputError::new_warning(
+                r#"The `forceEVMLA` setting is deprecated. Please use `codegen: 'evmla'` instead."#,
+                None,
+                None,
+            ));
+        }
+        if input.settings.codegen.is_none() {
+            solc_output.errors.push(StandardJsonOutputError::new_warning(
+                "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
+                None,
+                None,
+            ));
+        }
 
         let mut suppressed_errors = input.suppressed_errors.clone();
         suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());

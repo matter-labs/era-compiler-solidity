@@ -7,6 +7,7 @@
 - JSON interface for the EraVM linker
 - Missing libraries output in standard JSON mode
 - Transient storage layout to combined JSON output
+- A warning about `forceEVMLA` and `codegen` options in standard JSON mode
 
 ### Changed
 
