@@ -149,3 +149,21 @@ fn with_codegen_invalid(target: Target) -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn standard_json_missing(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_FORCE_EVMLA,
+    ];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains(
+        "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
+    ));
+
+    Ok(())
+}
