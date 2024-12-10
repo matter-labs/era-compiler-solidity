@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.8] - 2024-12-10
 
 ### Added
 
