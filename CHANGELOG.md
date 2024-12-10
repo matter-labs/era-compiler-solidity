@@ -7,6 +7,7 @@
 - JSON interface for the EraVM linker
 - Missing libraries output in standard JSON mode
 - Transient storage layout to combined JSON output
+- Documentation for remaining CLI endpoints and EraVM extensions
 
 ### Changed
 

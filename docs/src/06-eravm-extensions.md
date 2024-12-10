@@ -2,15 +2,27 @@
 
 EraVM extensions are a set of additional instructions that can be expressed in Solidity and Yul, but can only be compiled to EraVM bytecode.
 
+There are two ways of using EraVM extensions with *zksolc*:
+1. [Call simulations](#call-simulations) in Solidity.
+2. [`verbatim`](#verbatim) function in Yul mode.
+
+### Call simulations
+
 Since *zksolc* could only operate on Yul received from *solc*, it was not possible to add EraVM-specific functionality to Solidity and Yul. Instead, *zksolc* introduced a hack with external call instructions that would be replaced with EraVM-specific instructions during emitting LLVM IR. In such external call instructions, the address argument denotes the instruction type, whereas the rest of the arguments are used as instruction arguments.
 
-In other parts of the ZKsync documentation, this hack can be referred to as *Call Simulations*.
+Call simulations are the only way to use EraVM extensions in Solidity.
+
+### `verbatim`
+
+In Yul mode, there is a special instruction called `verbatim` that allows emitting EraVM-specific instructions directly from Yul. This instruction is more robust than call simulations, as it allows passing more arguments to the instruction, and it is not affected by the *solc*'s optimizer. Unfortunately, `verbatim` is only available in Yul mode and cannot be used in Solidity.
+
+It is recommended to only use `verbatim` in Yul mode, as it is more robust and less error-prone than call simulations in Solidity.
 
 
 
 ## Call Types
 
-In addition to EVM-like `CALL`, `STATICCALL` and `DELEGATECALL`, EraVM introduces a few more call types:
+In addition to EVM-like `call`, `staticcall` and `delegatecall`, EraVM introduces a few more call types:
 1. Mimic call
 2. System call
 3. Raw call
@@ -21,7 +33,7 @@ Each of the call types above has [its by-ref modification](#mimic-call-by-refere
 
 Mimic call is a call type that allows the caller to execute a call to a contract, but with the ability to specify the address of the contract that will be used as the caller. This is useful for EraVM System Contracts that need to call other contracts on behalf of the user. Essentially, it is a more complete version of `DELEGATECALL`.
 
-For a deeper dive into the Mimic Call, see the EraVM specification (TODO).
+For a deeper dive into the Mimic Call, visit [the EraVM formal specification](https://matter-labs.github.io/eravm-spec/spec.html).
 
 ### System Call
 
@@ -31,7 +43,7 @@ There are also [system mimic calls](#system-mimic-call-0xfffa), which are a comb
 
 ### Raw Call
 
-Raw calls are similar to `CALL`, `STATICCALL`, and `DELEGATECALL`, but they do not encode the ABI data. Instead, the ABI data is passed as an argument to the instruction. This is useful for EraVM System Contracts that need to call other contracts with a specific ABI data that cannot be encoded in the calldata.
+Raw calls are similar to EVM's `CALL`, `STATICCALL`, and `DELEGATECALL`, but they do not encode the ABI data. Instead, the ABI data is passed as an argument to the instruction. This is useful for EraVM System Contracts that need to call other contracts with a specific ABI data that cannot be encoded in the calldata.
 
 
 
@@ -48,14 +60,6 @@ Instructions that use active pointers have a reference to this section.
 ## Constant Arrays
 
 Constant arrays are a set of global arrays that can be used to store constant values. They are not accessible directly from Yul, but they can be used to store constant values that are used in multiple places in the contract.
-
-
-
-## Notes
-
-1. The `input_length` parameter is always set to 0xFFFF or non-zero argument. It prevents the *solc*'s optimizer from removing the call.
-2. Instructions that do not modify state are using `staticcall` instead of `call`.
-3. Instructions such as raw calls preserve the call type, so they act as modifiers of `call`, `staticcall`, and `delegatecall`.
 
 
 
@@ -89,50 +93,66 @@ assembly {
 Yul usage:
 ```solidity
 assembly {
-    let return_value := verbatim_3i1o("instruction", arg1, arg2, arg3)
+    let return_value := verbatim_3i_1o("instruction", arg1, arg2, arg3)
 }
 ```
 
-Instruction list:
+Full list of instructions:
+
 - [To L1 (0xFFFF)](#to-l1-0xffff)
-- [Code Source (0xFFFE)](#code-source-0xfffe)
 - [Precompile (0xFFFD)](#precompile-0xfffd)
 - [Decommit (0xFFDD)](#decommit-0xffdd)
+- [Set Context Value (0xFFF3)](#set-context-value-0xfff3)
+- [Set Pubdata Price (0xFFF2)](#set-pubdata-price-0xfff2)
+- [Increment TX Counter (0xFFF1)](#increment-tx-counter-0xfff1)
+
+- [Code Source (0xFFFE)](#code-source-0xfffe)
 - [Meta (0xFFFC)](#meta-0xfffc)
+- [Get Calldata Pointer (0xFFF0)](#get-calldata-pointer-0xfff0)
+- [Get Call Flags (0xFFEF)](#get-call-flags-0xffef)
+- [Get Return Data Pointer (0xFFEE)](#get-return-data-pointer-0xffee)
+- [Get Extra ABI Data (0xFFE5)](#get-extra-abi-data-0xffe5)
+
+- [Multiplication with Overflow (0xFFE6)](#multiplication-with-overflow-0xffe6)
+
+- [Event Initialize (0xFFED)](#event-initialize-0xffed)
+- [Event Write (0xFFEC)](#event-write-0xffec)
+
 - [Mimic Call (0xFFFB)](#mimic-call-0xfffb)
-- [System Mimic Call (0xFFFA)](#system-mimic-call-0xfffa)
 - [Mimic Call by Reference (0xFFF9)](#mimic-call-by-reference-0xfff9)
+- [System Mimic Call (0xFFFA)](#system-mimic-call-0xfffa)
 - [System Mimic Call by Reference (0xFFF8)](#system-mimic-call-by-reference-0xfff8)
 - [Raw Call (0xFFF7)](#raw-call-0xfff7)
 - [Raw Call by Reference (0xFFF6)](#raw-call-by-reference-0xfff6)
 - [System Call (0xFFF5)](#system-call-0xfff5)
 - [System Call by Reference (0xFFF4)](#system-call-by-reference-0xfff4)
-- [Set Context Value (0xFFF3)](#set-context-value-0xfff3)
-- [Set Pubdata Price (0xFFF2)](#set-pubdata-price-0xfff2)
-- [Increment TX Counter (0xFFF1)](#increment-tx-counter-0xfff1)
-- [Get Calldata Pointer (0xFFF0)](#get-calldata-pointer-0xfff0)
-- [Get Call Flags (0xFFEF)](#get-call-flags-0xffef)
-- [Get Return Data Pointer (0xFFEE)](#get-return-data-pointer-0xffee)
-- [Event Initialize (0xFFED)](#event-initialize-0xffed)
-- [Event Write (0xFFEC)](#event-write-0xffec)
+
 - [Active Pointer: Load Calldata (0xFFEB)](#active-pointer-load-calldata-0xffeb)
 - [Active Pointer: Load Return Data (0xFFEA)](#active-pointer-load-return-data-0xffea)
 - [Active Pointer: Load Decommit (0xFFDC)](#active-pointer-load-decommit-0xffdc)
 - [Active Pointer: Increment (0xFFE9)](#active-pointer-increment-0xffe9)
 - [Active Pointer: Shrink (0xFFE8)](#active-pointer-shrink-0xffe8)
 - [Active Pointer: Pack (0xFFE7)](#active-pointer-pack-0xffe7)
-- [Multiplication with Overflow (0xFFE6)](#multiplication-with-overflow-0xffe6)
-- [Get Extra ABI Data (0xFFE5)](#get-extra-abi-data-0xffe5)
 - [Active Pointer: Load (0xFFE4)](#active-pointer-load-0xffe4)
 - [Active Pointer: Copy (0xFFE3)](#active-pointer-copy-0xffe3)
 - [Active Pointer: Size (0xFFE2)](#active-pointer-size-0xffe2)
 - [Active Pointer: Swap (0xFFD9)](#active-pointer-swap-0xffd9)
 - [Active Pointer: Return (0xFFDB)](#active-pointer-return-0xffdb)
 - [Active Pointer: Revert (0xFFDA)](#active-pointer-revert-0xffda)
+
 - [Constant Array: Declare (0xFFE1)](#constant-array-declare-0xffe1)
 - [Constant Array: Set (0xFFE0)](#constant-array-set-0xffe0)
 - [Constant Array: Finalize (0xFFDF)](#constant-array-finalize-0xffdf)
 - [Constant Array: Get (0xFFDE)](#constant-array-get-0xffde)
+
+- [Return Deployed (verbatim-only)](#return-deployed-verbatim-only)
+
+- [Throw (verbatim-only)](#throw-verbatim-only)
+
+Notes:
+1. The `input_length` parameter is always set to 0xFFFF or non-zero value. It prevents the *solc*'s optimizer from optimizing the call out.
+2. Instructions that do not modify state are using `staticcall` instead of `call`.
+3. Instructions such as raw calls preserve the call type, so they act as modifiers of `call`, `staticcall`, and `delegatecall`.
 
 
 
@@ -152,21 +172,10 @@ assembly {
 }
 ```
 
-
-
-## Code Source (0xFFFE)
-
-Returns the address where the contract is actually deployed, even if it is called with a delegate call. Mostly used in EraVM System Contracts.
-
-Pseudo-code:
-```solidity
-code_source = code_source()
-```
-
-Solidity usage:
+Yul usage:
 ```solidity
 assembly {
-    let code_source := staticcall(0, 0xFFFE, 0, 0xFFFF, 0, 0)
+    let _ := verbatim_3i_0o("to_l1", is_first, value_1, value_2)
 }
 ```
 
@@ -188,6 +197,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let return_value := verbatim_2i_01("precompile", input_data, ergs)
+}
+```
+
 
 
 ## Decommit (0xFFDD)
@@ -206,177 +222,10 @@ assembly {
 }
 ```
 
-
-
-## Meta (0xFFFC)
-
-Returns a part of the internal EraVM state.
-
-Pseudo-code:
-```solidity
-meta = meta()
-```
-
-Solidity usage:
+Yul usage:
 ```solidity
 assembly {
-    let meta := staticcall(0, 0xFFFC, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Mimic Call (0xFFFB)
-
-Executes an EraVM mimic call.
-
-Pseudo-code:
-```solidity
-status = mimic_call(callee_address, abi_data, mimic_address)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFFB, 0, abi_data, mimic_address, 0, 0)
-    let status := staticcall(callee_address, 0xFFFB, abi_data, mimic_address, 0, 0)
-    let status := delegatecall(callee_address, 0xFFFB, abi_data, mimic_address, 0, 0)
-}
-```
-
-
-
-## System Mimic Call (0xFFFA)
-
-Executes an EraVM mimic call with additional arguments for System Contracts.
-
-Pseudo-code:
-```solidity
-status = system_mimic_call(callee_address, abi_data, mimic_address, r3_value, r4_value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFFA, 0, abi_data, mimic_address, r3_value, r4_value)
-    let status := staticcall(callee_address, 0xFFFA, abi_data, mimic_address, r3_value, r4_value)
-    let status := delegatecall(callee_address, 0xFFFA, abi_data, mimic_address, r3_value, r4_value)
-}
-```
-
-
-
-## Mimic Call by Reference (0xFFF9)
-
-Executes an EraVM mimic call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
-
-Pseudo-code:
-```solidity
-status = mimic_call_by_ref(callee_address, mimic_address)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF9, 0, 0, mimic_address, 0, 0)
-    let status := staticcall(callee_address, 0xFFF9, 0, mimic_address, 0, 0)
-    let status := delegatecall(callee_address, 0xFFF9, 0, mimic_address, 0, 0)
-}
-```
-
-
-
-## System Mimic Call by Reference (0xFFF8)
-
-Executes an EraVM mimic call with additional arguments for System Contracts, passing [the 0th active pointer](#active-pointers) instead of ABI data.
-
-Pseudo-code:
-```solidity
-status = system_mimic_call_by_ref(callee_address, mimic_address, r3_value, r4_value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF8, 0, 0, mimic_address, r3_value, r4_value)
-    let status := staticcall(callee_address, 0xFFF8, 0, mimic_address, r3_value, r4_value)
-    let status := delegatecall(callee_address, 0xFFF8, 0, mimic_address, r3_value, r4_value)
-}
-```
-
-
-
-## Raw Call (0xFFF7)
-
-Executes an EraVM raw call.
-
-Pseudo-code:
-```solidity
-status = raw_call(callee_address, abi_data, output_offset, output_length)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF7, 0, 0, abi_data, output_offset, output_length)
-    let status := staticcall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
-    let status := delegatecall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
-}
-```
-
-
-
-## Raw Call by Reference (0xFFF6)
-
-Executes an EraVM raw call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
-
-Pseudo-code:
-```solidity
-status = raw_call_by_ref(callee_address, output_offset, output_length)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF7, 0, 0, 0, output_offset, output_length)
-    let status := staticcall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
-    let status := delegatecall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
-}
-```
-
-
-
-## System Call (0xFFF5)
-
-Executes an EraVM system call.
-
-Pseudo-code:
-```solidity
-status = system_call(callee_address, r3_value, r4_value, abi_data, r5_value, r6_value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF5, r3_value, r4_value, abi_data, r5_value, r6_value)
-}
-```
-
-
-
-## System Call by Reference (0xFFF4)
-
-Executes an EraVM system call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
-
-Pseudo-code:
-```solidity
-status = system_call(callee_address, r3_value, r4_value, r5_value, r6_value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let status := call(callee_address, 0xFFF4, r3_value, r4_value, 0xFFFF, r5_value, r6_value)
+    let return_value := verbatim_2i_01("decommit", input_data, ergs)
 }
 ```
 
@@ -398,6 +247,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_1i_0o("set_context_u128", value)
+}
+```
+
 
 
 ## Set Pubdata Price (0xFFF2)
@@ -413,6 +269,13 @@ Solidity usage:
 ```solidity
 assembly {
     let _ := call(value, 0xFFF2, 0, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_1i_0o("set_pubdata_price", value)
 }
 ```
 
@@ -434,6 +297,63 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("increment_tx_counter")
+}
+```
+
+
+
+## Code Source (0xFFFE)
+
+Returns the address where the contract is actually deployed, even if it is called with a delegate call. Mostly used in EraVM System Contracts.
+
+Pseudo-code:
+```solidity
+code_source = code_source()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let code_source := staticcall(0, 0xFFFE, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let code_source := verbatim_0i_1o("code_source")
+}
+```
+
+
+
+## Meta (0xFFFC)
+
+Returns a part of the internal EraVM state.
+
+Pseudo-code:
+```solidity
+meta = meta()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let meta := staticcall(0, 0xFFFC, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let meta := verbatim_0i_1o("meta")
+}
+```
+
 
 
 ## Get Calldata Pointer (0xFFF0)
@@ -449,6 +369,13 @@ Solidity usage:
 ```solidity
 assembly {
     let pointer := staticcall(0, 0xFFF0, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let pointer := verbatim_0i_1o("get_global::ptr_calldata")
 }
 ```
 
@@ -470,6 +397,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let flags := verbatim_0i_1o("get_global::call_flags")
+}
+```
+
 
 
 ## Get Return Data Pointer (0xFFEE)
@@ -488,165 +422,10 @@ assembly {
 }
 ```
 
-
-
-## Event Initialize (0xFFED)
-
-Initializes a new EVM-like event.
-
-Pseudo-code:
-```solidity
-event_initialize(value_1, value_2)
-```
-
-Solidity usage:
+Yul usage:
 ```solidity
 assembly {
-    let _ := call(value_1, 0xFFED, value_2, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Event Write (0xFFEC)
-
-Writes more data to the previously initialized EVM-like event.
-
-Pseudo-code:
-```solidity
-event_write(value_1, value_2)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := call(value_1, 0xFFEC, value_2, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Load Calldata (0xFFEB)
-
-Loads the calldata pointer to [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_load_calldata()
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(0, 0xFFEB, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Load Return Data (0xFFEA)
-
-Loads the return data pointer to [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_load_return_data()
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(0, 0xFFEA, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Load Decommit (0xFFDC)
-
-Loads the decommit pointer to [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_load_decommit()
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(0, 0xFFDC, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Increment (0xFFE9)
-
-Increments the offset of [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_add(value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(value, 0xFFE9, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Shrink (0xFFE8)
-
-Decrements the slice length of [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_shrink(value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(value, 0xFFE8, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Active Pointer: Pack (0xFFE7)
-
-Writes the upper 128 bits to [the 0th active pointer](#active-pointers).
-
-Pseudo-code:
-```solidity
-active_ptr_pack(value)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let _ := staticcall(value, 0xFFE7, 0, 0xFFFF, 0, 0)
-}
-```
-
-
-
-## Multiplication with Overflow (0xFFE6)
-
-Performs a multiplication with overflow, returning the higher register.
-
-Pseudo-code:
-```solidity
-higher_register = mulo(a, b)
-```
-
-Solidity usage:
-```solidity
-assembly {
-    let higher_register := staticcall(a, 0xFFE6, b, 0xFFFF, 0, 0)
+    let pointer := verbatim_0i_1o("get_global::ptr_return_data")
 }
 ```
 
@@ -668,6 +447,461 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let value := verbatim_0i_1o("get_global::extra_abi_data_0")
+    let value := verbatim_0i_1o("get_global::extra_abi_data_1")
+    ...
+    let value := verbatim_0i_1o("get_global::extra_abi_data_9")
+}
+```
+
+
+
+## Multiplication with Overflow (0xFFE6)
+
+Performs a multiplication with overflow, returning the higher register.
+
+Pseudo-code:
+```solidity
+higher_register = mul_high(a, b)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let higher_register := staticcall(a, 0xFFE6, b, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let higher_register := verbatim_2i_1o("mul_high", a, b)
+}
+```
+
+
+
+## Event Initialize (0xFFED)
+
+Initializes a new EVM-like event.
+
+Pseudo-code:
+```solidity
+event_initialize(value_1, value_2)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(value_1, 0xFFED, value_2, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_2i_0o("event_initialize", value_1, value_2)
+}
+```
+
+
+
+## Event Write (0xFFEC)
+
+Writes more data to the previously initialized EVM-like event.
+
+Pseudo-code:
+```solidity
+event_write(value_1, value_2)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(value_1, 0xFFEC, value_2, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_2i_0o("event_write", value_1, value_2)
+}
+```
+
+
+
+## Mimic Call (0xFFFB)
+
+Executes an EraVM mimic call.
+
+Pseudo-code:
+```solidity
+status = mimic_call(callee_address, mimic_address, abi_data)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFFB, 0, abi_data, mimic_address, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_3i_1o("mimic_call", callee_address, mimic_address, abi_data)
+}
+```
+
+
+
+## Mimic Call by Reference (0xFFF9)
+
+Executes an EraVM mimic call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
+
+Pseudo-code:
+```solidity
+status = mimic_call_byref(callee_address, mimic_address)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF9, 0, 0, mimic_address, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_2i_1o("mimic_call_byref", callee_address, mimic_address)
+}
+```
+
+
+
+## System Mimic Call (0xFFFA)
+
+Executes an EraVM mimic call with additional arguments for System Contracts.
+
+Pseudo-code:
+```solidity
+status = system_mimic_call(callee_address, mimic_address, abi_data, r3_value, r4_value, [r5_value, r6_value])
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFFA, 0, abi_data, mimic_address, r3_value, r4_value)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_5i_1o("system_mimic_call", callee_address, mimic_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+}
+```
+
+> Yul's `verbatim` allows passing two more extra arguments as it is no limited by the semantics of the `call` instruction.
+
+
+
+## System Mimic Call by Reference (0xFFF8)
+
+Executes an EraVM mimic call with additional arguments for System Contracts, passing [the 0th active pointer](#active-pointers) instead of ABI data.
+
+Pseudo-code:
+```solidity
+status = system_mimic_call_byref(callee_address, mimic_address, r3_value, r4_value, [r5_value, r6_value])
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF8, 0, 0, mimic_address, r3_value, r4_value)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_4i_1o("system_mimic_call_byref", callee_address, mimic_address, r3_value, r4_value, r5_value, r6_value)
+}
+```
+
+> Yul's `verbatim` allows passing two more extra arguments as it is no limited by the semantics of the `call` instruction.
+
+
+
+## Raw Call (0xFFF7)
+
+Executes an EraVM raw call.
+
+Pseudo-code:
+```solidity
+status = raw_call(callee_address, abi_data, output_offset, output_length)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF7, 0, 0, abi_data, output_offset, output_length)
+    let status := staticcall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
+    let status := delegatecall(callee_address, 0xFFF7, 0, abi_data, output_offset, output_length)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_4i_1o("raw_call", callee_address, abi_data, output_offset, output_length)
+    let status := verbatim_4i_1o("raw_static_call", callee_address, abi_data, output_offset, output_length)
+    let status := verbatim_4i_1o("raw_delegate_call", callee_address, abi_data, output_offset, output_length)
+}
+```
+
+
+
+## Raw Call by Reference (0xFFF6)
+
+Executes an EraVM raw call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
+
+Pseudo-code:
+```solidity
+status = raw_call_byref(callee_address, output_offset, output_length)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF7, 0, 0, 0, output_offset, output_length)
+    let status := staticcall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
+    let status := delegatecall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_3i_1o("raw_call_byref", callee_address, output_offset, output_length)
+    let status := verbatim_3i_1o("raw_static_call_byref", callee_address, output_offset, output_length)
+    let status := verbatim_3i_1o("raw_delegate_call_byref", callee_address, output_offset, output_length)
+}
+```
+
+
+
+## System Call (0xFFF5)
+
+Executes an EraVM system call.
+
+Pseudo-code:
+```solidity
+status = system_call(callee_address, r3_value, r4_value, abi_data, r5_value, r6_value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF5, r3_value, r4_value, abi_data, r5_value, r6_value)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_6i_1o("system_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_6i_1o("system_static_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_6i_1o("system_delegate_call", callee_address, abi_data, r3_value, r4_value, r5_value, r6_value)
+}
+```
+
+> Static and delegate system calls are only available in Yul as `verbatim`.
+
+
+
+## System Call by Reference (0xFFF4)
+
+Executes an EraVM system call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
+
+Pseudo-code:
+```solidity
+status = system_call_byref(callee_address, r3_value, r4_value, r5_value, r6_value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let status := call(callee_address, 0xFFF4, r3_value, r4_value, 0xFFFF, r5_value, r6_value)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let status := verbatim_5i_1o("system_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_5i_1o("system_static_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+    let status := verbatim_5i_1o("system_delegate_call_byref", callee_address, r3_value, r4_value, r5_value, r6_value)
+}
+```
+
+> Static and delegate system calls are only available in Yul as `verbatim`.
+
+
+
+## Active Pointer: Load Calldata (0xFFEB)
+
+Loads the calldata pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_calldata()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFEB, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("calldata_ptr_to_active")
+}
+```
+
+
+
+## Active Pointer: Load Return Data (0xFFEA)
+
+Loads the return data pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_return_data()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFEA, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("return_data_ptr_to_active")
+}
+```
+
+
+
+## Active Pointer: Load Decommit (0xFFDC)
+
+Loads the decommit pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_decommit()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFDC, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("decommit_ptr_to_active")
+}
+```
+
+
+
+## Active Pointer: Increment (0xFFE9)
+
+Increments the offset of [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_add(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE9, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_1i_0o("active_ptr_add_assign", value)
+}
+```
+
+
+
+## Active Pointer: Shrink (0xFFE8)
+
+Decrements the slice length of [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_shrink(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE8, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_1i_0o("active_ptr_shrink_assign", value)
+}
+```
+
+
+
+## Active Pointer: Pack (0xFFE7)
+
+Writes the upper 128 bits to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_pack(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE7, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_1i_0o("active_ptr_pack_assign", value)
+}
+```
+
 
 
 ## Active Pointer: Load (0xFFE4)
@@ -683,6 +917,13 @@ Solidity usage:
 ```solidity
 assembly {
     let value := staticcall(offset, 0xFFE4, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let value := verbatim_1i_1o("active_ptr_data_load", offset)
 }
 ```
 
@@ -704,6 +945,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_3i_0o("active_ptr_data_copy", destination, source, size)
+}
+```
+
 
 
 ## Active Pointer: Size (0xFFE2)
@@ -719,6 +967,13 @@ Solidity usage:
 ```solidity
 assembly {
     let size := staticcall(0, 0xFFE2, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let size := verbatim_0i_1o("active_ptr_data_size")
 }
 ```
 
@@ -740,6 +995,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_2i_0o("active_ptr_swap", N, M)
+}
+```
+
 
 
 ## Active Pointer: Return (0xFFDB)
@@ -758,6 +1020,13 @@ assembly {
 }
 ```
 
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("active_ptr_return_forward")
+}
+```
+
 
 
 ## Active Pointer: Revert (0xFFDA)
@@ -773,6 +1042,13 @@ Solidity usage:
 ```solidity
 assembly {
     let _ := staticcall(0, 0xFFDA, 0, 0xFFFF, 0, 0)
+}
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("active_ptr_revert_forward")
 }
 ```
 
@@ -798,6 +1074,8 @@ assembly {
 }
 ```
 
+> This instruction is not available in Yul as `verbatim`.
+
 
 
 ## Constant Array: Set (0xFFE0)
@@ -822,6 +1100,8 @@ assembly {
 }
 ```
 
+> This instruction is not available in Yul as `verbatim`.
+
 
 
 ## Constant Array: Finalize (0xFFDF)
@@ -842,6 +1122,8 @@ assembly {
 }
 ```
 
+> This instruction is not available in Yul as `verbatim`.
+
 
 
 ## Constant Array: Get (0xFFDE)
@@ -861,5 +1143,47 @@ Solidity usage:
 ```solidity
 assembly {
     let value := staticcall(index, 0xFFDE, offset, 0xFFFF, 0, 0)
+}
+```
+
+> This instruction is not available in Yul as `verbatim`.
+
+
+
+## Return Deployed (verbatim-only)
+
+Returns heap data from the constructor.
+
+Since EraVM constructors always return immutables via auxiliary heap, it is not possible to use them for EVM-like scenarios, such as EVM emulators.
+
+Pseudo-code:
+```solidity
+return_deployed(offset, length)
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_2i_0o("return_deployed", offset, length)
+}
+```
+
+
+
+## Throw (verbatim-only)
+
+Throws a function-level exception.
+
+For a deeper dive into EraVM exceptions, visit [this page](https://docs.zksync.io/zksync-protocol/compiler/specification/exception-handling).
+
+Pseudo-code:
+```solidity
+throw()
+```
+
+Yul usage:
+```solidity
+assembly {
+    let _ := verbatim_0i_0o("throw")
 }
 ```
