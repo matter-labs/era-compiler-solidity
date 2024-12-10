@@ -513,7 +513,7 @@ Binary:
 zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
 ```
 
-*zksolc* features its own dialect of Yul with extensions for EraVM. If such extensions (TODO) are used, it is not possible to use *solc* for validation.
+*zksolc* features its own dialect of Yul with extensions for EraVM. If [the extensions](./06-eravm-extensions.md) are enabled, it is not possible to use *solc* for validation.
 
 
 

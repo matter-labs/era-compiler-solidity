@@ -8,21 +8,65 @@ In other parts of the ZKsync documentation, this hack can be referred to as *Cal
 
 
 
+## Call Types
+
+In addition to EVM-like `CALL`, `STATICCALL` and `DELEGATECALL`, EraVM introduces a few more call types:
+1. Mimic call
+2. System call
+3. Raw call
+
+Each of the call types above has [its by-ref modification](#mimic-call-by-reference-0xfff9), which [allows passing pointers](#active-pointers) to ABI data instead of data itself.
+
+### Mimic Call
+
+Mimic call is a call type that allows the caller to execute a call to a contract, but with the ability to specify the address of the contract that will be used as the caller. This is useful for EraVM System Contracts that need to call other contracts on behalf of the user. Essentially, it is a more complete version of `DELEGATECALL`.
+
+For a deeper dive into the Mimic Call, see the EraVM specification (TODO).
+
+### System Call
+
+System call allows passing more arguments to the callee contract using EraVM registers. This is useful for System Contracts that often require auxiliary data that cannot be passed via calldata.
+
+There are also [system mimic calls](#system-mimic-call-0xfffa), which are a combination of both, that is auxiliary arguments can be passed via EraVM registers.
+
+### Raw Call
+
+Raw calls are similar to `CALL`, `STATICCALL`, and `DELEGATECALL`, but they do not encode the ABI data. Instead, the ABI data is passed as an argument to the instruction. This is useful for EraVM System Contracts that need to call other contracts with a specific ABI data that cannot be encoded in the calldata.
+
+
+
 ## Active Pointers
 
-Active pointers are a set of calldata and return data pointers stored in global LLVM IR variables. They are not accessible directly from Yul, but they can be used to forward call and return data between contracts. The number of active pointers is fixed at 10, and they are numbered from 0 to 9. Some instructions can only use the 0th pointer due to the lack of spare arguments to specify the pointer number.
+Active pointers are a set of calldata and return data pointers stored in global LLVM IR variables. They are not accessible directly from Yul, but they can be used to forward call and return data between contracts.
+
+The number of active pointers is fixed at 10, and they are numbered from 0 to 9. Some instructions can only use the 0th pointer due to the lack of spare arguments to specify the pointer number. In order to use pointers other than the 0th, use [the swap instruction](#active-pointer-swap-0xffd9).
 
 Instructions that use active pointers have a reference to this section.
 
 
 
-## Documentation Structure
+## Constant Arrays
+
+Constant arrays are a set of global arrays that can be used to store constant values. They are not accessible directly from Yul, but they can be used to store constant values that are used in multiple places in the contract.
+
+
+
+## Notes
+
+1. The `input_length` parameter is always set to 0xFFFF or non-zero argument. It prevents the *solc*'s optimizer from removing the call.
+2. Instructions that do not modify state are using `staticcall` instead of `call`.
+3. Instructions such as raw calls preserve the call type, so they act as modifiers of `call`, `staticcall`, and `delegatecall`.
+
+
+
+# Instruction Reference
 
 The sections below have the following structure:
 1. EraVM instruction name and substituted address.
 2. Instruction description.
-3. Pseudo-code with arguments.
-4. Solidity usage example.
+3. Pseudo-code illustrating the behavior under the hood.
+4. Solidity call simulation usage example.
+5. Yul `verbatim` usage example.
 
 For instance:
 
@@ -31,7 +75,7 @@ For instance:
 Executes an EraVM instruction.
 
 Pseudo-code:
-```
+```solidity
 return_value = instruction(arg1, arg2, arg3)
 ```
 
@@ -42,22 +86,62 @@ assembly {
 }
 ```
 
-### Notes
+Yul usage:
+```solidity
+assembly {
+    let return_value := verbatim_3i1o("instruction", arg1, arg2, arg3)
+}
+```
 
-1. The 5th parameter that is supposed to be `input_length` is always set to 0xFFFF or non-zero argument. It prevents the *solc*'s optimizer from removing the call.
-2. Instructions that do not modify state are using `staticcall` instead of `call`.
-3. Instructions such as `raw_call` preserve the call type, so they can be used with `call`, `staticcall`, and `delegatecall`.
+Instruction list:
+- [To L1 (0xFFFF)](#to-l1-0xffff)
+- [Code Source (0xFFFE)](#code-source-0xfffe)
+- [Precompile (0xFFFD)](#precompile-0xfffd)
+- [Decommit (0xFFDD)](#decommit-0xffdd)
+- [Meta (0xFFFC)](#meta-0xfffc)
+- [Mimic Call (0xFFFB)](#mimic-call-0xfffb)
+- [System Mimic Call (0xFFFA)](#system-mimic-call-0xfffa)
+- [Mimic Call by Reference (0xFFF9)](#mimic-call-by-reference-0xfff9)
+- [System Mimic Call by Reference (0xFFF8)](#system-mimic-call-by-reference-0xfff8)
+- [Raw Call (0xFFF7)](#raw-call-0xfff7)
+- [Raw Call by Reference (0xFFF6)](#raw-call-by-reference-0xfff6)
+- [System Call (0xFFF5)](#system-call-0xfff5)
+- [System Call by Reference (0xFFF4)](#system-call-by-reference-0xfff4)
+- [Set Context Value (0xFFF3)](#set-context-value-0xfff3)
+- [Set Pubdata Price (0xFFF2)](#set-pubdata-price-0xfff2)
+- [Increment TX Counter (0xFFF1)](#increment-tx-counter-0xfff1)
+- [Get Calldata Pointer (0xFFF0)](#get-calldata-pointer-0xfff0)
+- [Get Call Flags (0xFFEF)](#get-call-flags-0xffef)
+- [Get Return Data Pointer (0xFFEE)](#get-return-data-pointer-0xffee)
+- [Event Initialize (0xFFED)](#event-initialize-0xffed)
+- [Event Write (0xFFEC)](#event-write-0xffec)
+- [Active Pointer: Load Calldata (0xFFEB)](#active-pointer-load-calldata-0xffeb)
+- [Active Pointer: Load Return Data (0xFFEA)](#active-pointer-load-return-data-0xffea)
+- [Active Pointer: Load Decommit (0xFFDC)](#active-pointer-load-decommit-0xffdc)
+- [Active Pointer: Increment (0xFFE9)](#active-pointer-increment-0xffe9)
+- [Active Pointer: Shrink (0xFFE8)](#active-pointer-shrink-0xffe8)
+- [Active Pointer: Pack (0xFFE7)](#active-pointer-pack-0xffe7)
+- [Multiplication with Overflow (0xFFE6)](#multiplication-with-overflow-0xffe6)
+- [Get Extra ABI Data (0xFFE5)](#get-extra-abi-data-0xffe5)
+- [Active Pointer: Load (0xFFE4)](#active-pointer-load-0xffe4)
+- [Active Pointer: Copy (0xFFE3)](#active-pointer-copy-0xffe3)
+- [Active Pointer: Size (0xFFE2)](#active-pointer-size-0xffe2)
+- [Active Pointer: Swap (0xFFD9)](#active-pointer-swap-0xffd9)
+- [Active Pointer: Return (0xFFDB)](#active-pointer-return-0xffdb)
+- [Active Pointer: Revert (0xFFDA)](#active-pointer-revert-0xffda)
+- [Constant Array: Declare (0xFFE1)](#constant-array-declare-0xffe1)
+- [Constant Array: Set (0xFFE0)](#constant-array-set-0xffe0)
+- [Constant Array: Finalize (0xFFDF)](#constant-array-finalize-0xffdf)
+- [Constant Array: Get (0xFFDE)](#constant-array-get-0xffde)
 
 
-
-# Instruction Reference
 
 ## To L1 (0xFFFF)
 
 Send a message to L1.
 
 Pseudo-code:
-```
+```solidity
 to_l1(is_first, value_1, value_2)
 ```
 
@@ -75,7 +159,7 @@ assembly {
 Returns the address where the contract is actually deployed, even if it is called with a delegate call. Mostly used in EraVM System Contracts.
 
 Pseudo-code:
-```
+```solidity
 code_source = code_source()
 ```
 
@@ -93,7 +177,7 @@ assembly {
 Calls an EraVM precompile.
 
 Pseudo-code:
-```
+```solidity
 return_value = precompile(input_data, ergs)
 ```
 
@@ -111,7 +195,7 @@ assembly {
 Calls the EraVM decommit.
 
 Pseudo-code:
-```
+```solidity
 return_value = decommit(versioned_hash, ergs)
 ```
 
@@ -129,7 +213,7 @@ assembly {
 Returns a part of the internal EraVM state.
 
 Pseudo-code:
-```
+```solidity
 meta = meta()
 ```
 
@@ -147,7 +231,7 @@ assembly {
 Executes an EraVM mimic call.
 
 Pseudo-code:
-```
+```solidity
 status = mimic_call(callee_address, abi_data, mimic_address)
 ```
 
@@ -155,6 +239,8 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFFB, 0, abi_data, mimic_address, 0, 0)
+    let status := staticcall(callee_address, 0xFFFB, abi_data, mimic_address, 0, 0)
+    let status := delegatecall(callee_address, 0xFFFB, abi_data, mimic_address, 0, 0)
 }
 ```
 
@@ -165,7 +251,7 @@ assembly {
 Executes an EraVM mimic call with additional arguments for System Contracts.
 
 Pseudo-code:
-```
+```solidity
 status = system_mimic_call(callee_address, abi_data, mimic_address, r3_value, r4_value)
 ```
 
@@ -173,6 +259,8 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFFA, 0, abi_data, mimic_address, r3_value, r4_value)
+    let status := staticcall(callee_address, 0xFFFA, abi_data, mimic_address, r3_value, r4_value)
+    let status := delegatecall(callee_address, 0xFFFA, abi_data, mimic_address, r3_value, r4_value)
 }
 ```
 
@@ -183,7 +271,7 @@ assembly {
 Executes an EraVM mimic call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
 
 Pseudo-code:
-```
+```solidity
 status = mimic_call_by_ref(callee_address, mimic_address)
 ```
 
@@ -191,6 +279,8 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFF9, 0, 0, mimic_address, 0, 0)
+    let status := staticcall(callee_address, 0xFFF9, 0, mimic_address, 0, 0)
+    let status := delegatecall(callee_address, 0xFFF9, 0, mimic_address, 0, 0)
 }
 ```
 
@@ -201,7 +291,7 @@ assembly {
 Executes an EraVM mimic call with additional arguments for System Contracts, passing [the 0th active pointer](#active-pointers) instead of ABI data.
 
 Pseudo-code:
-```
+```solidity
 status = system_mimic_call_by_ref(callee_address, mimic_address, r3_value, r4_value)
 ```
 
@@ -209,6 +299,8 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFF8, 0, 0, mimic_address, r3_value, r4_value)
+    let status := staticcall(callee_address, 0xFFF8, 0, mimic_address, r3_value, r4_value)
+    let status := delegatecall(callee_address, 0xFFF8, 0, mimic_address, r3_value, r4_value)
 }
 ```
 
@@ -219,7 +311,7 @@ assembly {
 Executes an EraVM raw call.
 
 Pseudo-code:
-```
+```solidity
 status = raw_call(callee_address, abi_data, output_offset, output_length)
 ```
 
@@ -239,7 +331,7 @@ assembly {
 Executes an EraVM raw call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
 
 Pseudo-code:
-```
+```solidity
 status = raw_call_by_ref(callee_address, output_offset, output_length)
 ```
 
@@ -247,6 +339,8 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFF7, 0, 0, 0, output_offset, output_length)
+    let status := staticcall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
+    let status := delegatecall(callee_address, 0xFFF7, 0, 0, output_offset, output_length)
 }
 ```
 
@@ -257,7 +351,7 @@ assembly {
 Executes an EraVM system call.
 
 Pseudo-code:
-```
+```solidity
 status = system_call(callee_address, r3_value, r4_value, abi_data, r5_value, r6_value)
 ```
 
@@ -270,12 +364,12 @@ assembly {
 
 
 
-## System Call (0xFFF4)
+## System Call by Reference (0xFFF4)
 
 Executes an EraVM system call, passing [the 0th active pointer](#active-pointers) instead of ABI data.
 
 Pseudo-code:
-```
+```solidity
 status = system_call(callee_address, r3_value, r4_value, r5_value, r6_value)
 ```
 
@@ -283,5 +377,489 @@ Solidity usage:
 ```solidity
 assembly {
     let status := call(callee_address, 0xFFF4, r3_value, r4_value, 0xFFFF, r5_value, r6_value)
+}
+```
+
+
+
+## Set Context Value (0xFFF3)
+
+Sets the 128-bit context value. Usually the value is used to pass Ether to the callee contract.
+
+Pseudo-code:
+```solidity
+set_context_value(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(0, 0xFFF3, value, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Set Pubdata Price (0xFFF2)
+
+Sets the public data price.
+
+Pseudo-code:
+```solidity
+set_pubdata_price(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(value, 0xFFF2, 0, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Increment TX Counter (0xFFF1)
+
+Increments the EraVM transaction counter.
+
+Pseudo-code:
+```solidity
+increment_tx_counter()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(0, 0xFFF1, 0, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Get Calldata Pointer (0xFFF0)
+
+Returns the ABI-encoded calldata pointer as integer.
+
+Pseudo-code:
+```solidity
+pointer = get_calldata_pointer()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let pointer := staticcall(0, 0xFFF0, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Get Call Flags (0xFFEF)
+
+Returns the call flags encoded as 256-bit integer.
+
+Pseudo-code:
+```solidity
+flags = get_call_flags()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let flags := staticcall(0, 0xFFEF, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Get Return Data Pointer (0xFFEE)
+
+Returns the ABI-encoded return data pointer as integer.
+
+Pseudo-code:
+```solidity
+pointer = get_return_data_pointer()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let pointer := staticcall(0, 0xFFEE, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Event Initialize (0xFFED)
+
+Initializes a new EVM-like event.
+
+Pseudo-code:
+```solidity
+event_initialize(value_1, value_2)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(value_1, 0xFFED, value_2, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Event Write (0xFFEC)
+
+Writes more data to the previously initialized EVM-like event.
+
+Pseudo-code:
+```solidity
+event_write(value_1, value_2)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := call(value_1, 0xFFEC, value_2, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Load Calldata (0xFFEB)
+
+Loads the calldata pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_calldata()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFEB, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Load Return Data (0xFFEA)
+
+Loads the return data pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_return_data()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFEA, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Load Decommit (0xFFDC)
+
+Loads the decommit pointer to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_load_decommit()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFDC, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Increment (0xFFE9)
+
+Increments the offset of [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_add(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE9, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Shrink (0xFFE8)
+
+Decrements the slice length of [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_shrink(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE8, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Pack (0xFFE7)
+
+Writes the upper 128 bits to [the 0th active pointer](#active-pointers).
+
+Pseudo-code:
+```solidity
+active_ptr_pack(value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(value, 0xFFE7, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Multiplication with Overflow (0xFFE6)
+
+Performs a multiplication with overflow, returning the higher register.
+
+Pseudo-code:
+```solidity
+higher_register = mulo(a, b)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let higher_register := staticcall(a, 0xFFE6, b, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Get Extra ABI Data (0xFFE5)
+
+Returns the N-th extra ABI data value passed via registers `r3`-`r12`.
+
+Pseudo-code:
+```solidity
+value = get_extra_abi_data(index)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let value := staticcall(index, 0xFFE5, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Load (0xFFE4)
+
+Loads a value from [the 0th active pointer](#active-pointers) at the specified offset, similarly to EVM's `CALLDATALOAD`.
+
+Pseudo-code:
+```solidity
+value = active_ptr_load(offset)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let value := staticcall(offset, 0xFFE4, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Copy (0xFFE3)
+
+Copies a slice from the [the 0th active pointer](#active-pointers) to the heap, similarly to EVM's `CALLDATACOPY` and `RETURNDATACOPY`.
+
+Pseudo-code:
+```solidity
+active_ptr_copy(destination, source, size)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(destination, 0xFFE3, source, 0xFFFF, size, 0)
+}
+```
+
+
+
+## Active Pointer: Size (0xFFE2)
+
+Returns the length of the slice referenced by [the 0th active pointer](#active-pointers), similarly to EVM's `CALLDATASIZE` and `RETURNDATASIZE`.
+
+Pseudo-code:
+```solidity
+size = active_ptr_size()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let size := staticcall(0, 0xFFE2, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Swap (0xFFD9)
+
+Swaps the Nth and Mth [active pointers](#active-pointers). Swapping allows the active pointer instructions to use pointers other than the 0th.
+
+Pseudo-code:
+```solidity
+active_ptr_swap(N, M)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(N, 0xFFD9, M, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Return (0xFFDB)
+
+Returns from the contract, using [the 0th active pointer](#active-pointers) as the return data.
+
+Pseudo-code:
+```solidity
+active_ptr_return()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFDB, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Active Pointer: Revert (0xFFDA)
+
+Reverts from the contract, using [the 0th active pointer](#active-pointers) as the return data.
+
+Pseudo-code:
+```solidity
+active_ptr_revert()
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(0, 0xFFDA, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Constant Array: Declare (0xFFE1)
+
+Declares a new [global array of constants](#constant-arrays). After the array is declared, it must be right away filled with values using [the set instruction](#constant-array-set-0xffe0) and declared final using [the finalization instruction](#constant-array-finalize-0xffdf).
+
+Index must be an 8-bit constant value in the range `[0; 255]`.
+
+Size must be a 16-bit constant value in the range `[0; 65535]`.
+
+Pseudo-code:
+```solidity
+const_array_declare(index, size)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(index, 0xFFE1, size, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Constant Array: Set (0xFFE0)
+
+Sets a value in a [global array of constants](#constant-arrays).
+
+Index must be an 8-bit constant value in the range `[0; 255]`.
+
+Size must be a 16-bit constant value in the range `[0; 65535]`.
+
+Value must be a 256-bit constant value.
+
+Pseudo-code:
+```solidity
+const_array_set(index, size, value)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(index, 0xFFE0, size, 0xFFFF, value, 0)
+}
+```
+
+
+
+## Constant Array: Finalize (0xFFDF)
+
+Finalizes a [global array of constants](#constant-arrays).
+
+Index must be an 8-bit constant value in the range `[0; 255]`.
+
+Pseudo-code:
+```solidity
+const_array_finalize(index)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let _ := staticcall(index, 0xFFDF, 0, 0xFFFF, 0, 0)
+}
+```
+
+
+
+## Constant Array: Get (0xFFDE)
+
+Gets a value from a [global array of constants](#constant-arrays).
+
+Index must be an 8-bit constant value in the range `[0; 255]`.
+
+Offset must be a 16-bit constant value in the range `[0; 65535]`.
+
+Pseudo-code:
+```solidity
+value = const_array_get(index, offset)
+```
+
+Solidity usage:
+```solidity
+assembly {
+    let value := staticcall(index, 0xFFDE, offset, 0xFFFF, 0, 0)
 }
 ```
