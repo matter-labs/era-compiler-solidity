@@ -8,6 +8,7 @@
 - Missing libraries output in standard JSON mode
 - Transient storage layout to combined JSON output
 - A warning about `forceEVMLA` and `codegen` options in standard JSON mode
+- Documentation for remaining CLI endpoints and EraVM extensions
 
 ### Changed
 

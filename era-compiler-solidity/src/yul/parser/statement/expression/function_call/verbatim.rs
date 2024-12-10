@@ -54,20 +54,6 @@ where
             )
             .map(Some)
         }
-        identifier @ "code_source" => {
-            const ARGUMENTS_COUNT: usize = 0;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            era_compiler_llvm_context::eravm_general::code_source(context).map(Some)
-        }
         identifier @ "precompile" => {
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
@@ -108,6 +94,72 @@ where
             )
             .map(Some)
         }
+        identifier @ "set_context_u128" => {
+            const ARGUMENTS_COUNT: usize = 1;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_general::set_context_value(
+                context,
+                arguments[0].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "set_pubdata_price" => {
+            const ARGUMENTS_COUNT: usize = 1;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_general::set_pubdata_price(
+                context,
+                arguments[0].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "increment_tx_counter" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_general::increment_tx_counter(context).map(Some)
+        }
+        identifier @ "code_source" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_general::code_source(context).map(Some)
+        }
         identifier @ "meta" => {
             const ARGUMENTS_COUNT: usize = 0;
             if input_size != ARGUMENTS_COUNT {
@@ -121,6 +173,147 @@ where
             }
 
             era_compiler_llvm_context::eravm_general::meta(context).map(Some)
+        }
+        identifier
+            if identifier.starts_with(
+                era_compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX,
+            ) =>
+        {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            match identifier
+                .strip_prefix(era_compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX)
+            {
+                Some(identifier)
+                    if identifier
+                        == era_compiler_llvm_context::eravm_const::GLOBAL_CALLDATA_POINTER =>
+                {
+                    context.get_global_value(identifier).map(Some)
+                }
+                Some(identifier)
+                    if identifier == era_compiler_llvm_context::eravm_const::GLOBAL_CALL_FLAGS =>
+                {
+                    context.get_global_value(identifier).map(Some)
+                }
+                Some(identifier)
+                    if identifier
+                        == era_compiler_llvm_context::eravm_const::GLOBAL_RETURN_DATA_POINTER =>
+                {
+                    context.get_global_value(identifier).map(Some)
+                }
+                Some(identifier)
+                    if identifier.starts_with(
+                        era_compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA,
+                    ) =>
+                {
+                    let stripped = identifier
+                        .strip_prefix(era_compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA)
+                        .expect("Always exists");
+                    let stripped = stripped.strip_prefix('_').ok_or_else(|| {
+                        anyhow::anyhow!(
+                            "{} Invalid global variable identifier `{:?}`",
+                            call.0.location,
+                            identifier
+                        )
+                    })?;
+                    let index = stripped.parse::<u64>().map_err(|error| {
+                        anyhow::anyhow!(
+                            "{} Invalid global variable identifier `{:?}`: {}",
+                            call.0.location,
+                            identifier,
+                            error,
+                        )
+                    })?;
+                    if index >= (era_compiler_llvm_context::eravm_const::EXTRA_ABI_DATA_SIZE as u64)
+                    {
+                        anyhow::bail!(
+                            "{} Extra ABI data overflow. Only indexes `0..=9` are allowed",
+                            call.0.location,
+                        );
+                    }
+                    era_compiler_llvm_context::eravm_abi::get_extra_abi_data(
+                        context,
+                        context.field_const(index),
+                    )
+                    .map(Some)
+                }
+                identifier => Err(anyhow::anyhow!(
+                    "{} Invalid global variable identifier `{:?}`",
+                    call.0.location,
+                    identifier
+                )),
+            }
+        }
+        identifier @ "mul_high" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_math::multiplication_512(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "event_initialize" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_general::event(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+                true,
+            )
+            .map(Some)
+        }
+        identifier @ "event_write" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_general::event(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+                false,
+            )
+            .map(Some)
         }
         identifier @ "mimic_call" => {
             const ARGUMENTS_COUNT: usize = 3;
@@ -251,6 +444,52 @@ where
             )
             .map(Some)
         }
+        identifier @ "raw_static_call" => {
+            const ARGUMENTS_COUNT: usize = 4;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::raw_far(
+                context,
+                context.llvm_runtime().static_call,
+                arguments[0].into_int_value(),
+                arguments[1],
+                arguments[2].into_int_value(),
+                arguments[3].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "raw_delegate_call" => {
+            const ARGUMENTS_COUNT: usize = 4;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::raw_far(
+                context,
+                context.llvm_runtime().delegate_call,
+                arguments[0].into_int_value(),
+                arguments[1],
+                arguments[2].into_int_value(),
+                arguments[3].into_int_value(),
+            )
+            .map(Some)
+        }
         identifier @ "raw_call_byref" => {
             const ARGUMENTS_COUNT: usize = 3;
             if input_size != ARGUMENTS_COUNT {
@@ -267,6 +506,56 @@ where
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().far_call_byref,
+                arguments[0].into_int_value(),
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
+                arguments[1].into_int_value(),
+                arguments[2].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "raw_static_call_byref" => {
+            const ARGUMENTS_COUNT: usize = 3;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::raw_far(
+                context,
+                context.llvm_runtime().static_call_byref,
+                arguments[0].into_int_value(),
+                context
+                    .get_active_pointer(context.field_const(0))?
+                    .as_basic_value_enum(),
+                arguments[1].into_int_value(),
+                arguments[2].into_int_value(),
+            )
+            .map(Some)
+        }
+        identifier @ "raw_delegate_call_byref" => {
+            const ARGUMENTS_COUNT: usize = 3;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::raw_far(
+                context,
+                context.llvm_runtime().delegate_call_byref,
                 arguments[0].into_int_value(),
                 context
                     .get_active_pointer(context.field_const(0))?
@@ -305,6 +594,54 @@ where
             )
             .map(Some)
         }
+        identifier @ "system_static_call" => {
+            const ARGUMENTS_COUNT: usize = 6;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::system(
+                context,
+                context.llvm_runtime().static_call,
+                arguments[0].into_int_value(),
+                arguments[1],
+                arguments[4].into_int_value(),
+                arguments[5].into_int_value(),
+                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
+            )
+            .map(Some)
+        }
+        identifier @ "system_delegate_call" => {
+            const ARGUMENTS_COUNT: usize = 6;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_call::system(
+                context,
+                context.llvm_runtime().delegate_call,
+                arguments[0].into_int_value(),
+                arguments[1],
+                arguments[4].into_int_value(),
+                arguments[5].into_int_value(),
+                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
+            )
+            .map(Some)
+        }
         identifier @ "system_call_byref" => {
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
@@ -336,78 +673,6 @@ where
             )
             .map(Some)
         }
-        identifier @ "raw_static_call" => {
-            const ARGUMENTS_COUNT: usize = 4;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::raw_far(
-                context,
-                context.llvm_runtime().static_call,
-                arguments[0].into_int_value(),
-                arguments[1],
-                arguments[2].into_int_value(),
-                arguments[3].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "raw_static_call_byref" => {
-            const ARGUMENTS_COUNT: usize = 3;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::raw_far(
-                context,
-                context.llvm_runtime().static_call_byref,
-                arguments[0].into_int_value(),
-                context
-                    .get_active_pointer(context.field_const(0))?
-                    .as_basic_value_enum(),
-                arguments[1].into_int_value(),
-                arguments[2].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "system_static_call" => {
-            const ARGUMENTS_COUNT: usize = 6;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::system(
-                context,
-                context.llvm_runtime().static_call,
-                arguments[0].into_int_value(),
-                arguments[1],
-                arguments[4].into_int_value(),
-                arguments[5].into_int_value(),
-                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
-            )
-            .map(Some)
-        }
         identifier @ "system_static_call_byref" => {
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
@@ -434,78 +699,6 @@ where
             )
             .map(Some)
         }
-        identifier @ "raw_delegate_call" => {
-            const ARGUMENTS_COUNT: usize = 4;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::raw_far(
-                context,
-                context.llvm_runtime().delegate_call,
-                arguments[0].into_int_value(),
-                arguments[1],
-                arguments[2].into_int_value(),
-                arguments[3].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "raw_delegate_call_byref" => {
-            const ARGUMENTS_COUNT: usize = 3;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::raw_far(
-                context,
-                context.llvm_runtime().delegate_call_byref,
-                arguments[0].into_int_value(),
-                context
-                    .get_active_pointer(context.field_const(0))?
-                    .as_basic_value_enum(),
-                arguments[1].into_int_value(),
-                arguments[2].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "system_delegate_call" => {
-            const ARGUMENTS_COUNT: usize = 6;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_call::system(
-                context,
-                context.llvm_runtime().delegate_call,
-                arguments[0].into_int_value(),
-                arguments[1],
-                arguments[4].into_int_value(),
-                arguments[5].into_int_value(),
-                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
-            )
-            .map(Some)
-        }
         identifier @ "system_delegate_call_byref" => {
             const ARGUMENTS_COUNT: usize = 5;
             if input_size != ARGUMENTS_COUNT {
@@ -529,100 +722,6 @@ where
                 arguments[3].into_int_value(),
                 arguments[4].into_int_value(),
                 vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
-            )
-            .map(Some)
-        }
-        identifier @ "set_context_u128" => {
-            const ARGUMENTS_COUNT: usize = 1;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_general::set_context_value(
-                context,
-                arguments[0].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "set_pubdata_price" => {
-            const ARGUMENTS_COUNT: usize = 1;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_general::set_pubdata_price(
-                context,
-                arguments[0].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "increment_tx_counter" => {
-            const ARGUMENTS_COUNT: usize = 0;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            era_compiler_llvm_context::eravm_general::increment_tx_counter(context).map(Some)
-        }
-        identifier @ "event_initialize" => {
-            const ARGUMENTS_COUNT: usize = 2;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_general::event(
-                context,
-                arguments[0].into_int_value(),
-                arguments[1].into_int_value(),
-                true,
-            )
-            .map(Some)
-        }
-        identifier @ "event_write" => {
-            const ARGUMENTS_COUNT: usize = 2;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_general::event(
-                context,
-                arguments[0].into_int_value(),
-                arguments[1].into_int_value(),
-                false,
             )
             .map(Some)
         }
@@ -725,120 +824,6 @@ where
             )
             .map(Some)
         }
-        identifier @ "mul_high" => {
-            const ARGUMENTS_COUNT: usize = 2;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_math::multiplication_512(
-                context,
-                arguments[0].into_int_value(),
-                arguments[1].into_int_value(),
-            )
-            .map(Some)
-        }
-        identifier @ "throw" => {
-            const ARGUMENTS_COUNT: usize = 0;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            era_compiler_llvm_context::eravm_utils::throw(context)?;
-            Ok(None)
-        }
-        identifier
-            if identifier.starts_with(
-                era_compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX,
-            ) =>
-        {
-            const ARGUMENTS_COUNT: usize = 0;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            match identifier
-                .strip_prefix(era_compiler_llvm_context::eravm_const::GLOBAL_VERBATIM_GETTER_PREFIX)
-            {
-                Some(identifier)
-                    if identifier
-                        == era_compiler_llvm_context::eravm_const::GLOBAL_CALLDATA_POINTER =>
-                {
-                    context.get_global_value(identifier).map(Some)
-                }
-                Some(identifier)
-                    if identifier == era_compiler_llvm_context::eravm_const::GLOBAL_CALL_FLAGS =>
-                {
-                    context.get_global_value(identifier).map(Some)
-                }
-                Some(identifier)
-                    if identifier
-                        == era_compiler_llvm_context::eravm_const::GLOBAL_RETURN_DATA_POINTER =>
-                {
-                    context.get_global_value(identifier).map(Some)
-                }
-                Some(identifier)
-                    if identifier.starts_with(
-                        era_compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA,
-                    ) =>
-                {
-                    let stripped = identifier
-                        .strip_prefix(era_compiler_llvm_context::eravm_const::GLOBAL_EXTRA_ABI_DATA)
-                        .expect("Always exists");
-                    let stripped = stripped.strip_prefix('_').ok_or_else(|| {
-                        anyhow::anyhow!(
-                            "{} Invalid global variable identifier `{:?}`",
-                            call.0.location,
-                            identifier
-                        )
-                    })?;
-                    let index = stripped.parse::<u64>().map_err(|error| {
-                        anyhow::anyhow!(
-                            "{} Invalid global variable identifier `{:?}`: {}",
-                            call.0.location,
-                            identifier,
-                            error,
-                        )
-                    })?;
-                    if index >= (era_compiler_llvm_context::eravm_const::EXTRA_ABI_DATA_SIZE as u64)
-                    {
-                        anyhow::bail!(
-                            "{} Extra ABI data overflow. Only indexes `0..=9` are allowed",
-                            call.0.location,
-                        );
-                    }
-                    era_compiler_llvm_context::eravm_abi::get_extra_abi_data(
-                        context,
-                        context.field_const(index),
-                    )
-                    .map(Some)
-                }
-                identifier => Err(anyhow::anyhow!(
-                    "{} Invalid global variable identifier `{:?}`",
-                    call.0.location,
-                    identifier
-                )),
-            }
-        }
         identifier @ "active_ptr_data_load" => {
             const ARGUMENTS_COUNT: usize = 1;
             if input_size != ARGUMENTS_COUNT {
@@ -857,20 +842,6 @@ where
                 arguments[0].into_int_value(),
             )
             .map(Some)
-        }
-        identifier @ "active_ptr_data_size" => {
-            const ARGUMENTS_COUNT: usize = 0;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            era_compiler_llvm_context::eravm_abi::active_ptr_data_size(context).map(Some)
         }
         identifier @ "active_ptr_data_copy" => {
             const ARGUMENTS_COUNT: usize = 3;
@@ -892,6 +863,40 @@ where
                 arguments[2].into_int_value(),
             )
             .map(|_| None)
+        }
+        identifier @ "active_ptr_data_size" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_abi::active_ptr_data_size(context).map(Some)
+        }
+        identifier @ "active_ptr_swap" => {
+            const ARGUMENTS_COUNT: usize = 2;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            era_compiler_llvm_context::eravm_abi::active_ptr_swap(
+                context,
+                arguments[0].into_int_value(),
+                arguments[1].into_int_value(),
+            )
+            .map(Some)
         }
         identifier @ "active_ptr_return_forward" => {
             const ARGUMENTS_COUNT: usize = 0;
@@ -921,26 +926,6 @@ where
 
             era_compiler_llvm_context::eravm_abi::active_ptr_revert_forward(context).map(Some)
         }
-        identifier @ "active_ptr_swap" => {
-            const ARGUMENTS_COUNT: usize = 2;
-            if input_size != ARGUMENTS_COUNT {
-                anyhow::bail!(
-                    "{} Internal function `{}` expected {} arguments, found {}",
-                    call.0.location,
-                    identifier,
-                    ARGUMENTS_COUNT,
-                    input_size
-                );
-            }
-
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
-            era_compiler_llvm_context::eravm_abi::active_ptr_swap(
-                context,
-                arguments[0].into_int_value(),
-                arguments[1].into_int_value(),
-            )
-            .map(Some)
-        }
         identifier @ "return_deployed" => {
             const ARGUMENTS_COUNT: usize = 2;
             if input_size != ARGUMENTS_COUNT {
@@ -966,6 +951,21 @@ where
                 "return_deployed",
             )?;
             context.build_unreachable()?;
+            Ok(None)
+        }
+        identifier @ "throw" => {
+            const ARGUMENTS_COUNT: usize = 0;
+            if input_size != ARGUMENTS_COUNT {
+                anyhow::bail!(
+                    "{} Internal function `{}` expected {} arguments, found {}",
+                    call.0.location,
+                    identifier,
+                    ARGUMENTS_COUNT,
+                    input_size
+                );
+            }
+
+            era_compiler_llvm_context::eravm_utils::throw(context)?;
             Ok(None)
         }
         identifier => anyhow::bail!(

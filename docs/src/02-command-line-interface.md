@@ -346,9 +346,9 @@ Enables the EraVM extensions.
 
 If this flag is set, calls to addresses `0xFFFF` and below are substituted by special EraVM instructions.
 
-In the Yul mode, the `verbatim_*` instruction family becomes available.
+In Yul mode, the `verbatim_*` instruction family becomes available.
 
-The full list of EraVM extensions will be documented soon.
+The full list of EraVM extensions and their usage can be found [here](./06-eravm-extensions.md).
 
 Usage:
 
@@ -513,7 +513,7 @@ Binary:
 zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
 ```
 
-*zksolc* features its own dialect of Yul with extensions for EraVM. If such extensions (TODO) are used, it is not possible to use *solc* for validation.
+*zksolc* features its own dialect of Yul with extensions for EraVM. If [the extensions](./06-eravm-extensions.md) are enabled, it is not possible to use *solc* for validation.
 
 
 

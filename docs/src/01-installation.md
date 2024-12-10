@@ -88,8 +88,8 @@ For large codebases, it is more convenient to use the ZKsync compiler toolchain 
 These tools manage the compiler executables and their dependencies, and provide additional features like incremental compilation and caching.
 
 The ZKsync toolchain is supported by the following toolkits:
-
-*TODO: Add links to the tutorials*
+1. [Foundry](https://docs.zksync.io/zksync-era/tooling/foundry/getting-started)
+2. [Hardhat](https://docs.zksync.io/build/tooling/hardhat/guides/getting-started)
 
 
 

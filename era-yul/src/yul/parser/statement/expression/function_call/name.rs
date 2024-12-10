@@ -316,7 +316,9 @@ impl Name {
     ///
     fn parse_verbatim(input: &str) -> Option<Self> {
         let verbatim = input.strip_prefix("verbatim")?;
-        let regex = regex::Regex::new(r"_(\d+)i_(\d+)o").expect("Always valid");
+        let regex = regex::Regex::new(r"_(\d+)i_(\d+)o").unwrap_or_else(|error| {
+            panic!("Invalid `verbatim` instruction suffix `{verbatim}`: {error}")
+        });
         let captures = regex.captures(verbatim)?;
         let input_size: usize = captures.get(1)?.as_str().parse().ok()?;
         let output_size: usize = captures.get(2)?.as_str().parse().ok()?;
