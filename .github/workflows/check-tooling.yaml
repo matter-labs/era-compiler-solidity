@@ -23,7 +23,7 @@ jobs:
           owner: matter-labs
           repo: zksync-ci-stand
           workflow_file_name: hardhat.yaml
-          github_token: ${{ secrets.ZKSYNC_DISPATCH_TOKEN }}
+          github_token: ${{ secrets.RELEASE_TOKEN }}
           wait_interval: 30
           client_payload: '{ "zksolc-version": "${{ inputs.zksolc-version || github.ref }}" }'
           propagate_failure: true
@@ -38,7 +38,7 @@ jobs:
           owner: matter-labs
           repo: zksync-ci-stand
           workflow_file_name: foundry.yaml
-          github_token: ${{ secrets.ZKSYNC_DISPATCH_TOKEN }}
+          github_token: ${{ secrets.RELEASE_TOKEN }}
           wait_interval: 30
           client_payload: '{ "zksolc-version": "${{ inputs.zksolc-version || github.ref }}" }'
           propagate_failure: true
