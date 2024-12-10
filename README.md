@@ -26,8 +26,10 @@ cargo test
 
 ## Documentation
 
-Documentation is using [mdBook](https://github.com/rust-lang/mdBook) utility and is available in the `docs/` directory.
+Documentation is using [mdBook](https://github.com/rust-lang/mdBook) utility and its sources available in the `docs/` directory.
 To build the documentation, follow the [instructions](./docs/README.md).
+
+The deployed versioned builds can be found [here](https://matter-labs.github.io/era-compiler-solidity/latest/).
 
 ## Troubleshooting
 
@@ -54,7 +56,7 @@ at your option.
 
 ## Resources
 
-- [zksolc documentation](./docs/src/SUMMARY.md)
+- [zksolc documentation](https://matter-labs.github.io/era-compiler-solidity/latest/)
 - [ZKsync Era compiler toolchain documentation](https://docs.zksync.io/zk-stack/components/compiler/toolchain)
 - [Solidity documentation](https://docs.soliditylang.org/en/latest/)
 
