@@ -42,7 +42,7 @@ jobs:
       - name: Deploy
         uses: matter-labs/deploy-mdbooks@v1
         with:
-          version: ${{ inputs.version || github.ref_name }}
+          version: ${{ inputs.version || format('v{0}', github.ref_name) }}
           docs-dir: ${{ inputs.docs-dir || 'docs' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           enable-tests: true
