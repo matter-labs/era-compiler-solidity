@@ -122,6 +122,10 @@ pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH: &str =
     "tests/data/standard_json_input/solidity_zksolc_invalid.json";
 
 /// A test input file.
+pub const TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_FORCE_EVMLA: &str =
+    "tests/data/standard_json_input/solidity_zksolc_force_evmla.json";
+
+/// A test input file.
 pub const TEST_YUL_STANDARD_JSON_SOLC_PATH: &str = "tests/data/standard_json_input/yul_solc.json";
 
 /// A test input file.

@@ -1,0 +1,31 @@
+{
+  "language": "Solidity",
+  "sources":
+  {
+    "Test":
+    {
+      "urls": [
+        "tests/data/contracts/solidity/Test.sol"
+      ]
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "mode": "3",
+      "fallbackToOptimizingForSize": true
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers"
+        ]
+      }
+    },
+    "libraries": {},
+    "forceEVMLA": true
+  }
+}
