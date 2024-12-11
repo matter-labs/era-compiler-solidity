@@ -10,8 +10,16 @@ document.addEventListener("DOMContentLoaded", function() {
         // Get the current path
         const currentPath = window.location.pathname;
 
-        // Iterate over the versions object
-        for (const [versionName, versionUrl] of Object.entries(versions)) {
+        // Separate and sort the versions
+        const sortedVersions = Object.entries(versions)
+            .sort(([aKey], [bKey]) => {
+                if (aKey === "latest") return -1; // "latest" goes first
+                if (bKey === "latest") return 1;
+                return bKey.localeCompare(aKey, undefined, { numeric: true }); // Descending numeric order
+            });
+
+        // Iterate over the sorted versions object
+        for (const [versionName, versionUrl] of sortedVersions) {
             const option = document.createElement("option");
             option.value = baseUrl + versionUrl; // Prepend base URL
             option.textContent = versionName;
