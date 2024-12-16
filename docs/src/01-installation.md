@@ -36,14 +36,6 @@ Starting from <b>zksolc</b> v1.5.3, we are shipping builds statically linked wit
 
 
 
-## Versioning
-
-The *zksolc* versioning scheme does not yet follow the [Semantic Versioning](https://semver.org) specification. Instead, its major and minor versions match those of the EraVM protocol for which *zksolc* produces bytecode. The patch version is incremented with each release, regardless of whether breaking changes are introduced. Therefore, please consult the changelog before updating the compiler.
-
-> We recommend always using the latest version of *zksolc* and *solc* to benefit from the latest features and bug fixes.
-
-
-
 ## Installing *zksolc*
 
 You can install the ZKsync Solidity compiler toolchain using the following methods:
@@ -78,7 +70,27 @@ Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://git
     ```
 
 > The second option is more convenient if you are using different versions of *solc* for different projects.
-> *zksolc* only supports *solc* of version 0.4.12 and newer.
+> The current version of *zksolc* supports *solc* versions from 0.4.12 to 0.8.28.
+
+
+
+## Versioning
+
+The *zksolc* versioning scheme does not yet follow the [Semantic Versioning](https://semver.org) specification. Instead, its major and minor versions match those of the EraVM protocol for which *zksolc* produces bytecode. The patch version is incremented with each release, regardless of whether breaking changes are introduced. Therefore, please consult the changelog before updating the compiler.
+
+Versions of [our *solc* fork](https://github.com/matter-labs/era-solidity/releases) consist of two *semver*-compatible parts:
+1. Original upstream version
+2. ZKsync revision
+
+For instance, the latest revision of the latest version of *solc* is `0.8.28-1.0.1`. Here are the ZKsync revisions released by now:
+
+| Revision |                           Features                         |
+|:--------:|:----------------------------------------------------------:|
+| *v1.0.0* | Fixed compatibility between EVM assembly and LLVM IR       |
+| *v1.0.1* | Fixed a compiler crash with nested try-catch patterns      |
+
+> We recommend always using the latest version of *zksolc* and *solc* to benefit from the latest features and bug fixes.
+> Starting from *zksolc* v1.5.8, it is not possible to use the original *solc* with *zksolc* anymore.
 
 
 
