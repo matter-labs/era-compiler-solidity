@@ -1,20 +1,22 @@
 use crate::{cli, common};
+use era_compiler_common::HashType;
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM, "none")]
-#[test_case(Target::EraVM, "keccak256")]
-#[test_case(Target::EraVM, "ipfs")]
-#[test_case(Target::EVM, "none")]
-#[test_case(Target::EVM, "keccak256")]
-#[test_case(Target::EVM, "ipfs")]
-fn with_metadata_hash(target: Target, metadata_hash: &str) -> anyhow::Result<()> {
+#[test_case(Target::EraVM, HashType::None)]
+#[test_case(Target::EraVM, HashType::Keccak256)]
+#[test_case(Target::EraVM, HashType::Ipfs)]
+#[test_case(Target::EVM, HashType::None)]
+#[test_case(Target::EVM, HashType::Keccak256)]
+#[test_case(Target::EVM, HashType::Ipfs)]
+fn with_metadata_hash(target: Target, hash_type: HashType) -> anyhow::Result<()> {
     common::setup()?;
 
+    let hash_type = hash_type.to_string();
     let args = &[
         "--metadata-hash",
-        metadata_hash,
+        hash_type.as_str(),
         "--bin",
         common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
