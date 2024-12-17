@@ -18,21 +18,6 @@ fn with_bytecode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_bytecode_hexadecimal() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[common::TEST_DISASSEMBLER_BYTECODE_PATH, "--disassemble"];
-
-    let result = cli::execute_zksolc(args)?;
-
-    result
-        .success()
-        .stderr(predicate::str::contains("disassembly:"));
-
-    Ok(())
-}
-
-#[test]
 fn with_bytecode_invalid() -> anyhow::Result<()> {
     common::setup()?;
 

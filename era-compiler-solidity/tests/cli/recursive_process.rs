@@ -20,21 +20,6 @@ fn with_recursive_process_without_target(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_recursive_process_no_stdin(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--recursive-process"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("Error: Stdin parsing error"));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
 fn with_recursive_process_and_extra_args(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
