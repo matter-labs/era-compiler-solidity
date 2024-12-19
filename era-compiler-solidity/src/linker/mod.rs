@@ -8,7 +8,8 @@ pub mod output;
 use std::collections::BTreeMap;
 
 use self::input::Input;
-use self::output::contract::Contract as OutputContract;
+use self::output::ignored::Ignored as OutputIgnored;
+use self::output::linked::Linked as OutputLinked;
 use self::output::unlinked::Unlinked as OutputUnlinked;
 use self::output::Output;
 
@@ -59,7 +60,7 @@ impl Linker {
                 .map_err(|error| anyhow::anyhow!("Object `{path}` bytecode hashing: {error}"))?;
             output.ignored.insert(
                 path.clone(),
-                OutputContract::new(bytecode_string, hex::encode(hash)),
+                OutputIgnored::new(bytecode_string, hex::encode(hash)),
             );
             factory_dependencies.insert(path, hash);
         }
@@ -68,6 +69,8 @@ impl Linker {
             let mut linked_counter = 0;
             let mut remaining_objects = Vec::new();
             for (path, bytecode_buffer) in unlinked_objects.drain(..) {
+                let (unlinked_linker_symbols, unlinked_factory_dependencies) =
+                    bytecode_buffer.get_undefined_references_eravm();
                 let (bytecode_buffer_after_linking, object_format) =
                     era_compiler_llvm_context::eravm_link(
                         bytecode_buffer,
@@ -86,7 +89,12 @@ impl Linker {
 
                         output.linked.insert(
                             path.clone(),
-                            OutputContract::new(bytecode, hex::encode(hash.as_slice())),
+                            OutputLinked::new(
+                                bytecode,
+                                hex::encode(hash.as_slice()),
+                                unlinked_linker_symbols,
+                                unlinked_factory_dependencies,
+                            ),
                         );
 
                         factory_dependencies.insert(path, hash);

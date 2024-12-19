@@ -5,6 +5,7 @@
 ### Added
 
 - Full list of factory dependencies to standard and combined JSON outputs
+- Linked dependencies to the `linker` field of linker standard JSON output
 
 ### Fixed
 

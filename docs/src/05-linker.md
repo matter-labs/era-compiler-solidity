@@ -56,17 +56,36 @@ cat './input.json' | zksolc --link --standard-json
       // Linked EraVM bytecode, stripped of the ELF wrapper.
       "bytecode": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
       // Hash of the bytecode used to identify EraVM dependencies during deployment.
-      "hash": "010000d5bf4dd6262304eb67a95a76e6e4b0e9f1dc3d2c524c129c6464939407"
+      "hash": "010000d5bf4dd6262304eb67a95a76e6e4b0e9f1dc3d2c524c129c6464939407",
+      // Resolved library specifiers.
+      "linker_symbols": [
+        // The format is following that of solc: "libraryPath:libraryName".
+        "Greeter.sol:GreeterHelper"
+      ],
+      // Resolved factory dependency (CREATE/CREATE2) specifiers.
+      "factory_dependencies": [
+        // The format is "contractPath:contractName".
+        // Dependencies are resolved automatically if all bytecode objects are passed to the linker.
+        "Dependency.sol:GreeterDependency"
+      ]
     }
   },
   // Lists of unresolved symbols, such as those not provided to the linker.
   // The linker caller must add the missing specifiers and call the linker again.
   "unlinked": {
-    "tests/data/bytecodes/linker.zbin": [
-      // Unresolved library specifier.
-      // The format is following that of solc: "filename:libraryName".
-      "Greeter.sol:GreeterHelper"
-    ]
+    "tests/data/bytecodes/linker.zbin": {
+      // Unresolved library specifiers.
+      "linker_symbols": [
+        // The format is following that of solc: "libraryPath:libraryName".
+        "Greeter.sol:GreeterHelper"
+      ],
+      // Unresolved factory dependency (CREATE/CREATE2) specifiers.
+      "factory_dependencies": [
+        // The format is "contractPath:contractName".
+        // Dependencies are resolved automatically if all bytecode objects are passed to the linker.
+        "Dependency.sol:GreeterDependency"
+      ]
+    }
   },
   // Linked raw bytecode files that do not require linking, so they were not processed in the current call.
   "ignored": {
@@ -156,7 +175,9 @@ Output:
   "linked": {
     "./output/Greeter.sol/Greeter.zbin": {
       "bytecode": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
-      "hash": "010000bd2bcef5602ae1ebc0b812cc65d88655a8d972ac10227f142e1838093c"
+      "hash": "010000bd2bcef5602ae1ebc0b812cc65d88655a8d972ac10227f142e1838093c",
+      "linker_symbols": ["Greeter.sol:GreeterHelper"],
+      "factory_dependencies": []
     }
   },
   "unlinked": {},
