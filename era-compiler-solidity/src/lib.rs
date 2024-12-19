@@ -558,8 +558,8 @@ pub fn standard_json_eravm(
         }
     };
 
-    let missing_libraries = project.get_missing_libraries();
     if detect_missing_libraries {
+        let missing_libraries = project.get_missing_libraries();
         missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
         solc_output.write_and_exit(prune_output);
     }
@@ -580,7 +580,6 @@ pub fn standard_json_eravm(
 
     let build = build.link(linker_symbols);
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
-    missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
     solc_output.write_and_exit(prune_output);
 }
 

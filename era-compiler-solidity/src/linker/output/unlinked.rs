@@ -1,9 +1,9 @@
 //!
-//! The information on unlinked objects.
+//! The information on an unlinked object.
 //!
 
 ///
-/// The information on unlinked objects.
+/// The information on an unlinked object.
 ///
 #[derive(Debug, Default, serde::Serialize)]
 pub struct Unlinked {

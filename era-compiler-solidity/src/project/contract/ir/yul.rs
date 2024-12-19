@@ -2,7 +2,7 @@
 //! The contract Yul source code.
 //!
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use era_yul::yul::lexer::Lexer;
 use era_yul::yul::parser::statement::object::Object;
@@ -55,7 +55,7 @@ impl Yul {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.object.0.get_missing_libraries()
     }
 }

@@ -2,7 +2,7 @@
 //! The contract EVM legacy assembly source code.
 //!
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::evmla::assembly::Assembly;
 
@@ -31,7 +31,7 @@ impl EVMLA {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.assembly.get_missing_libraries()
     }
 }

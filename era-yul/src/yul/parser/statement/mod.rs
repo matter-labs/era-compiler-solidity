@@ -13,7 +13,7 @@ pub mod object;
 pub mod switch;
 pub mod variable_declaration;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
@@ -154,7 +154,7 @@ where
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         match self {
             Self::Object(inner) => inner.get_missing_libraries(),
             Self::Code(inner) => inner.get_missing_libraries(),
@@ -166,9 +166,9 @@ where
             Self::IfConditional(inner) => inner.get_missing_libraries(),
             Self::Switch(inner) => inner.get_missing_libraries(),
             Self::ForLoop(inner) => inner.get_missing_libraries(),
-            Self::Continue(_) => HashSet::new(),
-            Self::Break(_) => HashSet::new(),
-            Self::Leave(_) => HashSet::new(),
+            Self::Continue(_) => BTreeSet::new(),
+            Self::Break(_) => BTreeSet::new(),
+            Self::Leave(_) => BTreeSet::new(),
         }
     }
 

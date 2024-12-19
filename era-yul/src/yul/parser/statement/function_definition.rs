@@ -3,7 +3,6 @@
 //!
 
 use std::collections::BTreeSet;
-use std::collections::HashSet;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -164,7 +163,7 @@ where
     ///
     /// Gets the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.body.get_missing_libraries()
     }
 }

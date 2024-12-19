@@ -2,7 +2,7 @@
 //! The Yul code.
 //!
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
@@ -63,7 +63,7 @@ where
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.block.get_missing_libraries()
     }
 }

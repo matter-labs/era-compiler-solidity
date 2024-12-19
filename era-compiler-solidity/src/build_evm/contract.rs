@@ -164,25 +164,6 @@ impl Contract {
     }
 
     ///
-    /// Writes the contract text assembly and bytecode to the combined JSON.
-    ///
-    pub fn write_to_combined_json(
-        self,
-        combined_json_contract: &mut era_solc::CombinedJsonContract,
-    ) -> anyhow::Result<()> {
-        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
-            *metadata = self.metadata_json.to_string();
-        }
-
-        combined_json_contract.bin = Some(hex::encode(self.deploy_build));
-        combined_json_contract.bin_runtime = Some(hex::encode(self.runtime_build));
-
-        combined_json_contract.assembly = serde_json::Value::String("Coming soon".to_owned());
-
-        Ok(())
-    }
-
-    ///
     /// Writes the contract text assembly and bytecode to the standard JSON.
     ///
     pub fn write_to_standard_json(
@@ -197,6 +178,25 @@ impl Contract {
             .evm
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_evm(deploy_bytecode, runtime_bytecode);
+
+        Ok(())
+    }
+
+    ///
+    /// Writes the contract text assembly and bytecode to the combined JSON.
+    ///
+    pub fn write_to_combined_json(
+        self,
+        combined_json_contract: &mut era_solc::CombinedJsonContract,
+    ) -> anyhow::Result<()> {
+        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
+            *metadata = self.metadata_json.to_string();
+        }
+
+        combined_json_contract.bin = Some(hex::encode(self.deploy_build));
+        combined_json_contract.bin_runtime = Some(hex::encode(self.runtime_build));
+
+        combined_json_contract.assembly = serde_json::Value::String("Coming soon".to_owned());
 
         Ok(())
     }

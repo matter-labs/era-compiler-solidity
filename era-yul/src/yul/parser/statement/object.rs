@@ -2,6 +2,7 @@
 //! The Yul object.
 //!
 
+use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use crate::yul::error::Error;
@@ -179,7 +180,7 @@ where
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         let mut missing_libraries = self.code.get_missing_libraries();
         if let Some(inner_object) = &self.inner_object {
             missing_libraries.extend(inner_object.get_missing_libraries());

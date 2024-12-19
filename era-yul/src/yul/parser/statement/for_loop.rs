@@ -2,7 +2,7 @@
 //! The for-loop statement.
 //!
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::location::Location;
@@ -64,7 +64,7 @@ where
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         let mut libraries = self.initializer.get_missing_libraries();
         libraries.extend(self.condition.get_missing_libraries());
         libraries.extend(self.finalizer.get_missing_libraries());

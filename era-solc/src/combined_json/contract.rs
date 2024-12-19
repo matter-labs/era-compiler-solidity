@@ -3,7 +3,7 @@
 //!
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 ///
 /// The contract.
@@ -52,12 +52,19 @@ pub struct Contract {
         skip_deserializing
     )]
     pub assembly: serde_json::Value,
+    /// The unlinked factory dependencies.
+    #[serde(default, skip_deserializing)]
+    pub factory_deps_unlinked: BTreeSet<String>,
     /// The factory dependencies.
     #[serde(default, skip_deserializing)]
     pub factory_deps: BTreeMap<String, String>,
     /// The missing libraries.
-    #[serde(default, skip_serializing_if = "HashSet::is_empty", skip_deserializing)]
-    pub missing_libraries: HashSet<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "BTreeSet::is_empty",
+        skip_deserializing
+    )]
+    pub missing_libraries: BTreeSet<String>,
     /// The binary object format.
     #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub object_format: Option<era_compiler_common::ObjectFormat>,

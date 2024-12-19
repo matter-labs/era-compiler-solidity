@@ -61,12 +61,23 @@ The format below is a modification of the original combined JSON [output](https:
       "bin": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
       // Required: Bytecode is always emitted.
       "bin-runtime": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
-      // Required, zksolc: Mapping between bytecode hashes and full contract identifiers (e.g. "MyContract.sol:Test").
-      "factory-deps": {/* ... */}
+
+      // Required, zksolc(eravm): All factory dependencies, both linked and unlinked.
+      // This field is useful if the full list of dependencies is needed, including those that could not have been linked yet.
+      // Example: [ "default.sol:Test" ].
+      "factory-deps-unlinked": [/* ... */],
+      // Required, zksolc(eravm): Mapping between bytecode hashes and full contract identifiers.
+      // Only linked contracts are listed here due to the requirement of bytecode hash.
+      // Example: { "5ab89dcf...": "default.sol:Test" }.
+      "factory-deps": {/* ... */},
+      // Required, zksolc(eravm): Mapping between full contract identifiers and library identifiers that must be linked after compilation.
+      // Only unlinked libraries are listed here.
+      // Example: { "default.sol:Test": "library.sol:Library" }.
+      "missing-libraries": {/* ... */},
       // Required, zksolc: Binary object format.
       // Tells whether the bytecode has been linked.
       // Possible values: "elf" (unlinked), "raw" (linked).
-      "objectFormat": "elf"
+      "object-format": "elf"
     }
   },
   // Optional: List of input files.

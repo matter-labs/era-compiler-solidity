@@ -2,7 +2,7 @@
 //! The inner JSON legacy assembly code element.
 //!
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::evmla::assembly::Assembly;
 
@@ -45,11 +45,11 @@ impl Data {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         match self {
             Self::Assembly(assembly) => assembly.get_missing_libraries(),
-            Self::Hash(_) => HashSet::new(),
-            Self::Path(_) => HashSet::new(),
+            Self::Hash(_) => BTreeSet::new(),
+            Self::Path(_) => BTreeSet::new(),
         }
     }
 }

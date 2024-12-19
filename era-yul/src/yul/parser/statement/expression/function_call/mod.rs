@@ -4,7 +4,7 @@
 
 pub mod name;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
@@ -96,8 +96,8 @@ impl FunctionCall {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = HashSet::new();
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
+        let mut libraries = BTreeSet::new();
 
         if let Name::LinkerSymbol = self.name {
             let _argument = self.arguments.first().expect("Always exists");

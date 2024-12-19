@@ -1,19 +1,19 @@
 //!
-//! The linker output contract.
+//! The ignored output bytecode object.
 //!
 
 ///
-/// The linker output contract.
+/// The ignored output bytecode object.
 ///
 #[derive(Debug, Default, serde::Serialize)]
-pub struct Contract {
+pub struct Ignored {
     /// Contract bytecode.
     pub bytecode: String,
     /// Contract bytecode hash.
     pub hash: String,
 }
 
-impl Contract {
+impl Ignored {
     ///
     /// A shortcut constructor.
     ///

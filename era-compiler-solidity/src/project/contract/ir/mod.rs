@@ -7,7 +7,7 @@ pub mod evmla;
 pub mod llvm_ir;
 pub mod yul;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use self::eravm_assembly::EraVMAssembly;
 use self::evmla::EVMLA;
@@ -33,12 +33,12 @@ impl IR {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         match self {
             Self::Yul(inner) => inner.get_missing_libraries(),
             Self::EVMLA(inner) => inner.get_missing_libraries(),
-            Self::LLVMIR(_inner) => HashSet::new(),
-            Self::EraVMAssembly(_inner) => HashSet::new(),
+            Self::LLVMIR(_inner) => BTreeSet::new(),
+            Self::EraVMAssembly(_inner) => BTreeSet::new(),
         }
     }
 }
