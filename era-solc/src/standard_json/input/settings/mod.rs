@@ -112,7 +112,7 @@ impl Settings {
 
             codegen,
             evm_version,
-            force_evmla: codegen == Some(Codegen::EVMLA),
+            force_evmla: false,
             enable_eravm_extensions,
 
             output_selection,

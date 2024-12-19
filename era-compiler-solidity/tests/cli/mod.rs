@@ -35,6 +35,7 @@ mod recursive_process;
 mod remappings;
 mod solc;
 mod standard_json;
+mod target;
 mod threads;
 mod version;
 mod yul;

@@ -158,6 +158,34 @@ impl Compiler {
             }
         };
 
+        if input.settings.force_evmla {
+            messages.push(StandardJsonOutputError::new_warning(
+                r#"The `forceEVMLA` setting is deprecated. Please use `codegen: 'evmla'` instead."#,
+                None,
+                None,
+            ));
+        }
+        if input.settings.codegen.is_none() {
+            messages.push(StandardJsonOutputError::new_warning(
+                "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
+                None,
+                None,
+            ));
+        }
+        if !input.suppressed_errors.is_empty() {
+            messages.push(StandardJsonOutputError::new_warning(
+                "`suppressedErrors` at the root of standard JSON input is deprecated. Please move them to `settings`.",
+                None,
+                None,
+            ));
+        }
+        if !input.suppressed_warnings.is_empty() {
+            messages.push(StandardJsonOutputError::new_warning(
+                "`suppressedWarnings` at the root of standard JSON input is deprecated. Please move them to `settings`.",
+                None,
+                None,
+            ));
+        }
         solc_output
             .errors
             .retain(|error| match error.error_code.as_deref() {
@@ -165,37 +193,6 @@ impl Compiler {
                 None => true,
             });
         solc_output.errors.append(messages);
-
-        if !input.suppressed_errors.is_empty() {
-            solc_output.errors.push(StandardJsonOutputError::new_warning(
-                "`suppressedErrors` at the root of standard JSON input are deprecated. Please move them to `settings`.",
-                None,
-                None,
-            ));
-        }
-        if !input.suppressed_warnings.is_empty() {
-            solc_output.errors.push(StandardJsonOutputError::new_warning(
-                "`suppressedWarnings` at the root of standard JSON input are deprecated. Please move them to `settings`.",
-                None,
-                None,
-            ));
-        }
-        if input.settings.force_evmla {
-            solc_output
-                .errors
-                .push(StandardJsonOutputError::new_warning(
-                r#"The `forceEVMLA` setting is deprecated. Please use `codegen: 'evmla'` instead."#,
-                None,
-                None,
-            ));
-        }
-        if input.settings.codegen.is_none() {
-            solc_output.errors.push(StandardJsonOutputError::new_warning(
-                "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
-                None,
-                None,
-            ));
-        }
 
         let mut suppressed_errors = input.suppressed_errors.clone();
         suppressed_errors.extend_from_slice(input.settings.suppressed_errors.as_slice());

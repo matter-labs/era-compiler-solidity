@@ -91,6 +91,9 @@ fn main_inner(
         Some(ref target) => era_compiler_common::Target::from_str(target.as_str())?,
         None => era_compiler_common::Target::EraVM,
     };
+    if let era_compiler_common::Target::EVM = target {
+        messages.push(era_solc::StandardJsonOutputError::new_warning("EVM target is under development and not fully functional yet. It must only be used for research and development purposes.", None, None))
+    }
 
     let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
     if let Some(threads) = arguments.threads {
