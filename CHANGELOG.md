@@ -1,5 +1,16 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- Full list of factory dependencies to standard and combined JSON outputs
+
+### Fixed
+
+- Empty `missing-libraries` list in combined JSON mode
+- False-positive warning with `--force-evmla` in basic CLI mode
+
 ## [1.5.8] - 2024-12-10
 
 ### Added
