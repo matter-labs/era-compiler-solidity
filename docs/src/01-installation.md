@@ -50,7 +50,7 @@ You can install the ZKsync Solidity compiler toolchain using the following metho
 
 ## Installing *solc*
 
-Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://github.com/matter-labs/era-solidity/releases), which is called by *zksolc* as a child process. To point *zksolc* to the location of *solc*, use one of the following methods:
+Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://github.com/matter-labs/era-solidity/releases) where [we fixed several issues](./eravm/02-evm-assembly-translator.md#zksync-fork-of-solc) with lowering of EVM assembly to LLVM IR. The fork is called by *zksolc* as a child process. To point *zksolc* to the location of *solc*, use one of the following methods:
 
 1. Add the location of *solc* to the environment variable `PATH`. 
   

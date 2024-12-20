@@ -1,4 +1,4 @@
-# EraVM Extensions
+# Extensions
 
 EraVM extensions are a set of additional instructions that can be expressed in Solidity and Yul, but can only be compiled to EraVM bytecode.
 
@@ -1172,9 +1172,9 @@ assembly {
 
 ## Throw (verbatim-only)
 
-Throws a function-level exception.
+Throws a [function-level exception](./03-exception-handling.md#function-level).
 
-For a deeper dive into EraVM exceptions, visit [this page](https://docs.zksync.io/zksync-protocol/compiler/specification/exception-handling).
+For a deeper dive into EraVM exceptions, see [this page](./03-exception-handling.md).
 
 Pseudo-code:
 ```solidity
