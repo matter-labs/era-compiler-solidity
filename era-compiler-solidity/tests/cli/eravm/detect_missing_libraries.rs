@@ -2,7 +2,24 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_detect_missing_libraries() -> anyhow::Result<()> {
+fn default() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--detect-missing-libraries",
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.failure().stderr(predicate::str::contains(
+        "Missing deployable libraries detection mode is only supported in standard JSON mode.",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn deprecated_standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -20,7 +37,7 @@ fn with_detect_missing_libraries() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
+fn llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -39,7 +56,7 @@ fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
+fn eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -58,7 +75,7 @@ fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_detect_missing_libraries_standard_json_mode() -> anyhow::Result<()> {
+fn standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -76,7 +93,7 @@ fn with_detect_missing_libraries_standard_json_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_detect_missing_libraries_standard_json_mode_missing_sources() -> anyhow::Result<()> {
+fn standard_json_missing_sources() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -94,7 +111,7 @@ fn with_detect_missing_libraries_standard_json_mode_missing_sources() -> anyhow:
 }
 
 #[test]
-fn with_detect_missing_libraries_standard_json_mode_llvm_ir() -> anyhow::Result<()> {
+fn standard_json_llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -112,7 +129,7 @@ fn with_detect_missing_libraries_standard_json_mode_llvm_ir() -> anyhow::Result<
 }
 
 #[test]
-fn with_detect_missing_libraries_standard_json_mode_eravm_assembly() -> anyhow::Result<()> {
+fn standard_json_eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

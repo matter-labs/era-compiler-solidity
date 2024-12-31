@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_eravm_extensions() -> anyhow::Result<()> {
+fn default() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -20,7 +20,7 @@ fn with_eravm_extensions() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
+fn llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -39,7 +39,7 @@ fn with_eravm_extensions_llvm_ir_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
+fn eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -58,7 +58,7 @@ fn with_eravm_extensions_eravm_assembly_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_enable_eravm_extensions_standard_json_mode() -> anyhow::Result<()> {
+fn standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -76,7 +76,7 @@ fn with_enable_eravm_extensions_standard_json_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_system_mode() -> anyhow::Result<()> {
+fn deprecated_system_mode() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

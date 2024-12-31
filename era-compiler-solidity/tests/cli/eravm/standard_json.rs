@@ -3,7 +3,7 @@ use era_compiler_common::Target;
 use predicates::prelude::*;
 
 #[test]
-fn with_standard_json_llvm_ir() -> anyhow::Result<()> {
+fn llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json", common::TEST_LLVM_IR_STANDARD_JSON_PATH];
@@ -17,7 +17,7 @@ fn with_standard_json_llvm_ir() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_llvm_ir_with_solc() -> anyhow::Result<()> {
+fn llvm_ir_solc() -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -39,7 +39,7 @@ fn with_standard_json_llvm_ir_with_solc() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_eravm_assembly() -> anyhow::Result<()> {
+fn eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -56,7 +56,7 @@ fn with_standard_json_eravm_assembly() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_eravm_assembly_with_solc() -> anyhow::Result<()> {
+fn eravm_assembly_solc() -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =

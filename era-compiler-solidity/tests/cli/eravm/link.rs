@@ -63,7 +63,7 @@ fn without_libraries_linker_error() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_libraries_and_extra_args() -> anyhow::Result<()> {
+fn with_libraries_excess_args() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -195,7 +195,7 @@ fn without_libraries_standard_json() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_missing() -> anyhow::Result<()> {
+fn standard_json_missing() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -213,7 +213,7 @@ fn with_standard_json_missing() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
+fn standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -231,7 +231,7 @@ fn with_standard_json_invalid_hexadecimal() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_linker_error() -> anyhow::Result<()> {
+fn standard_json_linker_error() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -249,18 +249,12 @@ fn with_standard_json_linker_error() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_target_evm() -> anyhow::Result<()> {
+fn unsupported_evm() -> anyhow::Result<()> {
     common::setup()?;
 
-    let target = Target::EVM.to_string();
-    let args = &[
-        "--link",
-        common::TEST_LINKER_BYTECODE_PATH,
-        "--target",
-        target.as_str(),
-    ];
+    let args = &["--link", common::TEST_LINKER_BYTECODE_PATH];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = cli::execute_zksolc_with_target(args, Target::EVM)?;
     result.failure().stderr(predicate::str::contains(
         "The EVM target does not support linking yet.",
     ));

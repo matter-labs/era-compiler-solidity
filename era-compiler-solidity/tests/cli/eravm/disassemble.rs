@@ -3,7 +3,7 @@ use era_compiler_common::Target;
 use predicates::prelude::*;
 
 #[test]
-fn with_bytecode() -> anyhow::Result<()> {
+fn default() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[common::TEST_DISASSEMBLER_BYTECODE_PATH, "--disassemble"];
@@ -18,7 +18,7 @@ fn with_bytecode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_bytecode_invalid() -> anyhow::Result<()> {
+fn invalid_path() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--disassemble", "anyarg"];
@@ -31,7 +31,7 @@ fn with_bytecode_invalid() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_bytecode_and_extra_args() -> anyhow::Result<()> {
+fn excess_arguments() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -50,7 +50,7 @@ fn with_bytecode_and_extra_args() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_target_evm() -> anyhow::Result<()> {
+fn unimplemented_evm() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--disassemble", common::TEST_DISASSEMBLER_BYTECODE_PATH];

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use tempfile::TempDir;
 
 #[test]
-fn with_output_dir_llvm_ir() -> anyhow::Result<()> {
+fn llvm_ir() -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -40,7 +40,7 @@ fn with_output_dir_llvm_ir() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_output_dir_eravm_assembly() -> anyhow::Result<()> {
+fn eravm_assembly() -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;

@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_suppressed_warnings() -> anyhow::Result<()> {
+fn default() -> anyhow::Result<()> {
     common::setup()?;
 
     let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
@@ -22,7 +22,7 @@ fn with_suppressed_warnings() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
+fn standard_json() -> anyhow::Result<()> {
     common::setup()?;
 
     let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
@@ -42,7 +42,7 @@ fn with_suppressed_warnings_standard_json_mode() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_suppressed_warnings_invalid() -> anyhow::Result<()> {
+fn invalid_variant() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -55,6 +55,28 @@ fn with_suppressed_warnings_invalid() -> anyhow::Result<()> {
     let result = cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Invalid suppressed warning type: mega-ultra-warning",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn standard_json_invalid_variant() -> anyhow::Result<()> {
+    common::setup()?;
+
+    let solc_compiler =
+        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID,
+    ];
+
+    let result = cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "unknown variant `INVALID_SUPPRESSED_WARNING_TYPE`",
     ));
 
     Ok(())
