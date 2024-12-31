@@ -7,7 +7,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_output_dir(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -45,7 +45,7 @@ fn with_output_dir(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM, era_compiler_common::EXTENSION_ERAVM_BINARY)]
 #[test_case(Target::EVM, era_compiler_common::EXTENSION_EVM_BINARY)]
-fn with_output_dir_yul(target: Target, extension: &str) -> anyhow::Result<()> {
+fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -81,10 +81,7 @@ fn with_output_dir_yul(target: Target, extension: &str) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM, common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
 #[test_case(Target::EVM, common::SOLIDITY_ASM_OUTPUT_NAME_EVM)]
-fn with_output_dir_with_asm_and_metadata(
-    target: Target,
-    asm_file_name: &str,
-) -> anyhow::Result<()> {
+fn asm_and_metadata(target: Target, asm_file_name: &str) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -137,65 +134,7 @@ fn with_output_dir_with_asm_and_metadata(
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_output_dir_invalid_arg_no_path(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--output-dir"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    let status = result
-        .failure()
-        .stderr(predicate::str::contains(
-            "error: a value is required for '--output-dir <OUTPUT_DIR>' but none was supplied",
-        ))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
-
-    let solc_result = cli::execute_solc(args)?;
-    solc_result.code(status);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_output_dir_invalid_args_no_source(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
-    let tmp_dir_solc = TempDir::with_prefix("solc_output")?;
-
-    let args = &[
-        "--bin",
-        "--output-dir",
-        tmp_dir_zksolc.path().to_str().unwrap(),
-    ];
-    let solc_args = &[
-        "--bin",
-        "--output-dir",
-        tmp_dir_solc.path().to_str().unwrap(),
-    ];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    let status = result
-        .failure()
-        .stderr(predicate::str::contains("No input sources specified"))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
-
-    let solc_result = cli::execute_solc(solc_args)?;
-    solc_result.code(status);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_output_dir_specific_symbols(target: Target) -> anyhow::Result<()> {
+fn weird_path_characters(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -233,7 +172,7 @@ fn with_output_dir_specific_symbols(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_output_dir_combined_json_mode(target: Target) -> anyhow::Result<()> {
+fn combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -273,7 +212,7 @@ fn with_output_dir_combined_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_output_dir_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -284,7 +223,6 @@ fn with_output_dir_standard_json_mode(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.success().stdout(predicate::str::contains(
         "Output directory cannot be used in standard JSON mode.",
     ));

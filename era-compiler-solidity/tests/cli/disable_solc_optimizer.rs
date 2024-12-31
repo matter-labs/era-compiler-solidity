@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_disable_solc_optimizer(target: Target) -> anyhow::Result<()> {
+fn deprecated(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

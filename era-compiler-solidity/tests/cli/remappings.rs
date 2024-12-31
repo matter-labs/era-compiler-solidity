@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_remappings(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -15,7 +15,6 @@ fn with_remappings(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -25,7 +24,7 @@ fn with_remappings(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_remappings_extra_equals_sign(target: Target) -> anyhow::Result<()> {
+fn excess_equals_sign(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -35,7 +34,6 @@ fn with_remappings_extra_equals_sign(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.failure().stderr(predicate::str::contains(
         "expected two parts separated by '='",
     ));
@@ -45,7 +43,7 @@ fn with_remappings_extra_equals_sign(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_remappings_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

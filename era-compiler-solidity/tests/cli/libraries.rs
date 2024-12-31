@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_input(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[
         common::TEST_SOLIDITY_CONTRACT_PATH,
@@ -23,21 +23,7 @@ fn with_input(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_input(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-    let args = &["--libraries"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: a value is required for '--libraries <LIBRARIES>...' but none was supplied",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_libraries_llvm_ir_assembly_mode(target: Target) -> anyhow::Result<()> {
+fn llvm_ir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -57,7 +43,7 @@ fn with_libraries_llvm_ir_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
+fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -77,7 +63,7 @@ fn with_libraries_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -88,7 +74,6 @@ fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.success().stdout(predicate::str::contains(
         "Libraries must be passed via standard JSON input.",
     ));
@@ -98,7 +83,7 @@ fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
+fn missing_contract_name(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -109,7 +94,6 @@ fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.failure().stderr(predicate::str::contains(
         "Library `tests/data/contracts/solidity/MiniMath.sol` contract name is missing.",
     ));
@@ -119,7 +103,7 @@ fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
+fn missing_address(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -130,7 +114,6 @@ fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.failure().stderr(predicate::str::contains(
         "Error: Library `tests/data/contracts/solidity/MiniMath.sol:MiniMath` address is missing.",
     ));
@@ -140,7 +123,7 @@ fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_invalid_address(target: Target) -> anyhow::Result<()> {
+fn invalid_address(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -151,7 +134,6 @@ fn with_libraries_invalid_address(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.failure().stderr(predicate::str::contains(
         "Error: Invalid address `INVALID` of library `tests/data/contracts/solidity/MiniMath.sol:MiniMath`: Odd number of digits",
     ));

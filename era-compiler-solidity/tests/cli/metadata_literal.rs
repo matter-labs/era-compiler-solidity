@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_metadata_literal(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -24,7 +24,7 @@ fn with_metadata_literal(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_metadata_literal_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

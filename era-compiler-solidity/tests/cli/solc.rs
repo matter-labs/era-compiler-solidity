@@ -6,7 +6,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -28,7 +28,7 @@ fn with_solc(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_solc(target: Target) -> anyhow::Result<()> {
+fn no_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
@@ -48,7 +48,7 @@ fn without_solc(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -71,7 +71,7 @@ fn with_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json_no_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -89,7 +89,7 @@ fn without_solc_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
+fn llvm_ir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -113,7 +113,7 @@ fn with_solc_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
+fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -137,7 +137,7 @@ fn with_solc_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_not_found(target: Target) -> anyhow::Result<()> {
+fn invalid_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let path = "solc-not-found";
@@ -153,7 +153,7 @@ fn with_solc_not_found(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_output_error(target: Target) -> anyhow::Result<()> {
+fn error_version_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -172,7 +172,7 @@ fn with_solc_version_output_error(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_too_old(target: Target) -> anyhow::Result<()> {
+fn error_version_too_old(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -195,7 +195,7 @@ fn with_solc_version_too_old(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_too_new(target: Target) -> anyhow::Result<()> {
+fn error_version_too_recent(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -218,7 +218,7 @@ fn with_solc_version_too_new(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
+fn error_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -237,7 +237,7 @@ fn with_solc_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<()> {
+fn error_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -256,7 +256,7 @@ fn with_solc_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Res
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_solc_version_parsing_error(target: Target) -> anyhow::Result<()> {
+fn error_version_parsing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

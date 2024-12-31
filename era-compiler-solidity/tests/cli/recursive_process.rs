@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_recursive_process_without_target(target: Target) -> anyhow::Result<()> {
+fn missing_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--recursive-process"];
@@ -20,7 +20,7 @@ fn with_recursive_process_without_target(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_recursive_process_and_extra_args(target: Target) -> anyhow::Result<()> {
+fn excess_arguments(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--recursive-process", common::TEST_SOLIDITY_CONTRACT_PATH];

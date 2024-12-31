@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -39,7 +39,7 @@ fn with_standard_json(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_incompatible_input(target: Target) -> anyhow::Result<()> {
+fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json", common::TEST_YUL_CONTRACT_PATH];
@@ -61,7 +61,7 @@ fn with_standard_json_incompatible_input(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_invalid_by_solc(target: Target) -> anyhow::Result<()> {
+fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -97,7 +97,7 @@ fn with_standard_json_invalid_by_solc(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
+fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -127,7 +127,7 @@ fn with_standard_json_invalid_by_zksolc(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_with_suppressed_messages(target: Target) -> anyhow::Result<()> {
+fn suppressed_messages(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =
@@ -161,7 +161,7 @@ fn with_standard_json_with_suppressed_messages(target: Target) -> anyhow::Result
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_recursion(target: Target) -> anyhow::Result<()> {
+fn recursion(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -179,7 +179,7 @@ fn with_standard_json_recursion(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_non_existent(target: Target) -> anyhow::Result<()> {
+fn invalid_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -207,7 +207,7 @@ fn with_standard_json_non_existent(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_invalid_utf8(target: Target) -> anyhow::Result<()> {
+fn invalid_utf8(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -238,7 +238,7 @@ fn with_standard_json_invalid_utf8(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_stdin_missing(target: Target) -> anyhow::Result<()> {
+fn stdin_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json"];
@@ -263,7 +263,7 @@ fn with_standard_json_stdin_missing(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_empty_sources(target: Target) -> anyhow::Result<()> {
+fn empty_sources(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -292,7 +292,7 @@ fn with_standard_json_empty_sources(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_missing_sources(target: Target) -> anyhow::Result<()> {
+fn missing_sources(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -323,7 +323,7 @@ fn with_standard_json_missing_sources(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_yul(target: Target) -> anyhow::Result<()> {
+fn yul(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--standard-json", common::TEST_YUL_STANDARD_JSON_SOLC_PATH];
@@ -346,7 +346,7 @@ fn with_standard_json_yul(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_both_urls_and_content(target: Target) -> anyhow::Result<()> {
+fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -377,7 +377,7 @@ fn with_standard_json_both_urls_and_content(target: Target) -> anyhow::Result<()
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
+fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -408,7 +408,7 @@ fn with_standard_json_neither_urls_nor_content(target: Target) -> anyhow::Result
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_yul_with_solc(target: Target) -> anyhow::Result<()> {
+fn yul_solc(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let solc_compiler =

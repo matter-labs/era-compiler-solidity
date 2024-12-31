@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_force_evmla(target: Target) -> anyhow::Result<()> {
+fn deprecated(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -24,7 +24,25 @@ fn with_force_evmla(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_force_evmla_yul_mode(target: Target) -> anyhow::Result<()> {
+fn deprecated_standard_json(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_FORCE_EVMLA,
+    ];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains(
+        "The `forceEVMLA` setting is deprecated. Please use `codegen: 'evmla'` instead.",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn yul(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -44,7 +62,7 @@ fn with_force_evmla_yul_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_force_evmla_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
+fn llvm_ir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -64,7 +82,7 @@ fn with_force_evmla_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_force_evmla_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
+fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -84,7 +102,7 @@ fn with_force_evmla_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_force_evmla_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -96,24 +114,6 @@ fn with_force_evmla_standard_json_mode(target: Target) -> anyhow::Result<()> {
     let result = cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "is deprecated in standard JSON mode and must be passed in JSON as",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_deprecated(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[
-        "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_FORCE_EVMLA,
-    ];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.success().stdout(predicate::str::contains(
-        "The `forceEVMLA` setting is deprecated. Please use `codegen: 'evmla'` instead.",
     ));
 
     Ok(())

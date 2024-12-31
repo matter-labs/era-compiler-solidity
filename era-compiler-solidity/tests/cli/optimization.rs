@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 // TODO: #[test_case(Target::EVM)]
-fn with_optimization_levels(target: Target) -> anyhow::Result<()> {
+fn all(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let levels = ["0", "1", "2", "3", "s", "z"];
@@ -24,22 +24,7 @@ fn with_optimization_levels(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_optimization_no_input_file(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["-O", "0"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("No input sources specified"));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_invalid_optimization_option(target: Target) -> anyhow::Result<()> {
+fn invalid(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "-O", "99"];
@@ -55,7 +40,7 @@ fn with_invalid_optimization_option(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_optimization_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

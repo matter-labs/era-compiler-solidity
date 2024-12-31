@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_include_path(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -27,7 +27,7 @@ fn with_include_path(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_include_path_yul_mode(target: Target) -> anyhow::Result<()> {
+fn yul(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -50,7 +50,7 @@ fn with_include_path_yul_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_include_path_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
+fn llvm_ir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -73,7 +73,7 @@ fn with_include_path_llvm_ir_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_include_path_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
+fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

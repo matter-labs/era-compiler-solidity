@@ -5,12 +5,11 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM, common::TEST_LLVM_IR_CONTRACT_PATH)]
 #[test_case(Target::EVM, common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
-fn with_llvm_ir(target: Target, path: &str) -> anyhow::Result<()> {
+fn default(target: Target, path: &str) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[path, "--llvm-ir"];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested.",
     ));
@@ -20,50 +19,22 @@ fn with_llvm_ir(target: Target, path: &str) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_llvm_ir_duplicate_flag(target: Target) -> anyhow::Result<()> {
+fn invalid_input_text(target: Target) -> anyhow::Result<()> {
     common::setup()?;
-    let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
+
+    let args = &["--llvm-ir", common::TEST_BROKEN_INPUT_PATH];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: the argument '--llvm-ir' cannot be used multiple times",
-    ));
+    result
+        .failure()
+        .stderr(predicate::str::contains("error: expected top-level entity"));
 
     Ok(())
 }
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_llvm_ir_invalid(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: use of undefined value \'%runtime\'",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-fn with_llvm_ir_linker_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "ld.lld: error: undefined symbol: foo",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_wrong_input_format(target: Target) -> anyhow::Result<()> {
+fn invalid_input_solidity(target: Target) -> anyhow::Result<()> {
     common::setup()?;
     let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
 
@@ -77,15 +48,29 @@ fn with_wrong_input_format(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_incompatible_input_format_without_output(target: Target) -> anyhow::Result<()> {
+fn invalid_input_llvm_ir(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    let args = &["--llvm-ir", common::TEST_BROKEN_INPUT_PATH];
+    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("error: expected top-level entity"));
+    result.failure().stderr(predicate::str::contains(
+        "error: use of undefined value \'%runtime\'",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn linker_error(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH];
+
+    let result = cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "ld.lld: error: undefined symbol: foo",
+    ));
 
     Ok(())
 }

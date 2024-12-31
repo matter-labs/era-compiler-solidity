@@ -6,7 +6,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_bin(target: Target) -> anyhow::Result<()> {
+fn bin(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -48,7 +48,7 @@ fn with_overwrite_bin(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_overwrite_bin(target: Target) -> anyhow::Result<()> {
+fn bin_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -90,7 +90,7 @@ fn without_overwrite_bin(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_asm(target: Target) -> anyhow::Result<()> {
+fn asm(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -132,7 +132,7 @@ fn with_overwrite_asm(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_overwrite_asm(target: Target) -> anyhow::Result<()> {
+fn asm_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -174,7 +174,7 @@ fn without_overwrite_asm(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_metadata(target: Target) -> anyhow::Result<()> {
+fn metadata(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -216,7 +216,7 @@ fn with_overwrite_metadata(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_overwrite_metadata(target: Target) -> anyhow::Result<()> {
+fn metadata_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -258,7 +258,7 @@ fn without_overwrite_metadata(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_all(target: Target) -> anyhow::Result<()> {
+fn all(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -304,7 +304,7 @@ fn with_overwrite_all(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_overwrite_all(target: Target) -> anyhow::Result<()> {
+fn all_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -350,7 +350,7 @@ fn without_overwrite_all(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
+fn combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -394,7 +394,7 @@ fn with_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
+fn combined_json_missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -438,7 +438,7 @@ fn without_overwrite_combined_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_overwrite_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -450,7 +450,6 @@ fn with_overwrite_standard_json_mode(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.success().stdout(predicate::str::contains(
         "Overwriting flag cannot be used in standard JSON mode.",
     ));

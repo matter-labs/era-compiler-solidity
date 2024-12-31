@@ -8,7 +8,7 @@ use test_case::test_case;
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn with_codegen(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
+fn default(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -31,10 +31,7 @@ fn with_codegen(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Re
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn with_codegen_yul_mode(
-    target: Target,
-    codegen: era_solc::StandardJsonInputCodegen,
-) -> anyhow::Result<()> {
+fn yul(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -58,10 +55,7 @@ fn with_codegen_yul_mode(
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn with_codegen_llvm_ir_mode(
-    target: Target,
-    codegen: era_solc::StandardJsonInputCodegen,
-) -> anyhow::Result<()> {
+fn llvm_ir(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     common::setup()?;
 
     let codegen = codegen.to_string();
@@ -83,7 +77,7 @@ fn with_codegen_llvm_ir_mode(
 
 #[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-fn with_codegen_eravm_assembly_mode(
+fn eravm_assembly(
     target: Target,
     codegen: era_solc::StandardJsonInputCodegen,
 ) -> anyhow::Result<()> {
@@ -108,7 +102,7 @@ fn with_codegen_eravm_assembly_mode(
 
 #[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-fn with_codegen_standard_json_mode(
+fn standard_json(
     target: Target,
     codegen: era_solc::StandardJsonInputCodegen,
 ) -> anyhow::Result<()> {
@@ -132,7 +126,7 @@ fn with_codegen_standard_json_mode(
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_codegen_invalid(target: Target) -> anyhow::Result<()> {
+fn invalid(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -152,7 +146,7 @@ fn with_codegen_invalid(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn standard_json_missing(target: Target) -> anyhow::Result<()> {
+fn missing(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[

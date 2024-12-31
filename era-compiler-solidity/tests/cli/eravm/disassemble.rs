@@ -9,7 +9,6 @@ fn default() -> anyhow::Result<()> {
     let args = &[common::TEST_DISASSEMBLER_BYTECODE_PATH, "--disassemble"];
 
     let result = cli::execute_zksolc(args)?;
-
     result
         .success()
         .stderr(predicate::str::contains("disassembly:"));
@@ -24,7 +23,6 @@ fn invalid_path() -> anyhow::Result<()> {
     let args = &["--disassemble", "anyarg"];
 
     let result = cli::execute_zksolc(args)?;
-
     result.failure();
 
     Ok(())
@@ -41,7 +39,6 @@ fn excess_arguments() -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc(args)?;
-
     result.failure().stderr(predicate::str::contains(
         "No other options except input files and `--target` are allowed in disassembler mode.",
     ));

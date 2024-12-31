@@ -2,7 +2,7 @@ use crate::{cli, common};
 use predicates::prelude::*;
 
 #[test]
-fn with_version() -> anyhow::Result<()> {
+fn default() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--version"];
@@ -16,7 +16,7 @@ fn with_version() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_version_and_extra_args() -> anyhow::Result<()> {
+fn excess_args() -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--version", common::TEST_SOLIDITY_CONTRACT_PATH];

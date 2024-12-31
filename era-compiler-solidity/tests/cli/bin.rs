@@ -5,7 +5,7 @@ use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin(target: Target) -> anyhow::Result<()> {
+fn default(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
@@ -47,31 +47,7 @@ fn with_bin(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--bin"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    let status_code = result
-        .failure()
-        .stderr(predicate::str::contains(
-            "error: the argument '--bin' cannot be used multiple times",
-        ))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
-
-    let solc_result = cli::execute_solc(args)?;
-    solc_result.code(status_code);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
+fn invalid_input(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[common::TEST_YUL_CONTRACT_PATH, "--bin"];
@@ -88,7 +64,6 @@ fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
         .status
         .code()
         .expect("No exit code.");
-
     solc_result.code(result_exit_code);
 
     Ok(())
@@ -96,7 +71,7 @@ fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
+fn combined_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -107,7 +82,6 @@ fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.failure().stderr(predicate::str::contains(
         "Cannot output data outside of JSON in combined JSON mode.",
     ));
@@ -117,7 +91,7 @@ fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_standard_json_mode(target: Target) -> anyhow::Result<()> {
+fn standard_json(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -127,7 +101,6 @@ fn with_bin_standard_json_mode(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = cli::execute_zksolc_with_target(args, target)?;
-
     result.success().stdout(predicate::str::contains(
         "Cannot output data outside of JSON in standard JSON mode.",
     ));

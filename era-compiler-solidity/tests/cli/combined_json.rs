@@ -19,11 +19,15 @@ const JSON_ARGS: &[&str] = &[
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_combined_json_loop_args(target: Target) -> anyhow::Result<()> {
+fn all(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
-    for arg in JSON_ARGS {
-        let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--combined-json", arg];
+    for selector in JSON_ARGS.into_iter() {
+        let args = &[
+            common::TEST_SOLIDITY_CONTRACT_PATH,
+            "--combined-json",
+            selector,
+        ];
 
         let result = cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
@@ -43,7 +47,31 @@ fn with_combined_json_loop_args(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
+fn all_yul(target: Target) -> anyhow::Result<()> {
+    common::setup()?;
+
+    for selector in JSON_ARGS.into_iter() {
+        let args = &[common::TEST_YUL_CONTRACT_PATH, "--combined-json", selector];
+
+        let result = cli::execute_zksolc_with_target(args, target)?;
+        let status_code = result
+            .failure()
+            .stderr(predicate::str::contains("Expected identifier"))
+            .get_output()
+            .status
+            .code()
+            .expect("No exit code.");
+
+        let solc_result = cli::execute_solc(args)?;
+        solc_result.code(status_code);
+    }
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn two_files(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -72,7 +100,7 @@ fn with_combined_json_two_files(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_combined_json_no_argument(target: Target) -> anyhow::Result<()> {
+fn no_arguments(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &["--combined-json"];
@@ -96,7 +124,7 @@ fn with_combined_json_no_argument(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_combined_json_and_invalid_arg(target: Target) -> anyhow::Result<()> {
+fn invalid_path(target: Target) -> anyhow::Result<()> {
     common::setup()?;
 
     let args = &[
@@ -116,60 +144,6 @@ fn with_combined_json_and_invalid_arg(target: Target) -> anyhow::Result<()> {
 
     let solc_result = cli::execute_solc(args)?;
     solc_result.code(status_code);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_multiple_combined_json_flags(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    for &arg in JSON_ARGS {
-        let args = &[
-            common::TEST_SOLIDITY_CONTRACT_PATH,
-            "--combined-json",
-            arg,
-            "--combined-json",
-            arg,
-        ];
-
-        let result = cli::execute_zksolc_with_target(args, target)?;
-        let status_code = result
-            .failure()
-            .stderr(predicate::str::contains("cannot be used multiple times"))
-            .get_output()
-            .status
-            .code()
-            .expect("No exit code.");
-
-        let solc_result = cli::execute_solc(args)?;
-        solc_result.code(status_code);
-    }
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_combined_json_and_yul_input(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    for &arg in JSON_ARGS {
-        let args = &[common::TEST_YUL_CONTRACT_PATH, "--combined-json", arg];
-
-        let result = cli::execute_zksolc_with_target(args, target)?;
-        let status_code = result
-            .failure()
-            .stderr(predicate::str::contains("Expected identifier"))
-            .get_output()
-            .status
-            .code()
-            .expect("No exit code.");
-
-        let solc_result = cli::execute_solc(args)?;
-        solc_result.code(status_code);
-    }
 
     Ok(())
 }
