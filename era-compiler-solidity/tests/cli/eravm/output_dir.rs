@@ -1,4 +1,7 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use std::path::PathBuf;
@@ -6,11 +9,11 @@ use tempfile::TempDir;
 
 #[test]
 fn llvm_ir() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
-    let input_path = PathBuf::from(common::TEST_LLVM_IR_CONTRACT_PATH);
+    let input_path = PathBuf::from(crate::common::TEST_LLVM_IR_CONTRACT_PATH);
     let input_file = input_path
         .file_name()
         .expect("Always exists")
@@ -25,7 +28,7 @@ fn llvm_ir() -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -41,11 +44,11 @@ fn llvm_ir() -> anyhow::Result<()> {
 
 #[test]
 fn eravm_assembly() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
-    let input_path = PathBuf::from(common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH);
+    let input_path = PathBuf::from(crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH);
     let input_file = input_path
         .file_name()
         .expect("Always exists")
@@ -60,7 +63,7 @@ fn eravm_assembly() -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));

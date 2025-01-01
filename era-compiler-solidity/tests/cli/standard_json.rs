@@ -1,4 +1,7 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
@@ -6,23 +9,23 @@ use test_case::test_case;
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn default(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -31,7 +34,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -40,11 +43,11 @@ fn default(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &["--standard-json", common::TEST_YUL_CONTRACT_PATH];
+    let args = &["--standard-json", crate::common::TEST_YUL_CONTRACT_PATH];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("parsing: expected value"))
@@ -53,7 +56,7 @@ fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(status);
 
     Ok(())
@@ -62,23 +65,23 @@ fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -89,7 +92,7 @@ fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -98,28 +101,28 @@ fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "You are using \'<address payable>.send/transfer(<X>)\' without providing the gas amount.",
     ));
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.success();
 
     Ok(())
@@ -128,23 +131,23 @@ fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn suppressed_messages(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
+        crate::common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
+        crate::common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -153,7 +156,7 @@ fn suppressed_messages(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -162,14 +165,14 @@ fn suppressed_messages(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn recursion(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -180,18 +183,18 @@ fn recursion(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_path(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains(
@@ -199,7 +202,7 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
         ))
         .code(era_compiler_common::EXIT_CODE_SUCCESS);
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(era_compiler_common::EXIT_CODE_FAILURE);
 
     Ok(())
@@ -208,18 +211,18 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_utf8(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -230,7 +233,7 @@ fn invalid_utf8(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -239,12 +242,12 @@ fn invalid_utf8(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn stdin_missing(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &["--standard-json"];
     let solc_args = &["--standard-json"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -255,7 +258,7 @@ fn stdin_missing(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -264,18 +267,18 @@ fn stdin_missing(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn empty_sources(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("No input sources specified."))
@@ -284,7 +287,7 @@ fn empty_sources(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -293,18 +296,18 @@ fn empty_sources(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn missing_sources(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -315,7 +318,7 @@ fn missing_sources(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -324,12 +327,18 @@ fn missing_sources(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn yul(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &["--standard-json", common::TEST_YUL_STANDARD_JSON_SOLC_PATH];
-    let solc_args = &["--standard-json", common::TEST_YUL_STANDARD_JSON_SOLC_PATH];
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
+    ];
+    let solc_args = &[
+        "--standard-json",
+        crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
+    ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -338,7 +347,7 @@ fn yul(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -347,18 +356,18 @@ fn yul(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -369,7 +378,7 @@ fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -378,18 +387,18 @@ fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
     ];
     let solc_args = &[
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -400,7 +409,7 @@ fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())
@@ -409,20 +418,23 @@ fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn yul_solc(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
     ];
-    let solc_args = &["--standard-json", common::TEST_YUL_STANDARD_JSON_SOLC_PATH];
+    let solc_args = &[
+        "--standard-json",
+        crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
+    ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -431,7 +443,7 @@ fn yul_solc(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(solc_args)?;
+    let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
 
     Ok(())

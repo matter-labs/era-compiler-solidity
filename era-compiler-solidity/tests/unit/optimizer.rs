@@ -1,12 +1,10 @@
 //!
-//! The Solidity compiler unit tests for the optimizer.
+//! Unit tests for the optimizer.
 //!
 
 use std::collections::BTreeSet;
 
 use test_case::test_case;
-
-use crate::common;
 
 #[test_case(
     semver::Version::new(0, 4, 26),
@@ -37,9 +35,10 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         return;
     }
 
-    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH]);
+    let sources =
+        crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH]);
 
-    let build_unoptimized = common::build_solidity_standard_json(
+    let build_unoptimized = crate::common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
@@ -49,7 +48,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         era_compiler_llvm_context::OptimizerSettings::none(),
     )
     .expect("Build failure");
-    let build_optimized_for_cycles = common::build_solidity_standard_json(
+    let build_optimized_for_cycles = crate::common::build_solidity_standard_json(
         sources.clone(),
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
@@ -59,7 +58,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Build failure");
-    let build_optimized_for_size = common::build_solidity_standard_json(
+    let build_optimized_for_size = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,
@@ -72,7 +71,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
 
     let size_when_unoptimized = build_unoptimized
         .contracts
-        .get(common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
+        .get(crate::common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
         .expect("Missing file")
         .get("Optimized")
         .expect("Missing contract")
@@ -86,7 +85,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         .len();
     let size_when_optimized_for_cycles = build_optimized_for_cycles
         .contracts
-        .get(common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
+        .get(crate::common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
         .expect("Missing file")
         .get("Optimized")
         .expect("Missing contract")
@@ -100,7 +99,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         .len();
     let size_when_optimized_for_size = build_optimized_for_size
         .contracts
-        .get(common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
+        .get(crate::common::TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH)
         .expect("Missing file")
         .get("Optimized")
         .expect("Missing contract")

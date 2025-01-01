@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit test constants.
+//! Unit test constants.
 //!
 
 macro_rules! test_script_path {
@@ -53,6 +53,10 @@ pub const TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH: &str =
 /// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_OPTIMIZED_PATH: &str =
     "tests/data/contracts/solidity/Optimized.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_INTERFACE_EMPTY_YUL_PATH: &str =
+    "tests/data/contracts/solidity/InterfaceEmptyYul.sol";
 
 /// A test input file.
 pub const SOLIDITY_BIN_OUTPUT_NAME_ERAVM: &str = "Test.zbin";
@@ -215,6 +219,9 @@ pub const TEST_LINKER_STANDARD_JSON_INPUT_LINKER_ERROR_PATH: &str =
 
 /// The broken input file path.
 pub const TEST_BROKEN_INPUT_PATH: &str = "tests/data/broken.bad";
+
+/// A non-existent path.
+pub const TEST_NON_EXISTENT_PATH: &str = "tests/data/non_existent";
 
 test_script_path!(
     TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH,

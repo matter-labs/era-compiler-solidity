@@ -1,14 +1,20 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 
 #[test]
 fn default() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &[common::TEST_DISASSEMBLER_BYTECODE_PATH, "--disassemble"];
+    let args = &[
+        crate::common::TEST_DISASSEMBLER_BYTECODE_PATH,
+        "--disassemble",
+    ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("disassembly:"));
@@ -18,11 +24,11 @@ fn default() -> anyhow::Result<()> {
 
 #[test]
 fn invalid_path() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &["--disassemble", "anyarg"];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure();
 
     Ok(())
@@ -30,15 +36,15 @@ fn invalid_path() -> anyhow::Result<()> {
 
 #[test]
 fn excess_arguments() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--disassemble",
-        common::TEST_DISASSEMBLER_BYTECODE_PATH,
+        crate::common::TEST_DISASSEMBLER_BYTECODE_PATH,
         "--bin",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "No other options except input files and `--target` are allowed in disassembler mode.",
     ));
@@ -48,11 +54,14 @@ fn excess_arguments() -> anyhow::Result<()> {
 
 #[test]
 fn unimplemented_evm() -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &["--disassemble", common::TEST_DISASSEMBLER_BYTECODE_PATH];
+    let args = &[
+        "--disassemble",
+        crate::common::TEST_DISASSEMBLER_BYTECODE_PATH,
+    ];
 
-    let result = cli::execute_zksolc_with_target(args, Target::EVM)?;
+    let result = crate::cli::execute_zksolc_with_target(args, Target::EVM)?;
     result.failure().stderr(predicate::str::contains(
         "The EVM target does not support disassembling yet.",
     ));

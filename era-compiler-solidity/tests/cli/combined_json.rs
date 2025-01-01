@@ -1,4 +1,7 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
@@ -20,16 +23,16 @@ const JSON_ARGS: &[&str] = &[
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn all(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     for selector in JSON_ARGS.into_iter() {
         let args = &[
-            common::TEST_SOLIDITY_CONTRACT_PATH,
+            crate::common::TEST_SOLIDITY_CONTRACT_PATH,
             "--combined-json",
             selector,
         ];
 
-        let result = cli::execute_zksolc_with_target(args, target)?;
+        let result = crate::cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
             .success()
             .stdout(predicate::str::contains("contracts"))
@@ -38,7 +41,7 @@ fn all(target: Target) -> anyhow::Result<()> {
             .code()
             .expect("No exit code.");
 
-        let solc_result = cli::execute_solc(args)?;
+        let solc_result = crate::cli::execute_solc(args)?;
         solc_result.code(status_code);
     }
 
@@ -48,12 +51,16 @@ fn all(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn all_yul(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     for selector in JSON_ARGS.into_iter() {
-        let args = &[common::TEST_YUL_CONTRACT_PATH, "--combined-json", selector];
+        let args = &[
+            crate::common::TEST_YUL_CONTRACT_PATH,
+            "--combined-json",
+            selector,
+        ];
 
-        let result = cli::execute_zksolc_with_target(args, target)?;
+        let result = crate::cli::execute_zksolc_with_target(args, target)?;
         let status_code = result
             .failure()
             .stderr(predicate::str::contains("Expected identifier"))
@@ -62,7 +69,7 @@ fn all_yul(target: Target) -> anyhow::Result<()> {
             .code()
             .expect("No exit code.");
 
-        let solc_result = cli::execute_solc(args)?;
+        let solc_result = crate::cli::execute_solc(args)?;
         solc_result.code(status_code);
     }
 
@@ -72,16 +79,16 @@ fn all_yul(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn two_files(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
-        common::TEST_SOLIDITY_CONTRACT_PATH,
-        common::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
         "--combined-json",
         "bin",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .success()
         .stdout(
@@ -92,7 +99,7 @@ fn two_files(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(status_code);
 
     Ok(())
@@ -101,11 +108,11 @@ fn two_files(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn no_arguments(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &["--combined-json"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains(
@@ -116,7 +123,7 @@ fn no_arguments(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(status_code);
 
     Ok(())
@@ -125,15 +132,15 @@ fn no_arguments(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_path(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
-        common::TEST_SOLIDITY_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "unknown",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status_code = result
         .failure()
         .stderr(predicate::str::contains("Invalid option").or(predicate::str::contains("error")))
@@ -142,7 +149,7 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(status_code);
 
     Ok(())

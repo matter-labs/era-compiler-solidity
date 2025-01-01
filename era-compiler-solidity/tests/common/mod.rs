@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit tests.
+//! Unit test common utilities.
 //!
 
 #![allow(dead_code)]

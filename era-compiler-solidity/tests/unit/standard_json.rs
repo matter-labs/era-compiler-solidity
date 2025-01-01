@@ -1,10 +1,8 @@
 //!
-//! The unit tests for standard JSON with different languages.
+//! Unit tests for standard JSON for all supported languages.
 //!
 
 use std::path::PathBuf;
-
-use crate::common;
 
 #[test]
 fn standard_json_yul_solc() {
@@ -12,7 +10,8 @@ fn standard_json_yul_solc() {
         PathBuf::from("tests/data/standard_json_input/yul_solc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
+    let solc_output =
+        crate::common::build_yul_standard_json(solc_input, None).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -37,10 +36,11 @@ fn standard_json_yul_solc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
-        .expect("`solc` initialization error");
-    let solc_output =
-        common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+    let solc_output = crate::common::build_yul_standard_json(solc_input, Some(&solc_compiler))
+        .expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -64,7 +64,8 @@ fn standard_json_yul_solc_urls() {
         PathBuf::from("tests/data/standard_json_input/yul_solc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
+    let solc_output =
+        crate::common::build_yul_standard_json(solc_input, None).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -89,10 +90,11 @@ fn standard_json_yul_solc_urls_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
-        .expect("`solc` initialization error");
-    let solc_output =
-        common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+    let solc_output = crate::common::build_yul_standard_json(solc_input, Some(&solc_compiler))
+        .expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -116,7 +118,8 @@ fn standard_json_yul_zksolc() {
         PathBuf::from("tests/data/standard_json_input/yul_zksolc.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
+    let solc_output =
+        crate::common::build_yul_standard_json(solc_input, None).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -141,10 +144,11 @@ fn standard_json_yul_zksolc_validated() {
     ))
     .expect("Standard JSON reading error");
 
-    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
-        .expect("`solc` initialization error");
-    let solc_output =
-        common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+    let solc_output = crate::common::build_yul_standard_json(solc_input, Some(&solc_compiler))
+        .expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -168,7 +172,8 @@ fn standard_json_yul_zksolc_urls() {
         PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_yul_standard_json(solc_input, None).expect("Test failure");
+    let solc_output =
+        crate::common::build_yul_standard_json(solc_input, None).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -192,10 +197,11 @@ fn standard_json_yul_zksolc_urls_validated() {
         PathBuf::from("tests/data/standard_json_input/yul_zksolc_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_compiler = common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
-        .expect("`solc` initialization error");
-    let solc_output =
-        common::build_yul_standard_json(solc_input, Some(&solc_compiler)).expect("Test failure");
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+    let solc_output = crate::common::build_yul_standard_json(solc_input, Some(&solc_compiler))
+        .expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -219,7 +225,7 @@ fn standard_json_llvm_ir_urls() {
         PathBuf::from("tests/data/standard_json_input/llvm_ir_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_llvm_ir_standard_json(solc_input).expect("Test failure");
+    let solc_output = crate::common::build_llvm_ir_standard_json(solc_input).expect("Test failure");
 
     assert!(!solc_output
         .contracts
@@ -243,7 +249,8 @@ fn standard_json_eravm_assembly_urls() {
         PathBuf::from("tests/data/standard_json_input/eravm_assembly_urls.json").as_path(),
     ))
     .expect("Standard JSON reading error");
-    let solc_output = common::build_eravm_assembly_standard_json(solc_input).expect("Test failure");
+    let solc_output =
+        crate::common::build_eravm_assembly_standard_json(solc_input).expect("Test failure");
 
     assert!(!solc_output
         .contracts

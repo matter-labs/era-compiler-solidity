@@ -1,4 +1,7 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
@@ -6,11 +9,11 @@ use test_case::test_case;
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn default(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul"];
+    let args = &[crate::common::TEST_YUL_CONTRACT_PATH, "--yul"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested",
     ));
@@ -21,19 +24,19 @@ fn default(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn solc(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
-        common::TEST_YUL_CONTRACT_PATH,
+        crate::common::TEST_YUL_CONTRACT_PATH,
         "--yul",
         "--solc",
         solc_compiler.as_str(),
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested",
     ));
@@ -44,11 +47,11 @@ fn solc(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_input(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
+    let args = &[crate::common::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let zksolc_status = result
         .failure()
         .stderr(predicate::str::contains("Yul parsing"))
@@ -57,7 +60,7 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(zksolc_status);
 
     Ok(())
@@ -66,16 +69,16 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn combined_json(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
-        common::TEST_YUL_CONTRACT_PATH,
+        crate::common::TEST_YUL_CONTRACT_PATH,
         "--yul",
         "--combined-json",
         "anyarg",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -86,7 +89,7 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
         .code()
         .expect("No exit code.");
 
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(status);
 
     Ok(())
@@ -95,11 +98,15 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn standard_json(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
-    let args = &[common::TEST_YUL_CONTRACT_PATH, "--yul", "--standard-json"];
+    let args = &[
+        crate::common::TEST_YUL_CONTRACT_PATH,
+        "--yul",
+        "--standard-json",
+    ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time:",
     ));
@@ -110,19 +117,19 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_solc_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "DeclarationError: Function \\\"mdelete\\\" not found.",
     ));
@@ -133,14 +140,14 @@ fn invalid_solc_error(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));
@@ -151,19 +158,19 @@ fn invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn through_solc_invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+    crate::common::setup()?;
 
     let solc_compiler =
-        common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
 
     let args = &[
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
+        crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));
