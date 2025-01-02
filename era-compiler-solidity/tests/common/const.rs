@@ -259,6 +259,14 @@ test_script_path!(
     TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_PARSING_REVISION_ERROR,
     "tests/scripts/solc_version_zksync_revision_parsing_revision_error"
 );
+test_script_path!(
+    TEST_SCRIPT_SOLC_EXIT_CODE_FAILED,
+    "tests/scripts/solc_exit_code_failed"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_INVALID_OUTPUT_JSON,
+    "tests/scripts/solc_invalid_output_json"
+);
 
 /// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";

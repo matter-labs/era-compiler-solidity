@@ -332,3 +332,41 @@ fn zksync_revision_parsing_revision_error(target: Target) -> anyhow::Result<()> 
 
     Ok(())
 }
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn exit_code_failed(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_EXIT_CODE_FAILED,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("subprocess failed with exit code"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn invalid_output_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_INVALID_OUTPUT_JSON,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("subprocess stdout parsing"));
+
+    Ok(())
+}

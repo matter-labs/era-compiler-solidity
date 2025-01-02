@@ -100,7 +100,6 @@ impl Compiler {
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
         command.arg("--standard-json");
-
         if let Some(base_path) = base_path {
             command.arg("--base-path");
             command.arg(base_path);
@@ -121,12 +120,7 @@ impl Compiler {
             .stdin
             .as_mut()
             .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
-        let stdin_input = serde_json::to_vec(&input).map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess standard JSON input serialization: {error:?}",
-                self.executable
-            )
-        })?;
+        let stdin_input = serde_json::to_vec(&input).expect("Always valid");
         stdin.write_all(stdin_input.as_slice()).map_err(|error| {
             anyhow::anyhow!("{} subprocess stdin writing: {error:?}", self.executable)
         })?;
@@ -134,7 +128,6 @@ impl Compiler {
         let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
-
         if !result.status.success() {
             anyhow::bail!(
                 "{} subprocess failed with exit code {:?}:\n{}\n{}",
@@ -386,7 +379,7 @@ impl Compiler {
                 })
             })
             .map_err(|error| {
-                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}.")
+                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}")
             })?;
 
         let version = Version::new(long, default, l2_revision);
