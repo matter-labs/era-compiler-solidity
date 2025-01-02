@@ -184,7 +184,7 @@ fn main_inner(
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
-                era_compiler_solidity::eravm_assembly(
+                era_compiler_solidity::eravm_assembly_to_eravm(
                     input_files.as_slice(),
                     messages,
                     metadata_hash_type,
@@ -314,6 +314,15 @@ fn main_inner(
                     messages,
                     metadata_hash_type,
                     optimizer_settings,
+                    llvm_options,
+                    arguments.threads,
+                    debug_config,
+                )
+            } else if arguments.eravm_assembly {
+                era_compiler_solidity::eravm_assembly_to_evm(
+                    input_files.as_slice(),
+                    messages,
+                    metadata_hash_type,
                     llvm_options,
                     arguments.threads,
                     debug_config,

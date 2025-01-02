@@ -101,32 +101,27 @@ impl Project {
 
         let results = input_contracts
             .into_par_iter()
-            .filter_map(
-                |(name, contract): (
-                    era_compiler_common::ContractName,
-                    &era_solc::StandardJsonOutputContract,
-                )| {
-                    let full_path = name.full_path.clone();
+            .filter_map(|(name, contract)| {
+                let full_path = name.full_path.clone();
 
-                    let result = match codegen {
-                        era_solc::StandardJsonInputCodegen::Yul => ContractYul::try_from_source(
-                            &name,
-                            contract.ir_optimized.as_str(),
-                            debug_config,
-                        )
-                        .map(|yul| yul.map(ContractIR::from)),
-                        era_solc::StandardJsonInputCodegen::EVMLA => {
-                            Ok(ContractEVMLA::try_from_contract(contract).map(ContractIR::from))
-                        }
-                    };
-                    let ir = match result {
-                        Ok(ir) => ir?,
-                        Err(error) => return Some((full_path, Err(error))),
-                    };
-                    let contract = Contract::new(name, ir, contract.metadata.clone());
-                    Some((full_path, Ok(contract)))
-                },
-            )
+                let result = match codegen {
+                    era_solc::StandardJsonInputCodegen::Yul => ContractYul::try_from_source(
+                        &name,
+                        contract.ir_optimized.as_str(),
+                        debug_config,
+                    )
+                    .map(|yul| yul.map(ContractIR::from)),
+                    era_solc::StandardJsonInputCodegen::EVMLA => {
+                        Ok(ContractEVMLA::try_from_contract(contract).map(ContractIR::from))
+                    }
+                };
+                let ir = match result {
+                    Ok(ir) => ir?,
+                    Err(error) => return Some((full_path, Err(error))),
+                };
+                let contract = Contract::new(name, ir, contract.metadata.clone());
+                Some((full_path, Ok(contract)))
+            })
             .collect::<BTreeMap<String, anyhow::Result<Contract>>>();
 
         let mut contracts = BTreeMap::new();
@@ -402,9 +397,9 @@ impl Project {
     pub fn compile_to_evm(
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
+        metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
-        metadata_hash_type: era_compiler_common::HashType,
         threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {

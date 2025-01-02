@@ -104,8 +104,9 @@ fn linker_error(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_incompatible_json_modes_combined_json(target: Target) -> anyhow::Result<()> {
+fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
+
     let args = &[
         crate::common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
@@ -123,8 +124,9 @@ fn with_incompatible_json_modes_combined_json(target: Target) -> anyhow::Result<
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_incompatible_json_modes_standard_json(target: Target) -> anyhow::Result<()> {
+fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
+
     let args = &[
         crate::common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
@@ -141,7 +143,7 @@ fn with_incompatible_json_modes_standard_json(target: Target) -> anyhow::Result<
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_invalid(target: Target) -> anyhow::Result<()> {
+fn standard_json_invalid(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -159,7 +161,7 @@ fn with_standard_json_invalid(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_missing_file(target: Target) -> anyhow::Result<()> {
+fn standard_json_missing_file(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -170,6 +172,29 @@ fn with_standard_json_missing_file(target: Target) -> anyhow::Result<()> {
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Error: File \\\"tests/data/contracts/llvm_ir/Missing.ll\\\" reading:",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        crate::common::TEST_LLVM_IR_STANDARD_JSON_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains(
+        "LLVM IR projects cannot be compiled with `solc`.",
     ));
 
     Ok(())

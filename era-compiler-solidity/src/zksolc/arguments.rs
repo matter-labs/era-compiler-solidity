@@ -356,14 +356,6 @@ impl Arguments {
         }
 
         if self.eravm_assembly {
-            if Some(era_compiler_common::Target::EVM.to_string()) == self.target {
-                messages.push(era_solc::StandardJsonOutputError::new_error(
-                    "EraVM assembly cannot be compiled to EVM bytecode.",
-                    None,
-                    None,
-                ));
-            }
-
             if self.optimization.is_some() {
                 messages.push(era_solc::StandardJsonOutputError::new_error(
                     "LLVM optimizations are not supported in EraVM assembly mode.",

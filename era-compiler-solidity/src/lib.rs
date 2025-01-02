@@ -98,11 +98,11 @@ pub fn yul_to_eravm(
         debug_config,
     )?;
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -142,9 +142,9 @@ pub fn yul_to_evm(
 
     let build = project.compile_to_evm(
         messages,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -179,11 +179,11 @@ pub fn llvm_ir_to_eravm(
         debug_config,
     )?;
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -206,9 +206,9 @@ pub fn llvm_ir_to_evm(
 
     let build = project.compile_to_evm(
         messages,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -216,9 +216,9 @@ pub fn llvm_ir_to_evm(
 }
 
 ///
-/// Runs the EraVM assembly mode.
+/// Runs the EraVM assembly mode for the EraVM target.
 ///
-pub fn eravm_assembly(
+pub fn eravm_assembly_to_eravm(
     paths: &[PathBuf],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     metadata_hash_type: era_compiler_common::HashType,
@@ -239,11 +239,38 @@ pub fn eravm_assembly(
         debug_config,
     )?;
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let mut build = build.link(BTreeMap::new());
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
+    Ok(build)
+}
+
+///
+/// Runs the EraVM assembly mode for the EraVM target.
+///
+pub fn eravm_assembly_to_evm(
+    paths: &[PathBuf],
+    messages: &mut Vec<era_solc::StandardJsonOutputError>,
+    metadata_hash_type: era_compiler_common::HashType,
+    llvm_options: Vec<String>,
+    threads: Option<usize>,
+    debug_config: Option<era_compiler_llvm_context::DebugConfig>,
+) -> anyhow::Result<EVMBuild> {
+    let project = Project::try_from_eravm_assembly_paths(paths, None)?;
+
+    let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
+    let mut build = project.compile_to_evm(
+        messages,
+        metadata_hash_type,
+        optimizer_settings,
+        llvm_options,
+        threads,
+        debug_config,
+    )?;
+    build.take_and_write_warnings();
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -299,7 +326,7 @@ pub fn standard_output_eravm(
         allow_paths,
     )?;
     solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
 
@@ -311,7 +338,7 @@ pub fn standard_output_eravm(
         debug_config.as_ref(),
     )?;
     solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let mut build = project.compile_to_eravm(
         messages,
@@ -323,11 +350,11 @@ pub fn standard_output_eravm(
         debug_config,
     )?;
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let mut build = build.link(linker_symbols);
     build.take_and_write_warnings();
-    build.collect_errors()?;
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -380,7 +407,7 @@ pub fn standard_output_evm(
         allow_paths,
     )?;
     solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let project = Project::try_from_solc_output(
         solc_input.settings.libraries,
@@ -390,13 +417,13 @@ pub fn standard_output_evm(
         debug_config.as_ref(),
     )?;
     solc_output.take_and_write_warnings();
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let build = project.compile_to_evm(
         messages,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        metadata_hash_type,
         threads,
         debug_config,
     )?;
@@ -524,7 +551,7 @@ pub fn standard_json_eravm(
             (solc_output, None, project)
         }
         (era_solc::StandardJsonInputLanguage::LLVMIR, Some(_)) => {
-            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
+            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`.")
         }
         (era_solc::StandardJsonInputLanguage::LLVMIR, None) => {
             let mut solc_output = era_solc::StandardJsonOutput::new(&solc_input.sources, messages);
@@ -541,7 +568,7 @@ pub fn standard_json_eravm(
             (solc_output, None, project)
         }
         (era_solc::StandardJsonInputLanguage::EraVMAssembly, Some(_)) => {
-            anyhow::bail!("EraVM assembly projects cannot be compiled with `solc`")
+            anyhow::bail!("EraVM assembly projects cannot be compiled with `solc`.")
         }
         (era_solc::StandardJsonInputLanguage::EraVMAssembly, None) => {
             let mut solc_output = era_solc::StandardJsonOutput::new(&solc_input.sources, messages);
@@ -690,7 +717,7 @@ pub fn standard_json_evm(
             (solc_output, None, project)
         }
         (era_solc::StandardJsonInputLanguage::LLVMIR, Some(_)) => {
-            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`")
+            anyhow::bail!("LLVM IR projects cannot be compiled with `solc`.")
         }
         (era_solc::StandardJsonInputLanguage::LLVMIR, None) => {
             let mut solc_output = era_solc::StandardJsonOutput::new(&solc_input.sources, messages);
@@ -706,16 +733,29 @@ pub fn standard_json_evm(
 
             (solc_output, None, project)
         }
-        (era_solc::StandardJsonInputLanguage::EraVMAssembly, _) => {
-            anyhow::bail!("Compiling EraVM assembly to EVM is not supported")
+        (era_solc::StandardJsonInputLanguage::EraVMAssembly, Some(_)) => {
+            anyhow::bail!("EraVM assembly projects cannot be compiled with `solc`.")
+        }
+        (era_solc::StandardJsonInputLanguage::EraVMAssembly, None) => {
+            let mut solc_output = era_solc::StandardJsonOutput::new(&solc_input.sources, messages);
+
+            let project = Project::try_from_eravm_assembly_sources(
+                solc_input.sources,
+                Some(&mut solc_output),
+            )?;
+            if solc_output.has_errors() {
+                solc_output.write_and_exit(prune_output);
+            }
+
+            (solc_output, None, project)
         }
     };
 
     let build = project.compile_to_evm(
         messages,
+        metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        metadata_hash_type,
         threads,
         debug_config,
     )?;
