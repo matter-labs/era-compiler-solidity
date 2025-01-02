@@ -275,3 +275,60 @@ fn error_version_parsing(target: Target) -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn zksync_revision_missing_version(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_VERSION,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "ZKsync revision parsing: missing version.",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn zksync_revision_missing_revision(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_REVISION,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "ZKsync revision parsing: missing revision.",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn zksync_revision_parsing_revision_error(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_PARSING_REVISION_ERROR,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("ZKsync revision parsing:"));
+
+    Ok(())
+}

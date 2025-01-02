@@ -247,6 +247,18 @@ test_script_path!(
     TEST_SCRIPT_SOLC_VERSION_PARSING_ERROR_PATH,
     "tests/scripts/solc_version_parsing_error"
 );
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_VERSION,
+    "tests/scripts/solc_version_zksync_revision_missing_version"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_REVISION,
+    "tests/scripts/solc_version_zksync_revision_missing_revision"
+);
+test_script_path!(
+    TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_PARSING_REVISION_ERROR,
+    "tests/scripts/solc_version_zksync_revision_parsing_revision_error"
+);
 
 /// A test constant.
 pub const LIBRARY_DEFAULT: &str = "tests/data/contracts/solidity/MiniMath.sol:MiniMath=0xF9702469Dfb84A9aC171E284F71615bd3D3f1EdC";

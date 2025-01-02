@@ -376,7 +376,7 @@ impl Compiler {
                 })
             })
             .and_then(|line| {
-                line.split('-').last().ok_or_else(|| {
+                line.split('-').nth(1).ok_or_else(|| {
                     anyhow::anyhow!("`{executable}` ZKsync revision parsing: missing revision.")
                 })
             })
