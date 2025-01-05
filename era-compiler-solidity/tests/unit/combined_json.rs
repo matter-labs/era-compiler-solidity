@@ -147,7 +147,7 @@ fn eravm_assembly_requested() {
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
-        vec![era_solc::CombinedJsonSelector::EraVMAssembly],
+        vec![era_solc::CombinedJsonSelector::Assembly],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
         era_solc::StandardJsonInputCodegen::Yul,

@@ -216,7 +216,7 @@ pub fn build_solidity_combined_json(
         metadata_hash_type,
         optimizer_settings,
         vec![],
-        selectors.contains(&era_solc::CombinedJsonSelector::EraVMAssembly),
+        selectors.contains(&era_solc::CombinedJsonSelector::Assembly),
         None,
     )?;
     build.check_errors()?;

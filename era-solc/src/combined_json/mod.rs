@@ -33,6 +33,19 @@ pub struct CombinedJson {
 
 impl CombinedJson {
     ///
+    /// A shortcut constructor.
+    ///
+    pub fn new(solc_version: semver::Version) -> Self {
+        Self {
+            contracts: BTreeMap::new(),
+            source_list: Vec::new(),
+            sources: serde_json::Value::Null,
+            version: solc_version.to_string(),
+            zk_version: crate::version(),
+        }
+    }
+
+    ///
     /// Writes the JSON to the specified directory.
     ///
     pub fn write_to_directory(

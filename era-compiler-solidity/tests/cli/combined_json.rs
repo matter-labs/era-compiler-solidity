@@ -107,30 +107,6 @@ fn two_files(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn no_arguments(target: Target) -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let args = &["--combined-json"];
-
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
-    let status_code = result
-        .failure()
-        .stderr(predicate::str::contains(
-            "error: a value is required for \'--combined-json <COMBINED_JSON>\' but none was supplied",
-        ))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
-
-    let solc_result = crate::cli::execute_solc(args)?;
-    solc_result.code(status_code);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
 fn invalid_path(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -149,10 +125,78 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
+#[test_case(Target::EVM)]
+fn invalid_input(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+
+    let selector = era_solc::CombinedJsonSelector::Bytecode.to_string();
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        crate::common::TEST_BROKEN_INPUT_PATH,
+        "--combined-json",
+        selector.as_str(),
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("subprocess failed with exit code"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn invalid_output(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let selector = era_solc::CombinedJsonSelector::Bytecode.to_string();
+    let args = &[
+        "--solc",
+        crate::common::TEST_SCRIPT_SOLC_INVALID_OUTPUT_JSON,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        selector.as_str(),
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("subprocess stdout parsing:"));
+
+    Ok(())
+}
+
+#[test_case(Target::EVM)]
+fn warning_evm_assembly_unsupported_yet(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let selector = era_solc::CombinedJsonSelector::Assembly.to_string();
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        selector.as_str(),
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stderr(predicate::str::contains(format!(
+        "The `{}` selector is not supported for the {} target yet, and therefore ignored.",
+        era_solc::CombinedJsonSelector::Assembly,
+        era_compiler_common::Target::EVM,
+    )));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let selector = era_solc::CombinedJsonSelector::ASM.to_string();
     let args = &[
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",

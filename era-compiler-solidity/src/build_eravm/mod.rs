@@ -255,19 +255,30 @@ impl Build {
         self.exit_on_error();
 
         for (path, build) in self.results.into_iter() {
-            let combined_json_contract = combined_json
-                .contracts
-                .iter_mut()
-                .find_map(|(json_path, contract)| {
-                    if Self::normalize_full_path(path.as_str())
-                        .ends_with(Self::normalize_full_path(json_path).as_str())
-                    {
-                        Some(contract)
-                    } else {
-                        None
+            let combined_json_contract =
+                match combined_json
+                    .contracts
+                    .iter_mut()
+                    .find_map(|(json_path, contract)| {
+                        if Self::normalize_full_path(path.as_str())
+                            .ends_with(Self::normalize_full_path(json_path).as_str())
+                        {
+                            Some(contract)
+                        } else {
+                            None
+                        }
+                    }) {
+                    Some(contract) => contract,
+                    None => {
+                        combined_json
+                            .contracts
+                            .insert(path.clone(), era_solc::CombinedJsonContract::default());
+                        combined_json
+                            .contracts
+                            .get_mut(path.as_str())
+                            .expect("Always exists")
                     }
-                })
-                .ok_or_else(|| anyhow::anyhow!("contract `{path}` not found in the project"))?;
+                };
 
             build
                 .expect("Always valid")

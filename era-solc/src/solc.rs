@@ -215,21 +215,21 @@ impl Compiler {
         paths: &[PathBuf],
         mut selectors: HashSet<CombinedJsonSelector>,
     ) -> anyhow::Result<CombinedJson> {
+        selectors.retain(|selector| selector.is_source_solc());
+        if selectors.is_empty() {
+            return Ok(CombinedJson::new(self.version.default.to_owned()));
+        }
+
         let executable = self.executable.to_owned();
 
         let mut command = std::process::Command::new(executable.as_str());
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
         command.args(paths);
-
-        if !selectors.iter().any(CombinedJsonSelector::is_source_solc) {
-            selectors.insert(CombinedJsonSelector::Bytecode);
-        }
         command.arg("--combined-json");
         command.arg(
             selectors
                 .into_iter()
-                .filter(|selector| selector.is_source_solc())
                 .map(|selector| selector.to_string())
                 .collect::<Vec<String>>()
                 .join(","),

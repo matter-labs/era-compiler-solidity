@@ -820,6 +820,9 @@ pub fn combined_json_eravm(
             None,
         ));
     }
+    let output_assembly = selectors.contains(&era_solc::CombinedJsonSelector::Assembly);
+
+    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
 
     let build = standard_output_eravm(
         paths,
@@ -837,13 +840,11 @@ pub fn combined_json_eravm(
         remappings,
         optimizer_settings,
         llvm_options,
-        selectors.contains(&era_solc::CombinedJsonSelector::EraVMAssembly),
+        output_assembly,
         suppressed_errors,
         suppressed_warnings,
         debug_config,
     )?;
-
-    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
     build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {
@@ -903,6 +904,19 @@ pub fn combined_json_evm(
             }
         }
     }
+    if selectors.contains(&era_solc::CombinedJsonSelector::Assembly) {
+        messages.push(era_solc::StandardJsonOutputError::new_warning(
+            format!(
+                "The `{}` selector is not supported for the {} target yet, and therefore ignored.",
+                era_solc::CombinedJsonSelector::Assembly,
+                era_compiler_common::Target::EVM
+            ),
+            None,
+            None,
+        ));
+    }
+
+    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
 
     let build = standard_output_evm(
         paths,
@@ -922,8 +936,6 @@ pub fn combined_json_evm(
         threads,
         debug_config,
     )?;
-
-    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
     build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {

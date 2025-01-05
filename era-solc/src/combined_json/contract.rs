@@ -8,7 +8,7 @@ use std::collections::HashSet;
 ///
 /// The contract.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Contract {
     /// `solc` hashes output.

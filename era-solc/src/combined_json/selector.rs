@@ -35,18 +35,18 @@ pub enum Selector {
     AST,
     /// The EVM assembly.
     #[serde(rename = "asm")]
+    ASM,
+
+    /// The assembly.
+    #[serde(rename = "assembly", skip_serializing)]
     Assembly,
 
     /// The deploy bytecode.
-    #[serde(rename = "bin")]
+    #[serde(rename = "bin", skip_serializing)]
     Bytecode,
     /// The runtime bytecode.
-    #[serde(rename = "bin-runtime")]
+    #[serde(rename = "bin-runtime", skip_serializing)]
     BytecodeRuntime,
-
-    /// The EraVM assembly.
-    #[serde(rename = "eravm-assembly")]
-    EraVMAssembly,
 }
 
 impl Selector {
@@ -64,7 +64,7 @@ impl Selector {
     /// Whether the selector is available in `solc`.
     ///
     pub fn is_source_solc(&self) -> bool {
-        !matches!(self, Self::EraVMAssembly)
+        !matches!(self, Self::Assembly)
     }
 }
 
@@ -81,11 +81,11 @@ impl FromStr for Selector {
             "storage-layout" => Ok(Self::StorageLayout),
             "transient-storage-layout" => Ok(Self::TransientStorageLayout),
             "ast" => Ok(Self::AST),
-            "asm" => Ok(Self::Assembly),
+            "asm" => Ok(Self::ASM),
             "bin" => Ok(Self::Bytecode),
             "bin-runtime" => Ok(Self::BytecodeRuntime),
 
-            "eravm-assembly" => Ok(Self::EraVMAssembly),
+            "assembly" => Ok(Self::Assembly),
 
             selector => anyhow::bail!("{selector}"),
         }
@@ -103,11 +103,11 @@ impl std::fmt::Display for Selector {
             Self::StorageLayout => write!(f, "storage-layout"),
             Self::TransientStorageLayout => write!(f, "transient-storage-layout"),
             Self::AST => write!(f, "ast"),
-            Self::Assembly => write!(f, "asm"),
+            Self::ASM => write!(f, "asm"),
             Self::Bytecode => write!(f, "bin"),
             Self::BytecodeRuntime => write!(f, "bin-runtime"),
 
-            Self::EraVMAssembly => write!(f, "eravm-assembly"),
+            Self::Assembly => write!(f, "assembly"),
         }
     }
 }
