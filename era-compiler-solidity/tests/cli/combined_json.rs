@@ -161,7 +161,7 @@ fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
-        format!("The `{}` selector will become mandatory in future versions of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
+        format!("The `{}` selector will become mandatory in future releases of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
     ));
 
     Ok(())
@@ -180,7 +180,7 @@ fn warning_bin_runtime_excess(target: Target) -> anyhow::Result<()> {
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
-        format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
+        format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment. The eponymous output field will be removed in future releases of `zksolc`.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
     ));
 
     Ok(())

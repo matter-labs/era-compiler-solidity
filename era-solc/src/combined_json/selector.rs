@@ -59,6 +59,13 @@ impl Selector {
             .map(|flag| Self::from_str(flag.trim()))
             .collect()
     }
+
+    ///
+    /// Whether the selector is available in `solc`.
+    ///
+    pub fn is_source_solc(&self) -> bool {
+        !matches!(self, Self::EraVMAssembly)
+    }
 }
 
 impl FromStr for Selector {

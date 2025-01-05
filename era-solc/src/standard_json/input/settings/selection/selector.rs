@@ -39,8 +39,9 @@ pub enum Selector {
     /// The function signature hashes JSON.
     #[serde(rename = "evm.methodIdentifiers")]
     MethodIdentifiers,
+
     /// The EraVM assembly.
-    #[serde(rename = "eravm.assembly")]
+    #[serde(rename = "eravm.assembly", skip_serializing)]
     EraVMAssembly,
 }
 

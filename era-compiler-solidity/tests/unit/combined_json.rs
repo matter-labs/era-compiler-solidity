@@ -3,7 +3,7 @@
 //!
 
 #[test]
-fn combined_json_one_file() {
+fn one_file() {
     let paths = [crate::common::TEST_SOLIDITY_CONTRACT_PATH];
     let names = ["Test"];
     let sources = crate::common::read_sources(paths.as_slice());
@@ -15,6 +15,7 @@ fn combined_json_one_file() {
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
+        vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
         era_solc::StandardJsonInputCodegen::Yul,
@@ -38,7 +39,7 @@ fn combined_json_one_file() {
 }
 
 #[test]
-fn combined_json_multiple_files() {
+fn multiple_files() {
     let paths = [
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         crate::common::TEST_SOLIDITY_CONTRACT_CALLER_CALLABLE_PATH,
@@ -53,6 +54,7 @@ fn combined_json_multiple_files() {
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
+        vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
         era_solc::StandardJsonInputCodegen::Yul,
@@ -76,7 +78,7 @@ fn combined_json_multiple_files() {
 }
 
 #[test]
-fn combined_json_multiple_files_with_dependencies() {
+fn multiple_files_with_dependencies() {
     let paths = [
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         crate::common::TEST_SOLIDITY_CONTRACT_GREETER_PATH,
@@ -110,6 +112,7 @@ fn combined_json_multiple_files_with_dependencies() {
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
+        vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
         era_solc::StandardJsonInputCodegen::Yul,
@@ -128,5 +131,76 @@ fn combined_json_multiple_files_with_dependencies() {
             .as_ref()
             .expect("The `bin` field is missing")
             .is_empty());
+    }
+}
+
+#[test]
+fn eravm_assembly_requested() {
+    let paths = [crate::common::TEST_SOLIDITY_CONTRACT_PATH];
+    let names = ["Test"];
+    let sources = crate::common::read_sources(paths.as_slice());
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+
+    let combined_json = crate::common::build_solidity_combined_json(
+        sources,
+        era_solc::StandardJsonInputLibraries::default(),
+        vec![era_solc::CombinedJsonSelector::EraVMAssembly],
+        era_compiler_common::HashType::Ipfs,
+        &solc_compiler.version.default,
+        era_solc::StandardJsonInputCodegen::Yul,
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
+    dbg!(&combined_json);
+
+    assert_eq!(combined_json.contracts.len(), paths.len());
+    for (path, name) in paths.into_iter().zip(names.into_iter()) {
+        let full_path = format!("{path}:{name}");
+        assert!(!combined_json
+            .contracts
+            .get(full_path.as_str())
+            .as_ref()
+            .unwrap_or_else(|| panic!("The contract `{full_path}` is missing"))
+            .assembly
+            .as_ref()
+            .expect("The `assembly` field is missing")
+            .is_empty());
+    }
+}
+
+#[test]
+fn eravm_assembly_not_requested() {
+    let paths = [crate::common::TEST_SOLIDITY_CONTRACT_PATH];
+    let names = ["Test"];
+    let sources = crate::common::read_sources(paths.as_slice());
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)
+            .expect("`solc` initialization error");
+
+    let combined_json = crate::common::build_solidity_combined_json(
+        sources,
+        era_solc::StandardJsonInputLibraries::default(),
+        vec![],
+        era_compiler_common::HashType::Ipfs,
+        &solc_compiler.version.default,
+        era_solc::StandardJsonInputCodegen::Yul,
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
+
+    assert_eq!(combined_json.contracts.len(), paths.len());
+    for (path, name) in paths.into_iter().zip(names.into_iter()) {
+        let full_path = format!("{path}:{name}");
+        assert!(combined_json
+            .contracts
+            .get(full_path.as_str())
+            .as_ref()
+            .unwrap_or_else(|| panic!("The contract `{full_path}` is missing"))
+            .assembly
+            .is_none());
     }
 }

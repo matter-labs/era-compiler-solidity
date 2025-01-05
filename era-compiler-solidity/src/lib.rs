@@ -38,6 +38,7 @@ pub use self::r#const::*;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -790,10 +791,12 @@ pub fn combined_json_eravm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let selector_results = era_solc::CombinedJsonSelector::from_cli(format.as_str());
-    let mut selectors = Vec::with_capacity(selector_results.len());
+    let mut selectors = HashSet::with_capacity(selector_results.len());
     for result in selector_results.into_iter() {
         match result {
-            Ok(selector) => selectors.push(selector),
+            Ok(selector) => {
+                selectors.insert(selector);
+            }
             Err(selector) => {
                 messages.push(era_solc::StandardJsonOutputError::new_warning(
                     format!("The selector `{selector}` is not supported, and therefore ignored."),
@@ -805,14 +808,14 @@ pub fn combined_json_eravm(
     }
     if !selectors.contains(&era_solc::CombinedJsonSelector::Bytecode) {
         messages.push(era_solc::StandardJsonOutputError::new_warning(
-            format!("The `{}` selector will become mandatory in future versions of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
+            format!("The `{}` selector will become mandatory in future releases of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
             None,
             None,
         ));
     }
     if selectors.contains(&era_solc::CombinedJsonSelector::BytecodeRuntime) {
         messages.push(era_solc::StandardJsonOutputError::new_warning(
-            format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
+            format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment. The eponymous output field will be removed in future releases of `zksolc`.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
             None,
             None,
         ));
@@ -885,10 +888,12 @@ pub fn combined_json_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let selector_results = era_solc::CombinedJsonSelector::from_cli(format.as_str());
-    let mut selectors = Vec::with_capacity(selector_results.len());
+    let mut selectors = HashSet::with_capacity(selector_results.len());
     for result in selector_results.into_iter() {
         match result {
-            Ok(selector) => selectors.push(selector),
+            Ok(selector) => {
+                selectors.insert(selector);
+            }
             Err(selector) => {
                 messages.push(era_solc::StandardJsonOutputError::new_warning(
                     format!("The selector `{selector}` is not supported, and therefore ignored."),

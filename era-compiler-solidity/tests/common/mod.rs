@@ -178,6 +178,7 @@ pub fn build_solidity_standard_json(
 pub fn build_solidity_combined_json(
     sources: BTreeMap<String, String>,
     libraries: era_solc::StandardJsonInputLibraries,
+    selectors: Vec<era_solc::CombinedJsonSelector>,
     metadata_hash_type: era_compiler_common::HashType,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
@@ -215,12 +216,13 @@ pub fn build_solidity_combined_json(
         metadata_hash_type,
         optimizer_settings,
         vec![],
-        false,
+        selectors.contains(&era_solc::CombinedJsonSelector::EraVMAssembly),
         None,
     )?;
     build.check_errors()?;
 
-    let mut combined_json = solc_compiler.combined_json(paths.as_slice(), vec![])?;
+    let mut combined_json =
+        solc_compiler.combined_json(paths.as_slice(), selectors.into_iter().collect())?;
     build.write_to_combined_json(&mut combined_json)?;
     Ok(combined_json)
 }

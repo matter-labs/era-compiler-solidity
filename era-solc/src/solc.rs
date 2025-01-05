@@ -3,6 +3,7 @@
 //!
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
@@ -212,7 +213,7 @@ impl Compiler {
     pub fn combined_json(
         &self,
         paths: &[PathBuf],
-        mut selectors: Vec<CombinedJsonSelector>,
+        mut selectors: HashSet<CombinedJsonSelector>,
     ) -> anyhow::Result<CombinedJson> {
         let executable = self.executable.to_owned();
 
@@ -221,13 +222,14 @@ impl Compiler {
         command.stderr(std::process::Stdio::piped());
         command.args(paths);
 
-        if selectors.is_empty() {
-            selectors.push(CombinedJsonSelector::Bytecode);
+        if !selectors.iter().any(CombinedJsonSelector::is_source_solc) {
+            selectors.insert(CombinedJsonSelector::Bytecode);
         }
         command.arg("--combined-json");
         command.arg(
             selectors
                 .into_iter()
+                .filter(|selector| selector.is_source_solc())
                 .map(|selector| selector.to_string())
                 .collect::<Vec<String>>()
                 .join(","),
