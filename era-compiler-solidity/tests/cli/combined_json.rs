@@ -141,16 +141,47 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
-    let status_code = result
-        .failure()
-        .stderr(predicate::str::contains("Invalid option").or(predicate::str::contains("error")))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
+    result.success().stderr(predicate::str::contains(
+        "The selector `unknown` is not supported, and therefore ignored.",
+    ));
 
-    let solc_result = crate::cli::execute_solc(args)?;
-    solc_result.code(status_code);
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let selector = era_solc::CombinedJsonSelector::Assembly.to_string();
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        selector.as_str(),
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stderr(predicate::str::contains(
+        format!("The `{}` selector will become mandatory in future versions of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn warning_bin_runtime_excess(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let selector = era_solc::CombinedJsonSelector::BytecodeRuntime.to_string();
+    let args = &[
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--combined-json",
+        selector.as_str(),
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stderr(predicate::str::contains(
+        format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
+    ));
 
     Ok(())
 }

@@ -180,11 +180,7 @@ impl Contract {
             .bin_runtime
             .clone_from(&combined_json_contract.bin);
 
-        combined_json_contract.assembly = self
-            .build
-            .assembly
-            .map(serde_json::Value::String)
-            .unwrap_or_default();
+        combined_json_contract.assembly = self.build.assembly;
         combined_json_contract.factory_deps.extend(
             self.factory_dependencies_resolved
                 .into_iter()

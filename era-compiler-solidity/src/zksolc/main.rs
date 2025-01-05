@@ -244,7 +244,6 @@ fn main_inner(
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
-                    arguments.output_assembly,
                     suppressed_errors,
                     suppressed_warnings,
                     debug_config,

@@ -177,8 +177,6 @@ impl Contract {
         combined_json_contract.bin = Some(hex::encode(self.deploy_build));
         combined_json_contract.bin_runtime = Some(hex::encode(self.runtime_build));
 
-        combined_json_contract.assembly = serde_json::Value::String("Coming soon".to_owned());
-
         Ok(())
     }
 

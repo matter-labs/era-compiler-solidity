@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
+use crate::combined_json::selector::Selector as CombinedJsonSelector;
 use crate::combined_json::CombinedJson;
 use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
@@ -211,7 +212,7 @@ impl Compiler {
     pub fn combined_json(
         &self,
         paths: &[PathBuf],
-        combined_json_argument: &str,
+        mut selectors: Vec<CombinedJsonSelector>,
     ) -> anyhow::Result<CombinedJson> {
         let executable = self.executable.to_owned();
 
@@ -220,21 +221,17 @@ impl Compiler {
         command.stderr(std::process::Stdio::piped());
         command.args(paths);
 
-        let mut combined_json_flags = Vec::new();
-        let mut combined_json_fake_flag_pushed = false;
-        let mut filtered_flags = Vec::with_capacity(3);
-        for flag in combined_json_argument.split(',') {
-            match flag {
-                flag @ "asm" | flag @ "bin" | flag @ "bin-runtime" => filtered_flags.push(flag),
-                flag => combined_json_flags.push(flag),
-            }
-        }
-        if combined_json_flags.is_empty() {
-            combined_json_flags.push("ast");
-            combined_json_fake_flag_pushed = true;
+        if selectors.is_empty() {
+            selectors.push(CombinedJsonSelector::Bytecode);
         }
         command.arg("--combined-json");
-        command.arg(combined_json_flags.join(","));
+        command.arg(
+            selectors
+                .into_iter()
+                .map(|selector| selector.to_string())
+                .collect::<Vec<String>>()
+                .join(","),
+        );
 
         let process = command
             .spawn()
@@ -254,36 +251,14 @@ impl Compiler {
             );
         }
 
-        let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
-            result.stdout.as_slice(),
-        ) {
-            Ok(combined_json) => combined_json,
-            Err(error) => {
-                anyhow::bail!(
+        era_compiler_common::deserialize_from_slice::<CombinedJson>(result.stdout.as_slice())
+            .map_err(|error| {
+                anyhow::anyhow!(
                     "{} subprocess stdout parsing: {error:?} (stderr: {})",
                     self.executable,
                     String::from_utf8_lossy(result.stderr.as_slice()),
-                );
-            }
-        };
-
-        for filtered_flag in filtered_flags.into_iter() {
-            for (_path, contract) in combined_json.contracts.iter_mut() {
-                match filtered_flag {
-                    "asm" => contract.asm = serde_json::Value::Null,
-                    "bin" => contract.bin = None,
-                    "bin-runtime" => contract.bin_runtime = None,
-                    _ => continue,
-                }
-            }
-        }
-        if combined_json_fake_flag_pushed {
-            combined_json.source_list.clear();
-            combined_json.sources = serde_json::Value::Null;
-        }
-        combined_json.remove_evm();
-
-        Ok(combined_json)
+                )
+            })
     }
 
     ///

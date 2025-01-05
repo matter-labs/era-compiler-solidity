@@ -12,7 +12,7 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
 use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
-use crate::standard_json::input::settings::selection::file::flag::Flag as SelectionFlag;
+use crate::standard_json::input::settings::selection::selector::Selector;
 use crate::standard_json::input::settings::selection::Selection;
 use crate::standard_json::input::settings::warning_type::WarningType as StandardJsonInputSettingsWarningType;
 use crate::standard_json::input::source::Source as StandardJSONInputSource;
@@ -100,7 +100,7 @@ impl Output {
     pub fn write_and_exit(mut self, selection_to_prune: Selection) -> ! {
         let sources = self.sources.values_mut().collect::<Vec<&mut Source>>();
         for source in sources.into_iter() {
-            if selection_to_prune.contains(&SelectionFlag::AST) {
+            if selection_to_prune.contains(&Selector::AST) {
                 source.ast = None;
             }
         }
@@ -111,17 +111,17 @@ impl Output {
             .flat_map(|contracts| contracts.values_mut())
             .collect::<Vec<&mut Contract>>();
         for contract in contracts.into_iter() {
-            if selection_to_prune.contains(&SelectionFlag::Metadata) {
+            if selection_to_prune.contains(&Selector::Metadata) {
                 contract.metadata = serde_json::Value::Null;
             }
-            if selection_to_prune.contains(&SelectionFlag::Yul) {
+            if selection_to_prune.contains(&Selector::Yul) {
                 contract.ir_optimized = String::new();
             }
             if let Some(ref mut evm) = contract.evm {
-                if selection_to_prune.contains(&SelectionFlag::EVMLA) {
+                if selection_to_prune.contains(&Selector::EVMLA) {
                     evm.legacy_assembly = serde_json::Value::Null;
                 }
-                if selection_to_prune.contains(&SelectionFlag::MethodIdentifiers) {
+                if selection_to_prune.contains(&Selector::MethodIdentifiers) {
                     evm.method_identifiers.clear();
                 }
                 evm.extra_metadata = None;

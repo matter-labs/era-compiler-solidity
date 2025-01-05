@@ -475,7 +475,7 @@ pub fn standard_json_eravm(
     let output_assembly = solc_input
         .settings
         .output_selection
-        .contains(&era_solc::StandardJsonInputSelectionFlag::EraVMAssembly);
+        .contains(&era_solc::StandardJsonInputSelector::EraVMAssembly);
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (era_solc::StandardJsonInputLanguage::Solidity, solc_compiler) => {
@@ -785,11 +785,39 @@ pub fn combined_json_eravm(
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    output_assembly: bool,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,
     suppressed_warnings: Vec<era_solc::StandardJsonInputWarningType>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
+    let selector_results = era_solc::CombinedJsonSelector::from_cli(format.as_str());
+    let mut selectors = Vec::with_capacity(selector_results.len());
+    for result in selector_results.into_iter() {
+        match result {
+            Ok(selector) => selectors.push(selector),
+            Err(selector) => {
+                messages.push(era_solc::StandardJsonOutputError::new_warning(
+                    format!("The selector `{selector}` is not supported, and therefore ignored."),
+                    None,
+                    None,
+                ));
+            }
+        }
+    }
+    if !selectors.contains(&era_solc::CombinedJsonSelector::Bytecode) {
+        messages.push(era_solc::StandardJsonOutputError::new_warning(
+            format!("The `{}` selector will become mandatory in future versions of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
+            None,
+            None,
+        ));
+    }
+    if selectors.contains(&era_solc::CombinedJsonSelector::BytecodeRuntime) {
+        messages.push(era_solc::StandardJsonOutputError::new_warning(
+            format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
+            None,
+            None,
+        ));
+    }
+
     let build = standard_output_eravm(
         paths,
         libraries,
@@ -806,13 +834,13 @@ pub fn combined_json_eravm(
         remappings,
         optimizer_settings,
         llvm_options,
-        output_assembly,
+        selectors.contains(&era_solc::CombinedJsonSelector::EraVMAssembly),
         suppressed_errors,
         suppressed_warnings,
         debug_config,
     )?;
 
-    let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
+    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
     build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {
@@ -856,6 +884,21 @@ pub fn combined_json_evm(
     threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
+    let selector_results = era_solc::CombinedJsonSelector::from_cli(format.as_str());
+    let mut selectors = Vec::with_capacity(selector_results.len());
+    for result in selector_results.into_iter() {
+        match result {
+            Ok(selector) => selectors.push(selector),
+            Err(selector) => {
+                messages.push(era_solc::StandardJsonOutputError::new_warning(
+                    format!("The selector `{selector}` is not supported, and therefore ignored."),
+                    None,
+                    None,
+                ));
+            }
+        }
+    }
+
     let build = standard_output_evm(
         paths,
         libraries,
@@ -875,7 +918,7 @@ pub fn combined_json_evm(
         debug_config,
     )?;
 
-    let mut combined_json = solc_compiler.combined_json(paths, format.as_str())?;
+    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
     build.write_to_combined_json(&mut combined_json)?;
 
     match output_directory {

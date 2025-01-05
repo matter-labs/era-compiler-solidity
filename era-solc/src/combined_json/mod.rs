@@ -3,6 +3,7 @@
 //!
 
 pub mod contract;
+pub mod selector;
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -55,15 +56,5 @@ impl CombinedJson {
         .map_err(|error| anyhow::anyhow!("File {file_path:?} writing: {error}"))?;
 
         Ok(())
-    }
-
-    ///
-    /// Removes EVM artifacts to prevent their accidental usage.
-    ///
-    pub fn remove_evm(&mut self) {
-        for (_, contract) in self.contracts.iter_mut() {
-            contract.bin = None;
-            contract.bin_runtime = None;
-        }
     }
 }
