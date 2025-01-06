@@ -207,5 +207,5 @@ jobs:
           generate_release_notes: false
           tag_name: ${{ steps.release.outputs.version_or_sha }}
           target_commitish: ${{ steps.release.outputs.full_sha }}
-          prerelease: true
+          make_latest: true
           files: releases/**/**
