@@ -5,7 +5,7 @@ This page highlights specific nuances of exception handling (EH) in the EraVM ar
 In essence, EraVM uses two EH mechanisms: [contract-level](#contract-level) and [function-level](#function-level). The former is inherited from the EVM architecture, while the latter aligns more closely with general-purpose languages.
 
 |              | Contract Level  | Function Level               |
-|:------------:|:---------------:|:----------------------------:|
+|:-------------|:----------------|:-----------------------------|
 | Yul Example  | `revert(0, 0)`  | `verbatim("throw")`          |
 | Native to    | EVM             | General-purpose languages    |
 | Handled by   | EraVM           | Compiler                     |
@@ -69,11 +69,11 @@ Several constraints arise from Yul’s structure and the nature of smart contrac
 
 ```solidity
 // Follow the numbers for the order of execution. The call order is:
-// 1. caller
-// 2. ZKSYNC_NEAR_CALL_callee
-// 3. callee_even_deeper
-// 4. ZKSYNC_CATCH_NEAR_CALL
-// 5. caller
+//     1. caller
+//     2. ZKSYNC_NEAR_CALL_callee
+//     3. callee_even_deeper
+//     4. ZKSYNC_CATCH_NEAR_CALL
+//     5. caller
 
 function ZKSYNC_NEAR_CALL_callee() -> value {    // 03
     value := callee_even_deeper()                // 04

@@ -1,4 +1,4 @@
-# System contracts
+# System Contracts
 
 Many EVM instructions require special handling by the System Contracts. The full detailed list of instructions that require special
 handling is provided at [the EVM instructions reference](https://docs.zksync.io/zksync-protocol/differences/evm-instructions).

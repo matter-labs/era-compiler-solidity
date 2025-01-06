@@ -1,4 +1,4 @@
-# EVM Assembly
+# EVM Assembly Auxiliary Instructions
 
 These instructions do not have a direct representation in EVM or EraVM instruction sets. Instead, they perform auxiliary operations
 required for generating the target bytecode.

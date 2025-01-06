@@ -1,6 +1,6 @@
 # Code Separation
 
-In both EVM and EraVM, contract bytecode is divided into two segments: deploy and runtime. The deploy code—also known as the constructor—runs only once when the contract is first deployed. In contrast, the runtime code executes every time the contract is called.
+In both EVM and EraVM, contract bytecode is divided into two segments: deploy and runtime. The deploy code — also known as the constructor — runs only once when the contract is first deployed. In contrast, the runtime code executes every time the contract is called.
 
 However, on EraVM, both segments are deployed together rather than split into two separate chunks. The constructor is simply added to the contract as a standard public function, which the System Contracts invoke during deployment.
 

@@ -2,12 +2,28 @@
 
 This is a technical deep dive into the specifics of compiling for the EraVM target.
 
+The deep dive outlines concepts, modules, and terms used in the EraVM target compilation process, such as:
+
+- [Code Separation](./01-code-separation.md)
+- [EVM Assembly Translator](./02-evm-assembly-translator.md)
+- [System Contracts](./03-system-contracts.md)
+- [Exception Handling](./04-exception-handling.md)
+
+The following sections provide a detailed specification of compilation of each individual instruction:
+
+- [Instructions](./05-instructions/01-reference.md)
+- [Extensions](./06-extensions.md)
+
+Finally, this document describes the binary layout of EraVM bytecode:
+
+- [Binary Layout](./07-binary-layout.md)
+
 
 
 ## Glossary
 
 | Term                      | Definition                                                                                                                            |
-|:-------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------:|
+|:--------------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
 | zksolc                    | Solidity compiler developed by Matter Labs.                                                                                           |
 | solc                      | High-level Solidity compiler developed by the Ethereum community. Called by zksolc to get IRs and other auxiliary data.               |
 | LLVM                      | The world's most popular and powerful compiler framework, used for optimizations and assembly generation.                             |

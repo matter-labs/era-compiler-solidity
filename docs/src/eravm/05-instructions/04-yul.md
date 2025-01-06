@@ -1,4 +1,4 @@
-# Yul
+# Yul Auxiliary Instructions
 
 These instructions do not map directly to EVM or EraVM but instead perform auxiliary operations necessary for generating the target bytecode.
 

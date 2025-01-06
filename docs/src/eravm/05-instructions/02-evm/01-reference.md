@@ -5,7 +5,7 @@ EVM instructions are grouped into categories based on [the official reference](h
 - [Arithmetic](./02-arithmetic.md)
 - [Bitwise](./03-bitwise.md)
 - [Block](./04-block.md)
-- [Call](./05-call.md)
+- [Calls](./05-calls.md)
 - [Create](./06-create.md)
 - [Environment](./07-environment.md)
 - [Logging](./08-logging.md)

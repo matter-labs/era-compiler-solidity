@@ -1,4 +1,4 @@
-# Call
+# Calls
 
 All EVM call instructions follow a similar handling approach. The call type is encoded at the assembly level, so we will focus on the common workflow and note any differences where they arise.
 

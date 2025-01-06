@@ -1,4 +1,4 @@
-# Create
+# CREATE
 
 The EVM CREATE instructions are handled similarly.
 
