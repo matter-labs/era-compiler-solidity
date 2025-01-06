@@ -7,9 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const versionSelector = document.createElement("select");
         versionSelector.id = "version-selector";
 
-        // Include a trailing slash in the current path for matching
-        const currentPath = `${window.location.pathname}/`;
-
         // Sort and iterate through the versions to populate the selector
         Object.entries(versions)
             .sort(([a], [b]) => (a === "latest" ? -1 : b === "latest" ? 1 : b.localeCompare(a, undefined, { numeric: true })))
@@ -17,7 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const option = document.createElement("option");
                 option.value = `${baseUrl}${url}`;
                 option.textContent = name;
-                if (option.value === currentPath) option.selected = true; // Pre-select the matching version
+                // Pre-select the matching version
+                if (option.value === window.location.pathname) option.selected = true;
                 versionSelector.appendChild(option);
             });
 
