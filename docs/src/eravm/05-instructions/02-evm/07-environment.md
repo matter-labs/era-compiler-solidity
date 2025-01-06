@@ -2,7 +2,7 @@
 
 This information is requested a System Contract called [SystemContext](https://github.com/matter-labs/era-system-contracts/blob/main/contracts/SystemContext.sol).
 
-On how the System Contract is called, see [this section](/zksync-protocol/compiler/specification/system-contracts#environmental-data-storage).
+On how the contract is called, see [the relevant section](../../03-system-contracts.md#environmental-data-storage).
 
 
 
@@ -46,9 +46,7 @@ This value is fetched with a native [EraVM instruction: `context.get_context_u12
 
 Original [EVM](https://www.evm.codes/#35?fork=shanghai) instruction.
 
-Calldata is accessed with a generic memory access instruction, but the memory chunk itself is a reference
-to the calling contract's heap.
-A fat pointer to the parent contract is passed via ABI using registers.
+Calldata is accessed using a generic memory access instruction, but the memory chunk itself references the caller’s heap. A “fat pointer” to the parent contract is passed via ABI through registers.
 
 ### LLVM IR
 
@@ -80,9 +78,7 @@ ld      r1, r1                                                                  
 
 Original [EVM](https://www.evm.codes/#36?fork=shanghai) instruction.
 
-Calldata size is stored in the fat pointer passed from the parent contract (see [CALLDATALOAD](#calldataload)).
-
-The size value can be extracted with bitwise operations as illustrated below.
+The calldata size is stored in the fat pointer from the parent contract (see [CALLDATALOAD](#calldataload)), and it can be extracted using bitwise operations, as demonstrated below.
 
 ### LLVM IR
 
@@ -116,7 +112,7 @@ CPI0_0:
 
 Original [EVM](https://www.evm.codes/#37?fork=shanghai) instruction.
 
-Unlike on EVM, on EraVM it is a simple loop over [CALLDATALOAD](#calldataload)).
+Unlike on EVM, EraVM employs a simple loop over memory operations on 256-bit values.
 
 ### LLVM IR
 
@@ -153,7 +149,7 @@ call void @llvm.memcpy.p1.p3.i256(ptr addrspace(1) align 1 inttoptr (i256 128 to
 
 Original [EVM](https://www.evm.codes/#38?fork=shanghai) instruction.
 
-See [the EraVM docs](/zksync-protocol/differences/evm-instructions#codecopy).
+See [the EraVM docs](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#codecopy).
 
 
 
@@ -161,7 +157,7 @@ See [the EraVM docs](/zksync-protocol/differences/evm-instructions#codecopy).
 
 Original [EVM](https://www.evm.codes/#39?fork=shanghai) instruction.
 
-See [the EraVM docs](/zksync-protocol/differences/evm-instructions#codesize).
+See [the EraVM docs](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#codesize).
 
 
 
@@ -189,9 +185,7 @@ Not supported. Triggers a compile-time error.
 
 Original [EVM](https://www.evm.codes/#3d?fork=shanghai) instruction.
 
-Return data size is read from the fat pointer returned from the child contract.
-
-The size value can be extracted with bitwise operations as illustrated below.
+Similarly to [CALLDATASIZE](#calldatasize), return data size is read from the fat pointer that the child contract returns. It can also be extracted with bitwise operations.
 
 ### LLVM IR
 
@@ -222,7 +216,7 @@ CPI0_1:
 
 Original [EVM](https://www.evm.codes/#3e?fork=shanghai) instruction.
 
-Unlike on EVM, on EraVM it is a simple loop over memory operations on 256-bit values.
+Unlike on EVM, EraVM employs a simple loop over memory operations on 256-bit values.
 
 ### LLVM IR
 

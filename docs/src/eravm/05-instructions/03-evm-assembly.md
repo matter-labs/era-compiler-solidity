@@ -21,7 +21,7 @@ The same as [dataoffset](./04-yul.md#dataoffset).
 
 The same as [setimmutable](./04-yul.md#setimmutable).
 
-For more information, see [differences with Ethereum](/zksync-protocol/differences/evm-instructions#setimmutable-loadimmutable).
+For more information, see [differences with Ethereum](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#setimmutable-loadimmutable).
 
 
 
@@ -29,7 +29,7 @@ For more information, see [differences with Ethereum](/zksync-protocol/differenc
 
 The same as [loadimmutable](./04-yul.md#loadimmutable).
 
-For more information, see [differences with Ethereum](/zksync-protocol/differences/evm-instructions#setimmutable-loadimmutable).
+For more information, see [differences with Ethereum](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#setimmutable-loadimmutable).
 
 
 

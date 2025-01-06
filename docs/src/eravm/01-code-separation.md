@@ -1,23 +1,18 @@
 # Code Separation
 
-On both EVM and EraVM the code is separated into two parts: deploy code and runtime code. The deploy code is executed
-only once when the contract is deployed. The runtime code is executed every time the contract is called. However, on
-EraVM the deploy code and runtime code are deployed together, and they are not split into two separate chunks.
+In both EVM and EraVM, contract bytecode is divided into two segments: deploy and runtime. The deploy code—also known as the constructor—runs only once when the contract is first deployed. In contrast, the runtime code executes every time the contract is called.
 
-The constructor is added to the contract as a regular public function which is called by System Contracts during
-deployment.
+However, on EraVM, both segments are deployed together rather than split into two separate chunks. The constructor is simply added to the contract as a standard public function, which the System Contracts invoke during deployment.
 
-Just like on EVM, the deploy code on EraVM is represented by a single constructor. The constructor is merged into
-runtime code by our compiler while it is generating LLVM IR, like in the minimal example below.
+Just like on the EVM, the deploy code on EraVM takes the form of a single constructor. Our compiler merges this constructor into the runtime code while generating LLVM IR, as illustrated in the minimal example below.
 
 
 
 ## LLVM IR
 
-In EraVM subset of LLVM IR, contract `@__entry` arguments `%0`-`%11` correspond to registers `r1`-`r12` on EraVM.
+In the EraVM subset of LLVM IR, the `@__entry` function’s arguments `%0` through `%11` correspond to EraVM registers `r1` through `r12`.
 
-Register `r2` is represented by argument `%1`. The register contains a bit that indicates whether the call is
-a deploy code call. The flag is used for branching over deploy and runtime code blocks.
+Specifically, register `r2` maps to the argument `%1`. This register contains a bit that indicates whether the call is for deploy code, and that flag is used to branch between deploy and runtime code blocks.
 
 ```llvm
 define i256 @__entry(ptr addrspace(3) nocapture readnone %0, i256 %1, i256 %2, i256 %3, i256 %4, i256 %5, i256 %6, i256 %7, i256 %8, i256 %9, i256 %10, i256 %11) local_unnamed_addr #1 personality ptr @__personality {
@@ -43,7 +38,7 @@ runtime_code_call_block:                          ; preds = %entry
 
 ## EraVM Assembly
 
-In EraVM assembly, the branching looks like this:
+In EraVM assembly, the branching logic appears as follows:
 
 ```asm
 __entry:

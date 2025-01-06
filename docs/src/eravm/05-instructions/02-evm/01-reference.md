@@ -1,6 +1,6 @@
 # Native EVM Instructions
 
-Such instructions are grouped into the following categories according to [the original reference](https://www.evm.codes/):
+EVM instructions are grouped into categories based on [the official reference](https://www.evm.codes/):
 
 - [Arithmetic](./02-arithmetic.md)
 - [Bitwise](./03-bitwise.md)
@@ -19,7 +19,6 @@ Such instructions are grouped into the following categories according to [the or
 
 ### EraVM Assembly
 
-Assembly emitted for LLVM standard library functions depends on available optimizations which differ between versions. If there is no
-assembly example under the instruction, compile a reproducing contract with the latest version of `zksolc`.
+The assembly generated for LLVM standard library functions depends on available optimizations, which vary by version. If you do not see an assembly example for a particular instruction, try compiling a reproducing contract using the latest `zksolc`.
 
-EraVM specification contains a list of [all EraVM instructions (see the table of contents)](https://matter-labs.github.io/eravm-spec/spec.html).
+For a comprehensive list of instructions, see the [EraVM specification](https://matter-labs.github.io/eravm-spec/spec.html), which provides them in its table of contents.

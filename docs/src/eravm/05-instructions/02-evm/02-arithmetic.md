@@ -20,7 +20,7 @@ Original [EVM](https://www.evm.codes/#01?fork=shanghai) instruction.
 add     r1, r2, r1
 ```
 
-For more detail, see the [EraVM specification reference](%%zk_git_repo_eravm-spec%%/spec.html#AddDefinition)
+For more detail, see the [EraVM specification reference](https://matter-labs.github.io/eravm-spec/spec.html#AddDefinition)
 
 
 
@@ -59,7 +59,7 @@ The snippet below returns the carry value.
 mul     r1, r2, r1, r2
 ```
 
-For more detail, see the [EraVM specification reference](%%zk_git_repo_eravm-spec%%/spec.html#MulDefinition)
+For more detail, see the [EraVM specification reference](https://matter-labs.github.io/eravm-spec/spec.html#MulDefinition)
 
 
 
@@ -81,7 +81,7 @@ Original [EVM](https://www.evm.codes/#03?fork=shanghai) instruction.
 sub     r1, r2, r1
 ```
 
-For more detail, see the [EraVM specification reference](%%zk_git_repo_eravm-spec%%/spec.html#SubDefinition)
+For more detail, see the [EraVM specification reference](https://matter-labs.github.io/eravm-spec/spec.html#SubDefinition)
 
 
 
@@ -113,7 +113,7 @@ return:
 
 [LLVM IR instruction documentation](https://releases.llvm.org/15.0.0/docs/LangRef.html#udiv-instruction)
 
-For more detail, see the [EraVM specification reference](%%zk_git_repo_eravm-spec%%/spec.html#DivDefinition)
+For more detail, see the [EraVM specification reference](https://matter-labs.github.io/eravm-spec/spec.html#DivDefinition)
 
 
 
@@ -179,7 +179,7 @@ return:
 
 [LLVM IR instruction documentation](https://releases.llvm.org/15.0.0/docs/LangRef.html#urem-instruction)
 
-For more detail, see the [EraVM specification reference](%%zk_git_repo_eravm-spec%%/spec.html#DivDefinition)
+For more detail, see the [EraVM specification reference](https://matter-labs.github.io/eravm-spec/spec.html#DivDefinition)
 
 
 

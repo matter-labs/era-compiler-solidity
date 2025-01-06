@@ -2,7 +2,7 @@
 
 The EVM CREATE instructions are handled similarly.
 
-For more information, see the [ZKsync Era documentation](/zksync-protocol/differences/evm-instructions#create-create2).
+For more information, see the [ZKsync Era documentation](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#create-create2).
 
 
 

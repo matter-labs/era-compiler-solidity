@@ -1,8 +1,9 @@
 # Extensions
 
-EraVM extensions are a set of additional instructions that can be expressed in Solidity and Yul, but can only be compiled to EraVM bytecode.
+EraVM extensions are a set of additional instructions that can be expressed in Solidity and Yul, that can only be compiled to EraVM bytecode.
 
 There are two ways of using EraVM extensions with *zksolc*:
+
 1. [Call simulations](#call-simulations) in Solidity.
 2. [`verbatim`](#verbatim) function in Yul mode.
 
@@ -23,6 +24,7 @@ It is recommended to only use `verbatim` in Yul mode, as it is more robust and l
 ## Call Types
 
 In addition to EVM-like `call`, `staticcall` and `delegatecall`, EraVM introduces a few more call types:
+
 1. Mimic call
 2. System call
 3. Raw call
@@ -66,6 +68,7 @@ Constant arrays are a set of global arrays that can be used to store constant va
 # Instruction Reference
 
 The sections below have the following structure:
+
 1. EraVM instruction name and substituted address.
 2. Instruction description.
 3. Pseudo-code illustrating the behavior under the hood.
@@ -150,6 +153,7 @@ Full list of instructions:
 - [Throw (verbatim-only)](#throw-verbatim-only)
 
 Notes:
+
 1. The `input_length` parameter is always set to 0xFFFF or non-zero value. It prevents the *solc*'s optimizer from optimizing the call out.
 2. Instructions that do not modify state are using `staticcall` instead of `call`.
 3. Instructions such as raw calls preserve the call type, so they act as modifiers of `call`, `staticcall`, and `delegatecall`.

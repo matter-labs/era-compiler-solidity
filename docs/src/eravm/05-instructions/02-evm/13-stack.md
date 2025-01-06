@@ -6,13 +6,13 @@
 
 Original [EVM](https://www.evm.codes/#50?fork=shanghai) instruction.
 
-In Yul, only used to mark unused values, and is not translated to LLVM IR.
+In Yul, it is only used for marking unused values, and is omitted in LLVM IR.
 
 ```solidity
 pop(staticcall(gas(), address(), 0, 64, 0, 32))
 ```
 
-For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specification/evmla-translator).
+For EVMLA, see [EVM Legacy Assembly Translator](https://docs.zksync.io/zksync-protocol/compiler/specification/evmla-translator).
 
 
 
@@ -20,9 +20,9 @@ For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specif
 
 Original [EVM](https://www.evm.codes/#5b?fork=shanghai) instruction.
 
-Is not available in Yul.
+Unavailable in Yul.
 
-Ignored in EVMLA. See [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specification/evmla-translator) for more information.
+Ignored in EVMLA. See [EVM Legacy Assembly Translator](https://docs.zksync.io/zksync-protocol/compiler/specification/evmla-translator) for more information.
 
 
 
@@ -30,9 +30,9 @@ Ignored in EVMLA. See [EVM Legacy Assembly Translator](/zksync-protocol/compiler
 
 Original [EVM](https://www.evm.codes/#5f?fork=shanghai) instructions.
 
-Is not available in Yul.
+Unavailable in Yul.
 
-For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specification/evmla-translator).
+For EVMLA, see [EVM Legacy Assembly Translator](https://docs.zksync.io/zksync-protocol/compiler/specification/evmla-translator).
 
 
 
@@ -40,9 +40,9 @@ For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specif
 
 Original [EVM](https://www.evm.codes/#80?fork=shanghai) instructions.
 
-Is not available in Yul.
+Unavailable in Yul.
 
-For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specification/evmla-translator).
+For EVMLA, see [EVM Legacy Assembly Translator](https://docs.zksync.io/zksync-protocol/compiler/specification/evmla-translator).
 
 
 
@@ -50,6 +50,6 @@ For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specif
 
 Original [EVM](https://www.evm.codes/#90?fork=shanghai) instructions.
 
-Is not available in Yul.
+Unavailable in Yul.
 
-For EVMLA, see [EVM Legacy Assembly Translator](/zksync-protocol/compiler/specification/evmla-translator).
+For EVMLA, see [EVM Legacy Assembly Translator](https://docs.zksync.io/zksync-protocol/compiler/specification/evmla-translator).

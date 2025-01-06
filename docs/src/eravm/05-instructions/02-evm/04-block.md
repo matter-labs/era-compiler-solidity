@@ -1,8 +1,8 @@
 # Block
 
-This information is requested a System Contract called [SystemContext](https://github.com/matter-labs/era-system-contracts/blob/main/contracts/SystemContext.sol).
+This information is requested from a System Contract called [SystemContext](https://github.com/matter-labs/era-system-contracts/blob/main/contracts/SystemContext.sol).
 
-On how the System Contract is called, see [this section](/zksync-protocol/compiler/specification/system-contracts#environmental-data-storage).
+On how the contract is called, see [the relevant section](../../03-system-contracts.md#environmental-data-storage).
 
 
 

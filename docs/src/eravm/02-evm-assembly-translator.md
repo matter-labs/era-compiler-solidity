@@ -1,34 +1,31 @@
 # EVM Assembly Translator
 
-There are two Solidity codegens used in our toolchain:
+Our toolchain uses two Solidity code generators:
 
-|    Codegen    |    Supported     |      Default     |
+|      Name     | **solc** support | **solc** default |
 |---------------|------------------|------------------|
-| Yul           | >=0.8.0          | >=0.8            |
 | EVM Assembly  | >=0.4.12         | <0.8             |
+| Yul           | >=0.8.0          | >=0.8            |
 
 
 
 ## ZKsync Fork of *solc*
 
-EVM assembly is very challenging to translate to LLVM IR, since it obfuscates the control flow of the contract and
-uses a lot of dynamic jumps. 
+EVM assembly is challenging to translate to LLVM IR because it obscures the contract’s control flow and relies heavily on dynamic jumps.
 
-There are several issues with the original *solc* compiler when it comes to static analysis of EVM assembly:
+*solc*'s EVM assembly representation introduces several challenges for our LLVM IR translator:
 
-1. Internal function pointers are written to memory or storage, and then dynamically loaded and called.
-2. With local recursion, there is another stack frame allocated on every iteration.
-3. Some try-catch patterns leave values on the stack, hindering stack analysis.
+1. Internal function pointers are stored in memory or storage, then dynamically loaded and called.
+2. Each iteration of local recursion allocates an additional stack frame.
+3. Some try-catch patterns leave values on the stack, complicating stack analysis.
 
-All the issues have been resolved in [our fork of *solc*](https://github.com/matter-labs/era-solidity),
-where we have changed the codegen to remove the dynamic jumps and add the necessary metadata.
+All of these issues have been resolved in [our fork of *solc*](https://github.com/matter-labs/era-solidity), where we removed dynamic jumps and added the necessary metadata in the code generation process.
 
 
 
 ## Source Code
 
-In this and following sections you can see a minimal example of a Solidity contract and its EVM assembly translated
-to LLVM IR which is then compiled to EraVM bytecode.
+In this and the following sections, you will find a minimal example of a Solidity contract, its EVM assembly, and its translation to LLVM IR, which is then compiled into EraVM bytecode.
 
 ```solidity
 contract Example {
@@ -42,7 +39,7 @@ contract Example {
 
 ## EVM Legacy Assembly
 
-Produced by the upstream Solidity compiler v0.7.6.
+Produced by **solc** v0.7.6.
 
 ```txt
 | Line | Instruction  | Value/Tag |
@@ -113,21 +110,21 @@ Produced by the upstream Solidity compiler v0.7.6.
 
 ## EthIR
 
-EthIR (Ethereal IR) is an IR developed specifically for our translator. The IR serves several purposes:
+EthIR (Ethereal IR) is an intermediate representation developed specifically for our translator. It serves several key purposes:
 
-1. Tracking the stack state to extract jump destinations.
+1. Tracking the stack state to identify jump destinations.
 2. Duplicating blocks that are reachable from predecessors with different stack states.
-3. Restoring the complete control-flow graph of the contract using the abovementioned data.
+3. Reconstructing the complete control-flow graph of the contract using the aforementioned data.
 4. Resolving dependencies and static data chunks.
 
 Meaning of EthIR data:
 
-1. `V_<name>` - value returned by an instruction `<name>`.
-2. `T_<tag>` - tag of a block `<tag>`.
-3. `40` - hexadecimal constant.
-4. `tests/solidity/simple/default.sol:Test` - contract definition.
+1. `V_<name>` - a value returned by an instruction.
+2. `T_<tag>` - the tag of an assembly block.
+3. `40` - a hexadecimal constant.
+4. `tests/solidity/simple/default.sol:Test` - a contract full path definition.
 
-Stack format: `[ V_CALLVALUE ]` (current values) - `[ V_CALLVALUE ]` (popped values) + `[ V_ISZERO ]` (pushed values)
+Stack legend format: `[ <current_1> | <current_2> | ... | <current_N> ] - [ <popped_1> | <popped_2> | ... | <popped_N> ] + [ <pushed_1> | <pushed_2> | ... | <pushed_N> ]`.
 
 ```text
 // The default entry function of the contract.
@@ -241,9 +238,7 @@ block_rt_5/0: (predecessors: rt_3/0)    // Runtime Code Tag 5, Instance 0.
 
 ### Unoptimized LLVM IR
 
-In LLVM IR, the necessary stack space is allocated at the beginning of the function.
-
-Every stack operation interacts with a statically known stack pointer with an offset derived from EthIR.
+In LLVM IR, the required stack space is allocated at the start of the `main` function, and every stack operation uses a statically known stack pointer with an offset derived from EthIR.
 
 ```llvm
 ; Function Attrs: nofree null_pointer_is_valid
@@ -574,7 +569,7 @@ attributes #7 = { nofree null_pointer_is_valid }
 
 ### Optimized LLVM IR
 
-The redundancy is optimized by LLVM, resulting in the optimized LLVM IR below.
+LLVM optimizes away the redundancy, resulting in the LLVM IR shown below.
 
 ```llvm
 ; Function Attrs: nofree noreturn null_pointer_is_valid
@@ -635,8 +630,7 @@ attributes #2 = { noreturn nounwind }
 
 ### EraVM Assembly
 
-The optimized LLVM IR is translated into EraVM assembly below, allowing the bytecode size
-to be comparable with that produced via the Yul pipeline.
+The optimized LLVM IR is then compiled into EraVM assembly, resulting in a bytecode size comparable to that produced via the Yul pipeline.
 
 ```asm
         .text
@@ -694,7 +688,7 @@ DEFAULT_FAR_REVERT:
         revl    @DEFAULT_FAR_REVERT
 ```
 
-For comparison, with Yul pipeline of *solc* v0.8.28 the following EraVM assembly is produced:
+For comparison, the Yul pipeline of *solc* v0.8.28 generates the following EraVM assembly:
 
 ```asm
         .text

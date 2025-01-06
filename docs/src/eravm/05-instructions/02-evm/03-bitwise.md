@@ -26,7 +26,7 @@ and     r1, r2, r1
 st.1    128, r1
 ```
 
-[EraVM instruction: `and`](%%zk_git_repo_eravm-spec%%/spec.html#AndDefinition)
+[EraVM instruction: `and`](https://matter-labs.github.io/eravm-spec/spec.html#AndDefinition)
 
 
 
@@ -54,7 +54,7 @@ or      r1, r2, r1
 st.1    128, r1
 ```
 
-[EraVM instruction: `or`](%%zk_git_repo_eravm-spec%%/spec.html#AndDefinition)
+[EraVM instruction: `or`](https://matter-labs.github.io/eravm-spec/spec.html#AndDefinition)
 
 
 
@@ -82,7 +82,7 @@ xor     r1, r2, r1
 st.1    128, r1
 ```
 
-[EraVM instruction: `xor`](%%zk_git_repo_eravm-spec%%/spec.html#XorDefinition)
+[EraVM instruction: `xor`](https://matter-labs.github.io/eravm-spec/spec.html#XorDefinition)
 
 
 
@@ -106,7 +106,7 @@ xor     r1, r2, r1
 st.1    128, r1
 ```
 
-[EraVM instruction: `xor`](%%zk_git_repo_eravm-spec%%/spec.html#XorDefinition)
+[EraVM instruction: `xor`](https://matter-labs.github.io/eravm-spec/spec.html#XorDefinition)
 
 
 
@@ -182,7 +182,7 @@ return:
 }
 ```
 
-[EraVM instruction: `xor`](%%zk_git_repo_eravm-spec%%/spec.html#XorDefinition)
+[EraVM instruction: `xor`](https://matter-labs.github.io/eravm-spec/spec.html#XorDefinition)
 
 
 

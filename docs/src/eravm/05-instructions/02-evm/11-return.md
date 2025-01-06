@@ -18,7 +18,7 @@ The same as for [RETURN](#return).
 
 Original [EVM](https://www.evm.codes/#f3?fork=shanghai) instruction.
 
-This instruction works differently in deploy code. For more information, see [the ZKsync Era documentation](/zksync-protocol/differences/evm-instructions#return-stop).
+This instruction works differently in deploy code. For more information, see [the ZKsync Era documentation](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#return-stop).
 
 ### LLVM IR
 
@@ -59,7 +59,7 @@ and [when returning from far calls](https://matter-labs.github.io/eravm-spec/spe
 
 Original [EVM](https://www.evm.codes/#fe?fork=shanghai) instruction.
 
-This instruction is a [REVERT](#revert) with an empty data payload, but it also burns all the available gas.
+This instruction is a [REVERT](#revert) with an empty data payload, but it also burns all available gas.
 
 ### LLVM IR
 
