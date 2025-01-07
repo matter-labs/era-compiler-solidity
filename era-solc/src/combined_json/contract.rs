@@ -56,13 +56,9 @@ pub struct Contract {
     #[serde(default, skip_deserializing)]
     pub factory_deps: BTreeMap<String, String>,
     /// The missing libraries.
-    #[serde(
-        default,
-        skip_serializing_if = "BTreeSet::is_empty",
-        skip_deserializing
-    )]
+    #[serde(default, skip_deserializing)]
     pub missing_libraries: BTreeSet<String>,
     /// The binary object format.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    #[serde(default, skip_deserializing)]
     pub object_format: Option<era_compiler_common::ObjectFormat>,
 }

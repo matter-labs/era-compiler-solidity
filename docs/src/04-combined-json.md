@@ -66,7 +66,7 @@ The format below is a modification of the original combined JSON [output](https:
       // Optional: Emitted if "asm" selector is provided.
       "asm": {/* ... */},
 
-      // Optional: Emitted if "eravm-assembly" selector is provided.
+      // Optional: Emitted if "assembly" selector is provided.
       "assembly": "/* ... */",
       // Required: Bytecode is always emitted.
       "bin": "0000008003000039000000400030043f0000000100200190000000130000c13d...",

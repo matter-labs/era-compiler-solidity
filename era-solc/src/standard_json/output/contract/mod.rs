@@ -46,7 +46,7 @@ pub struct Contract {
     pub evm: Option<EVM>,
 
     /// EraVM bytecode hash.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    #[serde(default, skip_deserializing)]
     pub hash: Option<String>,
     /// Unlinked factory dependencies.
     #[serde(default, skip_deserializing)]
@@ -58,7 +58,7 @@ pub struct Contract {
     #[serde(default, skip_deserializing)]
     pub missing_libraries: BTreeSet<String>,
     /// Binary object format.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    #[serde(default, skip_deserializing)]
     pub object_format: Option<era_compiler_common::ObjectFormat>,
 }
 
