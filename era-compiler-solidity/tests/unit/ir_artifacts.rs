@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit tests for IR artifacts.
+//! Unit tests for IR artifacts.
 //!
 //! The tests check if the IR artifacts are kept in the final output.
 //!
@@ -7,8 +7,6 @@
 use std::collections::BTreeSet;
 
 use test_case::test_case;
-
-use crate::common;
 
 #[test_case(semver::Version::new(0, 4, 26))]
 #[test_case(semver::Version::new(0, 5, 17))]
@@ -20,9 +18,9 @@ fn evmla(version: semver::Version) {
         return;
     }
 
-    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_PATH]);
+    let sources = crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_PATH]);
 
-    let build = common::build_solidity_standard_json(
+    let build = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -35,7 +33,7 @@ fn evmla(version: semver::Version) {
     assert!(
         !build
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_PATH)
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
@@ -49,7 +47,7 @@ fn evmla(version: semver::Version) {
     assert!(
         build
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_PATH)
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
@@ -61,9 +59,9 @@ fn evmla(version: semver::Version) {
 
 #[test_case(era_solc::Compiler::LAST_SUPPORTED_VERSION)]
 fn yul(version: semver::Version) {
-    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_PATH]);
+    let sources = crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_PATH]);
 
-    let build = common::build_solidity_standard_json(
+    let build = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Ipfs,
@@ -77,7 +75,7 @@ fn yul(version: semver::Version) {
     assert!(
         !build
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_PATH)
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
@@ -88,7 +86,7 @@ fn yul(version: semver::Version) {
     assert!(
         build
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_PATH)
             .expect("Always exists")
             .get("Test")
             .expect("Always exists")
@@ -99,4 +97,24 @@ fn yul(version: semver::Version) {
             .is_null(),
         "EVM assembly is present although not requested"
     );
+}
+
+#[test_case(era_solc::Compiler::LAST_SUPPORTED_VERSION)]
+fn yul_empty_solidity_interface(version: semver::Version) {
+    let sources = crate::common::read_sources(&[
+        crate::common::TEST_SOLIDITY_CONTRACT_INTERFACE_EMPTY_YUL_PATH,
+    ]);
+
+    let build = crate::common::build_solidity_standard_json(
+        sources,
+        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::HashType::Ipfs,
+        BTreeSet::new(),
+        &version,
+        era_solc::StandardJsonInputCodegen::Yul,
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
+    )
+    .expect("Test failure");
+
+    assert_eq!(build.contracts.len(), 1, "More than one Yul object present");
 }

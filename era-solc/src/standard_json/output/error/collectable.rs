@@ -33,7 +33,7 @@ pub trait Collectable {
     ///
     /// Collects errors into one message and bails, if there is at least one error.
     ///
-    fn collect_errors(&self) -> anyhow::Result<()> {
+    fn check_errors(&self) -> anyhow::Result<()> {
         if !self.has_errors() {
             return Ok(());
         }

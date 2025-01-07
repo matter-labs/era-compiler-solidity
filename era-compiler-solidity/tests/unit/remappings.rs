@@ -1,12 +1,10 @@
 //!
-//! The Solidity compiler unit tests for remappings.
+//! Unit tests for remappings.
 //!
 
 use std::collections::BTreeSet;
 
 use test_case::test_case;
-
-use crate::common;
 
 #[test_case(
     semver::Version::new(0, 4, 26),
@@ -37,15 +35,15 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
         return;
     }
 
-    let sources = common::read_sources(&[
-        common::TEST_SOLIDITY_CONTRACT_CALLER_MAIN_PATH,
-        common::TEST_SOLIDITY_CONTRACT_CALLER_CALLABLE_PATH,
+    let sources = crate::common::read_sources(&[
+        crate::common::TEST_SOLIDITY_CONTRACT_CALLER_MAIN_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_CALLER_CALLABLE_PATH,
     ]);
 
     let mut remappings = BTreeSet::new();
     remappings.insert("libraries/default/=./".to_owned());
 
-    common::build_solidity_standard_json(
+    crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::Keccak256,

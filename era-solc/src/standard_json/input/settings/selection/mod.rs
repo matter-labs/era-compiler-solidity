@@ -3,11 +3,12 @@
 //!
 
 pub mod file;
+pub mod selector;
 
 use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 
-use self::file::flag::Flag as SelectionFlag;
 use self::file::File as FileSelection;
+use self::selector::Selector;
 
 ///
 /// The `solc --standard-json` output selection.
@@ -23,7 +24,7 @@ impl Selection {
     ///
     /// Creates the selection with arbitrary flags.
     ///
-    pub fn new(flags: Vec<SelectionFlag>) -> Self {
+    pub fn new(flags: Vec<Selector>) -> Self {
         Self {
             all: FileSelection::new(flags),
         }
@@ -34,9 +35,9 @@ impl Selection {
     ///
     pub fn new_required(codegen: StandardJsonInputSettingsCodegen) -> Self {
         Self::new(vec![
-            SelectionFlag::AST,
-            SelectionFlag::MethodIdentifiers,
-            SelectionFlag::Metadata,
+            Selector::AST,
+            Selector::MethodIdentifiers,
+            Selector::Metadata,
             codegen.into(),
         ])
     }
@@ -45,7 +46,7 @@ impl Selection {
     /// Creates the selection required by Yul validation process.
     ///
     pub fn new_yul_validation() -> Self {
-        Self::new(vec![SelectionFlag::EVM])
+        Self::new(vec![Selector::EVM])
     }
 
     ///
@@ -71,7 +72,7 @@ impl Selection {
     ///
     /// Whether the flag is requested.
     ///
-    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+    pub fn contains(&self, flag: &Selector) -> bool {
         self.all.contains(flag)
     }
 }

@@ -1,10 +1,8 @@
 //!
-//! The Solidity compiler unit tests for libraries.
+//! Unit tests for libraries.
 //!
 
 use test_case::test_case;
-
-use crate::common;
 
 #[test_case(
     semver::Version::new(0, 4, 26),
@@ -35,9 +33,10 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
         return;
     }
 
-    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
+    let sources =
+        crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
-    let output = common::build_solidity_and_detect_missing_libraries(
+    let output = crate::common::build_solidity_and_detect_missing_libraries(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -48,7 +47,7 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
     assert!(
         output
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH)
             .expect("Always exists")
             .get("SimpleContract")
             .expect("Always exists")
@@ -56,7 +55,7 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
             .contains(
                 format!(
                     "{}:SimpleLibrary",
-                    common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
+                    crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
                 )
                 .as_str()
             ),
@@ -93,23 +92,25 @@ fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
         return;
     }
 
-    let sources = common::read_sources(&[common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
+    let sources =
+        crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
     let mut libraries = era_solc::StandardJsonInputLibraries::default();
     libraries
         .as_inner_mut()
-        .entry(common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH.to_string())
+        .entry(crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH.to_string())
         .or_default()
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
 
-    let output =
-        common::build_solidity_and_detect_missing_libraries(sources, libraries, &version, codegen)
-            .expect("Test failure");
+    let output = crate::common::build_solidity_and_detect_missing_libraries(
+        sources, libraries, &version, codegen,
+    )
+    .expect("Test failure");
     assert!(
         output
             .contracts
-            .get(common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH)
+            .get(crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH)
             .expect("Always exists")
             .get("SimpleContract")
             .expect("Always exists")

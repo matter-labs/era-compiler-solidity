@@ -215,16 +215,13 @@ impl Contract {
         if let Some(metadata) = combined_json_contract.metadata.as_mut() {
             *metadata = self.metadata_json.to_string();
         }
+
+        combined_json_contract.assembly = self.build.assembly;
         combined_json_contract.bin = Some(hexadecimal_bytecode);
         combined_json_contract
             .bin_runtime
             .clone_from(&combined_json_contract.bin);
 
-        combined_json_contract.assembly = self
-            .build
-            .assembly
-            .map(serde_json::Value::String)
-            .unwrap_or_default();
         combined_json_contract
             .missing_libraries
             .extend(self.missing_libraries);

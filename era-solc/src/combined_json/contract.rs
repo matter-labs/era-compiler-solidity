@@ -8,50 +8,47 @@ use std::collections::BTreeSet;
 ///
 /// The contract.
 ///
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Contract {
-    /// The `solc` hashes output.
+    /// `solc` hashes output.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub hashes: BTreeMap<String, String>,
-    /// The `solc` ABI output.
+    /// `solc` ABI output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub abi: serde_json::Value,
-    /// The `solc` metadata output.
+    /// `solc` metadata output.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<String>,
-    /// The `solc` developer documentation output.
+    /// `solc` developer documentation output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub devdoc: serde_json::Value,
-    /// The `solc` user documentation output.
+    /// `solc` user documentation output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub userdoc: serde_json::Value,
-    /// The `solc` storage layout output.
+    /// `solc` storage layout output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub storage_layout: serde_json::Value,
-    /// The `solc` transient storage layout output.
+    /// `solc` transient storage layout output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub transient_storage_layout: serde_json::Value,
-    /// The `solc` AST output.
+    /// `solc` AST output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub ast: serde_json::Value,
-    /// The `solc` assembly output.
+    /// `solc` assembly output.
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub asm: serde_json::Value,
-    /// The `solc` hexadecimal binary output.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+
+    /// LLVM-generated assembly.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub assembly: Option<String>,
+    /// Hexadecimal deploy bytecode segment output.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub bin: Option<String>,
-    /// The `solc` hexadecimal binary runtime part output.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Hexadecimal runtime bytecode segment output.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub bin_runtime: Option<String>,
 
-    /// The EraVM assembly.
-    #[serde(
-        default,
-        skip_serializing_if = "serde_json::Value::is_null",
-        skip_deserializing
-    )]
-    pub assembly: serde_json::Value,
     /// The unlinked factory dependencies.
     #[serde(default, skip_deserializing)]
     pub factory_deps_unlinked: BTreeSet<String>,

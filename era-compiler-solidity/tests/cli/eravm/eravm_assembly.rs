@@ -1,17 +1,22 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
+use era_compiler_common::Target;
 use predicates::prelude::*;
+use test_case::test_case;
 
 #[test]
-fn with_eravm_assembly() -> anyhow::Result<()> {
-    common::setup()?;
+fn default() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--eravm-assembly",
         "--bin",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -20,33 +25,12 @@ fn with_eravm_assembly() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_eravm_assembly_duplicate_flag() -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_input_text() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let args = &[
-        "--eravm-assembly",
-        "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
-    ];
+    let args = &["--eravm-assembly", crate::common::TEST_BROKEN_INPUT_PATH];
 
-    let result = cli::execute_zksolc(args)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: the argument \'--eravm-assembly\' cannot be used multiple times",
-    ));
-
-    Ok(())
-}
-
-#[test]
-fn with_eravm_assembly_invalid() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[
-        "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_INVALID_PATH,
-    ];
-
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("error: cannot parse operand"));
@@ -55,15 +39,15 @@ fn with_eravm_assembly_invalid() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_wrong_input_format() -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_input_solidity() -> anyhow::Result<()> {
+    crate::common::setup()?;
     let args = &[
         "--eravm-assembly",
         "--bin",
-        common::TEST_SOLIDITY_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("error: cannot parse operand"));
@@ -72,30 +56,51 @@ fn with_wrong_input_format() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_incompatible_input_format_without_output() -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_input_assembly() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let args = &["--eravm-assembly", common::TEST_BROKEN_INPUT_PATH];
-
-    let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("error: cannot parse operand"));
-
-    Ok(())
-}
-
-#[test]
-fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
-    common::setup()?;
     let args = &[
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        "--eravm-assembly",
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_INVALID_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("error: cannot parse operand"));
+
+    Ok(())
+}
+
+#[test]
+fn missing_file() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--eravm-assembly",
+        "--bin",
+        crate::common::TEST_NON_EXISTENT_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("reading:"));
+
+    Ok(())
+}
+
+#[test]
+fn combined_json() -> anyhow::Result<()> {
+    crate::common::setup()?;
+    let args = &[
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--eravm-assembly",
         "--combined-json",
         "anyarg",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -104,15 +109,15 @@ fn with_incompatible_json_modes_combined_json() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json() -> anyhow::Result<()> {
+    crate::common::setup()?;
     let args = &[
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--eravm-assembly",
         "--standard-json",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -121,55 +126,34 @@ fn with_incompatible_json_modes_standard_json() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_incompatible_json_modes() -> anyhow::Result<()> {
-    common::setup()?;
-    let args = &[
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
-        "--eravm-assembly",
-        "--combined-json",
-        "wrong",
-    ];
+fn unsupported_evm() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let result = cli::execute_zksolc(args)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("Only one mode is allowed"));
-
-    Ok(())
-}
-
-#[test]
-fn with_target_evm() -> anyhow::Result<()> {
-    common::setup()?;
-
-    let target = era_compiler_common::Target::EVM.to_string();
     let args = &[
         "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
-        "--target",
-        target.as_str(),
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc_with_target(args, era_compiler_common::Target::EVM)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: EraVM assembly cannot be compiled to EVM bytecode.",
+        "EraVM assembly cannot be compiled to EVM.",
     ));
 
     Ok(())
 }
 
 #[test]
-fn with_optimization() -> anyhow::Result<()> {
-    common::setup()?;
+fn optimization() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "-O",
         "3",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "LLVM optimizations are not supported in EraVM assembly mode.",
     ));
@@ -178,16 +162,16 @@ fn with_optimization() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_fallback_to_optimizing_for_size() -> anyhow::Result<()> {
-    common::setup()?;
+fn fallback_to_optimizing_for_size() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--fallback-Oz",
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Falling back to -Oz is not supported in EraVM assembly mode.",
     ));
@@ -196,15 +180,32 @@ fn with_fallback_to_optimizing_for_size() -> anyhow::Result<()> {
 }
 
 #[test]
-fn with_standard_json_invalid() -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json_missing_file() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
+    result.success().stdout(predicate::str::contains(
+        "Error: File \\\"tests/data/contracts/eravm_assembly/Missing.zasm\\\" reading:",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn standard_json_invalid_assembly() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_INVALID_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("error: cannot parse operand"));
@@ -212,18 +213,41 @@ fn with_standard_json_invalid() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains(
+        "EraVM assembly projects cannot be compiled with `solc`.",
+    ));
+
+    Ok(())
+}
+
 #[test]
-fn with_standard_json_missing_file() -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json_unsupported_evm() -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
     ];
 
-    let result = cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc_with_target(args, era_compiler_common::Target::EVM)?;
     result.success().stdout(predicate::str::contains(
-        "Error: File \\\"tests/data/contracts/eravm_assembly/Missing.zasm\\\" reading:",
+        "EraVM assembly cannot be compiled to EVM.",
     ));
 
     Ok(())

@@ -5,7 +5,12 @@
 ### Added
 
 - Full list of factory dependencies to standard and combined JSON outputs
-- Linked dependencies to the `linker` field of linker standard JSON output
+- Linked dependencies to the `linked` field of linker standard JSON output
+- Comprehensive documentation for the EraVM compilation process
+
+### Changed
+
+- `solc` is not called anymore if its data is not needed in combined JSON mode
 
 ### Fixed
 

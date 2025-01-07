@@ -1,13 +1,11 @@
 //!
-//! The Solidity compiler unit tests for the linker.
+//! Unit tests for the LLVM-based linker.
 //!
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 
 use test_case::test_case;
-
-use crate::common;
 
 fn get_bytecode(
     path: &str,
@@ -16,9 +14,9 @@ fn get_bytecode(
     version: &semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) -> Vec<u8> {
-    let sources = common::read_sources(&[path]);
+    let sources = crate::common::read_sources(&[path]);
 
-    let build = common::build_solidity_standard_json(
+    let build = crate::common::build_solidity_standard_json(
         sources,
         libraries,
         era_compiler_common::HashType::None,
@@ -78,7 +76,7 @@ fn library_not_passed_compile_time(
     }
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -129,7 +127,7 @@ fn library_not_passed_post_compile_time(
     }
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -137,7 +135,7 @@ fn library_not_passed_post_compile_time(
     );
     let full_path = format!(
         "{}:SimpleContract",
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
     );
     let mut bytecodes = BTreeMap::new();
     bytecodes.insert(full_path.clone(), hex::encode(bytecode));
@@ -188,7 +186,7 @@ fn library_passed_compile_time(
         era_solc::StandardJsonInputLibraries::try_from(libraries.as_slice()).expect("Always valid");
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         libraries,
         &version,
@@ -239,7 +237,7 @@ fn library_passed_post_compile_time(
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -247,7 +245,7 @@ fn library_passed_post_compile_time(
     );
     let full_path = format!(
         "{}:SimpleContract",
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
     );
     let mut bytecodes = BTreeMap::new();
     bytecodes.insert(full_path.clone(), hex::encode(bytecode));
@@ -301,7 +299,7 @@ fn library_passed_post_compile_time_second_call(
             .expect("Always valid");
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -364,7 +362,7 @@ fn library_passed_post_compile_time_redundant_args(
     ];
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -372,7 +370,7 @@ fn library_passed_post_compile_time_redundant_args(
     );
     let full_path = format!(
         "{}:SimpleContract",
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH
     );
     let mut bytecodes = BTreeMap::new();
     bytecodes.insert(full_path.clone(), hex::encode(bytecode));
@@ -426,7 +424,7 @@ fn library_passed_post_compile_time_non_elf(
         .expect("Always valid");
 
     let bytecode = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -485,7 +483,7 @@ fn library_produce_equal_bytecode_in_both_cases(
     let linker_symbols = libraries.as_linker_symbols().expect("Always valid");
 
     let bytecode_compile_time = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         libraries,
         &version,
@@ -498,7 +496,7 @@ fn library_produce_equal_bytecode_in_both_cases(
     );
 
     let bytecode_post_compile_time = get_bytecode(
-        common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
         era_solc::StandardJsonInputLibraries::default(),
         &version,
@@ -521,19 +519,19 @@ fn library_produce_equal_bytecode_in_both_cases(
 }
 
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
     vec!["tests/data/contracts/solidity/LinkedMixedDeps.sol:UpperLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::EVMLA
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
     vec!["tests/data/contracts/solidity/LinkedMixedDeps.sol:UpperLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::Yul
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
     vec![
         "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol:UpperLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
         "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol:LowerLibrary=0x1234432112344321123443211234432112344321".to_owned(),
@@ -542,7 +540,7 @@ fn library_produce_equal_bytecode_in_both_cases(
     era_solc::StandardJsonInputCodegen::EVMLA
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
     vec![
         "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol:UpperLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned(),
         "tests/data/contracts/solidity/LinkedMixedDepsMultiLevel.sol:LowerLibrary=0x1234432112344321123443211234432112344321".to_owned(),
@@ -556,9 +554,9 @@ fn libraries_passed_post_compile_time_complex(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    let sources = common::read_sources(sources);
+    let sources = crate::common::read_sources(sources);
 
-    let build = common::build_solidity_standard_json(
+    let build = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::None,
@@ -599,22 +597,22 @@ fn libraries_passed_post_compile_time_complex(
 }
 
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::EVMLA
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_PATH],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::Yul
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::EVMLA
 )]
 #[test_case(
-    &[common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
+    &[crate::common::TEST_SOLIDITY_CONTRACT_LINKER_MIXED_DEPS_MULTI_LEVEL_PATH],
     era_solc::Compiler::LAST_SUPPORTED_VERSION,
     era_solc::StandardJsonInputCodegen::Yul
 )]
@@ -623,9 +621,9 @@ fn libraries_not_passed_post_compile_time_complex(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    let sources = common::read_sources(sources);
+    let sources = crate::common::read_sources(sources);
 
-    let build = common::build_solidity_standard_json(
+    let build = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
         era_compiler_common::HashType::None,

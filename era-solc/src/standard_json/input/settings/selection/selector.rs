@@ -1,14 +1,14 @@
 //!
-//! The `solc --standard-json` expected output selection flag.
+//! The `solc --standard-json` expected output selector.
 //!
 
 use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 
 ///
-/// The `solc --standard-json` expected output selection flag.
+/// The `solc --standard-json` expected output selector.
 ///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-pub enum Flag {
+pub enum Selector {
     /// The ABI JSON.
     #[serde(rename = "abi")]
     ABI,
@@ -39,12 +39,13 @@ pub enum Flag {
     /// The function signature hashes JSON.
     #[serde(rename = "evm.methodIdentifiers")]
     MethodIdentifiers,
+
     /// The EraVM assembly.
-    #[serde(rename = "eravm.assembly")]
+    #[serde(rename = "eravm.assembly", skip_serializing)]
     EraVMAssembly,
 }
 
-impl From<StandardJsonInputSettingsCodegen> for Flag {
+impl From<StandardJsonInputSettingsCodegen> for Selector {
     fn from(codegen: StandardJsonInputSettingsCodegen) -> Self {
         match codegen {
             StandardJsonInputSettingsCodegen::Yul => Self::Yul,
