@@ -1,69 +1,41 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // Get the base URL from the mdBook configuration
+document.addEventListener("DOMContentLoaded", () => {
+    // Get the base URL from the current location path
     const baseUrl = document.location.pathname.split('/').slice(0, -2).join('/');
 
-    // Function to create version selector
-    function createVersionSelector(versions) {
+    // Utility function to create and populate the version selector
+    const createVersionSelector = (versions) => {
         const versionSelector = document.createElement("select");
         versionSelector.id = "version-selector";
 
-        // Get the current path
-        const currentPath = window.location.pathname;
-
-        // Separate and sort the versions
-        const sortedVersions = Object.entries(versions)
-            .sort(([aKey], [bKey]) => {
-                if (aKey === "latest") return -1; // "latest" goes first
-                if (bKey === "latest") return 1;
-                return bKey.localeCompare(aKey, undefined, { numeric: true }); // Descending numeric order
+        // Sort and iterate through the versions to populate the selector
+        Object.entries(versions)
+            .sort(([a], [b]) => (a === "latest" ? -1 : b === "latest" ? 1 : b.localeCompare(a, undefined, { numeric: true })))
+            .forEach(([name, url]) => {
+                const option = document.createElement("option");
+                option.value = `${baseUrl}${url}`;
+                option.textContent = name;
+                // Pre-select the matching version
+                option.selected = name === window.location.pathname.split('/')[1];
+                versionSelector.appendChild(option);
             });
 
-        // Iterate over the sorted versions object
-        for (const [versionName, versionUrl] of sortedVersions) {
-            const option = document.createElement("option");
-            option.value = baseUrl + versionUrl; // Prepend base URL
-            option.textContent = versionName;
-
-            // Check if the current URL matches this option's value
-            if (currentPath === option.value + '/') {
-                option.selected = true; // Set this option as selected
-            }
-
-            versionSelector.appendChild(option);
-        }
-
-        // Event listener to handle version change
-        versionSelector.addEventListener("change", function() {
-            const selectedVersion = versionSelector.value;
-            // Redirect to the selected version URL
-            window.location.href = selectedVersion;
-        });
-
+        // Redirect to the selected version when changed
+        versionSelector.addEventListener("change", () => window.location.href = versionSelector.value);
         return versionSelector;
-    }
+    };
 
-    // Fetch versions from JSON file
-    fetch(baseUrl + '/versions.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const versionSelector = createVersionSelector(data);
+    // Fetch the versions.json file and initialize the selector
+    fetch(`${baseUrl}/versions.json`)
+        .then(response => response.ok ? response.json() : Promise.reject(`Error: ${response.statusText}`))
+        .then(versions => {
+            // Locate the navigation element to append the version selector
             const nav = document.querySelector(".right-buttons");
+            if (!nav) return console.error(".right-buttons element not found.");
 
-            if (nav) {
-                const versionBox = document.createElement("div");
-                versionBox.id = "version-box";
-                versionBox.appendChild(versionSelector);
-                nav.appendChild(versionBox); // Append to the .right-buttons container
-            } else {
-                console.error(".right-buttons element not found.");
-            }
+            const versionBox = document.createElement("div");
+            versionBox.id = "version-box";
+            versionBox.appendChild(createVersionSelector(versions));
+            nav.appendChild(versionBox);
         })
-        .catch(error => {
-            console.error('There has been a problem with your fetch operation:', error);
-        });
+        .catch(error => console.error("Failed to fetch versions.json:", error));
 });
