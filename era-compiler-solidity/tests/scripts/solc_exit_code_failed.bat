@@ -7,4 +7,16 @@ if "%~1"=="--version" (
     exit /b 0
 )
 
+setlocal EnableDelayedExpansion
+set "INPUT="
+:readloop
+    set "LINE="
+    set /p LINE=
+    if errorlevel 1 goto done
+
+    set "INPUT=!INPUT!!LINE!
+    "
+    goto readloop
+:done
+
 exit /b 1

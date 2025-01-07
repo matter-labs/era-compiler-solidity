@@ -7,4 +7,6 @@ if [ "$1" == "--version" ]; then
     exit 0
 fi
 
+input="$(</dev/stdin)"
+
 exit 1
