@@ -2,9 +2,20 @@
 
 ## [Unreleased]
 
+### Added
+
+- Full list of factory dependencies to standard and combined JSON outputs
+- Linked dependencies to the `linked` field of linker standard JSON output
+- Comprehensive documentation for the EraVM compilation process
+
 ### Changed
 
 - `solc` is not called anymore if its data is not needed in combined JSON mode
+
+### Fixed
+
+- Empty `missing-libraries` list in combined JSON mode
+- False-positive warning with `--force-evmla` in basic CLI mode
 
 ## [1.5.8] - 2024-12-10
 

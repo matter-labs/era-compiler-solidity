@@ -7,6 +7,7 @@ pub mod ir;
 pub mod metadata;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
@@ -72,7 +73,8 @@ impl Contract {
         self,
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
-        factory_dependencies: HashSet<String>,
+        missing_libraries: BTreeSet<String>,
+        factory_dependencies: BTreeSet<String>,
         enable_eravm_extensions: bool,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -180,9 +182,9 @@ impl Contract {
             IR::LLVMIR(mut llvm_ir) => {
                 llvm_ir.source.push(char::from(0));
                 let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    llvm_ir.source.as_bytes(),
+                    &llvm_ir.source.as_bytes()[..llvm_ir.source.as_bytes().len() - 1],
                     self.name.full_path.as_str(),
-                    false,
+                    true,
                 );
 
                 let module = llvm
@@ -235,6 +237,7 @@ impl Contract {
             self.name,
             build,
             metadata_json,
+            missing_libraries,
             factory_dependencies,
             era_compiler_common::ObjectFormat::ELF,
         ))
@@ -433,9 +436,9 @@ impl Contract {
 
                 llvm_ir.source.push(char::from(0));
                 let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    llvm_ir.source.as_bytes(),
+                    &llvm_ir.source.as_bytes()[..llvm_ir.source.as_bytes().len() - 1],
                     self.name.full_path.as_str(),
-                    false,
+                    true,
                 );
 
                 let module = llvm
@@ -468,7 +471,7 @@ impl Contract {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.ir.get_missing_libraries()
     }
 }

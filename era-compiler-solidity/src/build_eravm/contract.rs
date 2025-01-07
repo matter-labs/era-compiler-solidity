@@ -2,8 +2,8 @@
 //! The Solidity contract build.
 //!
 
+use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -19,8 +19,10 @@ pub struct Contract {
     pub build: era_compiler_llvm_context::EraVMBuild,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
+    /// The unlinked missing libraries.
+    pub missing_libraries: BTreeSet<String>,
     /// The unresolved factory dependencies.
-    pub factory_dependencies: HashSet<String>,
+    pub factory_dependencies: BTreeSet<String>,
     /// The resolved factory dependencies.
     pub factory_dependencies_resolved:
         HashMap<[u8; era_compiler_common::BYTE_LENGTH_FIELD], String>,
@@ -36,13 +38,15 @@ impl Contract {
         name: era_compiler_common::ContractName,
         build: era_compiler_llvm_context::EraVMBuild,
         metadata_json: serde_json::Value,
-        factory_dependencies: HashSet<String>,
+        missing_libraries: BTreeSet<String>,
+        factory_dependencies: BTreeSet<String>,
         object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,
             build,
             metadata_json,
+            missing_libraries,
             factory_dependencies,
             factory_dependencies_resolved: HashMap::new(),
             object_format,
@@ -164,34 +168,6 @@ impl Contract {
     }
 
     ///
-    /// Writes the contract text assembly and bytecode to the combined JSON.
-    ///
-    pub fn write_to_combined_json(
-        self,
-        combined_json_contract: &mut era_solc::CombinedJsonContract,
-    ) -> anyhow::Result<()> {
-        let hexadecimal_bytecode = hex::encode(self.build.bytecode);
-
-        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
-            *metadata = self.metadata_json.to_string();
-        }
-        combined_json_contract.bin = Some(hexadecimal_bytecode);
-        combined_json_contract
-            .bin_runtime
-            .clone_from(&combined_json_contract.bin);
-
-        combined_json_contract.assembly = self.build.assembly;
-        combined_json_contract.factory_deps.extend(
-            self.factory_dependencies_resolved
-                .into_iter()
-                .map(|(hash, path)| (hex::encode(hash), path)),
-        );
-        combined_json_contract.object_format = Some(self.object_format);
-
-        Ok(())
-    }
-
-    ///
     /// Writes the contract text assembly and bytecode to the standard JSON.
     ///
     pub fn write_to_standard_json(
@@ -211,12 +187,53 @@ impl Contract {
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_eravm(bytecode, assembly);
         standard_json_contract.hash = self.build.bytecode_hash.map(hex::encode);
+        standard_json_contract
+            .missing_libraries
+            .extend(self.missing_libraries);
+        standard_json_contract
+            .factory_dependencies_unlinked
+            .extend(self.factory_dependencies);
         standard_json_contract.factory_dependencies.extend(
             self.factory_dependencies_resolved
                 .into_iter()
                 .map(|(hash, path)| (hex::encode(hash), path)),
         );
         standard_json_contract.object_format = Some(self.object_format);
+
+        Ok(())
+    }
+
+    ///
+    /// Writes the contract text assembly and bytecode to the combined JSON.
+    ///
+    pub fn write_to_combined_json(
+        self,
+        combined_json_contract: &mut era_solc::CombinedJsonContract,
+    ) -> anyhow::Result<()> {
+        let hexadecimal_bytecode = hex::encode(self.build.bytecode);
+
+        if let Some(metadata) = combined_json_contract.metadata.as_mut() {
+            *metadata = self.metadata_json.to_string();
+        }
+
+        combined_json_contract.assembly = self.build.assembly;
+        combined_json_contract.bin = Some(hexadecimal_bytecode);
+        combined_json_contract
+            .bin_runtime
+            .clone_from(&combined_json_contract.bin);
+
+        combined_json_contract
+            .missing_libraries
+            .extend(self.missing_libraries);
+        combined_json_contract
+            .factory_deps_unlinked
+            .extend(self.factory_dependencies);
+        combined_json_contract.factory_deps.extend(
+            self.factory_dependencies_resolved
+                .into_iter()
+                .map(|(hash, path)| (hex::encode(hash), path)),
+        );
+        combined_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }

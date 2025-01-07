@@ -6,7 +6,7 @@ pub mod contract;
 pub mod thread_pool_evm;
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -370,10 +370,12 @@ impl Project {
                 .into_iter()
                 .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
                 .collect();
+            let missing_libraries = contract.get_missing_libraries();
             let input = EraVMProcessInput::new(
                 contract,
                 self.solc_version.clone(),
                 self.identifier_paths.clone(),
+                missing_libraries,
                 factory_dependencies,
                 enable_eravm_extensions,
                 metadata_hash_type,
@@ -432,9 +434,9 @@ impl Project {
                 names
                     .iter()
                     .map(|(name, _address)| format!("{file}:{name}"))
-                    .collect::<HashSet<String>>()
+                    .collect::<BTreeSet<String>>()
             })
-            .collect::<HashSet<String>>();
+            .collect::<BTreeSet<String>>();
 
         let mut missing_deployable_libraries = BTreeMap::new();
         for (contract_path, contract) in self.contracts.iter() {
@@ -442,7 +444,7 @@ impl Project {
                 .get_missing_libraries()
                 .into_iter()
                 .filter(|library| !deployed_libraries.contains(library))
-                .collect::<HashSet<String>>();
+                .collect::<BTreeSet<String>>();
             missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
         }
         MissingLibraries::new(missing_deployable_libraries)

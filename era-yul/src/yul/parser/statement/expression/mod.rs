@@ -5,7 +5,7 @@
 pub mod function_call;
 pub mod literal;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -81,11 +81,11 @@ impl Expression {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         match self {
             Self::FunctionCall(inner) => inner.get_missing_libraries(),
-            Self::Identifier(_) => HashSet::new(),
-            Self::Literal(_) => HashSet::new(),
+            Self::Identifier(_) => BTreeSet::new(),
+            Self::Literal(_) => BTreeSet::new(),
         }
     }
 

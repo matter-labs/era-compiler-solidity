@@ -6,7 +6,7 @@ pub mod eravm;
 pub mod evm;
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use self::eravm::EraVM;
 use self::evm::EVM;
@@ -45,17 +45,20 @@ pub struct Contract {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub evm: Option<EVM>,
 
-    /// The contract EraVM bytecode hash.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    /// EraVM bytecode hash.
+    #[serde(default, skip_deserializing)]
     pub hash: Option<String>,
-    /// The contract factory dependencies.
+    /// Unlinked factory dependencies.
+    #[serde(default, skip_deserializing)]
+    pub factory_dependencies_unlinked: BTreeSet<String>,
+    /// Linked factory dependencies.
     #[serde(default, skip_deserializing)]
     pub factory_dependencies: BTreeMap<String, String>,
-    /// The contract missing libraries.
+    /// Missing linkable libraries.
     #[serde(default, skip_deserializing)]
-    pub missing_libraries: HashSet<String>,
-    /// The binary object format.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub missing_libraries: BTreeSet<String>,
+    /// Binary object format.
+    #[serde(default, skip_deserializing)]
     pub object_format: Option<era_compiler_common::ObjectFormat>,
 }
 
@@ -74,6 +77,7 @@ impl Contract {
             && self.evm.is_none()
             && self.eravm.is_none()
             && self.hash.is_none()
+            && self.factory_dependencies_unlinked.is_empty()
             && self.factory_dependencies.is_empty()
             && self.missing_libraries.is_empty()
     }
