@@ -177,12 +177,14 @@ impl Contract {
                     false,
                 )?
             }
-            IR::LLVMIR(ref llvm_ir) => {
-                let memory_buffer =
-                    inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
-                        llvm_ir.source.as_bytes(),
-                        self.name.full_path.as_str(),
-                    );
+            IR::LLVMIR(mut llvm_ir) => {
+                llvm_ir.source.push(char::from(0));
+                let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    llvm_ir.source.as_bytes(),
+                    self.name.full_path.as_str(),
+                    false,
+                );
+
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
@@ -196,6 +198,7 @@ impl Contract {
                     optimizer,
                     debug_config,
                 );
+
                 context.build(
                     self.name.full_path.as_str(),
                     metadata_hash,
@@ -425,13 +428,16 @@ impl Contract {
                     metadata_json,
                 ))
             }
-            IR::LLVMIR(ref llvm_ir) => {
+            IR::LLVMIR(mut llvm_ir) => {
                 let llvm = inkwell::context::Context::create();
-                let memory_buffer =
-                    inkwell::memory_buffer::MemoryBuffer::create_from_memory_range_copy(
-                        llvm_ir.source.as_bytes(),
-                        self.name.full_path.as_str(),
-                    );
+
+                llvm_ir.source.push(char::from(0));
+                let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    llvm_ir.source.as_bytes(),
+                    self.name.full_path.as_str(),
+                    false,
+                );
+
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
@@ -445,6 +451,7 @@ impl Contract {
                     debug_config,
                 );
                 let runtime_build = context.build(self.name.path.as_str())?;
+
                 Ok(EVMContractBuild::new(
                     self.name,
                     identifier,
