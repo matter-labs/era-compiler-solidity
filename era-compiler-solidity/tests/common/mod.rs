@@ -1,5 +1,5 @@
 //!
-//! The Solidity compiler unit tests.
+//! Unit test common utilities.
 //!
 
 #![allow(dead_code)]
@@ -140,7 +140,7 @@ pub fn build_solidity_standard_json(
 
     let mut solc_output =
         solc_compiler.standard_json(&mut solc_input, &mut vec![], None, vec![], None)?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let linker_symbols = libraries.as_linker_symbols()?;
 
@@ -151,7 +151,7 @@ pub fn build_solidity_standard_json(
         &solc_compiler,
         None,
     )?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
         &mut vec![],
@@ -162,13 +162,13 @@ pub fn build_solidity_standard_json(
         false,
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let build = build.link(linker_symbols);
-    build.collect_errors()?;
+    build.check_errors()?;
 
     build.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version))?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -178,6 +178,7 @@ pub fn build_solidity_standard_json(
 pub fn build_solidity_combined_json(
     sources: BTreeMap<String, String>,
     libraries: era_solc::StandardJsonInputLibraries,
+    selectors: Vec<era_solc::CombinedJsonSelector>,
     metadata_hash_type: era_compiler_common::HashType,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
@@ -207,7 +208,7 @@ pub fn build_solidity_combined_json(
         &solc_compiler,
         None,
     )?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
 
     let build = project.compile_to_eravm(
         &mut vec![],
@@ -215,12 +216,13 @@ pub fn build_solidity_combined_json(
         metadata_hash_type,
         optimizer_settings,
         vec![],
-        false,
+        selectors.contains(&era_solc::CombinedJsonSelector::Assembly),
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
-    let mut combined_json = solc_compiler.combined_json(paths.as_slice(), "bin")?;
+    let mut combined_json =
+        solc_compiler.combined_json(paths.as_slice(), selectors.into_iter().collect())?;
     build.write_to_combined_json(&mut combined_json)?;
     Ok(combined_json)
 }
@@ -276,7 +278,7 @@ pub fn build_solidity_and_detect_missing_libraries(
     let missing_libraries = project.get_missing_libraries();
     missing_libraries.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version));
 
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -315,13 +317,13 @@ pub fn build_yul(
         false,
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let build = build.link(BTreeMap::new());
-    build.collect_errors()?;
+    build.check_errors()?;
 
     build.write_to_standard_json(&mut solc_output, None)?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -370,13 +372,13 @@ pub fn build_yul_standard_json(
         false,
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let build = build.link(BTreeMap::new());
-    build.collect_errors()?;
+    build.check_errors()?;
 
     build.write_to_standard_json(&mut solc_output, solc_version)?;
-    solc_output.collect_errors()?;
+    solc_output.check_errors()?;
     Ok(solc_output)
 }
 
@@ -409,13 +411,13 @@ pub fn build_llvm_ir_standard_json(
         false,
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let build = build.link(BTreeMap::new());
-    build.collect_errors()?;
+    build.check_errors()?;
 
     build.write_to_standard_json(&mut output, None)?;
-    output.collect_errors()?;
+    output.check_errors()?;
     Ok(output)
 }
 
@@ -444,13 +446,13 @@ pub fn build_eravm_assembly_standard_json(
         false,
         None,
     )?;
-    build.collect_errors()?;
+    build.check_errors()?;
 
     let build = build.link(BTreeMap::new());
-    build.collect_errors()?;
+    build.check_errors()?;
 
     build.write_to_standard_json(&mut output, None)?;
-    output.collect_errors()?;
+    output.check_errors()?;
     Ok(output)
 }
 

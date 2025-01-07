@@ -15,6 +15,7 @@ pub mod standard_json;
 pub mod version;
 
 pub use self::combined_json::contract::Contract as CombinedJsonContract;
+pub use self::combined_json::selector::Selector as CombinedJsonSelector;
 pub use self::combined_json::CombinedJson;
 pub use self::solc::Compiler;
 pub use self::standard_json::input::language::Language as StandardJsonInputLanguage;
@@ -23,8 +24,8 @@ pub use self::standard_json::input::settings::error_type::ErrorType as StandardJ
 pub use self::standard_json::input::settings::libraries::Libraries as StandardJsonInputLibraries;
 pub use self::standard_json::input::settings::metadata::Metadata as StandardJsonInputMetadata;
 pub use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputOptimizer;
-pub use self::standard_json::input::settings::selection::file::flag::Flag as StandardJsonInputSelectionFlag;
 pub use self::standard_json::input::settings::selection::file::File as StandardJsonInputSelectionFile;
+pub use self::standard_json::input::settings::selection::selector::Selector as StandardJsonInputSelector;
 pub use self::standard_json::input::settings::selection::Selection as StandardJsonInputSelection;
 pub use self::standard_json::input::settings::warning_type::WarningType as StandardJsonInputWarningType;
 pub use self::standard_json::input::settings::Settings as StandardJsonInputSettings;

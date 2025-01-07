@@ -1,10 +1,8 @@
 //!
-//! The Solidity compiler unit tests for messages.
+//! Unit tests for compiler errors and warnings.
 //!
 
 use test_case::test_case;
-
-use crate::common;
 
 pub const SEND_TEST_SOURCE_04: &str = r#"
 contract SendExample {
@@ -68,7 +66,7 @@ fn send(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen, s
         return;
     }
 
-    assert!(common::check_solidity_message(
+    assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         era_solc::StandardJsonInputLibraries::default(),
@@ -119,7 +117,7 @@ fn send_suppressed(
         return;
     }
 
-    assert!(!common::check_solidity_message(
+    assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         era_solc::StandardJsonInputLibraries::default(),
@@ -197,7 +195,7 @@ fn transfer(
         return;
     }
 
-    assert!(common::check_solidity_message(
+    assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         era_solc::StandardJsonInputLibraries::default(),
@@ -248,7 +246,7 @@ fn transfer_suppressed(
         return;
     }
 
-    assert!(!common::check_solidity_message(
+    assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
         era_solc::StandardJsonInputLibraries::default(),
@@ -299,7 +297,7 @@ fn runtime_code(version: semver::Version, codegen: era_solc::StandardJsonInputCo
         return;
     }
 
-    assert!(common::check_solidity_message(
+    assert!(crate::common::check_solidity_message(
         RUNTIME_CODE_SOURCE_CODE,
         "Deploy and runtime code are merged together on ZKsync",
         era_solc::StandardJsonInputLibraries::default(),
@@ -348,7 +346,7 @@ fn tx_origin(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
         return;
     }
 
-    assert!(common::check_solidity_message(
+    assert!(crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         era_solc::StandardJsonInputLibraries::default(),
@@ -389,7 +387,7 @@ fn tx_origin_suppressed(version: semver::Version, codegen: era_solc::StandardJso
         return;
     }
 
-    assert!(!common::check_solidity_message(
+    assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         era_solc::StandardJsonInputLibraries::default(),
@@ -440,7 +438,7 @@ fn tx_origin_assembly(version: semver::Version, codegen: era_solc::StandardJsonI
         return;
     }
 
-    assert!(common::check_solidity_message(
+    assert!(crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
         era_solc::StandardJsonInputLibraries::default(),
@@ -484,7 +482,7 @@ fn tx_origin_assembly_suppressed(
         return;
     }
 
-    assert!(!common::check_solidity_message(
+    assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
         era_solc::StandardJsonInputLibraries::default(),

@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Changed
+
+- `solc` is not called anymore if its data is not needed in combined JSON mode
+
 ## [1.5.8] - 2024-12-10
 
 ### Added

@@ -1,19 +1,22 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_input(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn default(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
     let args = &[
-        common::TEST_SOLIDITY_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_DEFAULT,
+        crate::common::LIBRARY_DEFAULT,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -23,31 +26,17 @@ fn with_input(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn without_input(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-    let args = &["--libraries"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: a value is required for '--libraries <LIBRARIES>...' but none was supplied",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_libraries_llvm_ir_assembly_mode(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn llvm_ir(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--llvm-ir",
-        common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_DEFAULT,
+        crate::common::LIBRARY_DEFAULT,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Libraries are only supported in Solidity, Yul, and linker modes.",
     ));
@@ -57,17 +46,17 @@ fn with_libraries_llvm_ir_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn eravm_assembly(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--eravm-assembly",
-        common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
+        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_DEFAULT,
+        crate::common::LIBRARY_DEFAULT,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Libraries are only supported in Solidity, Yul, and linker modes.",
     ));
@@ -77,18 +66,17 @@ fn with_libraries_eravm_assembly_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--libraries",
-        common::LIBRARY_DEFAULT,
+        crate::common::LIBRARY_DEFAULT,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Libraries must be passed via standard JSON input.",
     ));
@@ -98,18 +86,17 @@ fn with_libraries_standard_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn missing_contract_name(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--yul",
-        common::TEST_YUL_CONTRACT_PATH,
+        crate::common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_CONTRACT_NAME_MISSING,
+        crate::common::LIBRARY_CONTRACT_NAME_MISSING,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Library `tests/data/contracts/solidity/MiniMath.sol` contract name is missing.",
     ));
@@ -119,18 +106,17 @@ fn with_libraries_missing_contract_name(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn missing_address(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--yul",
-        common::TEST_YUL_CONTRACT_PATH,
+        crate::common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_ADDRESS_MISSING,
+        crate::common::LIBRARY_ADDRESS_MISSING,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Library `tests/data/contracts/solidity/MiniMath.sol:MiniMath` address is missing.",
     ));
@@ -140,18 +126,17 @@ fn with_libraries_missing_address(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_libraries_invalid_address(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_address(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--yul",
-        common::TEST_YUL_CONTRACT_PATH,
+        crate::common::TEST_YUL_CONTRACT_PATH,
         "--libraries",
-        common::LIBRARY_ADDRESS_INVALID,
+        crate::common::LIBRARY_ADDRESS_INVALID,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Invalid address `INVALID` of library `tests/data/contracts/solidity/MiniMath.sol:MiniMath`: Odd number of digits",
     ));

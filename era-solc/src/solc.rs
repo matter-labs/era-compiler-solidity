@@ -3,11 +3,13 @@
 //!
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::sync::RwLock;
 
+use crate::combined_json::selector::Selector as CombinedJsonSelector;
 use crate::combined_json::CombinedJson;
 use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
@@ -100,7 +102,6 @@ impl Compiler {
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
         command.arg("--standard-json");
-
         if let Some(base_path) = base_path {
             command.arg("--base-path");
             command.arg(base_path);
@@ -121,12 +122,7 @@ impl Compiler {
             .stdin
             .as_mut()
             .ok_or_else(|| anyhow::anyhow!("{} subprocess stdin getting error", self.executable))?;
-        let stdin_input = serde_json::to_vec(&input).map_err(|error| {
-            anyhow::anyhow!(
-                "{} subprocess standard JSON input serialization: {error:?}",
-                self.executable
-            )
-        })?;
+        let stdin_input = serde_json::to_vec(&input).expect("Always valid");
         stdin.write_all(stdin_input.as_slice()).map_err(|error| {
             anyhow::anyhow!("{} subprocess stdin writing: {error:?}", self.executable)
         })?;
@@ -134,7 +130,6 @@ impl Compiler {
         let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)
         })?;
-
         if !result.status.success() {
             anyhow::bail!(
                 "{} subprocess failed with exit code {:?}:\n{}\n{}",
@@ -218,30 +213,27 @@ impl Compiler {
     pub fn combined_json(
         &self,
         paths: &[PathBuf],
-        combined_json_argument: &str,
+        mut selectors: HashSet<CombinedJsonSelector>,
     ) -> anyhow::Result<CombinedJson> {
+        selectors.retain(|selector| selector.is_source_solc());
+        if selectors.is_empty() {
+            return Ok(CombinedJson::new(self.version.default.to_owned()));
+        }
+
         let executable = self.executable.to_owned();
 
         let mut command = std::process::Command::new(executable.as_str());
         command.stdout(std::process::Stdio::piped());
         command.stderr(std::process::Stdio::piped());
         command.args(paths);
-
-        let mut combined_json_flags = Vec::new();
-        let mut combined_json_fake_flag_pushed = false;
-        let mut filtered_flags = Vec::with_capacity(3);
-        for flag in combined_json_argument.split(',') {
-            match flag {
-                flag @ "asm" | flag @ "bin" | flag @ "bin-runtime" => filtered_flags.push(flag),
-                flag => combined_json_flags.push(flag),
-            }
-        }
-        if combined_json_flags.is_empty() {
-            combined_json_flags.push("ast");
-            combined_json_fake_flag_pushed = true;
-        }
         command.arg("--combined-json");
-        command.arg(combined_json_flags.join(","));
+        command.arg(
+            selectors
+                .into_iter()
+                .map(|selector| selector.to_string())
+                .collect::<Vec<String>>()
+                .join(","),
+        );
 
         let process = command
             .spawn()
@@ -261,36 +253,14 @@ impl Compiler {
             );
         }
 
-        let mut combined_json = match era_compiler_common::deserialize_from_slice::<CombinedJson>(
-            result.stdout.as_slice(),
-        ) {
-            Ok(combined_json) => combined_json,
-            Err(error) => {
-                anyhow::bail!(
+        era_compiler_common::deserialize_from_slice::<CombinedJson>(result.stdout.as_slice())
+            .map_err(|error| {
+                anyhow::anyhow!(
                     "{} subprocess stdout parsing: {error:?} (stderr: {})",
                     self.executable,
                     String::from_utf8_lossy(result.stderr.as_slice()),
-                );
-            }
-        };
-
-        for filtered_flag in filtered_flags.into_iter() {
-            for (_path, contract) in combined_json.contracts.iter_mut() {
-                match filtered_flag {
-                    "asm" => contract.asm = serde_json::Value::Null,
-                    "bin" => contract.bin = None,
-                    "bin-runtime" => contract.bin_runtime = None,
-                    _ => continue,
-                }
-            }
-        }
-        if combined_json_fake_flag_pushed {
-            combined_json.source_list.clear();
-            combined_json.sources = serde_json::Value::Null;
-        }
-        combined_json.remove_evm();
-
-        Ok(combined_json)
+                )
+            })
     }
 
     ///
@@ -376,7 +346,7 @@ impl Compiler {
                 })
             })
             .and_then(|line| {
-                line.split('-').last().ok_or_else(|| {
+                line.split('-').nth(1).ok_or_else(|| {
                     anyhow::anyhow!("`{executable}` ZKsync revision parsing: missing revision.")
                 })
             })
@@ -386,7 +356,7 @@ impl Compiler {
                 })
             })
             .map_err(|error| {
-                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}.")
+                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}")
             })?;
 
         let version = Version::new(long, default, l2_revision);

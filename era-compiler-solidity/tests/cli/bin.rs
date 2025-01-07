@@ -1,18 +1,21 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn default(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
+    let args = &[crate::common::TEST_SOLIDITY_CONTRACT_PATH, "--bin"];
     let invalid_args = &["--bin"];
 
     // Valid command
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     let result_status_code = result
         .success()
         .stdout(predicate::str::contains("Binary:\n"))
@@ -22,11 +25,11 @@ fn with_bin(target: Target) -> anyhow::Result<()> {
         .expect("No exit code.");
 
     // solc exit code == zksolc exit code
-    let solc_result = cli::execute_solc(args)?;
+    let solc_result = crate::cli::execute_solc(args)?;
     solc_result.code(result_status_code);
 
     // Run invalid: zksolc --bin
-    let invalid_result = cli::execute_zksolc_with_target(invalid_args, target)?;
+    let invalid_result = crate::cli::execute_zksolc_with_target(invalid_args, target)?;
     let invalid_result_status_code = invalid_result
         .failure()
         .stderr(
@@ -39,7 +42,7 @@ fn with_bin(target: Target) -> anyhow::Result<()> {
         .expect("No exit code.");
 
     // Invalid solc exit code == Invalid zksolc exit code
-    let invalid_solc_result = cli::execute_solc(invalid_args)?;
+    let invalid_solc_result = crate::cli::execute_solc(invalid_args)?;
     invalid_solc_result.code(invalid_result_status_code);
 
     Ok(())
@@ -47,37 +50,13 @@ fn with_bin(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_duplicate_flag(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_input(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--bin", "--bin"];
+    let args = &[crate::common::TEST_YUL_CONTRACT_PATH, "--bin"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    let status_code = result
-        .failure()
-        .stderr(predicate::str::contains(
-            "error: the argument '--bin' cannot be used multiple times",
-        ))
-        .get_output()
-        .status
-        .code()
-        .expect("No exit code.");
-
-    let solc_result = cli::execute_solc(args)?;
-    solc_result.code(status_code);
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &[common::TEST_YUL_CONTRACT_PATH, "--bin"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    let solc_result = cli::execute_solc(args)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let solc_result = crate::cli::execute_solc(args)?;
 
     let result_exit_code = result
         .failure()
@@ -88,7 +67,6 @@ fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
         .status
         .code()
         .expect("No exit code.");
-
     solc_result.code(result_exit_code);
 
     Ok(())
@@ -96,18 +74,17 @@ fn with_bin_with_wrong_input_format(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn combined_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--bin",
-        common::TEST_SOLIDITY_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
         "--combined-json",
         "bin",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Cannot output data outside of JSON in combined JSON mode.",
     ));
@@ -117,17 +94,16 @@ fn with_bin_combined_json_mode(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_bin_standard_json_mode(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
+        crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
         "--bin",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Cannot output data outside of JSON in standard JSON mode.",
     ));

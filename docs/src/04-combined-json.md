@@ -14,16 +14,20 @@ zksolc './MyContract.sol' --combined-json 'ast,abi,metadata'
 
 The following selectors are supported:
 
-|         Selector              |                 Description                |            Type           |
-|:------------------------------|:-------------------------------------------|:--------------------------|
-| **ast**                       | AST of the source file                     | JSON                      |
-| **abi**                       | Solidity ABI                               | JSON                      |
-| **hashes**                    | Solidity function hashes                   | JSON                      |
-| **storage-layout**            | Solidity storage layout                    | JSON                      |
-| **transient-storage-layout**  | Solidity transientstorage layout           | JSON                      |
-| **metadata**                  | Metadata                                   | Stringified JSON          |
-| **devdoc**                    | Developer documentation                    | JSON (NatSpec)            |
-| **userdoc**                   | User documentation                         | JSON (NatSpec)            |
+|         Selector              |                 Description                 |            Type           |   Origin   |
+|:------------------------------|:--------------------------------------------|:--------------------------|:-----------|
+| **abi**                       | Solidity ABI                                | JSON                      |  **solc**  |
+| **hashes**                    | Solidity function hashes                    | JSON                      |  **solc**  |
+| **metadata**                  | Metadata                                    | Stringified JSON          |  **solc**  |
+| **devdoc**                    | Developer documentation                     | JSON (NatSpec)            |  **solc**  |
+| **userdoc**                   | User documentation                          | JSON (NatSpec)            |  **solc**  |
+| **storage-layout**            | Solidity storage layout                     | JSON                      |  **solc**  |
+| **transient-storage-layout**  | Solidity transientstorage layout            | JSON                      |  **solc**  |
+| **ast**                       | AST of the source file                      | JSON                      |  **solc**  |
+| **asm**                       | EVM assembly                                | JSON                      |  **solc**  |
+| **eravm-assembly**            | EraVM assembly                              | String                    | **zksolc** |
+| **bin**                       | Deploy ytecode (always enabled)             | Hexadecimal string        | **zksolc** |
+| **bin-runtime**               | Runtime bytecode (EVM-only, always enabled) | Hexadecimal string        | **zksolc** |
 
 <div class="warning">
 It is only possible to use Combined JSON with Solidity input, so the path to <b>solc</b> must be always provided to *zksolc*.
@@ -57,12 +61,22 @@ The format below is a modification of the original combined JSON [output](https:
       "storage-layout": {/* ... */},
       // Optional: Emitted if "transient-storage-layout" selector is provided.
       "transient-storage-layout": {/* ... */},
+      // Optional: Emitted if "ast" selector is provided.
+      "ast": {/* ... */},
+      // Optional: Emitted if "asm" selector is provided.
+      "asm": {/* ... */},
+
       // Required: Bytecode is always emitted.
       "bin": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
       // Required: Bytecode is always emitted.
       "bin-runtime": "0000008003000039000000400030043f0000000100200190000000130000c13d...",
-      // Required, zksolc: Mapping between bytecode hashes and full contract identifiers (e.g. "MyContract.sol:Test").
-      "factory-deps": {/* ... */}
+
+      // Optional: Emitted if "eravm-assembly" selector is provided.
+      "assembly": "/* ... */",
+      // Required, zksolc(eravm): Mapping between bytecode hashes and full contract identifiers (e.g. "MyContract.sol:Test").
+      "factory-deps": {/* ... */},
+      // Required, zksolc(eravm): Unlinked EraVM libraries.
+      "missing-libraries": [/* ... */],
       // Required, zksolc: Binary object format.
       // Tells whether the bytecode has been linked.
       // Possible values: "elf" (unlinked), "raw" (linked).

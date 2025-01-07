@@ -2,11 +2,9 @@
 //! The `solc --standard-json` output file selection.
 //!
 
-pub mod flag;
-
 use std::collections::HashSet;
 
-use self::flag::Flag as SelectionFlag;
+use crate::standard_json::input::settings::selection::selector::Selector;
 
 ///
 /// The `solc --standard-json` output file selection.
@@ -15,23 +13,23 @@ use self::flag::Flag as SelectionFlag;
 pub struct File {
     /// The per-file output selections.
     #[serde(default, rename = "", skip_serializing_if = "HashSet::is_empty")]
-    pub per_file: HashSet<SelectionFlag>,
+    pub per_file: HashSet<Selector>,
     /// The per-contract output selections.
     #[serde(default, rename = "*", skip_serializing_if = "HashSet::is_empty")]
-    pub per_contract: HashSet<SelectionFlag>,
+    pub per_contract: HashSet<Selector>,
 }
 
 impl File {
     ///
     /// A shortcut constructor.
     ///
-    pub fn new(flags: Vec<SelectionFlag>) -> Self {
+    pub fn new(flags: Vec<Selector>) -> Self {
         let mut per_file = HashSet::new();
         let mut per_contract = HashSet::new();
         for flag in flags.into_iter() {
             match flag {
-                SelectionFlag::AST => {
-                    per_file.insert(SelectionFlag::AST);
+                Selector::AST => {
+                    per_file.insert(Selector::AST);
                 }
                 flag => {
                     per_contract.insert(flag);
@@ -60,12 +58,12 @@ impl File {
     /// Afterwards, the flags are used to prune JSON output before returning it.
     ///
     pub fn selection_to_prune(&self) -> Self {
-        let required_per_file = vec![SelectionFlag::AST];
+        let required_per_file = vec![Selector::AST];
         let required_per_contract = vec![
-            SelectionFlag::MethodIdentifiers,
-            SelectionFlag::Metadata,
-            SelectionFlag::Yul,
-            SelectionFlag::EVMLA,
+            Selector::MethodIdentifiers,
+            Selector::Metadata,
+            Selector::Yul,
+            Selector::EVMLA,
         ];
 
         let mut unset_per_file = HashSet::with_capacity(required_per_file.len());
@@ -90,9 +88,9 @@ impl File {
     ///
     /// Whether the flag is requested.
     ///
-    pub fn contains(&self, flag: &SelectionFlag) -> bool {
+    pub fn contains(&self, flag: &Selector) -> bool {
         match flag {
-            flag @ SelectionFlag::AST => self.per_file.contains(flag),
+            flag @ Selector::AST => self.per_file.contains(flag),
             flag => self.per_contract.contains(flag),
         }
     }

@@ -1,16 +1,18 @@
-use crate::{cli, common};
+//!
+//! CLI tests for the eponymous option.
+//!
+
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM, common::TEST_LLVM_IR_CONTRACT_PATH)]
-#[test_case(Target::EVM, common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
-fn with_llvm_ir(target: Target, path: &str) -> anyhow::Result<()> {
-    common::setup()?;
+#[test_case(Target::EraVM, crate::common::TEST_LLVM_IR_CONTRACT_PATH)]
+#[test_case(Target::EVM, crate::common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
+fn default(target: Target, path: &str) -> anyhow::Result<()> {
+    crate::common::setup()?;
     let args = &[path, "--llvm-ir"];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested.",
     ));
@@ -20,69 +22,12 @@ fn with_llvm_ir(target: Target, path: &str) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_llvm_ir_duplicate_flag(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-    let args = &[common::TEST_LLVM_IR_CONTRACT_PATH, "--llvm-ir", "--llvm-ir"];
+fn invalid_input_text(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: the argument '--llvm-ir' cannot be used multiple times",
-    ));
+    let args = &["--llvm-ir", crate::common::TEST_BROKEN_INPUT_PATH];
 
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_llvm_ir_invalid(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_INVALID_PATH];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "error: use of undefined value \'%runtime\'",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-fn with_llvm_ir_linker_error(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--llvm-ir", common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "ld.lld: error: undefined symbol: foo",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_wrong_input_format(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-    let args = &[common::TEST_SOLIDITY_CONTRACT_PATH, "--llvm-ir", "--bin"];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("expected top-level entity"));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn with_incompatible_input_format_without_output(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
-
-    let args = &["--llvm-ir", common::TEST_BROKEN_INPUT_PATH];
-
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result
         .failure()
         .stderr(predicate::str::contains("error: expected top-level entity"));
@@ -92,16 +37,84 @@ fn with_incompatible_input_format_without_output(target: Target) -> anyhow::Resu
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_incompatible_json_modes_combined_json(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn invalid_input_solidity(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
     let args = &[
-        common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+        "--llvm-ir",
+        "--bin",
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("expected top-level entity"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn invalid_input_llvm_ir(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--llvm-ir",
+        crate::common::TEST_LLVM_IR_CONTRACT_INVALID_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "error: use of undefined value \'%runtime\'",
+    ));
+
+    Ok(())
+}
+
+#[test]
+fn missing_file() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &["--llvm-ir", "--bin", crate::common::TEST_NON_EXISTENT_PATH];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .failure()
+        .stderr(predicate::str::contains("reading:"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+fn linker_error(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--llvm-ir",
+        crate::common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.failure().stderr(predicate::str::contains(
+        "ld.lld: error: undefined symbol: foo",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
         "--combined-json",
         "anyarg",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.failure().stderr(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -111,15 +124,16 @@ fn with_incompatible_json_modes_combined_json(target: Target) -> anyhow::Result<
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_incompatible_json_modes_standard_json(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
     let args = &[
-        common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
         "--llvm-ir",
         "--standard-json",
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -129,15 +143,15 @@ fn with_incompatible_json_modes_standard_json(target: Target) -> anyhow::Result<
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_invalid(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json_invalid(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
+        crate::common::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result
         .success()
         .stdout(predicate::str::contains("error: use of undefined value"));
@@ -147,17 +161,40 @@ fn with_standard_json_invalid(target: Target) -> anyhow::Result<()> {
 
 #[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
-fn with_standard_json_missing_file(target: Target) -> anyhow::Result<()> {
-    common::setup()?;
+fn standard_json_missing_file(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
 
     let args = &[
         "--standard-json",
-        common::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
+        crate::common::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
-    let result = cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
         "Error: File \\\"tests/data/contracts/llvm_ir/Missing.ll\\\" reading:",
+    ));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+#[test_case(Target::EVM)]
+fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let solc_compiler =
+        crate::common::get_solc_compiler(&era_solc::Compiler::LAST_SUPPORTED_VERSION)?.executable;
+
+    let args = &[
+        "--solc",
+        solc_compiler.as_str(),
+        "--standard-json",
+        crate::common::TEST_LLVM_IR_STANDARD_JSON_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains(
+        "LLVM IR projects cannot be compiled with `solc`.",
     ));
 
     Ok(())
