@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 option.value = `${baseUrl}${url}`;
                 option.textContent = name;
                 // Pre-select the matching version
-                if (option.value === window.location.pathname) option.selected = true;
+                option.selected = name === window.location.pathname.split('/')[1];
                 versionSelector.appendChild(option);
             });
 
