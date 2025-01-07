@@ -15,7 +15,7 @@ zksolc './MyContract.sol' --combined-json 'ast,abi,metadata'
 The following selectors are supported:
 
 |         Selector              |                 Description                |            Type           |
-|:-----------------------------:|:------------------------------------------:|:-------------------------:|
+|:------------------------------|:-------------------------------------------|:--------------------------|
 | **ast**                       | AST of the source file                     | JSON                      |
 | **abi**                       | Solidity ABI                               | JSON                      |
 | **hashes**                    | Solidity function hashes                   | JSON                      |
