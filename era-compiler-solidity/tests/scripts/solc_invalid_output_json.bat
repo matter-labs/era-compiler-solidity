@@ -10,12 +10,13 @@ if "%~1"=="--version" (
 setlocal EnableDelayedExpansion
 set "INPUT="
 :readloop
-set "LINE="
-set /p LINE=
-if errorlevel 1 goto done
-set "INPUT=!INPUT!!LINE!
-"
-goto readloop
+    set "LINE="
+    set /p LINE=
+    if errorlevel 1 goto done
+
+    set "INPUT=!INPUT!!LINE!
+    "
+    goto readloop
 :done
 
 echo Invalid JSON output
