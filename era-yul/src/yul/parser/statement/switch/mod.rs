@@ -4,7 +4,7 @@
 
 pub mod case;
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
@@ -121,8 +121,8 @@ where
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut libraries = HashSet::new();
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
+        let mut libraries = BTreeSet::new();
         for case in self.cases.iter() {
             libraries.extend(case.get_missing_libraries());
         }

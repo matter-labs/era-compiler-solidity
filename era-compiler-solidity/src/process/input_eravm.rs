@@ -5,7 +5,7 @@
 //!
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::project::contract::Contract;
 
@@ -22,8 +22,10 @@ pub struct Input {
     pub identifier_paths: BTreeMap<String, String>,
     /// Whether to enable EraVM extensions.
     pub enable_eravm_extensions: bool,
+    /// Missing unlinked libraries.
+    pub missing_libraries: BTreeSet<String>,
     /// Factory dependencies.
-    pub factory_dependencies: HashSet<String>,
+    pub factory_dependencies: BTreeSet<String>,
     /// The metadata hash type.
     pub metadata_hash_type: era_compiler_common::HashType,
     /// The optimizer settings.
@@ -44,7 +46,8 @@ impl Input {
         contract: Contract,
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
-        factory_dependencies: HashSet<String>,
+        missing_libraries: BTreeSet<String>,
+        factory_dependencies: BTreeSet<String>,
         enable_eravm_extensions: bool,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
@@ -56,6 +59,7 @@ impl Input {
             contract,
             solc_version,
             identifier_paths,
+            missing_libraries,
             factory_dependencies,
             enable_eravm_extensions,
             metadata_hash_type,

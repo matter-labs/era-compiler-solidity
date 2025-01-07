@@ -3,7 +3,7 @@
 //!
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 ///
 /// The contract.
@@ -39,6 +39,9 @@ pub struct Contract {
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub asm: serde_json::Value,
 
+    /// LLVM-generated assembly.
+    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub assembly: Option<String>,
     /// Hexadecimal deploy bytecode segment output.
     #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub bin: Option<String>,
@@ -46,16 +49,16 @@ pub struct Contract {
     #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub bin_runtime: Option<String>,
 
-    /// LLVM-generated assembly.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
-    pub assembly: Option<String>,
-    /// EraVM factory dependencies.
+    /// The unlinked factory dependencies.
+    #[serde(default, skip_deserializing)]
+    pub factory_deps_unlinked: BTreeSet<String>,
+    /// The factory dependencies.
     #[serde(default, skip_deserializing)]
     pub factory_deps: BTreeMap<String, String>,
-    /// Unlinked libraries.
+    /// The missing libraries.
     #[serde(default, skip_deserializing)]
-    pub missing_libraries: HashSet<String>,
-    /// Binary object format.
-    #[serde(default, skip_serializing_if = "Option::is_none", skip_deserializing)]
+    pub missing_libraries: BTreeSet<String>,
+    /// The binary object format.
+    #[serde(default, skip_deserializing)]
     pub object_format: Option<era_compiler_common::ObjectFormat>,
 }

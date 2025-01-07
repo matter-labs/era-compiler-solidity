@@ -6,6 +6,7 @@ pub mod data;
 pub mod instruction;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashSet;
 
 use rayon::iter::IntoParallelIterator;
@@ -89,8 +90,8 @@ impl Assembly {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> HashSet<String> {
-        let mut missing_libraries = HashSet::new();
+    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
+        let mut missing_libraries = BTreeSet::new();
         if let Some(code) = self.code.as_ref() {
             for instruction in code.iter() {
                 if let InstructionName::PUSHLIB = instruction.name {
