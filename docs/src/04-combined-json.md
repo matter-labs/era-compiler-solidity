@@ -15,7 +15,7 @@ zksolc './MyContract.sol' --combined-json 'ast,abi,metadata'
 The following selectors are supported:
 
 |         Selector              |                 Description                 |            Type           |   Origin   |
-|:-----------------------------:|:-------------------------------------------:|:-------------------------:|:----------:|
+|:------------------------------|:--------------------------------------------|:--------------------------|:-----------|
 | **abi**                       | Solidity ABI                                | JSON                      |  **solc**  |
 | **hashes**                    | Solidity function hashes                    | JSON                      |  **solc**  |
 | **metadata**                  | Metadata                                    | Stringified JSON          |  **solc**  |
@@ -25,9 +25,9 @@ The following selectors are supported:
 | **transient-storage-layout**  | Solidity transientstorage layout            | JSON                      |  **solc**  |
 | **ast**                       | AST of the source file                      | JSON                      |  **solc**  |
 | **asm**                       | EVM assembly                                | JSON                      |  **solc**  |
+| **eravm-assembly**            | EraVM assembly                              | String                    | **zksolc** |
 | **bin**                       | Deploy ytecode (always enabled)             | Hexadecimal string        | **zksolc** |
 | **bin-runtime**               | Runtime bytecode (EVM-only, always enabled) | Hexadecimal string        | **zksolc** |
-| **eravm-assembly**            | User documentation                          | JSON (NatSpec)            | **zksolc** |
 
 <div class="warning">
 It is only possible to use Combined JSON with Solidity input, so the path to <b>solc</b> must be always provided to *zksolc*.

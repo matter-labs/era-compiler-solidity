@@ -292,7 +292,7 @@ The options in this section are only configuring the *zksolc* compiler and do no
 Sets the optimization level of the LLVM optimizer. Available values are:
 
 | Level | Meaning                      | Hints                                            |
-|:-----:|:----------------------------:|:------------------------------------------------:|
+|:------|:-----------------------------|:-------------------------------------------------|
 | 0     | No optimization              | Best compilation speed: for active development
 | 1     | Performance: basic           | For optimization research
 | 2     | Performance: default         | For optimization research
@@ -323,7 +323,7 @@ Specifies the hash function used for contract metadata.
 The following values are allowed:
 
 |     Value    |  Size  | Padding | Reference |
-|:------------:|:------:|:-------:|:---------:|
+|:-------------|:-------|:--------|:----------|
 | none         |  0 B   | 0-32 B  | 
 | keccak256    | 32 B   | 0-32 B  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
 | ipfs         | 44 B   | 20-52 B | [IPFS Documentation](https://docs.ipfs.tech/)
@@ -411,7 +411,7 @@ The options in this section are only configuring *solc*, so they are passed dire
 Specifies the *solc* codegen. The following values are allowed:
 
 | Value | Description                  | Hints                              |
-|:-----:|:----------------------------:|:----------------------------------:|
+|:------|:-----------------------------|:-----------------------------------|
 | evmla | EVM legacy assembly          | *solc* default for EVM/L1          |
 | yul   | Yul a.k.a. IR                | *zksolc* default for ZKsync        |
 
@@ -662,12 +662,12 @@ The directory is created if it does not exist. If artifacts are already present 
 The intermediate build artifacts can be:
 
 | Name            | Codegen         | File extension   |
-|:---------------:|:---------------:|:----------------:|
-| EVM assembly    | evmla           | *evmla*          |
+|:----------------|:----------------|:-----------------|
+| EVM Assembly    | evmla           | *evmla*          |
 | EthIR           | evmla           | *ethir*          |  
 | Yul             | yul             | *yul*            |
 | LLVM IR         | evmla, yul      | *ll*             |
-| EraVM assembly  | evmla, yul      | *zasm*           |
+| EraVM Assembly  | evmla, yul      | *zasm*           |
 
 Usage:
 
