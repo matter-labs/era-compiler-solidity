@@ -131,6 +131,10 @@ jobs:
           release-suffix: ${{ format('{0}-{1}', matrix.release-suffix, inputs.prerelease_suffix || format('v{0}', github.ref_name)) }}
 
   prepare-release:
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
     name: Prepare release
     runs-on: matterlabs-ci-runner-high-performance
     container:
@@ -198,6 +202,12 @@ jobs:
           llvm-lipo -create -output "${OUTPUT}" \
             ./releases/release-macosx-amd64-${RELEASE_SUFFIX}/macosx-amd64-${RELEASE_SUFFIX}/zksolc-macosx-amd64-${RELEASE_SUFFIX} \
             ./releases/release-macosx-arm64-${RELEASE_SUFFIX}/macosx-arm64-${RELEASE_SUFFIX}/zksolc-macosx-arm64-${RELEASE_SUFFIX}
+
+      - name: Binaries attestation
+        uses: actions/attest-build-provenance@v2
+        if: github.ref_type == 'tag'
+        with:
+          subject-path: 'releases/**/**'
 
       - name: Prepare release
         uses: softprops/action-gh-release@v2
