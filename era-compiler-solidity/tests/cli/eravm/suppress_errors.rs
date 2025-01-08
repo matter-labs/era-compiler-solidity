@@ -2,13 +2,16 @@
 //! CLI tests for the eponymous option.
 //!
 
+use era_solc::StandardJsonInputErrorType;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn default() -> anyhow::Result<()> {
+#[test_case(StandardJsonInputErrorType::SendTransfer)]
+#[test_case(StandardJsonInputErrorType::AssemblyCreate)]
+fn default(error_type: StandardJsonInputErrorType) -> anyhow::Result<()> {
     crate::common::setup()?;
 
-    let error_type = era_solc::StandardJsonInputErrorType::SendTransfer.to_string();
+    let error_type = error_type.to_string();
     let args = &[
         "--bin",
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,

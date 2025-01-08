@@ -70,6 +70,45 @@ impl Source {
     }
 
     ///
+    /// Checks the AST node for the usage of `create` and `create2` in assembly blocks.
+    ///
+    pub fn check_assembly_create(
+        solc_version: &Version,
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
+    ) -> Option<StandardJsonOutputError> {
+        let ast = ast.as_object()?;
+
+        match ast.get("nodeType")?.as_str()? {
+            "InlineAssembly" if solc_version.default < semver::Version::new(0, 6, 0) => {
+                let assembly = ast.get("operations")?.as_str()?;
+                ["create(", "create2("]
+                    .iter()
+                    .any(|instruction| assembly.contains(instruction))
+                    .as_option()?;
+            }
+            "YulFunctionCall" if solc_version.default >= semver::Version::new(0, 6, 0) => {
+                ["create", "create2"]
+                    .contains(
+                        &ast.get("functionName")?
+                            .as_object()?
+                            .get("name")?
+                            .as_str()?,
+                    )
+                    .as_option()?;
+            }
+            _ => return None,
+        }
+
+        Some(StandardJsonOutputError::error_assembly_create(
+            ast.get("src")?.as_str(),
+            id_paths,
+            sources,
+        ))
+    }
+
+    ///
     /// Checks the AST node for the usage of runtime code.
     ///
     pub fn check_runtime_code(
@@ -172,6 +211,12 @@ impl Source {
         if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
             if let Some(message) =
                 Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
+            {
+                messages.push(message);
+            }
+        }
+        if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::AssemblyCreate) {
+            if let Some(message) = Self::check_assembly_create(solc_version, ast, id_paths, sources)
             {
                 messages.push(message);
             }

@@ -166,9 +166,10 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "-disable-early-taildup"
     ],
     // Optional, zksolc: suppressed errors.
-    // Available options: "sendtransfer".
+    // Available options: "sendtransfer", "assemblycreate".
     "suppressedErrors": [
-      "sendtransfer"
+      "sendtransfer",
+      "assemblycreate"
     ],
     // Optional, zksolc: suppressed warnings.
     // Available options: "txorigin".
