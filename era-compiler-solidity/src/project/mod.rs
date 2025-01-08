@@ -102,11 +102,9 @@ impl Project {
         let results = input_contracts
             .into_par_iter()
             .filter_map(|(name, contract)| {
-                let full_path = name.full_path.clone();
-
                 let result = match codegen {
                     era_solc::StandardJsonInputCodegen::Yul => ContractYul::try_from_source(
-                        &name,
+                        name.full_path.as_str(),
                         contract.ir_optimized.as_str(),
                         debug_config,
                     )
@@ -117,10 +115,10 @@ impl Project {
                 };
                 let ir = match result {
                     Ok(ir) => ir?,
-                    Err(error) => return Some((full_path, Err(error))),
+                    Err(error) => return Some((name.full_path, Err(error))),
                 };
-                let contract = Contract::new(name, ir, contract.metadata.clone());
-                Some((full_path, Ok(contract)))
+                let contract = Contract::new(name.clone(), ir, contract.metadata.clone());
+                Some((name.full_path, Ok(contract)))
             })
             .collect::<BTreeMap<String, anyhow::Result<Contract>>>();
 
@@ -174,17 +172,18 @@ impl Project {
         let results = sources
             .into_par_iter()
             .filter_map(|(path, mut source)| {
-                let name = era_compiler_common::ContractName::new(path.clone(), None);
-
                 let source_code = match source.try_resolve() {
                     Ok(()) => source.take_content().expect("Always exists"),
                     Err(error) => return Some((path, Err(error))),
                 };
-                let ir =
-                    match ContractYul::try_from_source(&name, source_code.as_str(), debug_config) {
-                        Ok(ir) => ir?,
-                        Err(error) => return Some((path, Err(error))),
-                    };
+                let ir = match ContractYul::try_from_source(
+                    path.as_str(),
+                    source_code.as_str(),
+                    debug_config,
+                ) {
+                    Ok(ir) => ir?,
+                    Err(error) => return Some((path, Err(error))),
+                };
 
                 let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
                 let source_metadata = serde_json::json!({
@@ -192,6 +191,10 @@ impl Project {
                     "solc_version": solc_version,
                 });
 
+                let name = era_compiler_common::ContractName::new(
+                    path.clone(),
+                    Some(ir.object.0.identifier.clone()),
+                );
                 let contract = Contract::new(name, ir.into(), source_metadata);
                 Some((path, Ok(contract)))
             })

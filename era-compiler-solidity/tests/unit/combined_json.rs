@@ -154,7 +154,6 @@ fn eravm_assembly_requested() {
         era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
-    dbg!(&combined_json);
 
     assert_eq!(combined_json.contracts.len(), paths.len());
     for (path, name) in paths.into_iter().zip(names.into_iter()) {
