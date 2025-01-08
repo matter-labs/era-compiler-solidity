@@ -11,6 +11,7 @@
 ### Changed
 
 - `solc` is not called anymore if its data is not needed in combined JSON mode
+- Prohibited the use of `create`/`create2` in assembly blocks
 
 ### Fixed
 

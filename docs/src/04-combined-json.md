@@ -29,16 +29,14 @@ The following selectors are supported:
 | **bin**                       | Deploy ytecode (always enabled)             | Hexadecimal string        | **zksolc** |
 | **bin-runtime**               | Runtime bytecode (EVM-only, always enabled) | Hexadecimal string        | **zksolc** |
 
-<div class="warning">
-It is only possible to use Combined JSON with Solidity input, so the path to <b>solc</b> must be always provided to *zksolc*.
-Support for other languages is planned for future releases.
-</div>
+> **Warning:** It is only possible to use Combined JSON with Solidity input, so the path to **solc** must be always provided to **zksolc**. Support for other languages is planned for future releases.
 
 
 
 ## Output Format
 
 The format below is a modification of the original combined JSON [output](https://docs.soliditylang.org/en/latest/using-the-compiler.html#output-description) format implemented by *solc*. It means that there are:
+
 - *zksolc*-specific options that are not present in the original format: they are marked as *zksolc* in the specification below.
 - *solc*-specific options that are not supported by *zksolc*: they are not mentioned in the specification below.
 

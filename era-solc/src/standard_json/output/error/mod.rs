@@ -41,9 +41,6 @@ impl Error {
     /// The list of ignored `solc` warnings that are strictly EVM-related.
     pub const IGNORED_WARNING_CODES: [&'static str; 5] = ["1699", "3860", "5159", "5574", "6417"];
 
-    /// The default size of an error line.
-    pub const DEFAULT_ERROR_LINE_LENGTH: usize = 96;
-
     ///
     /// A shortcut constructor.
     ///
@@ -126,11 +123,9 @@ impl Error {
     ) -> Self {
         let message = r#"
 You are checking for 'tx.origin', which might lead to unexpected behavior.
-
 ZKsync Era comes with native account abstraction support, and therefore the initiator of a
 transaction might be different from the contract calling your code. It is highly recommended NOT
 to rely on tx.origin, but use msg.sender instead.
-
 Learn more about Account Abstraction at https://docs.zksync.io/build/developer-reference/account-abstraction/
 
 You may disable this warning with:
@@ -156,14 +151,11 @@ You may disable this warning with:
         let message = r#"
 You are using '<address payable>.send/transfer(<X>)' without providing the gas amount.
 Such calls will fail depending on the pubdata costs.
-
 Please use 'payable(<address>).call{value: <X>}("")' instead, but be careful with the
 reentrancy attack. `send` and `transfer` send limited amount of gas that prevents reentrancy,
 whereas `<address>.call{value: <X>}` sends all gas to the callee.
-
-In Solidity v0.4, where there is no `payable` type, this may be a false positive
+In Solidity v0.4, where there is no `payable` type, it can be a false-positive error.
 if `using X for address` is used with `X` implementing its own `send` or `transfer` functions.
-
 Learn more about reentrancy at https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy
 
 You may disable this error with:
@@ -179,18 +171,23 @@ You may disable this error with:
     }
 
     ///
-    /// Returns the internal function pointer usage error.
+    /// Returns the `create` and `create2` in assembly blocks usage error.
     ///
-    pub fn error_internal_function_pointer(
+    pub fn error_assembly_create(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJsonInputSource>,
     ) -> Self {
         let message = r#"
-Internal function pointers are not supported in the EVM assembly codegen.
-Please do one of the following:
-    1. Use the ZKsync fork of the Solidity compiler: https://github.com/matter-labs/era-solidity/releases
-    2. Switch to the latest solc with Yul assembly codegen: https://docs.soliditylang.org/en/latest/yul.html
+You are using 'create'/'create2' in an assembly block, probably by providing bytecode and expecting an EVM-like behavior.
+EraVM does not use bytecode for contract deployment. Instead, it refers to contracts using their bytecode hashes.
+In order to deploy a contract, please use the `new` operator in Solidity instead of raw 'create'/'create2' in assembly.
+In Solidity v0.6 and older, it can be a false-positive error if there is 'create(' or 'create2(' in comments within assembly.
+Learn more about CREATE/CREATE2 EraVM limitations at https://docs.zksync.io/zksync-protocol/differences/evm-instructions#create-create2
+
+You may disable this error with:
+    1. `suppressedErrors = ["assemblycreate"]` in standard JSON.
+    2. `--suppress-errors assemblycreate` in the CLI.
 "#;
 
         Self::new_error(
@@ -209,7 +206,7 @@ Please do one of the following:
         sources: &BTreeMap<String, StandardJsonInputSource>,
     ) -> Self {
         let message = r#"
-Deploy and runtime code are merged together on ZKsync, so reading `type(T).runtimeCode` is not possible.
+Deploy and runtime code are merged in EraVM, so accessing `type(T).runtimeCode` is not possible.
 Please consider changing the functionality relying on reading runtime code to a different approach.
 "#;
 
