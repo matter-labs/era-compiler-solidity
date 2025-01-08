@@ -16,6 +16,7 @@
 
 - Empty `missing-libraries` list in combined JSON mode
 - False-positive warning with `--force-evmla` in basic CLI mode
+- Yul contract names in standard JSON output now match Yul object names
 
 ## [1.5.8] - 2024-12-10
 

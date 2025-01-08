@@ -76,7 +76,7 @@ fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
     let output_file = tmp_dir_zksolc
         .path()
         .join(input_file)
-        .join(format!("{input_file}.{extension}"));
+        .join(format!("Test.{extension}"));
     assert!(output_file.exists());
 
     Ok(())

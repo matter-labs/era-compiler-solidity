@@ -17,8 +17,8 @@ fn standard_json_yul_solc() {
         .contracts
         .get("Test")
         .expect("The `Test` contract is missing")
-        .get("Test")
-        .expect("The `Test` contract is missing")
+        .get("Return")
+        .expect("The `Return` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -46,8 +46,8 @@ fn standard_json_yul_solc_validated() {
         .contracts
         .get("Test")
         .expect("The `Test` contract is missing")
-        .get("Test")
-        .expect("The `Test` contract is missing")
+        .get("Return")
+        .expect("The `Return` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -71,8 +71,8 @@ fn standard_json_yul_solc_urls() {
         .contracts
         .get("Test")
         .expect("The `Test` contract is missing")
-        .get("Test")
-        .expect("The `Test` contract is missing")
+        .get("Return")
+        .expect("The `Return` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -100,8 +100,8 @@ fn standard_json_yul_solc_urls_validated() {
         .contracts
         .get("Test")
         .expect("The `Test` contract is missing")
-        .get("Test")
-        .expect("The `Test` contract is missing")
+        .get("Return")
+        .expect("The `Return` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -125,8 +125,8 @@ fn standard_json_yul_zksolc() {
         .contracts
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
-        .get("EventWriter.yul")
-        .expect("The `EventWriter.yul` contract is missing")
+        .get("EventWriter")
+        .expect("The `EventWriter` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -154,8 +154,8 @@ fn standard_json_yul_zksolc_validated() {
         .contracts
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
-        .get("EventWriter.yul")
-        .expect("The `EventWriter.yul` contract is missing")
+        .get("EventWriter")
+        .expect("The `EventWriter` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -179,8 +179,8 @@ fn standard_json_yul_zksolc_urls() {
         .contracts
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
-        .get("EventWriter.yul")
-        .expect("The `EventWriter.yul` contract is missing")
+        .get("EventWriter")
+        .expect("The `EventWriter` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")
@@ -207,8 +207,8 @@ fn standard_json_yul_zksolc_urls_validated() {
         .contracts
         .get("EventWriter.yul")
         .expect("The `EventWriter.yul` contract is missing")
-        .get("EventWriter.yul")
-        .expect("The `EventWriter.yul` contract is missing")
+        .get("EventWriter")
+        .expect("The `EventWriter` contract is missing")
         .evm
         .as_ref()
         .expect("The `evm` field is missing")

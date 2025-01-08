@@ -24,7 +24,7 @@ impl Yul {
     /// Transforms the `solc` standard JSON output contract into a Yul object.
     ///
     pub fn try_from_source(
-        name: &era_compiler_common::ContractName,
+        path: &str,
         source_code: &str,
         debug_config: Option<&era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<Option<Self>> {
@@ -33,7 +33,7 @@ impl Yul {
         };
 
         if let Some(debug_config) = debug_config {
-            debug_config.dump_yul(name.full_path.as_str(), None, source_code)?;
+            debug_config.dump_yul(path, None, source_code)?;
         }
 
         let mut lexer = Lexer::new(source_code.to_owned());

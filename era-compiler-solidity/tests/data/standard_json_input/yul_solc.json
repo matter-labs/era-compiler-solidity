@@ -2,7 +2,7 @@
     "language": "Yul",
     "sources": {
       "Test": {
-        "content": "object \"Test\" { code { { return(0, 0) } } object \"Test_deployed\" { code { { return(0, 0) } } } }"
+        "content": "object \"Return\" { code { { return(0, 0) } } object \"Return_deployed\" { code { { return(0, 0) } } } }"
       }
     },
     "settings": {

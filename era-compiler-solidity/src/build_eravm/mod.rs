@@ -210,28 +210,34 @@ impl Build {
         solc_version: Option<&era_solc::Version>,
     ) -> anyhow::Result<()> {
         let mut errors = Vec::with_capacity(self.results.len());
-        for (full_path, build) in self.results.into_iter() {
-            let mut full_path_split = full_path.split(':');
-            let path = full_path_split.next().expect("Always exists");
-            let name = full_path_split.next().unwrap_or(path);
+        for result in self.results.into_values() {
+            let build = match result {
+                Ok(build) => build,
+                Err(error) => {
+                    errors.push(error);
+                    continue;
+                }
+            };
+            let name = build.name.clone();
 
-            match build {
-                Ok(build) => match standard_json
-                    .contracts
-                    .get_mut(path)
-                    .and_then(|contracts| contracts.get_mut(name))
-                {
-                    Some(contract) => {
-                        build.write_to_standard_json(contract)?;
-                    }
-                    None => {
-                        let contracts = standard_json.contracts.entry(path.to_owned()).or_default();
-                        let mut contract = era_solc::StandardJsonOutputContract::default();
-                        build.write_to_standard_json(&mut contract)?;
-                        contracts.insert(name.to_owned(), contract);
-                    }
-                },
-                Err(error) => errors.push(error),
+            match standard_json
+                .contracts
+                .get_mut(name.path.as_str())
+                .and_then(|contracts| {
+                    contracts.get_mut(name.name.as_deref().unwrap_or(name.path.as_str()))
+                }) {
+                Some(contract) => {
+                    build.write_to_standard_json(contract)?;
+                }
+                None => {
+                    let contracts = standard_json
+                        .contracts
+                        .entry(name.path.clone())
+                        .or_default();
+                    let mut contract = era_solc::StandardJsonOutputContract::default();
+                    build.write_to_standard_json(&mut contract)?;
+                    contracts.insert(name.name.unwrap_or(name.path), contract);
+                }
             }
         }
 
@@ -254,13 +260,16 @@ impl Build {
         self.take_and_write_warnings();
         self.exit_on_error();
 
-        for (path, build) in self.results.into_iter() {
+        for result in self.results.into_values() {
+            let build = result.expect("Exits on an error above");
+            let name = build.name.clone();
+
             let combined_json_contract =
                 match combined_json
                     .contracts
                     .iter_mut()
                     .find_map(|(json_path, contract)| {
-                        if Self::normalize_full_path(path.as_str())
+                        if Self::normalize_full_path(name.full_path.as_str())
                             .ends_with(Self::normalize_full_path(json_path).as_str())
                         {
                             Some(contract)
@@ -270,19 +279,18 @@ impl Build {
                     }) {
                     Some(contract) => contract,
                     None => {
+                        combined_json.contracts.insert(
+                            name.full_path.clone(),
+                            era_solc::CombinedJsonContract::default(),
+                        );
                         combined_json
                             .contracts
-                            .insert(path.clone(), era_solc::CombinedJsonContract::default());
-                        combined_json
-                            .contracts
-                            .get_mut(path.as_str())
+                            .get_mut(name.full_path.as_str())
                             .expect("Always exists")
                     }
                 };
 
-            build
-                .expect("Always valid")
-                .write_to_combined_json(combined_json_contract)?;
+            build.write_to_combined_json(combined_json_contract)?;
         }
 
         Ok(())
