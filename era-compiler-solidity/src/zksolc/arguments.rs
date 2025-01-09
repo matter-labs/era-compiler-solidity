@@ -63,7 +63,7 @@ pub struct Arguments {
     #[arg(long = "fallback-Oz")]
     pub fallback_to_optimizing_for_size: bool,
 
-    /// Pass arbitary space-separated options to LLVM.
+    /// Pass arbitrary space-separated options to LLVM.
     /// The argument must be a single-quoted string following a `=` separator.
     /// Example: `--llvm-options='-eravm-jump-table-density-threshold=10'`.
     #[arg(long)]
