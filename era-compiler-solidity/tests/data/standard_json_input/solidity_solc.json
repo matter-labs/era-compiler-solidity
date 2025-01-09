@@ -19,6 +19,18 @@
         "constantOptimizer": true
       }
     },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
+        ]
+      }
+    },
     "metadata": {
       "useLiteralContent": true
     }

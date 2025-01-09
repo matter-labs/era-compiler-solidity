@@ -6,6 +6,18 @@
       "enabled": true,
       "runs": 200
     },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
+        ]
+      }
+    },
     "metadata": {
       "useLiteralContent": true
     }

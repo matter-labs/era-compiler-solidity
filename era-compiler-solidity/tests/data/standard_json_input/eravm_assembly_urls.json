@@ -1,30 +1,31 @@
 {
-    "language": "EraVM Assembly",
-    "sources": {
-      "Test": {
-        "urls": [
-          "tests/data/contracts/eravm_assembly/Test.zasm"
+  "language": "EraVM Assembly",
+  "sources": {
+    "Test": {
+      "urls": [
+        "tests/data/contracts/eravm_assembly/Test.zasm"
+      ]
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
         ]
       }
     },
-    "settings": {
-      "optimizer": {
-        "enabled": true
-      },
-      "outputSelection": {
-        "*": {
-          "": [
-            "metadata"
-          ],
-          "*": [
-            "abi",
-            "evm.methodIdentifiers"
-          ]
-        }
-      },
-      "metadata": {
-        "hashType": "ipfs"
-      },
-      "libraries": {}
-    }
+    "metadata": {
+      "hashType": "ipfs"
+    },
+    "libraries": {}
   }
+}

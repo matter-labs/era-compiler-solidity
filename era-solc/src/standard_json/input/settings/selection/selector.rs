@@ -41,7 +41,7 @@ pub enum Selector {
     MethodIdentifiers,
 
     /// The EraVM assembly.
-    #[serde(rename = "eravm.assembly", skip_serializing)]
+    #[serde(rename = "eravm.assembly")]
     EraVMAssembly,
 }
 
