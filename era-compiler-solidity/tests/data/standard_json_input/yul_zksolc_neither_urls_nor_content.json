@@ -4,29 +4,29 @@
   {
     "A": {}
   },
-    "settings": {
-      "optimizer": {
-          "mode": "3",
-        "details": null,
-        "fallbackToOptimizingForSize": false
-      },
-      "outputSelection": {
-        "*": {
-          "": [
-            "metadata"
-          ],
-          "*": [
-            "abi",
-            "evm.methodIdentifiers"
-          ]
-        }
-      },
-      "metadata": {
-        "hashType": "keccak256"
-      },
-      "libraries": {},
-      "enableEraVMExtensions": true,
-      "forceEVMLA": false,
-      "areera_solc::StandardJsonInputLibrariesMissing": false
-    }
+  "settings": {
+    "optimizer": {
+        "mode": "3",
+      "details": null,
+      "fallbackToOptimizingForSize": false
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
+        ]
+      }
+    },
+    "metadata": {
+      "hashType": "keccak256"
+    },
+    "libraries": {},
+    "enableEraVMExtensions": true,
+    "forceEVMLA": false
+  }
 }

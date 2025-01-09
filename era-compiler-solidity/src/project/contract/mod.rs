@@ -111,7 +111,7 @@ impl Contract {
         };
 
         let build = match self.ir {
-            IR::Yul(mut deploy_code) => {
+            IR::Yul(mut yul) => {
                 let module = llvm.create_module(self.name.full_path.as_str());
                 let mut context: era_compiler_llvm_context::EraVMContext<
                     '_,
@@ -132,9 +132,8 @@ impl Contract {
                 );
                 context.set_yul_data(yul_data);
 
-                deploy_code.declare(&mut context)?;
-                deploy_code
-                    .into_llvm(&mut context)
+                yul.declare(&mut context)?;
+                yul.into_llvm(&mut context)
                     .map_err(|error| anyhow::anyhow!("LLVM IR generator: {error}"))?;
 
                 context.build(

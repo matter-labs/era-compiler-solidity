@@ -21,7 +21,8 @@
         ],
         "*": [
           "abi",
-          "evm.methodIdentifiers"
+          "evm.methodIdentifiers",
+          "eravm.assembly"
         ]
       }
     },

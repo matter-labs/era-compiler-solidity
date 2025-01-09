@@ -1,27 +1,28 @@
 {
-    "language": "LLVM IR",
-    "sources": {
-      "Test": {
-        "urls": [
-          "tests/data/contracts/llvm_ir/Missing.ll"
+  "language": "LLVM IR",
+  "sources": {
+    "Test": {
+      "urls": [
+        "tests/data/contracts/llvm_ir/Missing.ll"
+      ]
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
         ]
       }
     },
-    "settings": {
-      "optimizer": {
-        "enabled": true
-      },
-      "outputSelection": {
-        "*": {
-          "": [
-            "metadata"
-          ],
-          "*": [
-            "abi",
-            "evm.methodIdentifiers"
-          ]
-        }
-      },
-      "libraries": {}
-    }
+    "libraries": {}
   }
+}

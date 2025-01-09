@@ -1,28 +1,29 @@
 {
-    "language": "Yul",
-    "sources": {
-      "Test": {
-        "content": "object \"Return\" { code { { return(0, 0) } } object \"Return_deployed\" { code { { return(0, 0) } } } }"
+  "language": "Yul",
+  "sources": {
+    "Test": {
+      "content": "object \"Return\" { code { { return(0, 0) } } object \"Return_deployed\" { code { { return(0, 0) } } } }"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true
+    },
+    "metadata": {
+      "useLiteralContent": true
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "metadata"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers",
+          "eravm.assembly"
+        ]
       }
     },
-    "settings": {
-      "optimizer": {
-        "enabled": true
-      },
-      "metadata": {
-        "useLiteralContent": true
-      },
-      "outputSelection": {
-        "*": {
-          "": [
-            "metadata"
-          ],
-          "*": [
-            "abi",
-            "evm.methodIdentifiers"
-          ]
-        }
-      },
-      "libraries": {}
-    }
+    "libraries": {}
   }
+}

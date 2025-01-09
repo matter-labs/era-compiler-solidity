@@ -195,8 +195,9 @@ impl Project {
                     path.clone(),
                     Some(ir.object.0.identifier.clone()),
                 );
+                let full_path = name.full_path.clone();
                 let contract = Contract::new(name, ir.into(), source_metadata);
-                Some((path, Ok(contract)))
+                Some((full_path, Ok(contract)))
             })
             .collect::<BTreeMap<String, anyhow::Result<Contract>>>();
 
