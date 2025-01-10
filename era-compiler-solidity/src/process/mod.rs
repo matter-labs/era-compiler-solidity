@@ -17,7 +17,7 @@ use self::input_evm::Input as EVMInput;
 use self::output_eravm::Output as EraVMOutput;
 use self::output_evm::Output as EVMOutput;
 
-/// The overriden executable name used when the compiler is run as a library.
+/// The overridden executable name used when the compiler is run as a library.
 pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 
 ///
