@@ -1,38 +1,85 @@
-name: Check hardhat and foundry
+name: Check tooling
 
 on:
   workflow_dispatch:
     inputs:
       zksolc-version:
-        description: "Release version of zksolc."
-        required: true
+        description: "Tag or branch of zksolc version to test vs tooling. If empty, the workflow branch is used."
+        required: false
+        default: ''
         type: string
+  # Test with each merge to main
+  push:
+    branches:
+      - main
   pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-jobs:
-#  check-hardhat:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: convictional/trigger-workflow-and-wait@v1.6.1
-#        with:
-#          owner: matter-labs
-#          repo: zksync-ci-stand
-#          workflow_file_name: hardhat.yaml
-#          github_token: ${{ secrets.ZKSYNC_DISPATCH_TOKEN }}
-#          wait_interval: 30
-#          client_payload: '{ "zksolc-version": "${{ inputs.zksolc-version || github.ref }}" }'
-#          propagate_failure: true
-#          trigger_workflow: true
-#          wait_workflow: true
 
-  check-foundry:
-    uses: matter-labs/zksync-ci-stand/.github/workflows/foundry.yaml@main
-    secrets:
-      inherit: true
+jobs:
+
+  build-zksolc:
+    if: inputs.zksolc-version == ''
+    name: Build zksolc
+    runs-on: matterlabs-ci-runner-high-performance
+    container:
+      image: ghcr.io/matter-labs/zksync-llvm-runner:latest
+    outputs:
+      zksolc-artifact-id: ${{ steps.build-zksolc.outputs.artifact-id }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.zksolc-version || '' }}
+
+      - name: Build LLVM
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        with:
+          target-env: 'gnu'
+          enable-assertions: 'false'
+          build-type: Release
+          ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, 'gnu') }}
+          save-ccache: 'false'
+
+      - name: Build zksolc
+        id: build-zksolc
+        uses: ./.github/actions/build
+        with:
+          target: 'x86_64-unknown-linux-gnu'
+          release-suffix: 'test-tooling'
+
+
+  # Check Hardhat with built zksolc
+  check-hardhat:
+    needs: build-zksolc
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@v1
+    secrets: inherit
     with:
-      zksolc-version: '1.5.9'
-      # zksolc-version: ${{ inputs.zksolc-version || github.ref }}
+      zksolc-release-suffix: 'test-tooling'
+
+  # Check Foundry with built zksolc
+  check-foundry:
+    needs: build-zksolc
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@v1
+    secrets: inherit
+    with:
+      zksolc-release-suffix: 'test-tooling'
+
+  # Check Hardhat with a specific released zksolc version
+  check-hardhat-release:
+    if: inputs.zksolc-version != ''
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@v1
+    secrets: inherit
+    with:
+      zksolc-version: ${{ inputs.zksolc-version }}
+
+  # Check Foundry with a specific released zksolc version
+  check-foundry-release:
+    if: inputs.zksolc-version != ''
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@v1
+    secrets: inherit
+    with:
+      zksolc-version: ${{ inputs.zksolc-version }}
