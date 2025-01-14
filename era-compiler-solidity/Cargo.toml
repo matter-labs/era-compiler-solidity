@@ -25,7 +25,7 @@ rusty_pool = { version = "=0.7.0", default-features = false }
 num_cpus = "=1.16.0"
 
 serde = { version = "=1.0.210", "features" = [ "derive" ] }
-serde_json = { version = "=1.0.128", features = [ "arbitrary_precision" ] }
+serde_json = { version = "=1.0.133", features = [ "arbitrary_precision" ] }
 semver = { version = "=1.0.23", features = [ "serde" ] }
 hex = "=0.4.3"
 num = "=0.4.3"

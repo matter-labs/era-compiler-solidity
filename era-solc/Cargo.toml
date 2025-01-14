@@ -16,7 +16,7 @@ which = "=6.0.3"
 rayon = "=1.10.0"
 
 serde = { version = "=1.0.210", "features" = [ "derive" ] }
-serde_json = { version = "=1.0.128", features = [ "arbitrary_precision" ] }
+serde_json = { version = "=1.0.133", features = [ "arbitrary_precision" ] }
 semver = { version = "=1.0.23", features = [ "serde" ] }
 hex = "=0.4.3"
 num = "=0.4.3"
