@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.5.10] - 2025-01-17
+
+### Changed
+
+- The error about using `create`/`create2` in assembly is made a warning
+
 ## [1.5.9] - 2025-01-09
 
 ### Added

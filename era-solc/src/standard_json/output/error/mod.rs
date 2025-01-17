@@ -171,9 +171,9 @@ You may disable this error with:
     }
 
     ///
-    /// Returns the `create` and `create2` in assembly blocks usage error.
+    /// Returns the `create` and `create2` in assembly blocks usage warning.
     ///
-    pub fn error_assembly_create(
+    pub fn warning_assembly_create(
         node: Option<&str>,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJsonInputSource>,
@@ -182,15 +182,15 @@ You may disable this error with:
 You are using 'create'/'create2' in an assembly block, probably by providing bytecode and expecting an EVM-like behavior.
 EraVM does not use bytecode for contract deployment. Instead, it refers to contracts using their bytecode hashes.
 In order to deploy a contract, please use the `new` operator in Solidity instead of raw 'create'/'create2' in assembly.
-In Solidity v0.6 and older, it can be a false-positive error if there is 'create(' or 'create2(' in comments within assembly.
+In Solidity v0.6 and older, it can be a false-positive warning if there is 'create(' or 'create2(' in comments within assembly.
 Learn more about CREATE/CREATE2 EraVM limitations at https://docs.zksync.io/zksync-protocol/differences/evm-instructions#create-create2
 
-You may disable this error with:
-    1. `suppressedErrors = ["assemblycreate"]` in standard JSON.
-    2. `--suppress-errors assemblycreate` in the CLI.
+You may disable this warning with:
+    1. `suppressedWarnings = ["assemblycreate"]` in standard JSON.
+    2. `--suppress-warnings assemblycreate` in the CLI.
 "#;
 
-        Self::new_error(
+        Self::new_warning(
             message,
             node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
             Some(sources),

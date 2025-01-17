@@ -101,7 +101,7 @@ impl Source {
             _ => return None,
         }
 
-        Some(StandardJsonOutputError::error_assembly_create(
+        Some(StandardJsonOutputError::warning_assembly_create(
             ast.get("src")?.as_str(),
             id_paths,
             sources,
@@ -215,7 +215,7 @@ impl Source {
                 messages.push(message);
             }
         }
-        if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::AssemblyCreate) {
+        if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::AssemblyCreate) {
             if let Some(message) = Self::check_assembly_create(solc_version, ast, id_paths, sources)
             {
                 messages.push(message);

@@ -7,7 +7,6 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(StandardJsonInputErrorType::SendTransfer)]
-#[test_case(StandardJsonInputErrorType::AssemblyCreate)]
 fn default(error_type: StandardJsonInputErrorType) -> anyhow::Result<()> {
     crate::common::setup()?;
 

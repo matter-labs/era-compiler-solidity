@@ -2,13 +2,16 @@
 //! CLI tests for the eponymous option.
 //!
 
+use era_solc::StandardJsonInputWarningType;
 use predicates::prelude::*;
+use test_case::test_case;
 
-#[test]
-fn default() -> anyhow::Result<()> {
+#[test_case(StandardJsonInputWarningType::TxOrigin)]
+#[test_case(StandardJsonInputWarningType::AssemblyCreate)]
+fn default(warning_type: StandardJsonInputWarningType) -> anyhow::Result<()> {
     crate::common::setup()?;
 
-    let warning_type = era_solc::StandardJsonInputWarningType::TxOrigin.to_string();
+    let warning_type = warning_type.to_string();
     let args = &[
         "--bin",
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,

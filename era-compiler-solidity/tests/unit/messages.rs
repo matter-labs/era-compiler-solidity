@@ -497,8 +497,8 @@ fn assembly_create_suppressed(
         era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
-        vec![era_solc::StandardJsonInputErrorType::AssemblyCreate],
         vec![],
+        vec![era_solc::StandardJsonInputWarningType::AssemblyCreate],
     )
     .expect("Test failure"));
 }
@@ -548,8 +548,8 @@ fn assembly_create2_suppressed(
         era_solc::StandardJsonInputLibraries::default(),
         &version,
         codegen,
-        vec![era_solc::StandardJsonInputErrorType::AssemblyCreate],
         vec![],
+        vec![era_solc::StandardJsonInputWarningType::AssemblyCreate],
     )
     .expect("Test failure"));
 }
