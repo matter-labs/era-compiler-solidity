@@ -650,7 +650,7 @@ dependencies = [
 
 [[package]]
 name = "era-compiler-solidity"
-version = "1.5.9"
+version = "1.5.10"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -682,7 +682,7 @@ dependencies = [
 
 [[package]]
 name = "era-solc"
-version = "1.5.9"
+version = "1.5.10"
 dependencies = [
  "anyhow",
  "boolinator",
@@ -698,7 +698,7 @@ dependencies = [
 
 [[package]]
 name = "era-yul"
-version = "1.5.9"
+version = "1.5.10"
 dependencies = [
  "anyhow",
  "regex",

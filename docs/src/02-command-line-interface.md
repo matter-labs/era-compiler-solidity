@@ -158,7 +158,7 @@ zksolc './Simple.sol' --asm --bin
 
 Enables the output of contract metadata. The metadata is a JSON object that contains information about the contract, such as its name, source code hash, the list of dependencies, compiler versions, and so on.
 
-The *zksolc* metadata format is compatible with the [Solidity metadata format](https://soliditylang.org/docs/develop/metadata.html). This means that the metadata output can be used with other tools that support Solidity metadata. Essentially, *solc* metadata is a part of *zksolc* metadata, and it is included as `source_metadata` without any modifications.
+The *zksolc* metadata format is compatible with the [Solidity metadata format](https://docs.soliditylang.org/en/latest/metadata.html#contract-metadata). This means that the metadata output can be used with other tools that support Solidity metadata. Essentially, *solc* metadata is a part of *zksolc* metadata, and it is included as `source_metadata` without any modifications.
 
 Usage:
 

@@ -12,8 +12,6 @@ use std::str::FromStr;
 pub enum ErrorType {
     /// The eponymous feature.
     SendTransfer,
-    /// The eponymous feature.
-    AssemblyCreate,
 }
 
 impl ErrorType {
@@ -34,7 +32,6 @@ impl FromStr for ErrorType {
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "sendtransfer" => Ok(Self::SendTransfer),
-            "assemblycreate" => Ok(Self::AssemblyCreate),
             r#type => Err(anyhow::anyhow!("Invalid suppressed error type: {type}")),
         }
     }
@@ -44,7 +41,6 @@ impl std::fmt::Display for ErrorType {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::SendTransfer => write!(f, "sendtransfer"),
-            Self::AssemblyCreate => write!(f, "assemblycreate"),
         }
     }
 }
