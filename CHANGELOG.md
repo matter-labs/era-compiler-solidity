@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Windows new line characters in Yul string literals
+
 ## [1.5.10] - 2025-01-17
 
 ### Changed

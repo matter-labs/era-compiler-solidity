@@ -123,14 +123,10 @@ impl Literal {
                                     era_compiler_common::BASE_HEXADECIMAL,
                                 )
                                 .map_err(|error| {
-                                    anyhow::anyhow!(
-                                        "Invalid codepoint `{}`: {}",
-                                        codepoint_str,
-                                        error
-                                    )
+                                    anyhow::anyhow!("Invalid codepoint `{codepoint_str}`: {error}")
                                 })?;
                                 let unicode_char = char::from_u32(codepoint).ok_or_else(|| {
-                                    anyhow::anyhow!("Invalid codepoint {}", codepoint)
+                                    anyhow::anyhow!("Invalid codepoint {codepoint}")
                                 })?;
                                 let mut unicode_bytes = vec![0u8; 3];
                                 unicode_char.encode_utf8(&mut unicode_bytes);
@@ -148,7 +144,9 @@ impl Literal {
                             } else if string[index..].starts_with('r') {
                                 hex_string.push_str("0d");
                                 index += 1;
-                            } else if string[index..].starts_with('\n') {
+                            } else if cfg!(windows) && string[index..].starts_with("\r\n") {
+                                index += 2;
+                            } else if cfg!(not(windows)) && string[index..].starts_with('\n') {
                                 index += 1;
                             } else {
                                 hex_string
