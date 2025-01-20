@@ -144,9 +144,9 @@ impl Literal {
                             } else if string[index..].starts_with('r') {
                                 hex_string.push_str("0d");
                                 index += 1;
-                            } else if cfg!(windows) && string[index..].starts_with("\r\n") {
+                            } else if string[index..].starts_with("\r\n") {
                                 index += 2;
-                            } else if cfg!(not(windows)) && string[index..].starts_with('\n') {
+                            } else if string[index..].starts_with('\n') {
                                 index += 1;
                             } else {
                                 hex_string
