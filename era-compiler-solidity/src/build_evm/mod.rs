@@ -41,6 +41,73 @@ impl Build {
     }
 
     ///
+    /// Links the EVM build.
+    ///
+    pub fn link(
+        mut self,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+    ) -> Self {
+        for (path, contract) in
+            self.results
+                .iter_mut()
+                .filter_map(|(path, contract)| match contract {
+                    Ok(contract)
+                        if contract.object_format == era_compiler_common::ObjectFormat::ELF =>
+                    {
+                        Some((path, contract))
+                    }
+                    Ok(_) => None,
+                    Err(_) => panic!("Cannot link a project with errors"),
+                })
+        {
+            let deploy_memory_buffer =
+                inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    contract.deploy_build.as_slice(),
+                    path.as_str(),
+                    false,
+                );
+            let runtime_memory_buffer =
+                inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    contract.runtime_build.as_slice(),
+                    path.as_str(),
+                    false,
+                );
+
+            let (deploy_buffer_linked, runtime_buffer_linked) =
+                match inkwell::memory_buffer::MemoryBuffer::link_module_evm(
+                    &[&deploy_memory_buffer, &runtime_memory_buffer],
+                    &[
+                        contract.deploy_identifier.as_str(),
+                        contract.runtime_identifier.as_str(),
+                    ],
+                    &linker_symbols,
+                ) {
+                    Ok((deploy_buffer_linked, runtime_buffer_linked)) => {
+                        (deploy_buffer_linked, runtime_buffer_linked)
+                    }
+                    Err(error) => {
+                        self.messages
+                            .push(era_solc::StandardJsonOutputError::new_error(
+                                error, None, None,
+                            ));
+                        continue;
+                    }
+                };
+
+            contract.deploy_build = deploy_buffer_linked.as_slice().to_vec();
+            contract.runtime_build = runtime_buffer_linked.as_slice().to_vec();
+            contract.object_format =
+                if deploy_buffer_linked.is_elf_eravm() || runtime_buffer_linked.is_elf_eravm() {
+                    era_compiler_common::ObjectFormat::ELF
+                } else {
+                    era_compiler_common::ObjectFormat::Raw
+                };
+        }
+
+        self
+    }
+
+    ///
     /// Writes all contracts to the terminal.
     ///
     pub fn write_to_terminal(

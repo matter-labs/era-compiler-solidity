@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#564e41b4d9e0b6a3a0d2f875c6dd891477cef70c"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-cpr-1846-support-libraries-in-the-evm-linker#63154e2adc3ff8af7dc87004965b35d62eaae1b6"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1248,7 +1248,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c5d783f52b755f5382e99e3f1179039b9435e3cc"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#21b3e07a5cf4b7920d2e7f56e7c48b2d1779cc18"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1263,7 +1263,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#c5d783f52b755f5382e99e3f1179039b9435e3cc"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#21b3e07a5cf4b7920d2e7f56e7c48b2d1779cc18"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1401,7 +1401,7 @@ checksum = "4ee93343901ab17bd981295f2cf0026d4ad018c7c31ba84549a4ddbb47a45104"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#b65826dfdb19676637dbddb9f01bcc52ae2c4308"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1846-support-libraries-in-the-evm-linker#00c474ab3766d4b70909c042b0b817612791f996"
 dependencies = [
  "anyhow",
  "cc",

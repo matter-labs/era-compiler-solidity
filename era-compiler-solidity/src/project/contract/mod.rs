@@ -338,23 +338,15 @@ impl Contract {
                     })?;
                 let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
-                let (deploy_buffer_linked, runtime_buffer_linked) =
-                    inkwell::memory_buffer::MemoryBuffer::link_module_evm(
-                        &[&deploy_buffer, &runtime_buffer],
-                        &[
-                            deploy_code_identifier.as_str(),
-                            runtime_code_identifier.as_str(),
-                        ],
-                    )
-                    .map_err(|error| anyhow::anyhow!("linking: {error}"))?;
-
                 Ok(EVMContractBuild::new(
                     self.name,
-                    identifier,
-                    deploy_buffer_linked.as_slice().to_owned(),
-                    runtime_buffer_linked.as_slice().to_owned(),
+                    deploy_code_identifier,
+                    deploy_buffer.as_slice().to_owned(),
+                    runtime_code_identifier,
+                    runtime_buffer.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::EVMLA(mut deploy_code) => {
@@ -365,7 +357,14 @@ impl Contract {
                     solc_version.expect("Always exists").default,
                 );
 
+                let deploy_code_segment = era_compiler_common::CodeSegment::Deploy;
                 let runtime_code_segment = era_compiler_common::CodeSegment::Runtime;
+
+                let deploy_code_identifier =
+                    format!("{}.{deploy_code_segment}", self.name.full_path);
+                let runtime_code_identifier =
+                    format!("{}.{runtime_code_segment}", self.name.full_path);
+
                 let runtime_llvm = inkwell::context::Context::create();
                 let runtime_module = runtime_llvm.create_module(
                     format!("{}.{runtime_code_segment}", self.name.full_path).as_str(),
@@ -388,7 +387,6 @@ impl Contract {
                     })?;
                 let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
 
-                let deploy_code_segment = era_compiler_common::CodeSegment::Deploy;
                 let deploy_llvm = inkwell::context::Context::create();
                 let deploy_module = deploy_llvm.create_module(
                     format!("{}.{deploy_code_segment}", self.name.full_path).as_str(),
@@ -411,23 +409,15 @@ impl Contract {
                     })?;
                 let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
-                let (deploy_buffer_linked, runtime_buffer_linked) =
-                    inkwell::memory_buffer::MemoryBuffer::link_module_evm(
-                        &[&deploy_buffer, &runtime_buffer],
-                        &[
-                            format!("{}.{deploy_code_segment}", self.name.full_path).as_str(),
-                            format!("{}.{runtime_code_segment}", self.name.full_path).as_str(),
-                        ],
-                    )
-                    .map_err(|error| anyhow::anyhow!("linking: {error}"))?;
-
                 Ok(EVMContractBuild::new(
                     self.name,
-                    identifier,
-                    deploy_buffer_linked.as_slice().to_owned(),
-                    runtime_buffer_linked.as_slice().to_owned(),
+                    deploy_code_identifier,
+                    deploy_buffer.as_slice().to_owned(),
+                    runtime_code_identifier,
+                    runtime_buffer.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::LLVMIR(mut llvm_ir) => {
@@ -456,11 +446,13 @@ impl Contract {
 
                 Ok(EVMContractBuild::new(
                     self.name,
-                    identifier,
+                    identifier.clone(),
                     vec![],
+                    identifier,
                     runtime_build.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::EraVMAssembly(_) => anyhow::bail!("EraVM assembly cannot be compiled to EVM."),

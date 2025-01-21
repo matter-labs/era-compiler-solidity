@@ -13,16 +13,20 @@ use std::path::PathBuf;
 pub struct Contract {
     /// The contract name.
     pub name: era_compiler_common::ContractName,
-    /// The auxiliary identifier. Used to identify Yul objects.
-    pub identifier: String,
+    /// The deploy bytecode identifier.
+    pub deploy_identifier: String,
     /// The deploy bytecode.
     pub deploy_build: Vec<u8>,
+    /// The runtime bytecode identifier.
+    pub runtime_identifier: String,
     /// The runtime bytecode.
     pub runtime_build: Vec<u8>,
     /// The metadata hash.
     pub metadata_hash: Option<era_compiler_common::Hash>,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
+    /// The binary object format.
+    pub object_format: era_compiler_common::ObjectFormat,
 }
 
 impl Contract {
@@ -31,19 +35,23 @@ impl Contract {
     ///
     pub fn new(
         name: era_compiler_common::ContractName,
-        identifier: String,
+        deploy_identifier: String,
         deploy_build: Vec<u8>,
+        runtime_identifier: String,
         runtime_build: Vec<u8>,
         metadata_hash: Option<era_compiler_common::Hash>,
         metadata_json: serde_json::Value,
+        object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,
-            identifier,
+            deploy_identifier,
             deploy_build,
+            runtime_identifier,
             runtime_build,
             metadata_hash,
             metadata_json,
+            object_format,
         }
     }
 
