@@ -3,7 +3,6 @@
 //!
 
 pub mod contract;
-pub mod thread_pool_evm;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
@@ -14,22 +13,21 @@ use rayon::iter::ParallelIterator;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_eravm::Build as EraVMBuild;
+use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::build_evm::Build as EVMBuild;
 use crate::evmla::assembly::Assembly;
 use crate::missing_libraries::MissingLibraries;
 use crate::process::input_eravm::Input as EraVMProcessInput;
-use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::process::input_evm::Input as EVMProcessInput;
 use crate::process::output_eravm::Output as EraVMOutput;
+use crate::process::output_evm::Output as EVMOutput;
 
-use self::contract::factory_dependency::FactoryDependency;
 use self::contract::ir::eravm_assembly::EraVMAssembly as ContractEraVMAssembly;
 use self::contract::ir::evmla::EVMLA as ContractEVMLA;
 use self::contract::ir::llvm_ir::LLVMIR as ContractLLVMIR;
 use self::contract::ir::yul::Yul as ContractYul;
 use self::contract::ir::IR as ContractIR;
 use self::contract::Contract;
-use self::thread_pool_evm::ThreadPool as EVMThreadPool;
 
 ///
 /// The project representation.
@@ -369,7 +367,7 @@ impl Project {
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
         let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
-            let factory_dependencies = contract
+            let factory_dependencies = contract.ir
                 .drain_factory_dependencies()
                 .into_iter()
                 .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
@@ -406,23 +404,26 @@ impl Project {
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
-        threads: Option<usize>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
-        let dependency_data =
-            EVMProcessInputDependencyData::new(self.solc_version, self.identifier_paths);
+        let results = self.contracts.into_par_iter().map(|(path, contract)| {
+            let missing_libraries = contract.get_missing_libraries();
+            let input = EVMProcessInput::new(
+                contract,
+                self.solc_version.clone(),
+                self.identifier_paths.clone(),
+                missing_libraries,
+                metadata_hash_type,
+                optimizer_settings.clone(),
+                llvm_options.clone(),
+                debug_config.clone(),
+            );
+            let result: crate::Result<EVMOutput> =
+                crate::process::call(path.as_str(), input, era_compiler_common::Target::EVM);
+            let result = result.map(|output| output.build);
+            (path, result)
+        }).collect::<BTreeMap<String, Result<EVMContractBuild, era_solc::StandardJsonOutputError>>>();
 
-        let input_template = EVMProcessInput::new(
-            None,
-            dependency_data,
-            metadata_hash_type,
-            optimizer_settings,
-            llvm_options,
-            debug_config,
-        );
-        let pool = EVMThreadPool::new(threads, self.contracts, input_template);
-        pool.start();
-        let results = pool.finish();
         Ok(EVMBuild::new(results, messages))
     }
 

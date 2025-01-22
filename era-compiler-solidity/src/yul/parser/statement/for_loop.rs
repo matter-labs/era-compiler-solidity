@@ -15,13 +15,10 @@ declare_wrapper!(
     ForLoop
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for ForLoop
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for ForLoop {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let term = self.0;
         term.initializer.wrap().into_llvm(context)?;
@@ -70,14 +67,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for ForLoop
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for ForLoop {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         self.0.initializer.wrap().into_llvm(context)?;
 
         let condition_block = context.append_basic_block("for_condition");

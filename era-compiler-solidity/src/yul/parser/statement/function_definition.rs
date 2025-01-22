@@ -14,13 +14,10 @@ declare_wrapper!(
     FunctionDefinition
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for FunctionDefinition
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for FunctionDefinition {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
             .0
@@ -66,7 +63,7 @@ where
 
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         context.set_current_function(self.0.identifier.as_str())?;
         let r#return = context.current_function().borrow().r#return();
@@ -181,13 +178,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for FunctionDefinition
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for FunctionDefinition {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         let argument_types: Vec<_> = self
             .0
@@ -213,7 +207,7 @@ where
 
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         context.set_current_function(self.0.identifier.as_str())?;
         let r#return = context.current_function().borrow().r#return();

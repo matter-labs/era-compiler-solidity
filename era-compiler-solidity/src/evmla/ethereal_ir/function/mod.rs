@@ -1160,13 +1160,10 @@ impl Function {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Function
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Function {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let (function_type, output_size) = match self.r#type {
             Type::Initial => {
@@ -1215,7 +1212,7 @@ where
 
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         context.set_current_function(self.name.as_str())?;
 
@@ -1343,13 +1340,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Function
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for Function {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         let (function_type, output_size) = match self.r#type {
             Type::Initial => {
@@ -1390,10 +1384,7 @@ where
         Ok(())
     }
 
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         context.set_current_function(self.name.as_str())?;
 
         for (key, blocks) in self.blocks.iter() {

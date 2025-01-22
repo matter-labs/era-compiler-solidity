@@ -61,12 +61,15 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
             let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
                 .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
 
-            let contract = input.contract.expect("Always exists");
-            let source_location =
-                era_solc::StandardJsonOutputErrorSourceLocation::new(contract.name.path.clone());
-            let result = contract
+            let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
+                input.contract.name.path.clone(),
+            );
+            let result = input
+                .contract
                 .compile_to_evm(
-                    input.dependency_data,
+                    input.solc_version,
+                    input.identifier_paths,
+                    input.missing_libraries,
                     input.metadata_hash_type,
                     input.optimizer_settings,
                     input.llvm_options,
@@ -116,7 +119,7 @@ where
     let stdin_input = serde_json::to_vec(&input).expect("Always valid");
     stdin
         .write_all(stdin_input.as_slice())
-        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdin writing: {error:?}",));
+        .unwrap_or_else(|error| panic!("{executable:?} subprocess stdin writing: {error:?}"));
 
     let result = process
         .wait_with_output()

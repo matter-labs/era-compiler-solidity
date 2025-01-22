@@ -50,13 +50,10 @@ impl Element {
     ///
     /// Pops the specified number of arguments, converted into their LLVM values.
     ///
-    fn pop_arguments_llvm<'ctx, D>(
+    fn pop_arguments_llvm<'ctx>(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
-    where
-        D: era_compiler_llvm_context::Dependency,
-    {
+        context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
+    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>> {
         let input_size = self
             .instruction
             .input_size(&context.evmla().expect("Always exists").version);
@@ -81,13 +78,10 @@ impl Element {
     ///
     /// TODO: trait
     ///
-    fn pop_arguments_llvm_evm<'ctx, D>(
+    fn pop_arguments_llvm_evm<'ctx>(
         &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>>
-    where
-        D: era_compiler_llvm_context::Dependency,
-    {
+        context: &mut era_compiler_llvm_context::EVMContext<'ctx>,
+    ) -> anyhow::Result<Vec<inkwell::values::BasicValueEnum<'ctx>>> {
         let input_size = self
             .instruction
             .input_size(&context.evmla().expect("Always exists").version);
@@ -108,13 +102,10 @@ impl Element {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Element
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'_, D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let mut original = self.instruction.value.clone();
 
@@ -1406,13 +1397,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Element
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for Element {
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<'_, D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         let mut original = self.instruction.value.clone();
 

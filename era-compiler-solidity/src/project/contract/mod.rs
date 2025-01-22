@@ -2,22 +2,18 @@
 //! The contract data.
 //!
 
-pub mod factory_dependency;
 pub mod ir;
 pub mod metadata;
 
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::collections::HashSet;
 
 use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::process::input_evm::dependency_data::DependencyData as EVMProcessInputDependencyData;
 use crate::yul::parser::wrapper::Wrap;
 
-use self::factory_dependency::FactoryDependency;
 use self::ir::IR;
 use self::metadata::Metadata;
 
@@ -113,16 +109,14 @@ impl Contract {
         let build = match self.ir {
             IR::Yul(mut yul) => {
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context: era_compiler_llvm_context::EraVMContext<
-                    '_,
-                    era_compiler_llvm_context::DummyDependency,
-                > = era_compiler_llvm_context::EraVMContext::new(
-                    &llvm,
-                    module,
-                    llvm_options,
-                    optimizer,
-                    debug_config,
-                );
+                let mut context: era_compiler_llvm_context::EraVMContext =
+                    era_compiler_llvm_context::EraVMContext::new(
+                        &llvm,
+                        module,
+                        llvm_options,
+                        optimizer,
+                        debug_config,
+                    );
                 context.set_solidity_data(
                     era_compiler_llvm_context::EraVMContextSolidityData::default(),
                 );
@@ -149,16 +143,14 @@ impl Contract {
                     .expect("The EVM assembly codegen cannot be executed without `solc`");
 
                 let module = llvm.create_module(self.name.full_path.as_str());
-                let mut context: era_compiler_llvm_context::EraVMContext<
-                    '_,
-                    era_compiler_llvm_context::DummyDependency,
-                > = era_compiler_llvm_context::EraVMContext::new(
-                    &llvm,
-                    module,
-                    llvm_options,
-                    optimizer,
-                    debug_config,
-                );
+                let mut context: era_compiler_llvm_context::EraVMContext =
+                    era_compiler_llvm_context::EraVMContext::new(
+                        &llvm,
+                        module,
+                        llvm_options,
+                        optimizer,
+                        debug_config,
+                    );
                 context.set_solidity_data(
                     era_compiler_llvm_context::EraVMContextSolidityData::default(),
                 );
@@ -189,16 +181,14 @@ impl Contract {
                 let module = llvm
                     .create_module_from_ir(memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let context: era_compiler_llvm_context::EraVMContext<
-                    '_,
-                    era_compiler_llvm_context::DummyDependency,
-                > = era_compiler_llvm_context::EraVMContext::new(
-                    &llvm,
-                    module,
-                    llvm_options,
-                    optimizer,
-                    debug_config,
-                );
+                let context: era_compiler_llvm_context::EraVMContext =
+                    era_compiler_llvm_context::EraVMContext::new(
+                        &llvm,
+                        module,
+                        llvm_options,
+                        optimizer,
+                        debug_config,
+                    );
 
                 context.build(
                     self.name.full_path.as_str(),
@@ -247,7 +237,9 @@ impl Contract {
     ///
     pub fn compile_to_evm(
         self,
-        dependency_data: EVMProcessInputDependencyData,
+        solc_version: Option<era_solc::Version>,
+        identifier_paths: BTreeMap<String, String>,
+        missing_libraries: BTreeSet<String>,
         metadata_hash_type: era_compiler_common::HashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -256,8 +248,6 @@ impl Contract {
         use era_compiler_llvm_context::EVMWriteLLVM;
 
         let identifier = self.identifier().to_owned();
-
-        let solc_version = dependency_data.solc_version.clone();
 
         let optimizer = era_compiler_llvm_context::Optimizer::new(optimizer_settings);
 
@@ -305,14 +295,16 @@ impl Contract {
                     llvm_options.clone(),
                     runtime_code_segment,
                     optimizer.clone(),
-                    Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
+                runtime_context.set_yul_data(era_compiler_llvm_context::EVMContextYulData::new(
+                    identifier_paths.clone(),
+                ));
                 runtime_code.declare(&mut runtime_context)?;
                 runtime_code
                     .into_llvm(&mut runtime_context)
                     .map_err(|error| {
-                        anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}",)
+                        anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
                 let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
 
@@ -327,14 +319,16 @@ impl Contract {
                     llvm_options.clone(),
                     deploy_code_segment,
                     optimizer.clone(),
-                    Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
+                deploy_context.set_yul_data(era_compiler_llvm_context::EVMContextYulData::new(
+                    identifier_paths,
+                ));
                 deploy_code.declare(&mut deploy_context)?;
                 deploy_code
                     .into_llvm(&mut deploy_context)
                     .map_err(|error| {
-                        anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}",)
+                        anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
                 let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
@@ -346,6 +340,7 @@ impl Contract {
                     runtime_buffer.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    missing_libraries,
                     era_compiler_common::ObjectFormat::ELF,
                 ))
             }
@@ -375,7 +370,6 @@ impl Contract {
                     llvm_options.clone(),
                     runtime_code_segment,
                     optimizer.clone(),
-                    Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
                 runtime_context.set_evmla_data(evmla_data.clone());
@@ -383,7 +377,7 @@ impl Contract {
                 runtime_code_assembly
                     .into_llvm(&mut runtime_context)
                     .map_err(|error| {
-                        anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}",)
+                        anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
                 let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
 
@@ -397,7 +391,6 @@ impl Contract {
                     llvm_options.clone(),
                     deploy_code_segment,
                     optimizer.clone(),
-                    Some(dependency_data.clone()),
                     debug_config.clone(),
                 );
                 deploy_context.set_evmla_data(evmla_data);
@@ -405,7 +398,7 @@ impl Contract {
                 deploy_code
                     .into_llvm(&mut deploy_context)
                     .map_err(|error| {
-                        anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}",)
+                        anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
                 let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
 
@@ -417,6 +410,7 @@ impl Contract {
                     runtime_buffer.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    missing_libraries,
                     era_compiler_common::ObjectFormat::ELF,
                 ))
             }
@@ -439,7 +433,6 @@ impl Contract {
                     llvm_options,
                     era_compiler_common::CodeSegment::Runtime,
                     optimizer,
-                    Some(dependency_data),
                     debug_config,
                 );
                 let runtime_build = context.build(self.name.path.as_str())?;
@@ -452,6 +445,7 @@ impl Contract {
                     runtime_build.as_slice().to_owned(),
                     metadata_hash,
                     metadata_json,
+                    missing_libraries,
                     era_compiler_common::ObjectFormat::ELF,
                 ))
             }
@@ -464,66 +458,5 @@ impl Contract {
     ///
     pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.ir.get_missing_libraries()
-    }
-}
-
-impl FactoryDependency for Contract {
-    fn get_factory_dependencies(&self) -> HashSet<&str> {
-        match self.ir {
-            IR::Yul(ref yul) => yul
-                .object
-                .0
-                .factory_dependencies
-                .iter()
-                .map(|path| path.as_str())
-                .collect(),
-            IR::EVMLA(ref evm) => evm
-                .assembly
-                .factory_dependencies
-                .iter()
-                .map(|path| path.as_str())
-                .collect(),
-            IR::LLVMIR(_) => HashSet::new(),
-            IR::EraVMAssembly(_) => HashSet::new(),
-        }
-    }
-
-    fn drain_factory_dependencies(&mut self) -> HashSet<String> {
-        match self.ir {
-            IR::Yul(ref mut yul) => yul.object.0.factory_dependencies.drain().collect(),
-            IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
-            IR::LLVMIR(_) => HashSet::new(),
-            IR::EraVMAssembly(_) => HashSet::new(),
-        }
-    }
-
-    fn are_factory_dependencies_satisfied<D>(
-        &self,
-        evaluated_dependencies: Vec<&String>,
-        resolver: &D,
-    ) -> bool
-    where
-        D: era_compiler_llvm_context::Dependency,
-    {
-        match self.ir {
-            IR::Yul(ref yul) => yul
-                .object
-                .0
-                .factory_dependencies
-                .iter()
-                .map(|identifier| {
-                    resolver
-                        .resolve_path(identifier.as_str())
-                        .expect("Always valid")
-                })
-                .all(|path| evaluated_dependencies.contains(&&path)),
-            IR::EVMLA(ref evm) => evm
-                .assembly
-                .factory_dependencies
-                .iter()
-                .all(|path| evaluated_dependencies.contains(&path)),
-            IR::LLVMIR(_) => true,
-            IR::EraVMAssembly(_) => true,
-        }
     }
 }

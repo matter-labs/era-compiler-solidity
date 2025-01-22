@@ -15,13 +15,10 @@ declare_wrapper!(
     VariableDeclaration
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for VariableDeclaration
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for VariableDeclaration {
     fn into_llvm<'ctx>(
         mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+        context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
     ) -> anyhow::Result<()> {
         if self.0.bindings.len() == 1 {
             let identifier = self.0.bindings.remove(0);
@@ -143,13 +140,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for VariableDeclaration
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for VariableDeclaration {
     fn into_llvm<'ctx>(
         mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
+        context: &mut era_compiler_llvm_context::EVMContext<'ctx>,
     ) -> anyhow::Result<()> {
         if self.0.bindings.len() == 1 {
             let identifier = self.0.bindings.remove(0);

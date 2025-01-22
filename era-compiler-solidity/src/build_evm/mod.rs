@@ -47,19 +47,13 @@ impl Build {
         mut self,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
     ) -> Self {
-        for (path, contract) in
-            self.results
-                .iter_mut()
-                .filter_map(|(path, contract)| match contract {
-                    Ok(contract)
-                        if contract.object_format == era_compiler_common::ObjectFormat::ELF =>
-                    {
-                        Some((path, contract))
-                    }
-                    Ok(_) => None,
-                    Err(_) => panic!("Cannot link a project with errors"),
-                })
-        {
+        for (path, contract) in self.results.iter_mut().filter_map(|(path, result)| {
+            let contract = result.as_mut().expect("Cannot link a project with errors");
+            match contract.object_format {
+                era_compiler_common::ObjectFormat::ELF => Some((path, contract)),
+                _ => None,
+            }
+        }) {
             let deploy_memory_buffer =
                 inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                     contract.deploy_build.as_slice(),
@@ -73,18 +67,13 @@ impl Build {
                     false,
                 );
 
-            let (deploy_buffer_linked, runtime_buffer_linked) =
-                match inkwell::memory_buffer::MemoryBuffer::link_module_evm(
-                    &[&deploy_memory_buffer, &runtime_memory_buffer],
-                    &[
-                        contract.deploy_identifier.as_str(),
-                        contract.runtime_identifier.as_str(),
-                    ],
+            let (deploy_buffer_linked, runtime_buffer_linked, object_format) =
+                match era_compiler_llvm_context::evm_link(
+                    (contract.deploy_identifier.as_str(), deploy_memory_buffer),
+                    (contract.runtime_identifier.as_str(), runtime_memory_buffer),
                     &linker_symbols,
                 ) {
-                    Ok((deploy_buffer_linked, runtime_buffer_linked)) => {
-                        (deploy_buffer_linked, runtime_buffer_linked)
-                    }
+                    Ok(result) => result,
                     Err(error) => {
                         self.messages
                             .push(era_solc::StandardJsonOutputError::new_error(
@@ -96,12 +85,7 @@ impl Build {
 
             contract.deploy_build = deploy_buffer_linked.as_slice().to_vec();
             contract.runtime_build = runtime_buffer_linked.as_slice().to_vec();
-            contract.object_format =
-                if deploy_buffer_linked.is_elf_eravm() || runtime_buffer_linked.is_elf_eravm() {
-                    era_compiler_common::ObjectFormat::ELF
-                } else {
-                    era_compiler_common::ObjectFormat::Raw
-                };
+            contract.object_format = object_format;
         }
 
         self

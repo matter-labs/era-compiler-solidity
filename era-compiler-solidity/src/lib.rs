@@ -118,7 +118,6 @@ pub fn yul_to_evm(
     metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -146,7 +145,6 @@ pub fn yul_to_evm(
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -198,7 +196,6 @@ pub fn llvm_ir_to_evm(
     metadata_hash_type: era_compiler_common::HashType,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
@@ -210,7 +207,6 @@ pub fn llvm_ir_to_evm(
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -256,7 +252,6 @@ pub fn eravm_assembly_to_evm(
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     metadata_hash_type: era_compiler_common::HashType,
     llvm_options: Vec<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let project = Project::try_from_eravm_assembly_paths(paths, None)?;
@@ -267,7 +262,6 @@ pub fn eravm_assembly_to_evm(
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     build.take_and_write_warnings();
@@ -377,7 +371,6 @@ pub fn standard_output_evm(
     remappings: BTreeSet<String>,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let solc_version = solc_compiler.version.to_owned();
@@ -425,7 +418,6 @@ pub fn standard_output_evm(
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     Ok(build)
@@ -622,7 +614,6 @@ pub fn standard_json_evm(
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let mut solc_input = era_solc::StandardJsonInput::try_from(json_path.as_deref())?;
@@ -756,7 +747,6 @@ pub fn standard_json_evm(
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
@@ -884,7 +874,6 @@ pub fn combined_json_evm(
     overwrite: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
-    threads: Option<usize>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<()> {
     let selector_results = era_solc::CombinedJsonSelector::from_cli(format.as_str());
@@ -932,7 +921,6 @@ pub fn combined_json_evm(
         remappings,
         optimizer_settings,
         llvm_options,
-        threads,
         debug_config,
     )?;
     build.write_to_combined_json(&mut combined_json)?;

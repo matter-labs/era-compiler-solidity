@@ -14,13 +14,10 @@ declare_wrapper!(
     Block
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Block
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Block {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let current_function = context.current_function().borrow().name().to_owned();
         let current_block = context.basic_block();
@@ -86,14 +83,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Block
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for Block {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let current_function = context.current_function().borrow().name().to_owned();
         let current_block = context.basic_block();
 

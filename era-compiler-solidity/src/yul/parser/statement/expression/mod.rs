@@ -19,13 +19,10 @@ impl Expression {
     ///
     /// Converts the expression into an LLVM value.
     ///
-    pub fn into_llvm<'ctx, D>(
+    pub fn into_llvm<'ctx>(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
-    where
-        D: era_compiler_llvm_context::Dependency + Clone,
-    {
+        context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>> {
         match self.0 {
             era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal
                 .clone()
@@ -80,13 +77,10 @@ impl Expression {
     ///
     /// TODO: trait
     ///
-    pub fn into_llvm_evm<'ctx, D>(
+    pub fn into_llvm_evm<'ctx>(
         self,
-        context: &mut era_compiler_llvm_context::EVMContext<'ctx, D>,
-    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>>
-    where
-        D: era_compiler_llvm_context::Dependency + Clone,
-    {
+        context: &mut era_compiler_llvm_context::EVMContext<'ctx>,
+    ) -> anyhow::Result<Option<era_compiler_llvm_context::Value<'ctx>>> {
         match self.0 {
             era_yul::yul::parser::statement::expression::Expression::Literal(literal) => literal
                 .clone()

@@ -14,13 +14,10 @@ declare_wrapper!(
     Switch
 );
 
-impl<D> EraVMWriteLLVM<D> for Switch
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl EraVMWriteLLVM for Switch {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let term = self.0;
         let scrutinee = term.expression.wrap().into_llvm(context)?;
@@ -72,14 +69,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Switch
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for Switch {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let scrutinee = self.0.expression.wrap().into_llvm_evm(context)?;
 
         if self.0.cases.is_empty() {
