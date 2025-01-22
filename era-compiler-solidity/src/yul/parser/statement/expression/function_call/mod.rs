@@ -893,9 +893,8 @@ impl FunctionCall {
             Name::LinkerSymbol => {
                 let mut arguments = self.pop_arguments::<1>(context)?;
                 let path = arguments[0].original.take().ok_or_else(|| {
-                    anyhow::anyhow!("{} Linker symbol literal is missing", location)
+                    anyhow::anyhow!("{location} Linker symbol literal is missing")
                 })?;
-
                 era_compiler_llvm_context::eravm_evm_call::linker_symbol(context, path.as_str())
                     .map(Some)
             }
@@ -2099,7 +2098,13 @@ impl FunctionCall {
             }
             Name::DataCopy => Ok(None),
 
-            Name::LinkerSymbol => Ok(Some(context.field_const(0).as_basic_value_enum())),
+            Name::LinkerSymbol => {
+                let mut arguments = self.pop_arguments_evm::<1>(context)?;
+                let path = arguments[0].original.take().ok_or_else(|| {
+                    anyhow::anyhow!("{location} Linker symbol literal is missing")
+                })?;
+                era_compiler_llvm_context::evm_call::linker_symbol(context, path.as_str()).map(Some)
+            }
             Name::MemoryGuard => {
                 let arguments = self.pop_arguments_llvm_evm::<1>(context)?;
                 Ok(Some(arguments[0]))

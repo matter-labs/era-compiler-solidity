@@ -1491,7 +1491,14 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
                     .map(Some)
             }
-            InstructionName::PUSHLIB => Ok(Some(context.field_const(0).as_basic_value_enum())),
+            InstructionName::PUSHLIB => {
+                let path = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
+
+                era_compiler_llvm_context::evm_call::linker_symbol(context, path.as_str()).map(Some)
+            }
             InstructionName::PUSH_Data => Ok(Some(context.field_const(0).as_basic_value_enum())),
             InstructionName::PUSHDEPLOYADDRESS => {
                 Ok(Some(context.field_const(0).as_basic_value_enum()))
