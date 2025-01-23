@@ -1249,7 +1249,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#a66eba8ba94d61b80e5a55894e33d3426211965b"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#54cd693d137a1205618d62123041b2e1cea3471a"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1264,7 +1264,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#a66eba8ba94d61b80e5a55894e33d3426211965b"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=az-cpr-1846-support-libraries-in-the-evm-linker#54cd693d137a1205618d62123041b2e1cea3471a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1402,7 +1402,7 @@ checksum = "4ee93343901ab17bd981295f2cf0026d4ad018c7c31ba84549a4ddbb47a45104"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1846-support-libraries-in-the-evm-linker#8c17e440bbadc948f0828a0647fbbec48a880d0e"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=az-cpr-1846-support-libraries-in-the-evm-linker#0f6e72e95dba4a16012a7157dfe4c8ca73e15440"
 dependencies = [
  "anyhow",
  "cc",
@@ -2653,9 +2653,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.14"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
+checksum = "11cd88e12b17c6494200a9c1b683a04fcac9573ed74cd1b62aeb2727c5592243"
 
 [[package]]
 name = "unsigned-varint"
