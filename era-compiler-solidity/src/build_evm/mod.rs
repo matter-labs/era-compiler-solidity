@@ -47,23 +47,23 @@ impl Build {
         mut self,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
     ) -> Self {
-        for (path, contract) in self.results.iter_mut().filter_map(|(path, result)| {
+        for contract in self.results.values_mut().filter_map(|result| {
             let contract = result.as_mut().expect("Cannot link a project with errors");
             match contract.object_format {
-                era_compiler_common::ObjectFormat::ELF => Some((path, contract)),
+                era_compiler_common::ObjectFormat::ELF => Some(contract),
                 _ => None,
             }
         }) {
             let deploy_memory_buffer =
                 inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                     contract.deploy_build.as_slice(),
-                    path.as_str(),
+                    contract.deploy_identifier.as_str(),
                     false,
                 );
             let runtime_memory_buffer =
                 inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
                     contract.runtime_build.as_slice(),
-                    path.as_str(),
+                    contract.runtime_identifier.as_str(),
                     false,
                 );
 

@@ -121,7 +121,7 @@ pub fn yul_to_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
-    let _linker_symbols = libraries.as_linker_symbols()?;
+    let linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
         Some(solc_path) => {
@@ -140,13 +140,19 @@ pub fn yul_to_evm(
         debug_config.as_ref(),
     )?;
 
-    let build = project.compile_to_evm(
+    let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.check_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -199,16 +205,23 @@ pub fn llvm_ir_to_evm(
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
     let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let linker_symbols = libraries.as_linker_symbols()?;
 
     let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
 
-    let build = project.compile_to_evm(
+    let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.check_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -264,6 +277,10 @@ pub fn eravm_assembly_to_evm(
         llvm_options,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.check_errors()?;
+
+    let mut build = build.link(BTreeMap::new());
     build.take_and_write_warnings();
     build.check_errors()?;
     Ok(build)
@@ -403,6 +420,8 @@ pub fn standard_output_evm(
     solc_output.take_and_write_warnings();
     solc_output.check_errors()?;
 
+    let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
+
     let project = Project::try_from_solc_output(
         solc_input.settings.libraries,
         solc_codegen,
@@ -413,13 +432,19 @@ pub fn standard_output_evm(
     solc_output.take_and_write_warnings();
     solc_output.check_errors()?;
 
-    let build = project.compile_to_evm(
+    let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
         optimizer_settings,
         llvm_options,
         debug_config,
     )?;
+    build.take_and_write_warnings();
+    build.check_errors()?;
+
+    let mut build = build.link(linker_symbols);
+    build.take_and_write_warnings();
+    build.check_errors()?;
     Ok(build)
 }
 
@@ -619,6 +644,7 @@ pub fn standard_json_evm(
     let mut solc_input = era_solc::StandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let prune_output = solc_input.settings.selection_to_prune();
+    let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
 
     let mut optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode,
@@ -749,6 +775,12 @@ pub fn standard_json_evm(
         llvm_options,
         debug_config,
     )?;
+    if build.has_errors() {
+        build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
+        solc_output.write_and_exit(prune_output);
+    }
+
+    let build = build.link(linker_symbols);
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     solc_output.write_and_exit(prune_output);
 }
