@@ -5,7 +5,6 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
-use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -366,13 +365,14 @@ impl Project {
         output_assembly: bool,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EraVMBuild> {
+        let deployed_libraries = self.libraries.as_paths();
         let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
             let factory_dependencies = contract.ir
                 .drain_factory_dependencies()
                 .into_iter()
                 .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
                 .collect();
-            let missing_libraries = contract.get_missing_libraries();
+            let missing_libraries = contract.get_missing_libraries(&deployed_libraries);
             let input = EraVMProcessInput::new(
                 contract,
                 self.solc_version.clone(),
@@ -391,7 +391,6 @@ impl Project {
             let result = result.map(|output| output.build);
             (path, result)
         }).collect::<BTreeMap<String, Result<EraVMContractBuild, era_solc::StandardJsonOutputError>>>();
-
         Ok(EraVMBuild::new(results, messages))
     }
 
@@ -431,27 +430,17 @@ impl Project {
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> MissingLibraries {
-        let deployed_libraries = self
-            .libraries
-            .as_inner()
+        let deployed_libraries = self.libraries.as_paths();
+        let missing_libraries = self
+            .contracts
             .iter()
-            .flat_map(|(file, names)| {
-                names
-                    .iter()
-                    .map(|(name, _address)| format!("{file}:{name}"))
-                    .collect::<BTreeSet<String>>()
+            .map(|(path, contract)| {
+                (
+                    path.to_owned(),
+                    contract.get_missing_libraries(&deployed_libraries),
+                )
             })
-            .collect::<BTreeSet<String>>();
-
-        let mut missing_deployable_libraries = BTreeMap::new();
-        for (contract_path, contract) in self.contracts.iter() {
-            let missing_libraries = contract
-                .get_missing_libraries()
-                .into_iter()
-                .filter(|library| !deployed_libraries.contains(library))
-                .collect::<BTreeSet<String>>();
-            missing_deployable_libraries.insert(contract_path.to_owned(), missing_libraries);
-        }
-        MissingLibraries::new(missing_deployable_libraries)
+            .collect();
+        MissingLibraries::new(missing_libraries)
     }
 }
