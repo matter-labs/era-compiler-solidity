@@ -136,7 +136,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       // Available options: "none", "keccak256", "ipfs".
       // The metadata hash can be removed from the bytecode via option "none".
       // Default: "keccak256".
-      "bytecodeHash": "ipfs",
+      "hashType": "ipfs",
       // Optional: Use only literal content and not URLs.
       // Passed through to solc and does not affect the zksolc-specific metadata.
       // Default: false.
