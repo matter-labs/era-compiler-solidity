@@ -13,7 +13,11 @@ pub struct Metadata {
     pub use_literal_content: bool,
 
     /// The metadata hash type.
-    #[serde(default = "Metadata::default_hash_type", skip_serializing)]
+    #[serde(
+        alias = "bytecodeHash",
+        default = "Metadata::default_hash_type",
+        skip_serializing
+    )]
     pub hash_type: era_compiler_common::HashType,
 }
 
