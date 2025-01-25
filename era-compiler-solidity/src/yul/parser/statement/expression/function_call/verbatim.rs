@@ -11,15 +11,12 @@ use super::FunctionCall;
 ///
 /// Translates the verbatim simulations.
 ///
-pub fn verbatim<'ctx, D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+pub fn verbatim<'ctx>(
+    context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
     call: &mut FunctionCall,
     input_size: usize,
     output_size: usize,
-) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>>
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+) -> anyhow::Result<Option<inkwell::values::BasicValueEnum<'ctx>>> {
     if output_size > 1 {
         anyhow::bail!(
             "{} Verbatim instructions with multiple return values are not supported",
@@ -27,7 +24,7 @@ where
         );
     }
 
-    let mut arguments = call.pop_arguments::<D, 1>(context)?;
+    let mut arguments = call.pop_arguments::<1>(context)?;
     let identifier = arguments[0]
         .original
         .take()
@@ -45,7 +42,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::to_l1(
                 context,
                 arguments[0].into_int_value(),
@@ -66,7 +63,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::precompile(
                 context,
                 arguments[0].into_int_value(),
@@ -86,7 +83,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::decommit(
                 context,
                 arguments[0].into_int_value(),
@@ -106,7 +103,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::set_context_value(
                 context,
                 arguments[0].into_int_value(),
@@ -125,7 +122,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::set_pubdata_price(
                 context,
                 arguments[0].into_int_value(),
@@ -265,7 +262,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_math::multiplication_512(
                 context,
                 arguments[0].into_int_value(),
@@ -285,7 +282,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::event(
                 context,
                 arguments[0].into_int_value(),
@@ -306,7 +303,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_general::event(
                 context,
                 arguments[0].into_int_value(),
@@ -327,7 +324,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call,
@@ -350,7 +347,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call_byref,
@@ -375,7 +372,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call,
@@ -403,7 +400,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::mimic(
                 context,
                 context.llvm_runtime().mimic_call_byref,
@@ -433,7 +430,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().far_call,
@@ -456,7 +453,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().static_call,
@@ -479,7 +476,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().delegate_call,
@@ -502,7 +499,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().far_call_byref,
@@ -527,7 +524,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().static_call_byref,
@@ -552,7 +549,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::raw_far(
                 context,
                 context.llvm_runtime().delegate_call_byref,
@@ -577,7 +574,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().far_call,
@@ -606,7 +603,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().static_call,
@@ -630,7 +627,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().delegate_call,
@@ -654,7 +651,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().far_call_byref,
@@ -685,7 +682,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().static_call_byref,
@@ -711,7 +708,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_call::system(
                 context,
                 context.llvm_runtime().delegate_call_byref,
@@ -779,7 +776,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_add_assign(
                 context,
                 arguments[0].into_int_value(),
@@ -798,7 +795,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_shrink_assign(
                 context,
                 arguments[0].into_int_value(),
@@ -817,7 +814,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_pack_assign(
                 context,
                 arguments[0].into_int_value(),
@@ -836,7 +833,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_data_load(
                 context,
                 arguments[0].into_int_value(),
@@ -855,7 +852,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_data_copy(
                 context,
                 arguments[0].into_int_value(),
@@ -890,7 +887,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             era_compiler_llvm_context::eravm_abi::active_ptr_swap(
                 context,
                 arguments[0].into_int_value(),
@@ -938,7 +935,7 @@ where
                 );
             }
 
-            let arguments = call.pop_arguments_llvm::<D, ARGUMENTS_COUNT>(context)?;
+            let arguments = call.pop_arguments_llvm::<ARGUMENTS_COUNT>(context)?;
             context.build_call(
                 context.llvm_runtime().r#return,
                 &[

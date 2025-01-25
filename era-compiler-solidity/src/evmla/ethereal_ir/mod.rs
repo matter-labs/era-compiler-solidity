@@ -98,13 +98,10 @@ impl EtherealIR {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for EtherealIR
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for EtherealIR {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         self.entry_function.declare(context)?;
 
@@ -117,7 +114,7 @@ where
 
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         context.evmla_mut().expect("Always exists").stack = vec![];
 
@@ -131,13 +128,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EtherealIR
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for EtherealIR {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         self.entry_function.declare(context)?;
 
@@ -148,10 +142,7 @@ where
         Ok(())
     }
 
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         context.evmla_mut().expect("Always exists").stack = vec![];
 
         self.entry_function.into_llvm(context)?;

@@ -21,8 +21,6 @@ anyhow = "=1.0.89"
 path-slash = "=0.2.1"
 normpath = "=1.3.0"
 rayon = "=1.10.0"
-rusty_pool = { version = "=0.7.0", default-features = false }
-num_cpus = "=1.16.0"
 
 serde = { version = "=1.0.210", "features" = [ "derive" ] }
 serde_json = { version = "=1.0.128", features = [ "arbitrary_precision" ] }

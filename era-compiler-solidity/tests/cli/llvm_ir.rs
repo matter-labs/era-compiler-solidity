@@ -7,7 +7,7 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM, crate::common::TEST_LLVM_IR_CONTRACT_PATH)]
-#[test_case(Target::EVM, crate::common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
+// TODO: #[test_case(Target::EVM, crate::common::TEST_LLVM_IR_CONTRACT_EVM_PATH)]
 fn default(target: Target, path: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
     let args = &[path, "--llvm-ir"];

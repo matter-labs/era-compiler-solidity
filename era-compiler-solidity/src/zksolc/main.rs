@@ -303,7 +303,6 @@ fn main_inner(
                     metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
-                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.llvm_ir {
@@ -314,7 +313,6 @@ fn main_inner(
                     metadata_hash_type,
                     optimizer_settings,
                     llvm_options,
-                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.eravm_assembly {
@@ -323,7 +321,6 @@ fn main_inner(
                     messages,
                     metadata_hash_type,
                     llvm_options,
-                    arguments.threads,
                     debug_config,
                 )
             } else if arguments.disassemble {
@@ -343,7 +340,6 @@ fn main_inner(
                     arguments.base_path,
                     arguments.include_path,
                     arguments.allow_paths,
-                    arguments.threads,
                     debug_config,
                 );
             } else if let Some(format) = arguments.combined_json {
@@ -371,7 +367,6 @@ fn main_inner(
                     arguments.overwrite,
                     optimizer_settings,
                     llvm_options,
-                    arguments.threads,
                     debug_config,
                 );
             } else {
@@ -396,7 +391,6 @@ fn main_inner(
                     remappings,
                     optimizer_settings,
                     llvm_options,
-                    arguments.threads,
                     debug_config,
                 )
             }?;

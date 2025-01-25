@@ -2,6 +2,7 @@
 //! The Solidity contract build.
 //!
 
+use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -13,16 +14,22 @@ use std::path::PathBuf;
 pub struct Contract {
     /// The contract name.
     pub name: era_compiler_common::ContractName,
-    /// The auxiliary identifier. Used to identify Yul objects.
-    pub identifier: String,
+    /// The deploy bytecode identifier.
+    pub deploy_identifier: String,
     /// The deploy bytecode.
     pub deploy_build: Vec<u8>,
+    /// The runtime bytecode identifier.
+    pub runtime_identifier: String,
     /// The runtime bytecode.
     pub runtime_build: Vec<u8>,
     /// The metadata hash.
     pub metadata_hash: Option<era_compiler_common::Hash>,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
+    /// The unlinked missing libraries.
+    pub missing_libraries: BTreeSet<String>,
+    /// The binary object format.
+    pub object_format: era_compiler_common::ObjectFormat,
 }
 
 impl Contract {
@@ -31,19 +38,25 @@ impl Contract {
     ///
     pub fn new(
         name: era_compiler_common::ContractName,
-        identifier: String,
+        deploy_identifier: String,
         deploy_build: Vec<u8>,
+        runtime_identifier: String,
         runtime_build: Vec<u8>,
         metadata_hash: Option<era_compiler_common::Hash>,
         metadata_json: serde_json::Value,
+        missing_libraries: BTreeSet<String>,
+        object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,
-            identifier,
+            deploy_identifier,
             deploy_build,
+            runtime_identifier,
             runtime_build,
             metadata_hash,
             metadata_json,
+            missing_libraries,
+            object_format,
         }
     }
 
@@ -178,6 +191,10 @@ impl Contract {
             .evm
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
             .modify_evm(deploy_bytecode, runtime_bytecode);
+        standard_json_contract
+            .missing_libraries
+            .extend(self.missing_libraries);
+        standard_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }
@@ -195,6 +212,11 @@ impl Contract {
 
         combined_json_contract.bin = Some(hex::encode(self.deploy_build));
         combined_json_contract.bin_runtime = Some(hex::encode(self.runtime_build));
+
+        combined_json_contract
+            .missing_libraries
+            .extend(self.missing_libraries);
+        combined_json_contract.object_format = Some(self.object_format);
 
         Ok(())
     }

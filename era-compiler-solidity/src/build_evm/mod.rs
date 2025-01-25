@@ -41,6 +41,57 @@ impl Build {
     }
 
     ///
+    /// Links the EVM build.
+    ///
+    pub fn link(
+        mut self,
+        linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+    ) -> Self {
+        for contract in self.results.values_mut().filter_map(|result| {
+            let contract = result.as_mut().expect("Cannot link a project with errors");
+            match contract.object_format {
+                era_compiler_common::ObjectFormat::ELF => Some(contract),
+                _ => None,
+            }
+        }) {
+            let deploy_memory_buffer =
+                inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    contract.deploy_build.as_slice(),
+                    contract.deploy_identifier.as_str(),
+                    false,
+                );
+            let runtime_memory_buffer =
+                inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+                    contract.runtime_build.as_slice(),
+                    contract.runtime_identifier.as_str(),
+                    false,
+                );
+
+            let (deploy_buffer_linked, runtime_buffer_linked, object_format) =
+                match era_compiler_llvm_context::evm_link(
+                    (contract.deploy_identifier.as_str(), deploy_memory_buffer),
+                    (contract.runtime_identifier.as_str(), runtime_memory_buffer),
+                    &linker_symbols,
+                ) {
+                    Ok(result) => result,
+                    Err(error) => {
+                        self.messages
+                            .push(era_solc::StandardJsonOutputError::new_error(
+                                error, None, None,
+                            ));
+                        continue;
+                    }
+                };
+
+            contract.deploy_build = deploy_buffer_linked.as_slice().to_vec();
+            contract.runtime_build = runtime_buffer_linked.as_slice().to_vec();
+            contract.object_format = object_format;
+        }
+
+        self
+    }
+
+    ///
     /// Writes all contracts to the terminal.
     ///
     pub fn write_to_terminal(

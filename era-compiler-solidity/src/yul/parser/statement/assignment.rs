@@ -13,13 +13,10 @@ declare_wrapper!(
     Assignment
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assignment
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Assignment {
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let value = match self.0.initializer.wrap().into_llvm(context)? {
             Some(value) => value,
@@ -82,13 +79,10 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Assignment
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for Assignment {
     fn into_llvm(
         mut self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
+        context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         let value = match self.0.initializer.wrap().into_llvm_evm(context)? {
             Some(value) => value,

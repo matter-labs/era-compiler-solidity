@@ -5,7 +5,6 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -48,7 +47,7 @@ impl Build {
         mut self,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
     ) -> Self {
-        let mut contracts: HashMap<String, Contract> = self
+        let mut contracts: BTreeMap<String, Contract> = self
             .results
             .into_iter()
             .map(|(path, result)| (path, result.expect("Cannot link a project with errors")))

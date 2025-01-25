@@ -12,13 +12,10 @@ declare_wrapper!(
     Object
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Object
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Object {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let mut entry = era_compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
@@ -56,7 +53,7 @@ where
 
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let term = self.0;
         if term.identifier.ends_with("_deployed") {
@@ -81,21 +78,15 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Object
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for Object {
     fn declare(
         &mut self,
-        _context: &mut era_compiler_llvm_context::EVMContext<D>,
+        _context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         Ok(())
     }
 
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(self.0.code.wrap());
         entry.declare(context)?;
         entry.into_llvm(context)?;

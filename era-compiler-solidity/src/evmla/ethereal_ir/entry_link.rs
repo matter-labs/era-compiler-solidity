@@ -28,13 +28,10 @@ impl EntryLink {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for EntryLink
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for EntryLink {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let target = context
             .get_function(EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME)
@@ -59,14 +56,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for EntryLink
-where
-    D: era_compiler_llvm_context::Dependency,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for EntryLink {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let target = context
             .get_function(EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME)
             .expect("Always exists")

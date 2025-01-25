@@ -14,13 +14,10 @@ declare_wrapper!(
     IfConditional
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for IfConditional
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for IfConditional {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let term = self.0;
         let condition = Expression(term.condition)
@@ -51,14 +48,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for IfConditional
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for IfConditional {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let condition = self
             .0
             .condition

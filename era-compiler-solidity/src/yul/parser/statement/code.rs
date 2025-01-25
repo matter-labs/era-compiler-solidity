@@ -11,13 +11,10 @@ declare_wrapper!(
     Code
 );
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Code
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Code {
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         self.0.block.wrap().into_llvm(context)?;
 
@@ -25,14 +22,8 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Code
-where
-    D: era_compiler_llvm_context::Dependency + Clone,
-{
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+impl era_compiler_llvm_context::EVMWriteLLVM for Code {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         self.0.block.wrap().into_llvm(context)?;
 
         Ok(())

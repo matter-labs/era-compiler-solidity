@@ -7,14 +7,11 @@ use era_compiler_llvm_context::IContext;
 ///
 /// Translates the contract hash copying.
 ///
-pub fn contract_hash<'ctx, D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+pub fn contract_hash<'ctx>(
+    context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
     offset: inkwell::values::IntValue<'ctx>,
     value: inkwell::values::IntValue<'ctx>,
-) -> anyhow::Result<()>
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+) -> anyhow::Result<()> {
     let offset = context.builder().build_int_add(
         offset,
         context.field_const(
@@ -31,14 +28,11 @@ where
 ///
 /// Translates the library marker copying.
 ///
-pub fn library_marker<D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<D>,
+pub fn library_marker(
+    context: &mut era_compiler_llvm_context::EraVMContext,
     offset: u64,
     value: u64,
-) -> anyhow::Result<()>
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+) -> anyhow::Result<()> {
     era_compiler_llvm_context::eravm_evm_memory::store_byte(
         context,
         context.field_const(offset),
@@ -51,14 +45,11 @@ where
 ///
 /// Translates the static data copying.
 ///
-pub fn static_data<'ctx, D>(
-    context: &mut era_compiler_llvm_context::EraVMContext<'ctx, D>,
+pub fn static_data<'ctx>(
+    context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
     destination: inkwell::values::IntValue<'ctx>,
     source: &str,
-) -> anyhow::Result<()>
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+) -> anyhow::Result<()> {
     let mut offset = 0;
     for (index, chunk) in source
         .chars()

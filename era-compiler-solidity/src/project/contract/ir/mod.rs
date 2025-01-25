@@ -31,6 +31,18 @@ pub enum IR {
 
 impl IR {
     ///
+    /// Drains the list of factory dependencies.
+    ///
+    pub fn drain_factory_dependencies(&mut self) -> BTreeSet<String> {
+        match self {
+            IR::Yul(ref mut yul) => yul.object.0.factory_dependencies.drain().collect(),
+            IR::EVMLA(ref mut evm) => evm.assembly.factory_dependencies.drain().collect(),
+            IR::LLVMIR(_) => BTreeSet::new(),
+            IR::EraVMAssembly(_) => BTreeSet::new(),
+        }
+    }
+
+    ///
     /// Get the list of missing deployable libraries.
     ///
     pub fn get_missing_libraries(&self) -> BTreeSet<String> {

@@ -321,13 +321,10 @@ impl Assembly {
     }
 }
 
-impl<D> era_compiler_llvm_context::EraVMWriteLLVM<D> for Assembly
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EraVMWriteLLVM for Assembly {
     fn declare(
         &mut self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let mut entry = era_compiler_llvm_context::EraVMEntryFunction::default();
         entry.declare(context)?;
@@ -353,7 +350,7 @@ where
 
     fn into_llvm(
         self,
-        context: &mut era_compiler_llvm_context::EraVMContext<D>,
+        context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
 
@@ -420,21 +417,15 @@ where
     }
 }
 
-impl<D> era_compiler_llvm_context::EVMWriteLLVM<D> for Assembly
-where
-    D: era_compiler_llvm_context::Dependency,
-{
+impl era_compiler_llvm_context::EVMWriteLLVM for Assembly {
     fn declare(
         &mut self,
-        _context: &mut era_compiler_llvm_context::EVMContext<D>,
+        _context: &mut era_compiler_llvm_context::EVMContext,
     ) -> anyhow::Result<()> {
         Ok(())
     }
 
-    fn into_llvm(
-        self,
-        context: &mut era_compiler_llvm_context::EVMContext<D>,
-    ) -> anyhow::Result<()> {
+    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
         let full_path = self.full_path().to_owned();
         if let Some(debug_config) = context.debug_config() {
             debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
