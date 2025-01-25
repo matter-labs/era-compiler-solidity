@@ -456,7 +456,11 @@ impl Contract {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> BTreeSet<String> {
-        self.ir.get_missing_libraries()
+    pub fn get_missing_libraries(&self, deployed_libraries: &BTreeSet<String>) -> BTreeSet<String> {
+        self.ir
+            .get_missing_libraries()
+            .into_iter()
+            .filter(|library| !deployed_libraries.contains(library))
+            .collect::<BTreeSet<String>>()
     }
 }

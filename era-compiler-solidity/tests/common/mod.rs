@@ -246,6 +246,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         .into_iter()
         .map(|(path, source)| (path, era_solc::StandardJsonInputSource::from(source)))
         .collect();
+    let deployed_libraries = libraries.as_paths();
 
     let mut solc_input = era_solc::StandardJsonInput::try_from_solidity_sources(
         sources,
@@ -275,7 +276,7 @@ pub fn build_solidity_and_detect_missing_libraries(
         None,
     )?;
 
-    let missing_libraries = project.get_missing_libraries();
+    let missing_libraries = project.get_missing_libraries(&deployed_libraries);
     missing_libraries.write_to_standard_json(&mut solc_output, Some(&solc_compiler.version));
 
     solc_output.check_errors()?;

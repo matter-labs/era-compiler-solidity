@@ -2,6 +2,8 @@
 //! Unit tests for libraries.
 //!
 
+use std::collections::BTreeSet;
+
 use test_case::test_case;
 
 #[test_case(
@@ -36,11 +38,14 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
     let sources =
         crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
-    let output = crate::common::build_solidity_and_detect_missing_libraries(
+    let output = crate::common::build_solidity_standard_json(
         sources,
         era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::HashType::Ipfs,
+        BTreeSet::new(),
         &version,
         codegen,
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
 
@@ -103,8 +108,14 @@ fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
         .entry("SimpleLibrary".to_string())
         .or_insert("0x00000000000000000000000000000000DEADBEEF".to_string());
 
-    let output = crate::common::build_solidity_and_detect_missing_libraries(
-        sources, libraries, &version, codegen,
+    let output = crate::common::build_solidity_standard_json(
+        sources,
+        libraries,
+        era_compiler_common::HashType::Ipfs,
+        BTreeSet::new(),
+        &version,
+        codegen,
+        era_compiler_llvm_context::OptimizerSettings::cycles(),
     )
     .expect("Test failure");
     assert!(

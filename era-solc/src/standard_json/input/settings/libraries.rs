@@ -3,6 +3,7 @@
 //!
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 ///
 /// The Solidity libraries.
@@ -42,6 +43,21 @@ impl Libraries {
             }
         }
         Ok(linker_symbols)
+    }
+
+    ///
+    /// Returns a representation of libraries suitable for filtering.
+    ///
+    pub fn as_paths(&self) -> BTreeSet<String> {
+        self.inner
+            .iter()
+            .flat_map(|(file, names)| {
+                names
+                    .iter()
+                    .map(|(name, _address)| format!("{file}:{name}"))
+                    .collect::<BTreeSet<String>>()
+            })
+            .collect::<BTreeSet<String>>()
     }
 
     ///
