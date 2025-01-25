@@ -466,6 +466,7 @@ pub fn standard_json_eravm(
     let mut solc_input = era_solc::StandardJsonInput::try_from(json_path.as_deref())?;
     let language = solc_input.language;
     let prune_output = solc_input.settings.selection_to_prune();
+    let deployed_libraries = solc_input.settings.libraries.as_paths();
     let linker_symbols = solc_input.settings.libraries.as_linker_symbols()?;
 
     let mut optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
@@ -604,7 +605,7 @@ pub fn standard_json_eravm(
     };
 
     if detect_missing_libraries {
-        let missing_libraries = project.get_missing_libraries();
+        let missing_libraries = project.get_missing_libraries(&deployed_libraries);
         missing_libraries.write_to_standard_json(&mut solc_output, solc_version.as_ref());
         solc_output.write_and_exit(prune_output);
     }

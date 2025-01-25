@@ -5,6 +5,7 @@
 pub mod contract;
 
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use rayon::iter::IntoParallelIterator;
@@ -405,8 +406,9 @@ impl Project {
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
     ) -> anyhow::Result<EVMBuild> {
+        let deployed_libraries = self.libraries.as_paths();
         let results = self.contracts.into_par_iter().map(|(path, contract)| {
-            let missing_libraries = contract.get_missing_libraries();
+            let missing_libraries = contract.get_missing_libraries(&deployed_libraries);
             let input = EVMProcessInput::new(
                 contract,
                 self.solc_version.clone(),
@@ -429,15 +431,14 @@ impl Project {
     ///
     /// Get the list of missing deployable libraries.
     ///
-    pub fn get_missing_libraries(&self) -> MissingLibraries {
-        let deployed_libraries = self.libraries.as_paths();
+    pub fn get_missing_libraries(&self, deployed_libraries: &BTreeSet<String>) -> MissingLibraries {
         let missing_libraries = self
             .contracts
             .iter()
             .map(|(path, contract)| {
                 (
                     path.to_owned(),
-                    contract.get_missing_libraries(&deployed_libraries),
+                    contract.get_missing_libraries(deployed_libraries),
                 )
             })
             .collect();
