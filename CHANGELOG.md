@@ -1,10 +1,11 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.11] - 2025-01-27
 
 ### Fixed
 
-- Windows new line characters in Yul string literals
+- Windows-style (CRLF) new-line characters in Yul string literals
+- Missing libraries that were not filtered with `--libraries`
 
 ## [1.5.10] - 2025-01-17
 
