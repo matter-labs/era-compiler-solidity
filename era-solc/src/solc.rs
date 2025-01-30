@@ -356,7 +356,7 @@ impl Compiler {
                 })
             })
             .map_err(|error| {
-                anyhow::anyhow!("For EraVM, only the ZKsync fork of `solc` can be used: {error}")
+                anyhow::anyhow!("Only the ZKsync fork of `solc` can be used: {error}")
             })?;
 
         let version = Version::new(long, default, l2_revision);

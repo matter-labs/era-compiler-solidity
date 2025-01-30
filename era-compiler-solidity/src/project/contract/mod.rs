@@ -345,7 +345,7 @@ impl Contract {
                 ))
             }
             IR::EVMLA(mut deploy_code) => {
-                let mut runtime_code_assembly = deploy_code.assembly.get_runtime_code()?.to_owned();
+                let mut runtime_code_assembly = deploy_code.assembly.runtime_code()?.to_owned();
                 runtime_code_assembly.set_full_path(deploy_code.assembly.full_path().to_owned());
 
                 let evmla_data = era_compiler_llvm_context::EVMContextEVMLAData::new(

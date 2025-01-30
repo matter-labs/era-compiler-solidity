@@ -1,5 +1,5 @@
 //!
-//! Solidity to EraVM compiler binary.
+//! Solidity compiler binary.
 //!
 
 pub mod arguments;

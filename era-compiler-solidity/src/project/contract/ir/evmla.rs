@@ -24,6 +24,9 @@ impl EVMLA {
 
         let mut assembly: Assembly = serde_json::from_value(evm.legacy_assembly.to_owned()).ok()?;
         assembly.extra_metadata = evm.extra_metadata.to_owned();
+        if let Ok(runtime_code) = assembly.runtime_code_mut() {
+            runtime_code.extra_metadata = evm.extra_metadata.to_owned();
+        }
 
         Some(Self { assembly })
     }

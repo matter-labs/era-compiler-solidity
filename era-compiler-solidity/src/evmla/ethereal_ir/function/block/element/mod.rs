@@ -9,7 +9,6 @@ use inkwell::values::BasicValue;
 use era_compiler_llvm_context::IContext;
 use era_compiler_llvm_context::IEVMLAFunction;
 
-use crate::evmla::assembly::instruction::codecopy;
 use crate::evmla::assembly::instruction::name::Name as InstructionName;
 use crate::evmla::assembly::instruction::Instruction;
 
@@ -915,16 +914,26 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                     (_, StackElement::Constant(destination))
                         if destination == &num::BigUint::from(library_marker) =>
                     {
-                        codecopy::library_marker(context, library_marker, library_flag)
+                        crate::evmla::assembly::instruction::codecopy::library_marker(
+                            context,
+                            library_marker,
+                            library_flag,
+                        )
                     }
                     (StackElement::Data(data), _) => {
-                        codecopy::static_data(context, arguments[0].into_int_value(), data.as_str())
+                        crate::evmla::assembly::instruction::codecopy::static_data(
+                            context,
+                            arguments[0].into_int_value(),
+                            data.as_str(),
+                        )
                     }
-                    (StackElement::Path(source), _) if source != parent => codecopy::contract_hash(
-                        context,
-                        arguments[0].into_int_value(),
-                        arguments[1].into_int_value(),
-                    ),
+                    (StackElement::Path(source), _) if source != parent => {
+                        crate::evmla::assembly::instruction::codecopy::contract_hash(
+                            context,
+                            arguments[0].into_int_value(),
+                            arguments[1].into_int_value(),
+                        )
+                    }
                     _ => {
                         match context
                             .code_segment()

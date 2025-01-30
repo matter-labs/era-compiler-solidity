@@ -68,13 +68,33 @@ impl Assembly {
     }
 
     ///
-    /// Returns the runtime code from the deploy code assembly.
+    /// Returns a runtime code reference from the deploy code assembly.
     ///
-    pub fn get_runtime_code(&self) -> anyhow::Result<&Assembly> {
+    pub fn runtime_code(&self) -> anyhow::Result<&Assembly> {
         match self
             .data
             .as_ref()
             .and_then(|data| data.get("0"))
+            .ok_or_else(|| anyhow::anyhow!("Runtime code data not found"))?
+        {
+            Data::Assembly(assembly) => Ok(assembly),
+            Data::Hash(hash) => {
+                anyhow::bail!("Expected runtime code, found hash `{hash}`");
+            }
+            Data::Path(path) => {
+                anyhow::bail!("Expected runtime code, found path `{path}`");
+            }
+        }
+    }
+
+    ///
+    /// Returns a runtime code mutable reference from the deploy code assembly.
+    ///
+    pub fn runtime_code_mut(&mut self) -> anyhow::Result<&mut Assembly> {
+        match self
+            .data
+            .as_mut()
+            .and_then(|data| data.get_mut("0"))
             .ok_or_else(|| anyhow::anyhow!("Runtime code data not found"))?
         {
             Data::Assembly(assembly) => Ok(assembly),
@@ -431,7 +451,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Assembly {
             debug_config.dump_evmla(full_path.as_str(), None, self.to_string().as_str())?;
         }
 
-        let (code_segment, blocks) = if let Ok(runtime_code) = self.get_runtime_code() {
+        let (code_segment, blocks) = if let Ok(runtime_code) = self.runtime_code() {
             let deploy_code_blocks = EtherealIR::get_blocks(
                 context.evmla().expect("Always exists").version.to_owned(),
                 era_compiler_common::CodeSegment::Deploy,

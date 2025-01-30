@@ -1,5 +1,5 @@
 //!
-//! Solidity to EraVM compiler constants.
+//! Solidity compiler constants.
 //!
 
 /// The default executable name.
