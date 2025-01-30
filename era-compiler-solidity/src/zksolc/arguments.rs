@@ -1,5 +1,5 @@
 //!
-//! Solidity to EraVM compiler arguments.
+//! Solidity compiler arguments.
 //!
 
 use std::collections::BTreeSet;
