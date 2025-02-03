@@ -2099,6 +2099,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                     .instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
+
                 let base_offset = arguments[0].into_int_value();
                 let value = arguments[1].into_int_value();
                 era_compiler_llvm_context::evm_immutable::store(

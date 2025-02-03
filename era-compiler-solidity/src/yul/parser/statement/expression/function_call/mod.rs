@@ -1827,10 +1827,15 @@ impl FunctionCall {
             }
             Name::SetImmutable => {
                 let mut arguments = self.pop_arguments_evm::<3>(context)?;
-                let base_offset = arguments[0].to_llvm().into_int_value();
+
                 let id = arguments[1].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{location} `setimmutable` literal is missing")
                 })?;
+                if id.as_str() == "library_deploy_address" {
+                    return Ok(None); // TODO
+                }
+
+                let base_offset = arguments[0].to_llvm().into_int_value();
                 let value = arguments[2].to_llvm().into_int_value();
                 era_compiler_llvm_context::evm_immutable::store(
                     context,
