@@ -30,8 +30,8 @@ num = "=0.4.3"
 
 zkevm_opcode_defs = "=0.150.6"
 
-era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "aba-update-openssl" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "aba-update-openssl" }
 era-solc = { path = "../era-solc" }
 era-yul = { path = "../era-yul" }
 
@@ -40,8 +40,8 @@ assert_cmd = "=2.0.16"
 predicates = "=3.1.2"
 tempfile = "=3.12.0"
 test-case = "=3.3.1"
-reqwest = { version = "=0.11.27", features = ["blocking", "json"] }
-era-compiler-downloader = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
+reqwest = { version = "=0.12.12", features = ["blocking", "json"] }
+era-compiler-downloader = { git = "https://github.com/matter-labs/era-compiler-common", branch = "aba-update-openssl" }
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"

@@ -21,4 +21,4 @@ semver = { version = "=1.0.23", features = [ "serde" ] }
 hex = "=0.4.3"
 num = "=0.4.3"
 
-era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
+era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "aba-update-openssl" }
