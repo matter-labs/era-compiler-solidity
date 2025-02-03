@@ -1,8 +1,12 @@
 name: Dependencies test
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
+      ref:
+        description: 'Revision to use for the build.'
+        required: true
+        type: string
       dependencies_list:
         description: 'Space-separated list of dependencies to update. Example: "era-compiler-common era-compiler-llvm-context"'
         required: true
@@ -21,9 +25,11 @@ jobs:
       image: ghcr.io/matter-labs/zksync-llvm-runner:latest
 
     steps:
-      # Ref to checkout will be defined automatically from the event that triggered the workflow
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          repository: matter-labs/era-compiler-solidity
 
       - name: Patch dependencies
         shell: bash -ex {0}
