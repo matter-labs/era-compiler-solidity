@@ -45,11 +45,20 @@ pub fn library_marker(
 ///
 /// Translates the static data copying.
 ///
-pub fn static_data<'ctx>(
-    context: &mut era_compiler_llvm_context::EraVMContext<'ctx>,
+pub fn static_data<'ctx, C, F>(
+    context: &mut C,
+    mstore: F,
     destination: inkwell::values::IntValue<'ctx>,
     source: &str,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<()>
+where
+    C: IContext<'ctx>,
+    F: Fn(
+        &mut C,
+        inkwell::values::IntValue<'ctx>,
+        inkwell::values::IntValue<'ctx>,
+    ) -> anyhow::Result<()>,
+{
     let mut offset = 0;
     for (index, chunk) in source
         .chars()
@@ -69,11 +78,7 @@ pub fn static_data<'ctx>(
             format!("datacopy_destination_index_{index}").as_str(),
         )?;
         let datacopy_value = context.field_const_str_hex(value_string.as_str());
-        era_compiler_llvm_context::eravm_evm_memory::store(
-            context,
-            datacopy_destination,
-            datacopy_value,
-        )?;
+        mstore(context, datacopy_destination, datacopy_value)?;
         offset += chunk.len() / 2;
     }
 
