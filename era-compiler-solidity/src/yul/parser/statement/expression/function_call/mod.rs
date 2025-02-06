@@ -474,11 +474,11 @@ impl FunctionCall {
                     anyhow::anyhow!("{} `load_immutable` literal is missing", location)
                 })?;
 
-                if key.as_str() == "library_deploy_address" {
+                if key.as_str() == era_compiler_llvm_context::LIBRARY_DEPLOY_ADDRESS_TAG {
                     return context.build_call(
                         context.intrinsics().code_source,
                         &[],
-                        "library_deploy_address",
+                        era_compiler_llvm_context::LIBRARY_DEPLOY_ADDRESS_TAG,
                     );
                 }
 
@@ -496,10 +496,6 @@ impl FunctionCall {
                 let key = arguments[1].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{} `load_immutable` literal is missing", location)
                 })?;
-
-                if key.as_str() == "library_deploy_address" {
-                    return Ok(None);
-                }
 
                 let offset = context
                     .solidity_mut()
@@ -1831,9 +1827,6 @@ impl FunctionCall {
                 let id = arguments[1].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{location} `setimmutable` literal is missing")
                 })?;
-                if id.as_str() == "library_deploy_address" {
-                    return Ok(None); // TODO
-                }
 
                 let base_offset = arguments[0].to_llvm().into_int_value();
                 let value = arguments[2].to_llvm().into_int_value();

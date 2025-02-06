@@ -5,9 +5,6 @@
 /// The default executable name.
 pub static DEFAULT_EXECUTABLE_NAME: &str = "zksolc";
 
-/// Library deploy address Yul identifier.
-pub static LIBRARY_DEPLOY_ADDRESS_TAG: &str = "library_deploy_address";
-
 /// The `keccak256` scratch space offset.
 pub const OFFSET_SCRATCH_SPACE: usize = 0;
 
