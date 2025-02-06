@@ -923,6 +923,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                     (StackElement::Data(data), _) => {
                         crate::evmla::assembly::instruction::codecopy::static_data(
                             context,
+                            era_compiler_llvm_context::eravm_evm_memory::store,
                             arguments[0].into_int_value(),
                             data.as_str(),
                         )
@@ -2137,13 +2138,24 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
             }
             InstructionName::CODECOPY => {
                 let arguments = self.pop_arguments_llvm_evm(context)?;
-                era_compiler_llvm_context::evm_code::copy(
-                    context,
-                    arguments[0].into_int_value(),
-                    arguments[1].into_int_value(),
-                    arguments[2].into_int_value(),
-                )?;
-                Ok(None)
+
+                match &self.stack_input.elements[1] {
+                    StackElement::Data(data) => {
+                        crate::evmla::assembly::instruction::codecopy::static_data(
+                            context,
+                            era_compiler_llvm_context::evm_memory::store,
+                            arguments[0].into_int_value(),
+                            data.as_str(),
+                        )
+                    }
+                    _ => era_compiler_llvm_context::evm_code::copy(
+                        context,
+                        arguments[0].into_int_value(),
+                        arguments[1].into_int_value(),
+                        arguments[2].into_int_value(),
+                    ),
+                }
+                .map(|_| None)
             }
             InstructionName::PUSHSIZE => {
                 let object_name = context.module().get_name().to_string_lossy().to_string();
