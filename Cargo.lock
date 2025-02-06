@@ -290,9 +290,9 @@ checksum = "f61dac84819c6588b558454b194026eb1f09c293b9036ae9b159e74e73ab6cf9"
 
 [[package]]
 name = "cc"
-version = "1.2.11"
+version = "1.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4730490333d58093109dc02c23174c3f4d490998c3fed3cc8e82d57afedb9cf"
+checksum = "755717a7de9ec452bf7f3f1a3099085deabd7f2962b861dae91ecd7a365903d2"
 dependencies = [
  "shlex",
 ]
@@ -628,7 +628,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#a679892e98f111e78d4aadccbdf6b1bfd231be13"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#4ebb07a8fe9d2bde0cde8540736d84019783557e"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -1264,7 +1264,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b6c1bf7e730d99a8a1e2acf7513befcf80466ba7"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#3b7528ecd0815ade04f0ee5b134b2515dcb8c97c"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1279,7 +1279,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b6c1bf7e730d99a8a1e2acf7513befcf80466ba7"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#3b7528ecd0815ade04f0ee5b134b2515dcb8c97c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1417,7 +1417,7 @@ checksum = "4ee93343901ab17bd981295f2cf0026d4ad018c7c31ba84549a4ddbb47a45104"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#5dad04e81f806046e383ee73a8d1b9ed53161624"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#46dfd0c0eb90bb7215885926d1399397cd112ac8"
 dependencies = [
  "anyhow",
  "cc",
@@ -3116,9 +3116,9 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
 name = "winnow"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e49d2d35d3fad69b39b94139037ecfb4f359f08958b9c11e7315ce770462419"
+checksum = "86e376c75f4f43f44db463cf729e0d3acbf954d13e22c51e26e4c264b4ab545f"
 dependencies = [
  "memchr",
 ]
