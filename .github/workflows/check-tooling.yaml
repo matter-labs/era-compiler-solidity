@@ -46,8 +46,9 @@ jobs:
 
       - name: Build zksolc
         id: build-zksolc
-        uses: ./.github/actions/build
+        uses: matter-labs/era-compiler-ci/.github/actions/build-rust@v1
         with:
+          exec_name: 'zksolc'
           target: 'x86_64-unknown-linux-gnu'
           release-suffix: 'test-tooling'
 

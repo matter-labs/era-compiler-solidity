@@ -45,7 +45,7 @@ jobs:
       matrix:
         include:
           - name: "MacOS x86"
-            runner: macos-12-large
+            runner: macos-13-large
           - name: "MacOS arm64"
             runner: [self-hosted, macOS, ARM64]
           - name: "Linux x86 gnu"
