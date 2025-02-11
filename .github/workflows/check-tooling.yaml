@@ -64,7 +64,7 @@ jobs:
   # Check Foundry with built zksolc
   check-foundry:
     needs: build-zksolc
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@aba-remove-assemblycreate-error
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@v1
     secrets: inherit
     with:
       zksolc-release-suffix: 'test-tooling'
