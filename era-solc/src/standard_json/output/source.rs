@@ -260,6 +260,9 @@ impl Source {
                     messages.push(message);
                 }
             }
+            if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
+                messages.push(message);
+            }
         }
 
         match ast {

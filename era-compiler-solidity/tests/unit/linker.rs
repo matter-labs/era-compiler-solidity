@@ -312,10 +312,10 @@ fn library_passed_post_compile_time_second_call(
         false,
     );
     let memory_buffer_linked_empty = memory_buffer
-        .link_module_eravm(&BTreeMap::new(), &BTreeMap::new())
+        .link_eravm(&BTreeMap::new(), &BTreeMap::new())
         .expect("Link failure");
     let memory_buffer_linked = memory_buffer_linked_empty
-        .link_module_eravm(&linker_symbols, &BTreeMap::new())
+        .link_eravm(&linker_symbols, &BTreeMap::new())
         .expect("Link failure");
     assert!(
         !memory_buffer_linked.is_elf_eravm(),
@@ -437,10 +437,10 @@ fn library_passed_post_compile_time_non_elf(
         false,
     );
     let memory_buffer_linked = memory_buffer
-        .link_module_eravm(&libraries, &BTreeMap::new())
+        .link_eravm(&libraries, &BTreeMap::new())
         .expect("Link failure");
     let _memory_buffer_linked_non_elf = memory_buffer_linked
-        .link_module_eravm(&libraries, &BTreeMap::new())
+        .link_eravm(&libraries, &BTreeMap::new())
         .expect("Link failure");
 }
 
@@ -509,7 +509,7 @@ fn library_produce_equal_bytecode_in_both_cases(
             false,
         );
     let memory_buffer_linked_post_compile_time = memory_buffer_post_compile_time
-        .link_module_eravm(&linker_symbols, &BTreeMap::new())
+        .link_eravm(&linker_symbols, &BTreeMap::new())
         .expect("Link failure");
 
     assert!(

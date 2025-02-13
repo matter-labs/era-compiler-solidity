@@ -156,20 +156,34 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
             )
             .map(Some),
             InstructionName::PUSH_ContractHash => {
+                let identifier = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
+                let identifier = identifier
+                    .strip_suffix(
+                        format!(".{}", era_compiler_common::CodeSegment::Runtime).as_str(),
+                    )
+                    .unwrap_or(identifier.as_str());
                 era_compiler_llvm_context::eravm_evm_create::contract_hash(
                     context,
-                    self.instruction
-                        .value
-                        .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?,
+                    identifier.to_string(),
                 )
                 .map(|argument| Some(argument.value))
             }
             InstructionName::PUSH_ContractHashSize => {
+                let identifier = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
+                let identifier = identifier
+                    .strip_suffix(
+                        format!(".{}", era_compiler_common::CodeSegment::Runtime).as_str(),
+                    )
+                    .unwrap_or(identifier.as_str());
                 era_compiler_llvm_context::eravm_evm_create::header_size(
                     context,
-                    self.instruction
-                        .value
-                        .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?,
+                    identifier.to_string(),
                 )
                 .map(|argument| Some(argument.value))
             }
@@ -1462,42 +1476,18 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
             )
             .map(Some),
             InstructionName::PUSH_ContractHash => {
-                let mut object_name = self
+                let object_name = self
                     .instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Data offset identifier is missing"))?;
-
-                let current_code_segment = context.code_segment().expect("Always exists");
-                let object_code_segment = if format!("{object_name}.{current_code_segment}")
-                    .as_str()
-                    == context.module().get_name().to_str().expect("Always valid")
-                {
-                    era_compiler_common::CodeSegment::Runtime
-                } else {
-                    era_compiler_common::CodeSegment::Deploy
-                };
-                object_name.push_str(format!(".{object_code_segment}").as_str());
-
                 era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
                     .map(Some)
             }
             InstructionName::PUSH_ContractHashSize => {
-                let mut object_name = self
+                let object_name = self
                     .instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Data size identifier is missing"))?;
-
-                let current_code_segment = context.code_segment().expect("Always exists");
-                let object_code_segment = if format!("{object_name}.{current_code_segment}")
-                    .as_str()
-                    == context.module().get_name().to_str().expect("Always valid")
-                {
-                    era_compiler_common::CodeSegment::Runtime
-                } else {
-                    era_compiler_common::CodeSegment::Deploy
-                };
-                object_name.push_str(format!(".{object_code_segment}").as_str());
-
                 era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
                     .map(Some)
             }
@@ -2103,6 +2093,12 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 era_compiler_llvm_context::evm_immutable::load(context, id.as_str()).map(Some)
             }
             InstructionName::ASSIGNIMMUTABLE => {
+                if context.evmla().expect("Always exists").version.minor
+                    < era_solc::Compiler::FIRST_YUL_VERSION.minor
+                {
+                    anyhow::bail!("The `ASSIGNIMMUTABLE` instruction is unsupported with solc versions below 0.8.");
+                }
+
                 let arguments = self.pop_arguments_llvm_evm(context)?;
 
                 let id = self
@@ -2192,7 +2188,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 )
                 .map(Some)
             }
-            InstructionName::EXTCODEHASH => {
+            InstructionName::EXTCODECOPY => {
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::ext_copy(
                     context,
@@ -2202,6 +2198,14 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                     arguments[3].into_int_value(),
                 )
                 .map(|_| None)
+            }
+            InstructionName::EXTCODEHASH => {
+                let arguments = self.pop_arguments_llvm_evm(context)?;
+                era_compiler_llvm_context::evm_code::ext_hash(
+                    context,
+                    arguments[0].into_int_value(),
+                )
+                .map(Some)
             }
 
             InstructionName::RETURN => {
@@ -2462,10 +2466,6 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
-            }
-            InstructionName::EXTCODECOPY => {
-                let _arguments = self.pop_arguments_llvm_evm(context)?;
-                anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
