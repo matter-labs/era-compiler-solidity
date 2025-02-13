@@ -370,8 +370,10 @@ impl Project {
         let results = self.contracts.into_par_iter().map(|(path, mut contract)| {
             let factory_dependencies = contract.ir
                 .drain_factory_dependencies()
-                .into_iter()
-                .map(|identifier| self.identifier_paths.get(identifier.as_str()).cloned().expect("Always exists"))
+                .iter()
+                .map(|identifier| {
+                    self.identifier_paths.get(identifier).cloned().expect("Always exists")
+                })
                 .collect();
             let missing_libraries = contract.get_missing_libraries(&deployed_libraries);
             let input = EraVMProcessInput::new(

@@ -7,6 +7,7 @@ mod disassemble;
 mod enable_eravm_extensions;
 mod eravm_assembly;
 mod link;
+mod llvm_ir;
 mod output_dir;
 mod standard_json;
 mod suppress_errors;
