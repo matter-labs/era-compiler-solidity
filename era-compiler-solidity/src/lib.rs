@@ -75,7 +75,12 @@ pub fn yul_to_eravm(
                 anyhow::bail!("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`.")
             }
             let solc_compiler = era_solc::Compiler::try_from_path(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
+            solc_compiler.validate_yul_paths(
+                era_compiler_common::Target::EraVM,
+                paths,
+                libraries.clone(),
+                messages,
+            )?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -126,7 +131,12 @@ pub fn yul_to_evm(
     let solc_version = match solc_path {
         Some(solc_path) => {
             let solc_compiler = era_solc::Compiler::try_from_path(solc_path.as_str())?;
-            solc_compiler.validate_yul_paths(paths, libraries.clone(), messages)?;
+            solc_compiler.validate_yul_paths(
+                era_compiler_common::Target::EVM,
+                paths,
+                libraries.clone(),
+                messages,
+            )?;
             Some(solc_compiler.version)
         }
         None => None,
@@ -331,6 +341,7 @@ pub fn standard_output_eravm(
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
+        era_compiler_common::Target::EraVM,
         &mut solc_input,
         messages,
         base_path,
@@ -411,6 +422,7 @@ pub fn standard_output_evm(
     )?;
 
     let mut solc_output = solc_compiler.standard_json(
+        era_compiler_common::Target::EVM,
         &mut solc_input,
         messages,
         base_path,
@@ -510,6 +522,7 @@ pub fn standard_json_eravm(
             ));
 
             let mut solc_output = solc_compiler.standard_json(
+                era_compiler_common::Target::EraVM,
                 &mut solc_input,
                 messages,
                 base_path,
@@ -534,8 +547,11 @@ pub fn standard_json_eravm(
             (solc_output, Some(solc_compiler.version), project)
         }
         (era_solc::StandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let mut solc_output =
-                solc_compiler.validate_yul_standard_json(&mut solc_input, messages)?;
+            let mut solc_output = solc_compiler.validate_yul_standard_json(
+                era_compiler_common::Target::EraVM,
+                &mut solc_input,
+                messages,
+            )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }
@@ -675,6 +691,7 @@ pub fn standard_json_evm(
             ));
 
             let mut solc_output = solc_compiler.standard_json(
+                era_compiler_common::Target::EVM,
                 &mut solc_input,
                 messages,
                 base_path,
@@ -699,8 +716,11 @@ pub fn standard_json_evm(
             (solc_output, Some(solc_compiler.version), project)
         }
         (era_solc::StandardJsonInputLanguage::Yul, Some(solc_compiler)) => {
-            let mut solc_output =
-                solc_compiler.validate_yul_standard_json(&mut solc_input, messages)?;
+            let mut solc_output = solc_compiler.validate_yul_standard_json(
+                era_compiler_common::Target::EVM,
+                &mut solc_input,
+                messages,
+            )?;
             if solc_output.has_errors() {
                 solc_output.write_and_exit(prune_output);
             }

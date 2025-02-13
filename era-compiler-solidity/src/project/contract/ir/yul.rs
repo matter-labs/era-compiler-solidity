@@ -58,6 +58,13 @@ impl Yul {
     pub fn get_missing_libraries(&self) -> BTreeSet<String> {
         self.object.0.get_missing_libraries()
     }
+
+    ///
+    /// Get the list of EVM-like dependencies.
+    ///
+    pub fn get_evm_dependencies(&self) -> era_yul::Dependencies {
+        self.object.0.get_evm_dependencies()
+    }
 }
 
 impl era_compiler_llvm_context::EraVMWriteLLVM for Yul {
