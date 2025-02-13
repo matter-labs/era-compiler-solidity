@@ -5,6 +5,7 @@
 use std::collections::BTreeSet;
 use std::collections::HashSet;
 
+use crate::yul::dependencies::Dependencies;
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::keyword::Keyword;
 use crate::yul::lexer::token::lexeme::literal::Literal;
@@ -186,6 +187,15 @@ where
             missing_libraries.extend(inner_object.get_missing_libraries());
         }
         missing_libraries
+    }
+
+    ///
+    /// Get the list of EVM-like dependencies.
+    ///
+    pub fn get_evm_dependencies(&self) -> Dependencies {
+        let mut dependencies = Dependencies::new(self.identifier.as_str());
+        self.code.accumulate_evm_dependencies(&mut dependencies);
+        dependencies
     }
 }
 

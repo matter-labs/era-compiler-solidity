@@ -54,23 +54,32 @@ impl Build {
                 _ => None,
             }
         }) {
+            dbg!(&contract.deploy_build.dependencies);
+            dbg!(&contract.runtime_build.dependencies);
+
             let deploy_memory_buffer =
                 inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    contract.deploy_build.as_slice(),
-                    contract.deploy_identifier.as_str(),
+                    contract.deploy_build.bytecode.as_slice(),
+                    contract.deploy_build.identifier.as_str(),
                     false,
                 );
             let runtime_memory_buffer =
                 inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    contract.runtime_build.as_slice(),
-                    contract.runtime_identifier.as_str(),
+                    contract.runtime_build.bytecode.as_slice(),
+                    contract.runtime_build.identifier.as_str(),
                     false,
                 );
 
             let (deploy_buffer_linked, runtime_buffer_linked, object_format) =
                 match era_compiler_llvm_context::evm_link(
-                    (contract.deploy_identifier.as_str(), deploy_memory_buffer),
-                    (contract.runtime_identifier.as_str(), runtime_memory_buffer),
+                    (
+                        contract.deploy_build.identifier.as_str(),
+                        deploy_memory_buffer,
+                    ),
+                    (
+                        contract.runtime_build.identifier.as_str(),
+                        runtime_memory_buffer,
+                    ),
                     &linker_symbols,
                 ) {
                     Ok(result) => result,
@@ -83,8 +92,8 @@ impl Build {
                     }
                 };
 
-            contract.deploy_build = deploy_buffer_linked.as_slice().to_vec();
-            contract.runtime_build = runtime_buffer_linked.as_slice().to_vec();
+            contract.deploy_build.bytecode = deploy_buffer_linked.as_slice().to_vec();
+            contract.runtime_build.bytecode = runtime_buffer_linked.as_slice().to_vec();
             contract.object_format = object_format;
         }
 

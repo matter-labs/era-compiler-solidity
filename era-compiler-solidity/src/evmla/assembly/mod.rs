@@ -129,6 +129,28 @@ impl Assembly {
     }
 
     ///
+    /// Get the list of EVM-like dependencies.
+    ///
+    pub fn accumulate_evm_dependencies(&self, dependencies: &mut era_yul::Dependencies) {
+        if let Some(code) = self.code.as_ref() {
+            for instruction in code.iter() {
+                match instruction.name {
+                    InstructionName::PUSH_ContractHash | InstructionName::PUSH_ContractHashSize => {
+                        let dependency = instruction.value.to_owned().expect("Always exists");
+                        dependencies.push(dependency);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if let Some(data) = self.data.as_ref() {
+            for (_, data) in data.iter() {
+                data.accumulate_evm_dependencies(dependencies);
+            }
+        }
+    }
+
+    ///
     /// Returns the `keccak256` hash of the assembly representation.
     ///
     pub fn keccak256(&self) -> String {

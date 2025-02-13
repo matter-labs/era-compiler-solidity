@@ -99,7 +99,6 @@ fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
 fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 

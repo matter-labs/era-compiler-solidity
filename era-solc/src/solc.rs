@@ -91,6 +91,7 @@ impl Compiler {
     ///
     pub fn standard_json(
         &self,
+        target: era_compiler_common::Target,
         input: &mut StandardJsonInput,
         messages: &mut Vec<StandardJsonOutputError>,
         base_path: Option<String>,
@@ -197,12 +198,12 @@ impl Compiler {
 
         input.resolve_sources();
         solc_output.preprocess_ast(
+            target,
             &input.sources,
             &self.version,
             suppressed_errors.as_slice(),
             suppressed_warnings.as_slice(),
         )?;
-        solc_output.remove_evm_artifacts();
 
         Ok(solc_output)
     }
@@ -268,6 +269,7 @@ impl Compiler {
     ///
     pub fn validate_yul_paths(
         &self,
+        target: era_compiler_common::Target,
         paths: &[PathBuf],
         libraries: StandardJsonInputSettingsLibraries,
         messages: &mut Vec<StandardJsonOutputError>,
@@ -278,7 +280,7 @@ impl Compiler {
             StandardJsonInputSettingsOptimizer::default(),
             vec![],
         );
-        self.validate_yul_standard_json(&mut solc_input, messages)
+        self.validate_yul_standard_json(target, &mut solc_input, messages)
     }
 
     ///
@@ -286,11 +288,12 @@ impl Compiler {
     ///
     pub fn validate_yul_standard_json(
         &self,
+        target: era_compiler_common::Target,
         solc_input: &mut StandardJsonInput,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         solc_input.extend_selection(StandardJsonInputSettingsSelection::new_yul_validation());
-        let solc_output = self.standard_json(solc_input, messages, None, vec![], None)?;
+        let solc_output = self.standard_json(target, solc_input, messages, None, vec![], None)?;
         Ok(solc_output)
     }
 
