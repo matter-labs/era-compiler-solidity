@@ -91,6 +91,12 @@ fn main_inner(
         Some(ref target) => era_compiler_common::Target::from_str(target.as_str())?,
         None => era_compiler_common::Target::EraVM,
     };
+    era_compiler_llvm_context::initialize_target(target);
+
+    if arguments.recursive_process {
+        return era_compiler_solidity::run_recursive(target);
+    }
+
     if let era_compiler_common::Target::EVM = target {
         messages.push(era_solc::StandardJsonOutputError::new_warning("EVM target is under development and not fully functional yet. It must only be used for research and development purposes.", None, None))
     }
@@ -105,11 +111,6 @@ fn main_inner(
         .expect("Thread pool configuration failure");
 
     inkwell::support::enable_llvm_pretty_stack_trace();
-    era_compiler_llvm_context::initialize_target(target);
-
-    if arguments.recursive_process {
-        return era_compiler_solidity::run_recursive(target);
-    }
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
 

@@ -6,6 +6,7 @@ pub mod name;
 
 use std::collections::BTreeSet;
 
+use crate::yul::dependencies::Dependencies;
 use crate::yul::error::Error;
 use crate::yul::lexer::token::lexeme::literal::Literal as LexicalLiteral;
 use crate::yul::lexer::token::lexeme::symbol::Symbol;
@@ -100,7 +101,6 @@ impl FunctionCall {
         let mut libraries = BTreeSet::new();
 
         if let Name::LinkerSymbol = self.name {
-            let _argument = self.arguments.first().expect("Always exists");
             if let Expression::Literal(Literal {
                 inner: LexicalLiteral::String(library_path),
                 ..
@@ -115,5 +115,28 @@ impl FunctionCall {
             libraries.extend(argument.get_missing_libraries());
         }
         libraries
+    }
+
+    ///
+    /// Get the list of EVM-like dependencies.
+    ///
+    pub fn accumulate_evm_dependencies(&self, dependencies: &mut Dependencies) {
+        match self.name {
+            Name::CodeCopy | Name::DataCopy | Name::DataSize | Name::DataOffset => {
+                if let Expression::Literal(Literal {
+                    inner: LexicalLiteral::String(identifier),
+                    ..
+                }) = self.arguments.first().expect("Always exists")
+                {
+                    dependencies.push(identifier.to_string());
+                }
+                return;
+            }
+            _ => {}
+        }
+
+        for argument in self.arguments.iter() {
+            argument.accumulate_evm_dependencies(dependencies);
+        }
     }
 }

@@ -1462,42 +1462,18 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
             )
             .map(Some),
             InstructionName::PUSH_ContractHash => {
-                let mut object_name = self
+                let object_name = self
                     .instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Data offset identifier is missing"))?;
-
-                let current_code_segment = context.code_segment().expect("Always exists");
-                let object_code_segment = if format!("{object_name}.{current_code_segment}")
-                    .as_str()
-                    == context.module().get_name().to_str().expect("Always valid")
-                {
-                    era_compiler_common::CodeSegment::Runtime
-                } else {
-                    era_compiler_common::CodeSegment::Deploy
-                };
-                object_name.push_str(format!(".{object_code_segment}").as_str());
-
                 era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
                     .map(Some)
             }
             InstructionName::PUSH_ContractHashSize => {
-                let mut object_name = self
+                let object_name = self
                     .instruction
                     .value
                     .ok_or_else(|| anyhow::anyhow!("Data size identifier is missing"))?;
-
-                let current_code_segment = context.code_segment().expect("Always exists");
-                let object_code_segment = if format!("{object_name}.{current_code_segment}")
-                    .as_str()
-                    == context.module().get_name().to_str().expect("Always valid")
-                {
-                    era_compiler_common::CodeSegment::Runtime
-                } else {
-                    era_compiler_common::CodeSegment::Deploy
-                };
-                object_name.push_str(format!(".{object_code_segment}").as_str());
-
                 era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
                     .map(Some)
             }
