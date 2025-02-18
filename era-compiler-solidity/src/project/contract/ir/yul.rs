@@ -33,7 +33,7 @@ impl Yul {
         };
 
         if let Some(debug_config) = debug_config {
-            debug_config.dump_yul(path, None, source_code)?;
+            debug_config.dump_yul(path, source_code)?;
         }
 
         let mut lexer = Lexer::new(source_code.to_owned());

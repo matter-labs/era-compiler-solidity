@@ -11,7 +11,7 @@ pub struct Dependencies {
     /// Top-level object identifier.
     pub identifier: String,
     /// List of EVM-like dependencies.
-    pub dependencies: Vec<String>,
+    pub inner: Vec<String>,
 }
 
 impl Dependencies {
@@ -21,24 +21,36 @@ impl Dependencies {
     pub fn new(identifier: &str) -> Self {
         Self {
             identifier: identifier.to_owned(),
-            dependencies: Vec::new(),
+            inner: Vec::new(),
         }
     }
 
     ///
     /// Push a single dependency.
     ///
+    /// TODO: move suffixes to Yul/EVMLA translators
+    ///
     pub fn push(&mut self, dependency: String) {
-        if dependency == self.identifier || self.dependencies.contains(&dependency) {
+        if dependency == self.identifier || self.inner.contains(&dependency) {
             return;
         }
 
-        let dependency_after_dot = dependency
-            .split('.')
-            .last()
-            .expect("Always exists")
-            .to_owned();
-        self.dependencies.push(dependency_after_dot);
+        let is_runtime_code = self.identifier
+            == format!(
+                "{}.deploy",
+                dependency
+                    .strip_suffix(".runtime")
+                    .unwrap_or(&self.identifier)
+            )
+            || self.identifier.as_str()
+                == dependency
+                    .strip_suffix("_deployed")
+                    .unwrap_or(self.identifier.as_str());
+        if is_runtime_code {
+            self.inner.insert(0, dependency);
+        } else {
+            self.inner.push(dependency);
+        }
     }
 
     ///
@@ -51,14 +63,5 @@ impl Dependencies {
         for dependency in dependencies.into_iter() {
             self.push(dependency);
         }
-    }
-}
-
-impl IntoIterator for Dependencies {
-    type Item = String;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.dependencies.into_iter()
     }
 }

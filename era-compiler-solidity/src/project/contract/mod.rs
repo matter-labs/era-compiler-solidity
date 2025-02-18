@@ -11,8 +11,7 @@ use std::collections::BTreeSet;
 use era_compiler_llvm_context::IContext;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
-use crate::build_evm::contract::deploy_build::DeployBuild as EVMContractDeployBuild;
-use crate::build_evm::contract::runtime_build::RuntimeBuild as EVMContractRuntimeBuild;
+use crate::build_evm::contract::object::Object as EVMContractObject;
 use crate::build_evm::contract::Contract as EVMContractBuild;
 use crate::yul::parser::wrapper::Wrap;
 
@@ -311,10 +310,12 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
-                let runtime_build = EVMContractRuntimeBuild::new(
+                let runtime_buffer = runtime_context.build()?;
+                let runtime_build = EVMContractObject::new(
                     runtime_code_identifier,
+                    self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    runtime_code_segment,
                     runtime_code_dependecies,
                 );
 
@@ -345,10 +346,12 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
-                let deploy_build = EVMContractDeployBuild::new(
+                let deploy_buffer = deploy_context.build()?;
+                let deploy_build = EVMContractObject::new(
                     deploy_code_identifier,
+                    self.name.clone(),
                     deploy_buffer.as_slice().to_owned(),
+                    deploy_code_segment,
                     deploy_code_dependecies,
                 );
 
@@ -404,10 +407,12 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let runtime_buffer = runtime_context.build(self.name.path.as_str())?;
-                let runtime_build = EVMContractRuntimeBuild::new(
+                let runtime_buffer = runtime_context.build()?;
+                let runtime_build = EVMContractObject::new(
                     runtime_code_identifier,
+                    self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    runtime_code_segment,
                     runtime_code_dependecies,
                 );
 
@@ -435,10 +440,12 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let deploy_buffer = deploy_context.build(self.name.path.as_str())?;
-                let deploy_build = EVMContractDeployBuild::new(
+                let deploy_buffer = deploy_context.build()?;
+                let deploy_build = EVMContractObject::new(
                     deploy_code_identifier,
+                    self.name.clone(),
                     deploy_buffer.as_slice().to_owned(),
+                    deploy_code_segment,
                     deploy_code_dependecies,
                 );
 
@@ -475,16 +482,20 @@ impl Contract {
                     optimizer,
                     debug_config,
                 );
-                let runtime_buffer = context.build(self.name.path.as_str())?;
-                let runtime_build = EVMContractRuntimeBuild::new(
+                let runtime_buffer = context.build()?;
+                let runtime_build = EVMContractObject::new(
                     self.name.full_path.clone(),
+                    self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    era_compiler_common::CodeSegment::Runtime,
                     dependencies.clone(),
                 );
 
-                let deploy_build = EVMContractDeployBuild::new(
+                let deploy_build = EVMContractObject::new(
                     self.name.full_path.clone(),
+                    self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    era_compiler_common::CodeSegment::Deploy,
                     dependencies,
                 );
 

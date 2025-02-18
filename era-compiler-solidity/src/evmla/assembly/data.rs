@@ -52,17 +52,6 @@ impl Data {
             Self::Path(_) => BTreeSet::new(),
         }
     }
-
-    ///
-    /// Get the list of EVM-like dependencies.
-    ///
-    pub fn accumulate_evm_dependencies(&self, dependencies: &mut era_yul::Dependencies) {
-        match self {
-            Self::Assembly(assembly) => assembly.accumulate_evm_dependencies(dependencies),
-            Self::Hash(_) => {}
-            Self::Path(_) => {}
-        }
-    }
 }
 
 impl std::fmt::Display for Data {
