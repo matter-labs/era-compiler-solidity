@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Added
+
+- An AST error for the usage of `ripemd160` precompile
+
 ## [1.5.11] - 2025-01-27
 
 ### Fixed

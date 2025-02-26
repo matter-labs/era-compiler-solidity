@@ -216,6 +216,25 @@ Please consider changing the functionality relying on reading runtime code to a 
             Some(sources),
         )
     }
+
+    ///
+    /// Returns the `ripemd160` precompile usage error.
+    ///
+    pub fn error_ripemd160(
+        node: Option<&str>,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, StandardJsonInputSource>,
+    ) -> Self {
+        let message = r#"
+The `ripemd160` precompile is not supported in EraVM yet.
+"#;
+
+        Self::new_error(
+            message,
+            node.and_then(|node| SourceLocation::try_from_ast(node, id_paths)),
+            Some(sources),
+        )
+    }
 }
 
 impl std::fmt::Display for Error {
