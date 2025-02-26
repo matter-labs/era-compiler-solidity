@@ -159,7 +159,7 @@ fn missing(target: Target) -> anyhow::Result<()> {
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
     result.success().stdout(predicate::str::contains(
-        "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
+        "The default codegen of `zksolc` does not match that of `solc` for historical reasons.",
     ));
 
     Ok(())

@@ -162,7 +162,36 @@ impl Compiler {
         }
         if input.settings.codegen.is_none() {
             messages.push(StandardJsonOutputError::new_warning(
-                "The `codegen` setting will become mandatory in future versions of zksolc. Please set it to either `evmla` or `yul`.",
+                r#"
+The default codegen of `zksolc` does not match that of `solc` for historical reasons.
+Whereas `solc` uses the EVM [legacy] assembly codegen by default, zksolc uses the Yul codegen.
+
+It often leads to different behavior of the bytecode generated from specific cases of Solidity language features.
+In practice, contracts that work correctly on EVM may produce different and unexpected results on ZKsync.
+
+The affected Solidity features are listed at https://docs.soliditylang.org/en/latest/ir-breaking-changes.html,
+although this list may be incomplete.
+
+>>> IMPORTANT! This warning will become a hard error in future versions of `zksolc` to reduce potential security issues <<<
+
+To mitigate the warning, please follow the instructions below depending on how you are using `zksolc`.
+`foundry-zksync`:
+    - `codegen = value` in the `[profile.default.zksync]` section of the project config (e.g. `foundry.toml`)
+`hardhat`:
+    - "codegen": <value> in the `zksolc.settings.codegen` field of the project config (e.g. `hardhat.config.js`)
+Directly via standard JSON I/O without tooling:
+    - "codegen": <value> in the `<root>.settings.codegen` field
+Directly via CLI:
+    - pass the `--codegen <value>` parameter
+
+Allowed values:
+    "evmla": the default codegen used in `solc` by default, a.k.a. EVM legacy assembly or simply EVM assembly.
+    "yul": the new experimental `solc` codegen that has been used in `zksolc` by default.
+
+For reference, see the following links:
+- `zksolc` CLI reference: https://matter-labs.github.io/era-compiler-solidity/latest/02-command-line-interface.html#--codegen
+- `zksolc` standard JSON input reference: https://matter-labs.github.io/era-compiler-solidity/latest/03-standard-json.html#input-json
+                "#,
                 None,
                 None,
             ));
