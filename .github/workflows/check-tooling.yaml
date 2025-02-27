@@ -56,7 +56,7 @@ jobs:
   # Check Hardhat with built zksolc
   check-hardhat:
     needs: build-zksolc
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@v1
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@aba-hardhat-fix
     secrets: inherit
     with:
       zksolc-release-suffix: 'test-tooling'
