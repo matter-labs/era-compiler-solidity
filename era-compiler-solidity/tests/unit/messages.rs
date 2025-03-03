@@ -789,3 +789,56 @@ fn tx_origin_assembly_suppressed(
     )
     .expect("Test failure"));
 }
+
+pub const RIPEMD160_CODE_SOURCE: &str = r#"
+// SPDX-License-Identifier: Unlicensed
+
+pragma solidity >=0.4.12;
+
+contract Test {
+    function f() public returns (bytes32 hash) {
+        return ripemd160("");
+    }
+}
+"#;
+
+#[test_case(
+    semver::Version::new(0, 4, 26),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 5, 17),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 6, 12),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    semver::Version::new(0, 7, 6),
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::EVMLA
+)]
+#[test_case(
+    era_solc::Compiler::LAST_SUPPORTED_VERSION,
+    era_solc::StandardJsonInputCodegen::Yul
+)]
+fn ripemd160(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
+    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
+        return;
+    }
+
+    assert!(crate::common::check_solidity_message(
+        RIPEMD160_CODE_SOURCE,
+        "The `ripemd160` precompile is not supported in EraVM yet.",
+        era_solc::StandardJsonInputLibraries::default(),
+        &version,
+        codegen,
+        vec![],
+        vec![],
+    )
+    .expect("Test failure"));
+}

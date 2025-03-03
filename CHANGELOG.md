@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- An AST error for the usage of `ripemd160` precompile
+
 ### Changed
 
 - The warning about the default codegen is made more verbose and informative
