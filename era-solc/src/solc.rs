@@ -178,9 +178,9 @@ To mitigate the warning, please follow the instructions below depending on how y
 `foundry-zksync`:
     - `codegen = value` in the `[profile.default.zksync]` section of the project config (e.g. `foundry.toml`)
 `hardhat`:
-    - "codegen": <value> in the `zksolc.settings.codegen` field of the project config (e.g. `hardhat.config.js`)
+    - "codegen": <value> in the `zksolc.settings` section of the project config (e.g. `hardhat.config.js`)
 Directly via standard JSON I/O without tooling:
-    - "codegen": <value> in the `<root>.settings.codegen` field
+    - "codegen": <value> in the `<root>.settings` section of the input JSON
 Directly via CLI:
     - pass the `--codegen <value>` parameter
 
