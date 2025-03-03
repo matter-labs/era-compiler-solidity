@@ -6,6 +6,10 @@
 
 - An AST error for the usage of `ripemd160` precompile
 
+### Changed
+
+- The warning about the default codegen is made more verbose and informative
+
 ## [1.5.11] - 2025-01-27
 
 ### Fixed
