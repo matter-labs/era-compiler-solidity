@@ -121,18 +121,18 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     "outputSelection": {
       "*": {
         "": [
-          "ast" // Enable the AST output for the project.
+          "ast"
         ],
         "*": [
-          "metadata", // Enable the metadata output for the project.
-          "irOptimized", // Enable the Yul output for the project.
-          "eravm.assembly" // Enable the EraVM assembly output for the project.
+          "metadata",
+          "irOptimized",
+          "eravm.assembly"
         ]
       }
     },
     // Optional: Metadata settings.
     "metadata": {
-      // Optional: Use the given hash method for the metadata hash that is appended to the bytecode.
+      // Optional, zksolc: Use the given hash method for the metadata hash that is appended to the bytecode.
       // Available options: "none", "keccak256", "ipfs".
       // The metadata hash can be removed from the bytecode via option "none".
       // Default: "keccak256".
@@ -143,16 +143,13 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "useLiteralContent": true
     },
 
-    // Optional: Solidity codegen.
+    // Optional, zksolc: Solidity codegen.
     // Can be "evmla" or "yul".
-    // In contract to solc, zksolc uses "Yul" codegen by default for solc v0.8.0 and newer. It will be fixed soon, so solc and zksolc defaults will be the same.
+    // In contract to solc, zksolc uses "Yul" codegen by default for solc v0.8.0 and newer. It will be fixed soon, so solc and zksolc defaults become the same.
     // Default: "evmla" for solc <0.8.0, "yul" for solc >=0.8.0.
     "codegen": "Yul",
-    // Optional, Deprecated, zksolc: Use "codegen" instead.
-    // Default: false.
-    "forceEVMLA": true,
     // Optional, zksolc: Enables the EraVM extensions in Solidity and Yul modes.
-    // The extensions include EraVM-specific opcodes and features, such as call forwarding and usage of additional memory spaces.
+    // The extensions include EraVM-specific opcodes and features, such as call forwarding and additional memory spaces.
     // Default: false.
     "enableEraVMExtensions": true,
 
@@ -165,16 +162,14 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       "-join-globalcopies",
       "-disable-early-taildup"
     ],
-    // Optional, zksolc: suppressed errors.
-    // Available options: "sendtransfer", "assemblycreate".
+    // Optional, zksolc: suppressed errors, all listed below.
     "suppressedErrors": [
-      "sendtransfer",
-      "assemblycreate"
+      "sendtransfer"
     ],
-    // Optional, zksolc: suppressed warnings.
-    // Available options: "txorigin".
+    // Optional, zksolc: suppressed warnings, all listed below.
     "suppressedWarnings": [
-      "txorigin"
+      "txorigin",
+      "assemblycreate"
     ]
   }
 }
