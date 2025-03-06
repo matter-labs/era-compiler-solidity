@@ -362,7 +362,10 @@ zksolc './Simple.sol' --bin --enable-eravm-extensions
 
 Tells the compiler to suppress specified errors. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
 
-Only one error can be suppressed with this option: [`sendtransfer`](https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer).
+Errors that can be suppressed:
+
+- [`sendtransfer`](https://docs.zksync.io/build/developer-reference/best-practices#use-call-over-send-or-transfer)
+- [`ripemd160`](https://docs.zksync.io/zksync-protocol/differences/pre-compiles#available-precompiles)
 
 Usage:
 
@@ -376,7 +379,10 @@ zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
 
 Tells the compiler to suppress specified warnings. The option accepts multiple string arguments, so make sure they are properly separated by whitespace.
 
-Only one warning can be suppressed with this option: [`txorigin`](https://docs.zksync.io/build/tooling/foundry/migration-guide/testing#origin-address).
+Warnings that can be suppressed:
+
+- [`txorigin`](https://docs.zksync.io/zksync-era/tooling/foundry/migration-guide/testing#origin-address)
+- [`assemblycreate`](https://docs.zksync.io/zksync-protocol/differences/evm-instructions#create-create2)
 
 Usage:
 

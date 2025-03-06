@@ -197,6 +197,26 @@ impl Source {
     }
 
     ///
+    /// Checks the AST node for the usage of the `ripemd160` precompile.
+    ///
+    pub fn check_ripemd160(
+        ast: &serde_json::Value,
+        id_paths: &BTreeMap<usize, &String>,
+        sources: &BTreeMap<String, StandardJSONInputSource>,
+    ) -> Option<StandardJsonOutputError> {
+        let ast = ast.as_object()?;
+
+        (ast.get("nodeType")?.as_str()? == "Identifier").as_option()?;
+        (ast.get("name")?.as_str()? == "ripemd160").as_option()?;
+
+        Some(StandardJsonOutputError::error_ripemd160(
+            ast.get("src")?.as_str(),
+            id_paths,
+            sources,
+        ))
+    }
+
+    ///
     /// Returns the list of messages for some specific parts of the AST.
     ///
     pub fn get_messages(
@@ -210,10 +230,13 @@ impl Source {
     ) -> Vec<StandardJsonOutputError> {
         let mut messages = Vec::new();
         if let era_compiler_common::Target::EraVM = target {
-            if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
+            if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
                 if let Some(message) =
-                    Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
+                    Self::check_assembly_origin(solc_version, ast, id_paths, sources)
                 {
+                    messages.push(message);
+                }
+                if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
                     messages.push(message);
                 }
             }
@@ -225,16 +248,15 @@ impl Source {
                     messages.push(message);
                 }
             }
-            if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
-                messages.push(message);
-            }
-            if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
+            if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
                 if let Some(message) =
-                    Self::check_assembly_origin(solc_version, ast, id_paths, sources)
+                    Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
                 {
                     messages.push(message);
                 }
-                if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
+            }
+            if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::Ripemd160) {
+                if let Some(message) = Self::check_ripemd160(ast, id_paths, sources) {
                     messages.push(message);
                 }
             }
