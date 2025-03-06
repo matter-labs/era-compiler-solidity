@@ -315,6 +315,7 @@ impl Contract {
                     runtime_code_identifier,
                     self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    Some(era_solc::StandardJsonInputCodegen::Yul),
                     runtime_code_segment,
                     runtime_code_dependecies,
                 );
@@ -351,6 +352,7 @@ impl Contract {
                     deploy_code_identifier,
                     self.name.clone(),
                     deploy_buffer.as_slice().to_owned(),
+                    Some(era_solc::StandardJsonInputCodegen::Yul),
                     deploy_code_segment,
                     deploy_code_dependecies,
                 );
@@ -412,6 +414,7 @@ impl Contract {
                     runtime_code_identifier,
                     self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     runtime_code_segment,
                     runtime_code_dependecies,
                 );
@@ -445,6 +448,7 @@ impl Contract {
                     deploy_code_identifier,
                     self.name.clone(),
                     deploy_buffer.as_slice().to_owned(),
+                    Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     deploy_code_segment,
                     deploy_code_dependecies,
                 );
@@ -487,6 +491,7 @@ impl Contract {
                     self.name.full_path.clone(),
                     self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    None,
                     era_compiler_common::CodeSegment::Runtime,
                     dependencies.clone(),
                 );
@@ -495,6 +500,7 @@ impl Contract {
                     self.name.full_path.clone(),
                     self.name.clone(),
                     runtime_buffer.as_slice().to_owned(),
+                    None,
                     era_compiler_common::CodeSegment::Deploy,
                     dependencies,
                 );

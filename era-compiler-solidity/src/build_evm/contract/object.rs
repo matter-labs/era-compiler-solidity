@@ -15,6 +15,8 @@ pub struct Object {
     pub contract_name: era_compiler_common::ContractName,
     /// Bytecode.
     pub bytecode: Vec<u8>,
+    /// Codegen.
+    pub codegen: Option<era_solc::StandardJsonInputCodegen>,
     /// Code segment.
     pub code_segment: era_compiler_common::CodeSegment,
     /// Dependencies.
@@ -33,6 +35,7 @@ impl Object {
         identifier: String,
         contract_name: era_compiler_common::ContractName,
         bytecode: Vec<u8>,
+        codegen: Option<era_solc::StandardJsonInputCodegen>,
         code_segment: era_compiler_common::CodeSegment,
         dependencies: era_yul::Dependencies,
     ) -> Self {
@@ -40,6 +43,7 @@ impl Object {
             identifier,
             contract_name,
             bytecode,
+            codegen,
             code_segment,
             dependencies,
             is_assembled: false,
@@ -52,5 +56,22 @@ impl Object {
     ///
     pub fn requires_assembling(&self) -> bool {
         !self.is_assembled && !self.dependencies.inner.is_empty()
+    }
+
+    ///
+    /// Checks whether the object name matches a dot-separated dependency name.
+    ///
+    /// This function is only useful for Yul codegen where object names like `A_25.A_25_deployed` are found.
+    /// For EVM assembly codegen, it performs a simple comparison.
+    ///
+    pub fn matches_dependency(&self, dependency: &str) -> bool {
+        let dependency = match self.codegen {
+            Some(era_solc::StandardJsonInputCodegen::EVMLA) | None => dependency,
+            Some(era_solc::StandardJsonInputCodegen::Yul) => {
+                dependency.split('.').last().expect("Always exists")
+            }
+        };
+
+        self.identifier.as_str() == dependency
     }
 }
