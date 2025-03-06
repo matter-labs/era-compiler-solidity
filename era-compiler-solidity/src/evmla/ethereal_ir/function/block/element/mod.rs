@@ -2168,7 +2168,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 )
                 .map(Some)
             }
-            InstructionName::EXTCODEHASH => {
+            InstructionName::EXTCODECOPY => {
                 let arguments = self.pop_arguments_llvm_evm(context)?;
                 era_compiler_llvm_context::evm_code::ext_copy(
                     context,
@@ -2178,6 +2178,14 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                     arguments[3].into_int_value(),
                 )
                 .map(|_| None)
+            }
+            InstructionName::EXTCODEHASH => {
+                let arguments = self.pop_arguments_llvm_evm(context)?;
+                era_compiler_llvm_context::evm_code::ext_hash(
+                    context,
+                    arguments[0].into_int_value(),
+                )
+                .map(Some)
             }
 
             InstructionName::RETURN => {
@@ -2438,10 +2446,6 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
             }
             InstructionName::PC => {
                 anyhow::bail!("The `PC` instruction is not supported");
-            }
-            InstructionName::EXTCODECOPY => {
-                let _arguments = self.pop_arguments_llvm_evm(context)?;
-                anyhow::bail!("The `EXTCODECOPY` instruction is not supported");
             }
             InstructionName::SELFDESTRUCT => {
                 let _arguments = self.pop_arguments_llvm_evm(context)?;
