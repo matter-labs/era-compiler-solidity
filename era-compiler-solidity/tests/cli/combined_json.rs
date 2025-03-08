@@ -20,19 +20,23 @@ const JSON_ARGS: &[&str] = &[
     "bin-runtime",
 ];
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn all(target: Target) -> anyhow::Result<()> {
+#[test_case(Target::EraVM, era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(Target::EVM, era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(Target::EraVM, era_solc::StandardJsonInputCodegen::Yul)]
+#[test_case(Target::EVM, era_solc::StandardJsonInputCodegen::Yul)]
+fn all(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
+    let codegen = codegen.to_string();
     for selector in JSON_ARGS.into_iter() {
-        let args = &[
+        let zksolc_args = &[
             crate::common::TEST_SOLIDITY_CONTRACT_PATH,
             "--combined-json",
             selector,
+            "--codegen",
+            codegen.as_str(),
         ];
-
-        let result = crate::cli::execute_zksolc_with_target(args, target)?;
+        let result = crate::cli::execute_zksolc_with_target(zksolc_args, target)?;
         let status_code = result
             .success()
             .stdout(predicate::str::contains("contracts"))
@@ -41,7 +45,12 @@ fn all(target: Target) -> anyhow::Result<()> {
             .code()
             .expect("No exit code.");
 
-        let solc_result = crate::cli::execute_solc(args)?;
+        let solc_args = &[
+            crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+            "--combined-json",
+            selector,
+        ];
+        let solc_result = crate::cli::execute_solc(solc_args)?;
         solc_result.code(status_code);
     }
 
@@ -142,9 +151,9 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
     ];
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
-    result
-        .failure()
-        .stderr(predicate::str::contains("subprocess failed with exit code"));
+    result.failure().stderr(predicate::str::contains(
+        "ParserError: Expected identifier but got",
+    ));
 
     Ok(())
 }
