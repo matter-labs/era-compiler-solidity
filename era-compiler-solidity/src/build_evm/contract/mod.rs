@@ -179,14 +179,11 @@ impl Contract {
         self,
         standard_json_contract: &mut era_solc::StandardJsonOutputContract,
     ) -> anyhow::Result<()> {
-        let deploy_bytecode = hex::encode(self.deploy_object.bytecode);
-        let runtime_bytecode = hex::encode(self.runtime_object.bytecode);
-
         standard_json_contract.metadata = self.metadata_json;
         standard_json_contract
             .evm
             .get_or_insert_with(era_solc::StandardJsonOutputContractEVM::default)
-            .modify_evm(deploy_bytecode, runtime_bytecode);
+            .modify_evm(hex::encode(self.deploy_object.bytecode));
         standard_json_contract
             .missing_libraries
             .extend(self.missing_libraries);
