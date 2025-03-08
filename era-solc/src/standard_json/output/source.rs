@@ -220,6 +220,7 @@ impl Source {
     /// Returns the list of messages for some specific parts of the AST.
     ///
     pub fn get_messages(
+        target: era_compiler_common::Target,
         ast: &serde_json::Value,
         id_paths: &BTreeMap<usize, &String>,
         sources: &BTreeMap<String, StandardJSONInputSource>,
@@ -228,35 +229,36 @@ impl Source {
         suppressed_warnings: &[StandardJsonInputSettingsWarningType],
     ) -> Vec<StandardJsonOutputError> {
         let mut messages = Vec::new();
-        if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
-            if let Some(message) = Self::check_assembly_origin(solc_version, ast, id_paths, sources)
+        if let era_compiler_common::Target::EraVM = target {
+            if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::TxOrigin) {
+                if let Some(message) =
+                    Self::check_assembly_origin(solc_version, ast, id_paths, sources)
+                {
+                    messages.push(message);
+                }
+                if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
+                    messages.push(message);
+                }
+            }
+            if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::AssemblyCreate)
             {
-                messages.push(message);
+                if let Some(message) =
+                    Self::check_assembly_create(solc_version, ast, id_paths, sources)
+                {
+                    messages.push(message);
+                }
             }
-            if let Some(message) = Self::check_tx_origin(ast, id_paths, sources) {
-                messages.push(message);
+            if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
+                if let Some(message) =
+                    Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
+                {
+                    messages.push(message);
+                }
             }
-        }
-        if !suppressed_warnings.contains(&StandardJsonInputSettingsWarningType::AssemblyCreate) {
-            if let Some(message) = Self::check_assembly_create(solc_version, ast, id_paths, sources)
-            {
-                messages.push(message);
-            }
-        }
-
-        if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::SendTransfer) {
-            if let Some(message) =
-                Self::check_send_and_transfer(solc_version, ast, id_paths, sources)
-            {
-                messages.push(message);
-            }
-        }
-        if let Some(message) = Self::check_runtime_code(ast, id_paths, sources) {
-            messages.push(message);
-        }
-        if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::Ripemd160) {
-            if let Some(message) = Self::check_ripemd160(ast, id_paths, sources) {
-                messages.push(message);
+            if !suppressed_errors.contains(&StandardJsonInputSettingsErrorType::Ripemd160) {
+                if let Some(message) = Self::check_ripemd160(ast, id_paths, sources) {
+                    messages.push(message);
+                }
             }
         }
 
@@ -264,6 +266,7 @@ impl Source {
             serde_json::Value::Array(array) => {
                 for element in array.iter() {
                     messages.extend(Self::get_messages(
+                        target,
                         element,
                         id_paths,
                         sources,
@@ -276,6 +279,7 @@ impl Source {
             serde_json::Value::Object(object) => {
                 for (_key, value) in object.iter() {
                     messages.extend(Self::get_messages(
+                        target,
                         value,
                         id_paths,
                         sources,

@@ -9,6 +9,7 @@
 ### Changed
 
 - The warning about the default codegen is made more verbose and informative
+- Updated to Rust v1.83.0
 
 ## [1.5.11] - 2025-01-27
 

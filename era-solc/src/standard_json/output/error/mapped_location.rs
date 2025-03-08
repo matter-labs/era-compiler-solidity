@@ -97,7 +97,7 @@ impl<'a> MappedLocation<'a> {
     }
 }
 
-impl<'a> std::fmt::Display for MappedLocation<'a> {
+impl std::fmt::Display for MappedLocation<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut path = self.path.clone();
         if let Some(line) = self.line {
