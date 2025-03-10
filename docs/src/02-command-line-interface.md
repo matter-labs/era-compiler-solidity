@@ -513,7 +513,7 @@ Binary:
 0000000100200190000000060000c13d0000002a01000039000000000010043f...
 ```
 
-*zksolc* is able to compile Yul without *solc*. However, using *solc* is still recommended as it provides additional validation, diagnostics and better error messages:
+*zksolc* is able to compile Yul without *solc*. However, using *solc* is still recommended as it provides additional validation, diagnostic and better error messages:
 
 ```bash
 zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
