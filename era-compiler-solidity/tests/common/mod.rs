@@ -221,8 +221,11 @@ pub fn build_solidity_combined_json(
     )?;
     build.check_errors()?;
 
-    let mut combined_json =
-        solc_compiler.combined_json(paths.as_slice(), selectors.into_iter().collect())?;
+    let mut combined_json = solc_compiler.combined_json(
+        paths.as_slice(),
+        selectors.into_iter().collect(),
+        Some(solc_codegen),
+    )?;
     build.write_to_combined_json(&mut combined_json)?;
     Ok(combined_json)
 }

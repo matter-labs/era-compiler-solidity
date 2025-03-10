@@ -11,6 +11,7 @@ use std::sync::RwLock;
 
 use crate::combined_json::selector::Selector as CombinedJsonSelector;
 use crate::combined_json::CombinedJson;
+use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
@@ -243,6 +244,7 @@ For reference, see the following links:
         &self,
         paths: &[PathBuf],
         mut selectors: HashSet<CombinedJsonSelector>,
+        codegen: Option<StandardJsonInputSettingsCodegen>,
     ) -> anyhow::Result<CombinedJson> {
         selectors.retain(|selector| selector.is_source_solc());
         if selectors.is_empty() {
@@ -263,10 +265,17 @@ For reference, see the following links:
                 .collect::<Vec<String>>()
                 .join(","),
         );
+        if codegen != Some(StandardJsonInputSettingsCodegen::EVMLA) {
+            if self.version.default >= Self::FIRST_VIA_IR_VERSION {
+                command.arg("--via-ir");
+            } else if self.version.default >= Self::FIRST_YUL_VERSION {
+                command.arg("--experimental-via-ir");
+            }
+        }
 
         let process = command
             .spawn()
-            .map_err(|error| anyhow::anyhow!("{} subprocess spawning: {:?}", executable, error))?;
+            .map_err(|error| anyhow::anyhow!("{executable} subprocess spawning: {error:?}"))?;
 
         let result = process.wait_with_output().map_err(|error| {
             anyhow::anyhow!("{} subprocess output reading: {error:?}", self.executable)

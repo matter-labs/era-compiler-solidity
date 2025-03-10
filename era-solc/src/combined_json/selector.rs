@@ -64,7 +64,10 @@ impl Selector {
     /// Whether the selector is available in `solc`.
     ///
     pub fn is_source_solc(&self) -> bool {
-        !matches!(self, Self::Assembly)
+        !matches!(
+            self,
+            Self::Assembly | Self::Bytecode | Self::BytecodeRuntime
+        )
     }
 }
 
@@ -82,6 +85,7 @@ impl FromStr for Selector {
             "transient-storage-layout" => Ok(Self::TransientStorageLayout),
             "ast" => Ok(Self::AST),
             "asm" => Ok(Self::ASM),
+
             "bin" => Ok(Self::Bytecode),
             "bin-runtime" => Ok(Self::BytecodeRuntime),
 
@@ -104,6 +108,7 @@ impl std::fmt::Display for Selector {
             Self::TransientStorageLayout => write!(f, "transient-storage-layout"),
             Self::AST => write!(f, "ast"),
             Self::ASM => write!(f, "asm"),
+
             Self::Bytecode => write!(f, "bin"),
             Self::BytecodeRuntime => write!(f, "bin-runtime"),
 
