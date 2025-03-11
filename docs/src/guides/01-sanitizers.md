@@ -61,7 +61,7 @@ zksync-llvm build --sanitizer=Address \
 
 To build the ZKsync compiler with sanitizer enabled, you need to set the `RUSTFLAGS` environment variable
 to `-Z sanitizer=address` and run the `cargo build` command.
-Sanitizers build is the feature that is available only for the nightly Rust compiler, it is recommended
+Sanitizers build is a feature that is available only for the nightly Rust compiler, it is recommended
 to set `RUSTC_BOOTSTRAP=1` environment variable before the build.
 
 It is also mandatory to use `--target` option to specify the target architecture. Otherwise, the build will fail.
