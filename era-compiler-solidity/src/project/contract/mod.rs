@@ -281,8 +281,8 @@ impl Contract {
                     anyhow::anyhow!("Contract `{identifier}` has no runtime code")
                 })?;
 
-                let deploy_code_dependecies = deploy_code.get_evm_dependencies();
-                let runtime_code_dependecies = runtime_code.get_evm_dependencies();
+                let deploy_code_dependecies = deploy_code.get_evm_dependencies(Some(&runtime_code));
+                let runtime_code_dependecies = runtime_code.get_evm_dependencies(None);
                 let mut runtime_code = runtime_code.wrap();
 
                 let deploy_code_identifier = deploy_code.object.0.identifier.clone();

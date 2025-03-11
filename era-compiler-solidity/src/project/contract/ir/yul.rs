@@ -62,8 +62,11 @@ impl Yul {
     ///
     /// Get the list of EVM-like dependencies.
     ///
-    pub fn get_evm_dependencies(&self) -> era_yul::Dependencies {
-        self.object.0.get_evm_dependencies()
+    pub fn get_evm_dependencies(
+        &self,
+        runtime_code: Option<&era_yul::yul::parser::statement::object::Object<EraDialect>>,
+    ) -> era_yul::Dependencies {
+        self.object.0.get_evm_dependencies(runtime_code)
     }
 }
 
