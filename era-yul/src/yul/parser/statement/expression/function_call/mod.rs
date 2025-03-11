@@ -122,7 +122,7 @@ impl FunctionCall {
     ///
     pub fn accumulate_evm_dependencies(&self, dependencies: &mut Dependencies) {
         match self.name {
-            Name::CodeCopy | Name::DataCopy | Name::DataSize | Name::DataOffset => {
+            Name::DataSize | Name::DataOffset => {
                 if let Expression::Literal(Literal {
                     inner: LexicalLiteral::String(identifier),
                     ..

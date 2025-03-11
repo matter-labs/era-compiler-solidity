@@ -864,7 +864,7 @@ pub fn combined_json_eravm(
     }
     let output_assembly = selectors.contains(&era_solc::CombinedJsonSelector::Assembly);
 
-    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
+    let mut combined_json = solc_compiler.combined_json(paths, selectors, codegen)?;
 
     let build = standard_output_eravm(
         paths,
@@ -957,7 +957,7 @@ pub fn combined_json_evm(
         ));
     }
 
-    let mut combined_json = solc_compiler.combined_json(paths, selectors)?;
+    let mut combined_json = solc_compiler.combined_json(paths, selectors, codegen)?;
 
     let build = standard_output_evm(
         paths,
