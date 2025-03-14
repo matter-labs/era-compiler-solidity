@@ -4,6 +4,7 @@
 
 ### Added
 
+- The solc v0.8.29 support
 - An AST error for the usage of `ripemd160` precompile
 
 ### Changed
