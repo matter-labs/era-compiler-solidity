@@ -1,10 +1,12 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.12] - 2025-03-20
 
 ### Added
 
+- The solc v0.8.29 support
 - An AST error for the usage of `ripemd160` precompile
+- More aliases for standard JSON input fields
 
 ### Changed
 
@@ -14,6 +16,7 @@
 ### Fixed
 
 - Missing `--via-ir` flag in the combined JSON request to `solc`
+- Several inconsistencies in the documentation
 
 ## [1.5.11] - 2025-01-27
 
