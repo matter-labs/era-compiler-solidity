@@ -688,7 +688,7 @@ DEFAULT_FAR_REVERT:
         revl    @DEFAULT_FAR_REVERT
 ```
 
-For comparison, the Yul pipeline of *solc* v0.8.28 generates the following EraVM assembly:
+For comparison, via the Yul pipeline, the following EraVM assembly is produced:
 
 ```asm
         .text
