@@ -58,7 +58,7 @@ pub struct Settings {
     pub enable_eravm_extensions: bool,
 
     /// The extra LLVM options.
-    #[serde(default, rename = "LLVMOptions", skip_serializing)]
+    #[serde(default, alias = "LLVMOptions", skip_serializing)]
     pub llvm_options: Vec<String>,
     /// The suppressed errors.
     #[serde(default, skip_serializing)]
