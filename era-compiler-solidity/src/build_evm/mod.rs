@@ -118,6 +118,7 @@ impl Build {
                     let assembled_object = match era_compiler_llvm_context::evm_assemble(
                         bytecode_buffers.as_slice(),
                         bytecode_ids.as_slice(),
+                        object.code_segment,
                     ) {
                         Ok(assembled_object) => assembled_object,
                         Err(error) => {
