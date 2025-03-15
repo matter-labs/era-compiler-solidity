@@ -75,7 +75,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       // Optional, zksolc: Re-run the compilation with "mode": "z" if the compilation with "mode": "3" fails due to EraVM bytecode size limit.
       // Used on a per-contract basis and applied automatically, so some contracts will end up compiled with "mode": "3", and others with "mode": "z".
       // Default: false.
-      "fallbackToOptimizingForSize": false
+      "sizeFallback": false
     },
 
     // Optional: Sorted list of remappings.
@@ -154,7 +154,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     "enableEraVMExtensions": true,
 
     // Optional, zksolc: extra LLVM settings.
-    "LLVMOptions": [
+    "llvmOptions": [
       "-eravm-jump-table-density-threshold", "10",
       "-tail-dup-size", "6",
       "-eravm-enable-split-loop-phi-live-ranges",

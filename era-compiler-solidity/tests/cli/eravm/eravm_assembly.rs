@@ -162,7 +162,7 @@ fn optimization() -> anyhow::Result<()> {
 }
 
 #[test]
-fn fallback_to_optimizing_for_size() -> anyhow::Result<()> {
+fn size_fallback() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[

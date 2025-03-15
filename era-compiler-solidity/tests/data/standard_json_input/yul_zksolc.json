@@ -9,7 +9,7 @@
     "optimizer": {
         "mode": "3",
       "details": null,
-      "fallbackToOptimizingForSize": true
+      "sizeFallback": true
     },
     "outputSelection": {
       "*": {
