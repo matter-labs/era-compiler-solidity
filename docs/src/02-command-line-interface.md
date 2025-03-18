@@ -322,21 +322,47 @@ Specifies the hash function used for contract metadata.
 
 The following values are allowed:
 
-|     Value    |  Size  | Padding | Reference |
-|:-------------|:-------|:--------|:----------|
-| none         |  0 B   | 0-32 B  | 
-| keccak256    | 32 B   | 0-32 B  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
-| ipfs         | 44 B   | 20-52 B | [IPFS Documentation](https://docs.ipfs.tech/)
+|     Value    |  Size  | Padding | CBOR |                       Reference                      |
+|:-------------|:-------|:--------|:----:|:-----------------------------------------------------|
+| none         |  0 B   | 0-32 B  |  No  |
+| keccak256    | 32 B   | 0-32 B  |  No  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
+| ipfs         | 44 B   | 20-52 B | Yes  | [IPFS Documentation](https://docs.ipfs.tech/)
+
+For historical reasons, `keccak256` is not CBOR-wrapped, so only the hash itself is appended to the bytecode. The `ipfs` hash is CBOR-wrapped, so the same decoding logic as for EVM can be applied.
 
 The default value is `keccak256`.
 
 > EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is *prepended* with zeros according to the *Padding* column in the table above.
 
-Usage:
+Usage with `keccak256`:
 
 ```bash
-zksolc './Simple.sol' --bin --metadata-hash 'ipfs'
+zksolc './Test.sol' --bin --metadata-hash 'keccak256'
 ```
+
+Output with `keccak256`:
+
+```text
+======= .../Test.sol:Test =======
+Binary:
+00000001002001900000000c0000613d0000008001000039000000400010043f0000000001000416000000000001004b0000000c0000c13d00000020010000390000010000100443000001200000044300000005010000410000000f0001042e000000000100001900000010000104300000000e000004320000000f0001042e00000010000104300000000000000000000000000000000000000000000000000000000200000000000000000000000000000040000001000000000000000000abdcd1e165740381db847385c48007226b5babc8ffc053de6f355baca6616e40
+```
+
+Usage with `ipfs`:
+
+```bash
+zksolc './Test.sol' --bin --metadata-hash 'ipfs'
+```
+
+Output with `ipfs`:
+
+```text
+======= .../Test.sol:Test =======
+Binary:
+00000001002001900000000c0000613d0000008001000039000000400010043f0000000001000416000000000001004b0000000c0000c13d00000020010000390000010000100443000001200000044300000005010000410000000f0001042e000000000100001900000010000104300000000e000004320000000f0001042e0000001000010430000000000000000000000000000000000000000000000000000000020000000000000000000000000000004000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a1646970667358221220aa6c03adc327b2cf98010f155f9849134e325f7a1e2cffd5b99d832a7dba5082002a
+```
+
+Note that a lot of padding is added before the `ipfs` hash to make the bytecode size an odd number of 32-byte words.
 
 
 
@@ -416,7 +442,7 @@ The options in this section are only configuring *solc*, so they are passed dire
 
 Specifies the *solc* codegen. The following values are allowed:
 
-| Value | Description                  | Hints                              |
+| Value | Description                  | Defaults                           |
 |:------|:-----------------------------|:-----------------------------------|
 | evmla | EVM legacy assembly          | *solc* default for EVM/L1          |
 | yul   | Yul a.k.a. IR                | *zksolc* default for ZKsync        |
@@ -437,7 +463,7 @@ zksolc './Simple.sol' --bin --codegen 'evmla'
 
 ### `--evm-version`
 
-Specifies the EVM version *solc* will produce artifacts for. Only artifacts such as Yul and EVM assembly are known to be affected by this option. For instance, if the EVM version is set to *cancun*, then Yul and EVM assembly may contain `MCOPY` instructions.
+Specifies the EVM version *solc* will produce artifacts for. Only artifacts such as Yul and EVM assembly are known to be affected by this option. For instance, if the EVM version is set to *cancun*, then Yul and EVM assembly may contain `MCOPY` instructions, so no calls to the Identity precompile (address `0x04`) will be made.
 
 > EVM version only affects IR artifacts produced by *solc* and does not affect EraVM bytecode produced by *zksolc*.
 
