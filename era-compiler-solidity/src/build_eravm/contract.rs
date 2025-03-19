@@ -60,11 +60,16 @@ impl Contract {
         self,
         path: String,
         output_metadata: bool,
+        output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======")?;
-        if let Some(assembly) = self.build.assembly {
-            writeln!(std::io::stdout(), "Assembly:\n{assembly}")?;
+        if output_assembly {
+            writeln!(
+                std::io::stdout(),
+                "Assembly:\n{}",
+                self.build.assembly.expect("Always exists")
+            )?;
         }
         if output_metadata {
             writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
@@ -87,6 +92,7 @@ impl Contract {
         self,
         output_path: &Path,
         output_metadata: bool,
+        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -123,7 +129,7 @@ impl Contract {
             }
         }
 
-        if let Some(assembly) = self.build.assembly {
+        if output_assembly {
             let output_name = format!(
                 "{}.{}",
                 self.name.name.as_deref().unwrap_or(file_name),
@@ -137,8 +143,11 @@ impl Contract {
                     "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
                 );
             } else {
-                std::fs::write(output_path.as_path(), assembly.as_bytes())
-                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
+                std::fs::write(
+                    output_path.as_path(),
+                    self.build.assembly.expect("Always exists").as_bytes(),
+                )
+                .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 

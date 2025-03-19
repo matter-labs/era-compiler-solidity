@@ -161,9 +161,12 @@ impl Build {
         }
 
         for (path, build) in self.results.into_iter() {
-            build
-                .expect("Always valid")
-                .write_to_terminal(path, output_metadata, output_binary)?;
+            build.expect("Always valid").write_to_terminal(
+                path,
+                output_metadata,
+                output_assembly,
+                output_binary,
+            )?;
         }
 
         Ok(())
@@ -176,6 +179,7 @@ impl Build {
         mut self,
         output_directory: &Path,
         output_metadata: bool,
+        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -188,6 +192,7 @@ impl Build {
             build.expect("Always valid").write_to_directory(
                 output_directory,
                 output_metadata,
+                output_assembly,
                 output_binary,
                 overwrite,
             )?;

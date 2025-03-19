@@ -168,6 +168,7 @@ impl Output {
     ///
     pub fn preprocess_ast(
         &mut self,
+        target: era_compiler_common::Target,
         sources: &BTreeMap<String, StandardJSONInputSource>,
         version: &Version,
         suppressed_errors: &[StandardJsonInputSettingsErrorType],
@@ -188,6 +189,7 @@ impl Output {
                     .as_ref()
                     .map(|ast| {
                         Source::get_messages(
+                            target,
                             ast,
                             &id_paths,
                             sources,
