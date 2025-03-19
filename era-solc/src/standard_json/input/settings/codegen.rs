@@ -10,7 +10,7 @@ use crate::version::Version;
 ///
 /// The Solidity compiler codegen.
 ///
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Codegen {
     /// The Yul IR.
