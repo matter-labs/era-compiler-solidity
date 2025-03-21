@@ -161,7 +161,7 @@ impl Assembly {
     }
 
     ///
-    /// The pass, which replaces with dependency indexes with actual data.
+    /// Replaces with dependency indexes with actual data.
     ///
     pub fn preprocess_dependencies(
         contracts: &mut BTreeMap<String, BTreeMap<String, era_solc::StandardJsonOutputContract>>,

@@ -211,7 +211,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
             InstructionName::PUSHDEPLOYADDRESS => context.build_call(
                 context.intrinsics().code_source,
                 &[],
-                "contract_deploy_address",
+                "library_deploy_address",
             ),
 
             InstructionName::DUP1 => crate::evmla::assembly::instruction::stack::dup(
@@ -1499,10 +1499,23 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
 
                 era_compiler_llvm_context::evm_call::linker_symbol(context, path.as_str()).map(Some)
             }
-            InstructionName::PUSH_Data => Ok(Some(context.field_const(0).as_basic_value_enum())),
-            InstructionName::PUSHDEPLOYADDRESS => {
-                Ok(Some(context.field_const(0).as_basic_value_enum()))
+            InstructionName::PUSH_Data => {
+                let value = self
+                    .instruction
+                    .value
+                    .ok_or_else(|| anyhow::anyhow!("Instruction value missing"))?;
+
+                if value.len() > era_compiler_common::BYTE_LENGTH_FIELD * 2 {
+                    Ok(Some(context.field_const(0).as_basic_value_enum()))
+                } else {
+                    crate::evmla::assembly::instruction::stack::push(context, value).map(Some)
+                }
             }
+            InstructionName::PUSHDEPLOYADDRESS => context.build_call(
+                context.intrinsics().pushdeployaddress,
+                &[],
+                "library_deploy_address",
+            ),
 
             InstructionName::DUP1 => crate::evmla::assembly::instruction::stack::dup(
                 context,
