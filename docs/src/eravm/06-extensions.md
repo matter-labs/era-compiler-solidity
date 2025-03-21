@@ -229,7 +229,7 @@ assembly {
 Yul usage:
 ```solidity
 assembly {
-    let return_value := verbatim_2i_01("decommit", input_data, ergs)
+    let return_value := verbatim_2i_01("decommit", versioned_hash, ergs)
 }
 ```
 
