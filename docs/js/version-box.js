@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Get the base URL from the current location path
-    const baseUrl = document.location.pathname.split('/').slice(0, -2).join('/');
+    const baseUrl = window.location.pathname.split('/').slice(0, -2).join('/');
 
     // Utility function to create and populate the version selector
     const createVersionSelector = (versions) => {
