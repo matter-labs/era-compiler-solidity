@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [1.5.12] - 2025-03-20
+## [1.5.12] - 2025-03-24
 
 ### Added
 
@@ -11,7 +11,7 @@
 ### Changed
 
 - The warning about the default codegen is made more verbose and informative
-- Updated to Rust v1.83.0
+- Updated to Rust v1.85.1
 
 ### Fixed
 

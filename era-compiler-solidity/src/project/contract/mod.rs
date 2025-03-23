@@ -174,7 +174,7 @@ impl Contract {
             IR::LLVMIR(mut llvm_ir) => {
                 llvm_ir.source.push(char::from(0));
                 let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    &llvm_ir.source.as_bytes()[..llvm_ir.source.as_bytes().len() - 1],
+                    &llvm_ir.source.as_bytes()[..llvm_ir.source.len() - 1],
                     self.name.full_path.as_str(),
                     true,
                 );
@@ -463,7 +463,7 @@ impl Contract {
 
                 llvm_ir.source.push(char::from(0));
                 let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
-                    &llvm_ir.source.as_bytes()[..llvm_ir.source.as_bytes().len() - 1],
+                    &llvm_ir.source.as_bytes()[..llvm_ir.source.len() - 1],
                     self.name.full_path.as_str(),
                     true,
                 );
