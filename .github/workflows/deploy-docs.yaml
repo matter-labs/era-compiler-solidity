@@ -1,12 +1,8 @@
 name: Deploy docs
 
 on:
-  push:
-    tags:
-      - "*.*.*"
-    paths:
-      - 'docs/**'
-      - '.github/workflows/deploy-docs.yaml'
+  release:
+    types: [ released ]
   pull_request:
     paths:
       - 'docs/**'
