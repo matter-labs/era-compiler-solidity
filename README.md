@@ -16,13 +16,7 @@ For local development, [build zksolc from sources](./docs/src/01-installation.md
 
 For the detailed usage guide, see the [comprehensive documentation](https://matter-labs.github.io/era-compiler-solidity/latest/).
 
-## Testing
-
-To run the unit and CLI tests, execute the following command from the repository root:
-
-```shell
-cargo test
-```
+Alternatively, you may check out its Markdown representation in [this repository](./docs/src/).
 
 ## Documentation
 
@@ -62,8 +56,8 @@ at your option.
 
 - [Website](https://zksync.io/)
 - [GitHub](https://github.com/matter-labs)
-- [Twitter](https://twitter.com/zksync)
-- [Twitter for Devs](https://twitter.com/ZKsyncDevs)
+- [Twitter](https://x.com/zksync)
+- [Twitter for Devs](https://x.com/ZKsyncDevs)
 - [Discord](https://join.zksync.dev/)
 
 ## Disclaimer

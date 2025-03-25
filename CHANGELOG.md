@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Fixed
+
+- False-positive warning about incorrect suppression of errors and warnings
+
 ## [1.5.12] - 2025-03-24
 
 ### Added

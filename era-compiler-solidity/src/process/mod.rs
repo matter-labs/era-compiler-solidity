@@ -105,6 +105,7 @@ where
     command.stdout(std::process::Stdio::piped());
     command.stderr(std::process::Stdio::piped());
     command.arg("--recursive-process");
+    command.arg(path);
     command.arg("--target");
     command.arg(target.to_string());
 
