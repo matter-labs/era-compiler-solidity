@@ -153,8 +153,8 @@ impl Input {
                 detect_missing_libraries,
                 via_ir,
             ),
-            suppressed_errors,
-            suppressed_warnings,
+            suppressed_errors: vec![],
+            suppressed_warnings: vec![],
         })
     }
 
