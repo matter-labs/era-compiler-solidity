@@ -11,6 +11,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::OnceLock;
+use std::thread::Builder;
 
 use self::input_eravm::Input as EraVMInput;
 use self::input_evm::Input as EVMInput;
@@ -34,24 +35,37 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
             let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
                 input.contract.name.path.clone(),
             );
-            let result = input
-                .contract
-                .compile_to_eravm(
-                    input.solc_version,
-                    input.identifier_paths,
-                    input.missing_libraries,
-                    input.factory_dependencies,
-                    input.enable_eravm_extensions,
-                    input.metadata_hash_type,
-                    input.optimizer_settings,
-                    input.llvm_options,
-                    input.output_assembly,
-                    input.debug_config,
-                )
-                .map(EraVMOutput::new)
-                .map_err(|error| {
-                    era_solc::StandardJsonOutputError::new_error(error, Some(source_location), None)
-                });
+
+            let result = Builder::new()
+                .stack_size(crate::WORKER_THREAD_STACK_SIZE)
+                .spawn(move || {
+                    input
+                        .contract
+                        .compile_to_eravm(
+                            input.solc_version,
+                            input.identifier_paths,
+                            input.missing_libraries,
+                            input.factory_dependencies,
+                            input.enable_eravm_extensions,
+                            input.metadata_hash_type,
+                            input.optimizer_settings,
+                            input.llvm_options,
+                            input.output_assembly,
+                            input.debug_config,
+                        )
+                        .map(EraVMOutput::new)
+                        .map_err(|error| {
+                            era_solc::StandardJsonOutputError::new_error(
+                                error,
+                                Some(source_location),
+                                None,
+                            )
+                        })
+                })
+                .expect("Threading error")
+                .join()
+                .expect("Threading error");
+
             serde_json::to_writer(std::io::stdout(), &result)
                 .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
         }
@@ -64,21 +78,34 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
             let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
                 input.contract.name.path.clone(),
             );
-            let result = input
-                .contract
-                .compile_to_evm(
-                    input.solc_version,
-                    input.identifier_paths,
-                    input.missing_libraries,
-                    input.metadata_hash_type,
-                    input.optimizer_settings,
-                    input.llvm_options,
-                    input.debug_config,
-                )
-                .map(EVMOutput::new)
-                .map_err(|error| {
-                    era_solc::StandardJsonOutputError::new_error(error, Some(source_location), None)
-                });
+
+            let result = Builder::new()
+                .stack_size(crate::WORKER_THREAD_STACK_SIZE)
+                .spawn(move || {
+                    input
+                        .contract
+                        .compile_to_evm(
+                            input.solc_version,
+                            input.identifier_paths,
+                            input.missing_libraries,
+                            input.metadata_hash_type,
+                            input.optimizer_settings,
+                            input.llvm_options,
+                            input.debug_config,
+                        )
+                        .map(EVMOutput::new)
+                        .map_err(|error| {
+                            era_solc::StandardJsonOutputError::new_error(
+                                error,
+                                Some(source_location),
+                                None,
+                            )
+                        })
+                })
+                .expect("Threading error")
+                .join()
+                .expect("Threading error");
+
             serde_json::to_writer(std::io::stdout(), &result)
                 .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
         }

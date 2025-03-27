@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Set the stack size limit for all threads to 64 MB
+
 ### Fixed
 
 - False-positive warning about incorrect suppression of errors and warnings

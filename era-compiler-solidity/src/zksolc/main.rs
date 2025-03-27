@@ -12,9 +12,6 @@ use clap::Parser;
 
 use self::arguments::Arguments;
 
-/// The rayon worker stack size.
-const RAYON_WORKER_STACK_SIZE: usize = 16 * 1024 * 1024;
-
 #[cfg(target_env = "musl")]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -106,7 +103,7 @@ fn main_inner(
         thread_pool_builder = thread_pool_builder.num_threads(threads);
     }
     thread_pool_builder
-        .stack_size(RAYON_WORKER_STACK_SIZE)
+        .stack_size(era_compiler_solidity::WORKER_THREAD_STACK_SIZE)
         .build_global()
         .expect("Thread pool configuration failure");
 
