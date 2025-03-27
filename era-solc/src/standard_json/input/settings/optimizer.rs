@@ -17,7 +17,7 @@ pub struct Optimizer {
 
     /// Enable the solc optimizer.
     /// Always `true` in order to allow library inlining.
-    #[serde(default = "Optimizer::default_enabled")]
+    #[serde(default = "Optimizer::default_enabled", skip_deserializing)]
     pub enabled: bool,
 }
 

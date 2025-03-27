@@ -14,7 +14,7 @@
     "outputSelection": {
       "*": {
         "": [
-          "metadata"
+          "ast"
         ],
         "*": [
           "abi",

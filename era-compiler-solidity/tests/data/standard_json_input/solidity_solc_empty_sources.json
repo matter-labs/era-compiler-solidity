@@ -9,7 +9,7 @@
     "outputSelection": {
       "*": {
         "": [
-          "metadata"
+          "ast"
         ],
         "*": [
           "abi",
