@@ -12,7 +12,6 @@ use std::sync::RwLock;
 use crate::combined_json::selector::Selector as CombinedJsonSelector;
 use crate::combined_json::CombinedJson;
 use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
-use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
 use crate::standard_json::input::Input as StandardJsonInput;
@@ -309,7 +308,7 @@ For reference, see the following links:
         &self,
         target: era_compiler_common::Target,
         paths: &[PathBuf],
-        libraries: StandardJsonInputSettingsLibraries,
+        libraries: era_compiler_common::Libraries,
         messages: &mut Vec<StandardJsonOutputError>,
     ) -> anyhow::Result<StandardJsonOutput> {
         let mut solc_input = StandardJsonInput::from_yul_paths(

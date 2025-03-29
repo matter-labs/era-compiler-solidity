@@ -24,9 +24,8 @@ impl Linker {
     /// Links EraVM bytecode files.
     ///
     pub fn link_eravm(input: Input) -> anyhow::Result<Output> {
-        let linker_symbols =
-            era_solc::StandardJsonInputLibraries::try_from(input.libraries.as_slice())?
-                .as_linker_symbols()?;
+        let linker_symbols = era_compiler_common::Libraries::try_from(input.libraries.as_slice())?
+            .as_linker_symbols()?;
         let mut output = Output::default();
         let mut unlinked_objects = Vec::new();
         let mut factory_dependencies = BTreeMap::new();

@@ -14,7 +14,7 @@ fn one_file() {
 
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
@@ -53,7 +53,7 @@ fn multiple_files() {
 
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
@@ -111,7 +111,7 @@ fn multiple_files_with_dependencies() {
 
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         vec![era_solc::CombinedJsonSelector::Bytecode],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
@@ -146,7 +146,7 @@ fn eravm_assembly_requested() {
 
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         vec![era_solc::CombinedJsonSelector::Assembly],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,
@@ -182,7 +182,7 @@ fn eravm_assembly_not_requested() {
 
     let combined_json = crate::common::build_solidity_combined_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         vec![],
         era_compiler_common::HashType::Ipfs,
         &solc_compiler.version.default,

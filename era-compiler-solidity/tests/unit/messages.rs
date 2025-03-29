@@ -69,7 +69,7 @@ fn send(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen, s
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -120,7 +120,7 @@ fn send_suppressed(
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![era_solc::StandardJsonInputErrorType::SendTransfer],
@@ -198,7 +198,7 @@ fn transfer(
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -249,7 +249,7 @@ fn transfer_suppressed(
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![era_solc::StandardJsonInputErrorType::SendTransfer],
@@ -392,7 +392,7 @@ fn assembly_create(
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -443,7 +443,7 @@ fn assembly_create2(
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -494,7 +494,7 @@ fn assembly_create_suppressed(
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -545,7 +545,7 @@ fn assembly_create2_suppressed(
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -596,7 +596,7 @@ fn runtime_code(version: semver::Version, codegen: era_solc::StandardJsonInputCo
     assert!(crate::common::check_solidity_message(
         RUNTIME_CODE_SOURCE,
         "Deploy and runtime code are merged in EraVM",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -645,7 +645,7 @@ fn tx_origin(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
     assert!(crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -686,7 +686,7 @@ fn tx_origin_suppressed(version: semver::Version, codegen: era_solc::StandardJso
     assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -737,7 +737,7 @@ fn tx_origin_assembly(version: semver::Version, codegen: era_solc::StandardJsonI
     assert!(crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -781,7 +781,7 @@ fn tx_origin_assembly_suppressed(
     assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
@@ -834,7 +834,7 @@ fn ripemd160(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
     assert!(crate::common::check_solidity_message(
         RIPEMD160_CODE_SOURCE,
         "The `ripemd160` precompile is not supported in EraVM yet.",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
         vec![],
