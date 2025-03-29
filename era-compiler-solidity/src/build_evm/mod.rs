@@ -259,7 +259,18 @@ impl Build {
         let mut errors = Vec::with_capacity(self.results.len());
         for result in self.results.into_values() {
             let build = match result {
-                Ok(build) => build,
+                Ok(build) => {
+                    errors.extend(
+                        build
+                            .deploy_object
+                            .warnings
+                            .iter()
+                            .chain(build.runtime_object.warnings.iter())
+                            .map(|error| (build.name.full_path.as_str(), error).into())
+                            .collect::<Vec<era_solc::StandardJsonOutputError>>(),
+                    );
+                    build
+                }
                 Err(error) => {
                     errors.push(error);
                     continue;
@@ -382,12 +393,30 @@ impl era_solc::CollectableError for Build {
     }
 
     fn take_warnings(&mut self) -> Vec<era_solc::StandardJsonOutputError> {
-        let warnings = self
+        let mut warnings: Vec<era_solc::StandardJsonOutputError> = self
             .messages
             .iter()
             .filter(|message| message.severity == "warning")
             .cloned()
             .collect();
+        for contract in self.results.values_mut().flatten() {
+            warnings.extend(
+                contract
+                    .deploy_object
+                    .warnings
+                    .drain(..)
+                    .chain(contract.runtime_object.warnings.drain(..))
+                    .map(|warning| {
+                        era_solc::StandardJsonOutputError::new_warning(
+                            warning,
+                            Some(era_solc::StandardJsonOutputErrorSourceLocation::new(
+                                contract.name.path.to_owned(),
+                            )),
+                            None,
+                        )
+                    }),
+            );
+        }
         self.messages
             .retain(|message| message.severity != "warning");
         warnings

@@ -25,6 +25,8 @@ pub struct Object {
     pub is_assembled: bool,
     /// The binary object format.
     pub object_format: era_compiler_common::ObjectFormat,
+    /// Warnings produced during compilation.
+    pub warnings: Vec<era_compiler_llvm_context::EVMWarning>,
 }
 
 impl Object {
@@ -38,6 +40,7 @@ impl Object {
         codegen: Option<era_solc::StandardJsonInputCodegen>,
         code_segment: era_compiler_common::CodeSegment,
         dependencies: era_yul::Dependencies,
+        warnings: Vec<era_compiler_llvm_context::EVMWarning>,
     ) -> Self {
         Self {
             identifier,
@@ -48,6 +51,7 @@ impl Object {
             dependencies,
             is_assembled: false,
             object_format: era_compiler_common::ObjectFormat::ELF,
+            warnings,
         }
     }
 

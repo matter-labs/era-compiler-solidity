@@ -628,7 +628,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "1.5.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#2639dd42c92fb1be1cd05cf13a9113a1972cd469"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=evm-llvmit-tests#10a22f2fa643eb603a34d6625c49188cc1c4b916"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -637,6 +637,7 @@ dependencies = [
  "num",
  "semver",
  "serde",
+ "thiserror 1.0.64",
  "zkevm_opcode_defs",
 ]
 
@@ -677,6 +678,7 @@ dependencies = [
  "anyhow",
  "boolinator",
  "era-compiler-common",
+ "era-compiler-llvm-context",
  "hex",
  "num",
  "rayon",
