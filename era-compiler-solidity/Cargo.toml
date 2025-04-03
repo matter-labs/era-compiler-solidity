@@ -50,4 +50,4 @@ default-features = false
 features = ["llvm17-0", "no-libffi-linking", "target-eravm", "target-evm"]
 
 [target.'cfg(target_env = "musl")'.dependencies]
-mimalloc = { version = "=0.1.43", default-features = false }
+mimalloc = { version = "*", default-features = false }
