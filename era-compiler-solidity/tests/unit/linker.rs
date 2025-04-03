@@ -10,7 +10,7 @@ use test_case::test_case;
 fn get_bytecode(
     path: &str,
     name: &str,
-    libraries: era_solc::StandardJsonInputLibraries,
+    libraries: era_compiler_common::Libraries,
     version: &semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) -> Vec<u8> {
@@ -78,7 +78,7 @@ fn library_not_passed_compile_time(
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -129,7 +129,7 @@ fn library_not_passed_post_compile_time(
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -183,7 +183,7 @@ fn library_passed_compile_time(
     let libraries =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries =
-        era_solc::StandardJsonInputLibraries::try_from(libraries.as_slice()).expect("Always valid");
+        era_compiler_common::Libraries::try_from(libraries.as_slice()).expect("Always valid");
 
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
@@ -239,7 +239,7 @@ fn library_passed_post_compile_time(
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -292,16 +292,15 @@ fn library_passed_post_compile_time_second_call(
 
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
-    let linker_symbols =
-        era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
-            .expect("Always valid")
-            .as_linker_symbols()
-            .expect("Always valid");
+    let linker_symbols = era_compiler_common::Libraries::try_from(library_arguments.as_slice())
+        .expect("Always valid")
+        .as_linker_symbols()
+        .expect("Always valid");
 
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -364,7 +363,7 @@ fn library_passed_post_compile_time_redundant_args(
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -418,7 +417,7 @@ fn library_passed_post_compile_time_non_elf(
 
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
+    let libraries = era_compiler_common::Libraries::try_from(library_arguments.as_slice())
         .expect("Always valid")
         .as_linker_symbols()
         .expect("Always valid");
@@ -426,7 +425,7 @@ fn library_passed_post_compile_time_non_elf(
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -478,7 +477,7 @@ fn library_produce_equal_bytecode_in_both_cases(
 
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(library_arguments.as_slice())
+    let libraries = era_compiler_common::Libraries::try_from(library_arguments.as_slice())
         .expect("Always valid");
     let linker_symbols = libraries.as_linker_symbols().expect("Always valid");
 
@@ -498,7 +497,7 @@ fn library_produce_equal_bytecode_in_both_cases(
     let bytecode_post_compile_time = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         &version,
         codegen,
     );
@@ -558,7 +557,7 @@ fn libraries_passed_post_compile_time_complex(
 
     let build = crate::common::build_solidity_standard_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         era_compiler_common::HashType::None,
         BTreeSet::new(),
         &version,
@@ -625,7 +624,7 @@ fn libraries_not_passed_post_compile_time_complex(
 
     let build = crate::common::build_solidity_standard_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         era_compiler_common::HashType::None,
         BTreeSet::new(),
         &version,

@@ -17,7 +17,6 @@ use rayon::iter::ParallelIterator;
 
 use crate::standard_json::input::settings::codegen::Codegen as StandardJsonInputSettingsCodegen;
 use crate::standard_json::input::settings::error_type::ErrorType as StandardJsonInputSettingsErrorType;
-use crate::standard_json::input::settings::libraries::Libraries as StandardJsonInputSettingsLibraries;
 use crate::standard_json::input::settings::metadata::Metadata as StandardJsonInputSettingsMetadata;
 use crate::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputSettingsOptimizer;
 use crate::standard_json::input::settings::selection::Selection as StandardJsonInputSettingsSelection;
@@ -85,7 +84,7 @@ impl Input {
         via_ir: bool,
     ) -> anyhow::Result<Self> {
         let mut paths: BTreeSet<PathBuf> = paths.iter().cloned().collect();
-        let libraries = StandardJsonInputSettingsLibraries::try_from(libraries)?;
+        let libraries = era_compiler_common::Libraries::try_from(libraries)?;
         for library_file in libraries.as_inner().keys() {
             paths.insert(PathBuf::from(library_file));
         }
@@ -121,7 +120,7 @@ impl Input {
     ///
     pub fn try_from_solidity_sources(
         sources: BTreeMap<String, Source>,
-        libraries: StandardJsonInputSettingsLibraries,
+        libraries: era_compiler_common::Libraries,
         remappings: BTreeSet<String>,
         optimizer: StandardJsonInputSettingsOptimizer,
         codegen: Option<StandardJsonInputSettingsCodegen>,
@@ -163,7 +162,7 @@ impl Input {
     ///
     pub fn from_yul_sources(
         sources: BTreeMap<String, Source>,
-        libraries: StandardJsonInputSettingsLibraries,
+        libraries: era_compiler_common::Libraries,
         optimizer: StandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {
@@ -197,7 +196,7 @@ impl Input {
     ///
     pub fn from_yul_paths(
         paths: &[PathBuf],
-        libraries: StandardJsonInputSettingsLibraries,
+        libraries: era_compiler_common::Libraries,
         optimizer: StandardJsonInputSettingsOptimizer,
         llvm_options: Vec<String>,
     ) -> Self {

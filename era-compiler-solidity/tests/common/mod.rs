@@ -103,7 +103,7 @@ pub fn read_sources(paths: &[&str]) -> BTreeMap<String, String> {
 ///
 pub fn build_solidity_standard_json(
     sources: BTreeMap<String, String>,
-    libraries: era_solc::StandardJsonInputLibraries,
+    libraries: era_compiler_common::Libraries,
     metadata_hash_type: era_compiler_common::HashType,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
@@ -183,7 +183,7 @@ pub fn build_solidity_standard_json(
 ///
 pub fn build_solidity_combined_json(
     sources: BTreeMap<String, String>,
-    libraries: era_solc::StandardJsonInputLibraries,
+    libraries: era_compiler_common::Libraries,
     selectors: Vec<era_solc::CombinedJsonSelector>,
     metadata_hash_type: era_compiler_common::HashType,
     solc_version: &semver::Version,
@@ -241,7 +241,7 @@ pub fn build_solidity_combined_json(
 ///
 pub fn build_solidity_and_detect_missing_libraries(
     sources: BTreeMap<String, String>,
-    libraries: era_solc::StandardJsonInputLibraries,
+    libraries: era_compiler_common::Libraries,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
 ) -> anyhow::Result<era_solc::StandardJsonOutput> {
@@ -319,7 +319,7 @@ pub fn build_yul(
 
     let project = Project::try_from_yul_sources(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         Some(&mut solc_output),
         None,
         None,
@@ -377,7 +377,7 @@ pub fn build_yul_standard_json(
 
     let project = Project::try_from_yul_sources(
         solc_input.sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         Some(&mut solc_output),
         solc_version,
         None,
@@ -418,7 +418,7 @@ pub fn build_llvm_ir_standard_json(
 
     let project = Project::try_from_llvm_ir_sources(
         input.sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         Some(&mut output),
     )?;
     let build = project.compile_to_eravm(
@@ -481,7 +481,7 @@ pub fn build_eravm_assembly_standard_json(
 pub fn check_solidity_message(
     source_code: &str,
     warning_substring: &str,
-    libraries: era_solc::StandardJsonInputLibraries,
+    libraries: era_compiler_common::Libraries,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
     suppressed_errors: Vec<era_solc::StandardJsonInputErrorType>,

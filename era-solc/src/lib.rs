@@ -21,7 +21,6 @@ pub use self::solc::Compiler;
 pub use self::standard_json::input::language::Language as StandardJsonInputLanguage;
 pub use self::standard_json::input::settings::codegen::Codegen as StandardJsonInputCodegen;
 pub use self::standard_json::input::settings::error_type::ErrorType as StandardJsonInputErrorType;
-pub use self::standard_json::input::settings::libraries::Libraries as StandardJsonInputLibraries;
 pub use self::standard_json::input::settings::metadata::Metadata as StandardJsonInputMetadata;
 pub use self::standard_json::input::settings::optimizer::Optimizer as StandardJsonInputOptimizer;
 pub use self::standard_json::input::settings::selection::file::File as StandardJsonInputSelectionFile;

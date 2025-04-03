@@ -40,7 +40,7 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
 
     let output = crate::common::build_solidity_standard_json(
         sources,
-        era_solc::StandardJsonInputLibraries::default(),
+        era_compiler_common::Libraries::default(),
         era_compiler_common::HashType::Ipfs,
         BTreeSet::new(),
         &version,
@@ -100,7 +100,7 @@ fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
     let sources =
         crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
-    let mut libraries = era_solc::StandardJsonInputLibraries::default();
+    let mut libraries = era_compiler_common::Libraries::default();
     libraries
         .as_inner_mut()
         .entry(crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH.to_string())

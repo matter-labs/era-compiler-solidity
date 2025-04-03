@@ -66,7 +66,7 @@ pub fn yul_to_eravm(
     output_assembly: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let libraries = era_compiler_common::Libraries::try_from(libraries)?;
     let linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
@@ -125,7 +125,7 @@ pub fn yul_to_evm(
     llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let libraries = era_compiler_common::Libraries::try_from(libraries)?;
     let linker_symbols = libraries.as_linker_symbols()?;
 
     let solc_version = match solc_path {
@@ -179,7 +179,7 @@ pub fn llvm_ir_to_eravm(
     output_assembly: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EraVMBuild> {
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let libraries = era_compiler_common::Libraries::try_from(libraries)?;
     let linker_symbols = libraries.as_linker_symbols()?;
 
     let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
@@ -214,7 +214,7 @@ pub fn llvm_ir_to_evm(
     llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
-    let libraries = era_solc::StandardJsonInputLibraries::try_from(libraries)?;
+    let libraries = era_compiler_common::Libraries::try_from(libraries)?;
     let linker_symbols = libraries.as_linker_symbols()?;
 
     let project = Project::try_from_llvm_ir_paths(paths, libraries, None)?;
