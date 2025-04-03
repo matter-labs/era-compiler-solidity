@@ -678,7 +678,6 @@ dependencies = [
  "anyhow",
  "boolinator",
  "era-compiler-common",
- "era-compiler-llvm-context",
  "hex",
  "num",
  "rayon",

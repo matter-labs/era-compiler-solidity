@@ -266,7 +266,15 @@ impl Build {
                             .warnings
                             .iter()
                             .chain(build.runtime_object.warnings.iter())
-                            .map(|error| (build.name.full_path.as_str(), error).into())
+                            .map(|error| {
+                                era_solc::StandardJsonOutputError::new_warning(
+                                    error.to_string(),
+                                    Some(era_solc::StandardJsonOutputErrorSourceLocation::new(
+                                        build.name.full_path.clone(),
+                                    )),
+                                    None,
+                                )
+                            })
                             .collect::<Vec<era_solc::StandardJsonOutputError>>(),
                     );
                     build
