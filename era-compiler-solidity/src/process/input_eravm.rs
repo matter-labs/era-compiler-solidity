@@ -27,7 +27,9 @@ pub struct Input {
     /// Factory dependencies.
     pub factory_dependencies: BTreeSet<String>,
     /// The metadata hash type.
-    pub metadata_hash_type: era_compiler_common::HashType,
+    pub metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    /// Disable CBOR metadata at the end of bytecode.
+    pub no_cbor_metadata: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -49,7 +51,8 @@ impl Input {
         missing_libraries: BTreeSet<String>,
         factory_dependencies: BTreeSet<String>,
         enable_eravm_extensions: bool,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+        no_cbor_metadata: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -63,6 +66,7 @@ impl Input {
             factory_dependencies,
             enable_eravm_extensions,
             metadata_hash_type,
+            no_cbor_metadata,
             optimizer_settings,
             llvm_options,
             output_assembly,

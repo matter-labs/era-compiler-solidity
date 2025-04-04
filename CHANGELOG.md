@@ -2,13 +2,24 @@
 
 ## [Unreleased]
 
+### Added
+
+- CBOR payload with the IPFS hash and compiler versions at the end of bytecode
+- The `--no-cbor-metadata` flag to disable the CBOR metadata
+
 ### Changed
 
+- The default contract metadata hash type to IPFS
 - Set the stack size limit for all threads to 64 MB
 
 ### Fixed
 
+- The `--force-evmla` flag that was ignored in CLI mode
 - False-positive warning about incorrect suppression of errors and warnings
+
+### Deprecated
+
+- The `keccak256` metadata hash type in favor of CBOR-encoded `ipfs`
 
 ## [1.5.12] - 2025-03-24
 

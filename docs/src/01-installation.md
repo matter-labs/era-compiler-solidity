@@ -82,15 +82,15 @@ Versions of [our *solc* fork](https://github.com/matter-labs/era-solidity/releas
 1. Original upstream version
 2. ZKsync revision
 
-For instance, the latest revision of the latest version of *solc* is `0.8.29-1.0.1`. Here are the ZKsync revisions released by now:
+For instance, the latest revision of the latest version of *solc* is `0.8.29-1.0.2`. Here are the ZKsync revisions released by now:
 
 | Revision |                           Features                         |
 |:---------|:-----------------------------------------------------------|
 | *v1.0.0* | Fixed compatibility between EVM assembly and LLVM IR       |
 | *v1.0.1* | Fixed a compiler crash with nested try-catch patterns      |
+| *v1.0.2* | Fixed metadata of recursive calls across inheritance       |
 
 > We recommend always using the latest version of *zksolc* and *solc* to benefit from the latest features and bug fixes.
-> Starting from *zksolc* v1.5.8, it is not possible to use the original *solc* with *zksolc* anymore.
 
 
 

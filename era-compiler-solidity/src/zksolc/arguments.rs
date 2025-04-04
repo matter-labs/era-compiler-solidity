@@ -150,15 +150,19 @@ pub struct Arguments {
     pub enable_eravm_extensions: bool,
 
     /// Set the metadata hash type.
-    /// Available types: `none`, `keccak256`, `ipfs`.
-    /// The default is `keccak256`.
+    /// Available types: `none`, `ipfs`, `keccak256`.
+    /// The default is `ipfs`.
     #[arg(long)]
-    pub metadata_hash: Option<era_compiler_common::HashType>,
+    pub metadata_hash: Option<String>,
 
     /// Sets the literal content flag for contract metadata.
     /// If enabled, the metadata will contain the literal content of the source files.
     #[arg(long)]
     pub metadata_literal: bool,
+
+    /// Turn off CBOR metadata at the end of bytecode.
+    #[arg(long)]
+    pub no_cbor_metadata: bool,
 
     /// Output assembly of the compiled contracts.
     #[arg(long = "asm")]
@@ -257,6 +261,16 @@ impl Arguments {
         if self.version && std::env::args().count() > 2 {
             messages.push(era_solc::StandardJsonOutputError::new_error(
                 "No other options are allowed while getting the compiler version.",
+                None,
+                None,
+            ));
+        }
+
+        if self.metadata_hash
+            == Some(era_compiler_common::EraVMMetadataHashType::Keccak256.to_string())
+        {
+            messages.push(era_solc::StandardJsonOutputError::new_warning(
+                "`keccak256` metadata hash type is deprecated. Please use `ipfs` instead.",
                 None,
                 None,
             ));
