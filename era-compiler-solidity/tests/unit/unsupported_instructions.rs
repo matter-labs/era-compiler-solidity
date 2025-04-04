@@ -62,7 +62,7 @@ contract FixedCodeCopy {
     crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &era_solc::Compiler::LAST_SUPPORTED_VERSION,
         era_solc::StandardJsonInputCodegen::Yul,
@@ -131,7 +131,7 @@ fn callcode(version: semver::Version, codegen: era_solc::StandardJsonInputCodege
     crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,
@@ -194,7 +194,7 @@ fn extcodecopy(version: semver::Version, codegen: era_solc::StandardJsonInputCod
     crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,
@@ -325,7 +325,7 @@ fn selfdestruct(
     crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,

@@ -10,8 +10,7 @@
   },
   "settings": {
     "optimizer": {
-        "mode": "3",
-      "details": null,
+      "mode": "3",
       "sizeFallback": false
     },
     "outputSelection": {
@@ -27,7 +26,7 @@
       }
     },
     "metadata": {
-      "hashType": "keccak256"
+      "bytecodeHash": "ipfs"
     },
     "libraries": {},
     "enableEraVMExtensions": true,

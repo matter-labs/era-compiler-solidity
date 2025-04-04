@@ -183,7 +183,8 @@ impl Project {
                     Err(error) => return Some((path, Err(error))),
                 };
 
-                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
+                let source_hash =
+                    era_compiler_common::Keccak256Hash::from_slice(source_code.as_bytes());
                 let source_metadata = serde_json::json!({
                     "source_hash": source_hash.to_string(),
                     "solc_version": solc_version,
@@ -253,7 +254,8 @@ impl Project {
                     Err(error) => return (path, Err(error)),
                 };
 
-                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
+                let source_hash =
+                    era_compiler_common::Keccak256Hash::from_slice(source_code.as_bytes());
 
                 let contract = Contract::new(
                     era_compiler_common::ContractName::new(path.clone(), None),
@@ -319,7 +321,8 @@ impl Project {
                     Err(error) => return (path, Err(error)),
                 };
 
-                let source_hash = era_compiler_common::Hash::keccak256(source_code.as_bytes());
+                let source_hash =
+                    era_compiler_common::Keccak256Hash::from_slice(source_code.as_bytes());
 
                 let contract = Contract::new(
                     era_compiler_common::ContractName::new(path.clone(), None),
@@ -360,7 +363,8 @@ impl Project {
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
         enable_eravm_extensions: bool,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+        append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -384,6 +388,7 @@ impl Project {
                 factory_dependencies,
                 enable_eravm_extensions,
                 metadata_hash_type,
+                append_cbor,
                 optimizer_settings.clone(),
                 llvm_options.clone(),
                 output_assembly,
@@ -403,7 +408,8 @@ impl Project {
     pub fn compile_to_evm(
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+        append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -417,6 +423,7 @@ impl Project {
                 self.identifier_paths.clone(),
                 missing_libraries,
                 metadata_hash_type,
+                append_cbor,
                 optimizer_settings.clone(),
                 llvm_options.clone(),
                 debug_config.clone(),

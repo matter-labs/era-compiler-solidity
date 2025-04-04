@@ -76,7 +76,7 @@ fn standard_json_invalid_variant() -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        crate::common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_INVALID,
+        crate::common::TEST_JSON_SUPPRESSED_ERRORS_INVALID,
     ];
 
     let result = crate::cli::execute_zksolc(args)?;

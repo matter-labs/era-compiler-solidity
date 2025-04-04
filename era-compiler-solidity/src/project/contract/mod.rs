@@ -73,7 +73,8 @@ impl Contract {
         missing_libraries: BTreeSet<String>,
         factory_dependencies: BTreeSet<String>,
         enable_eravm_extensions: bool,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+        append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         output_assembly: bool,
@@ -98,13 +99,35 @@ impl Contract {
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_bytes = serde_json::to_vec(&metadata_json).expect("Always valid");
         let metadata_hash = match metadata_hash_type {
-            era_compiler_common::HashType::None => None,
-            era_compiler_common::HashType::Keccak256 => Some(era_compiler_common::Hash::keccak256(
-                metadata_bytes.as_slice(),
-            )),
-            era_compiler_common::HashType::Ipfs => {
-                Some(era_compiler_common::Hash::ipfs(metadata_bytes.as_slice()))
+            era_compiler_common::EraVMMetadataHashType::None => None,
+            era_compiler_common::EraVMMetadataHashType::Keccak256 => Some(
+                era_compiler_common::Keccak256Hash::from_slice(metadata_bytes.as_slice()).into(),
+            ),
+            era_compiler_common::EraVMMetadataHashType::IPFS => {
+                Some(era_compiler_common::IPFSHash::from_slice(metadata_bytes.as_slice()).into())
             }
+        };
+
+        let cbor_data = if append_cbor {
+            let cbor_key = crate::r#const::SOLC_PRODUCTION_NAME.to_owned();
+            let mut cbor_data = Vec::with_capacity(3);
+            cbor_data.push((
+                crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                crate::r#const::version().parse().expect("Always valid"),
+            ));
+            if let Some(ref solc_version) = solc_version {
+                cbor_data.push((
+                    crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                    solc_version.default.to_owned(),
+                ));
+                cbor_data.push((
+                    crate::r#const::SOLC_LLVM_REVISION_METADATA_TAG.to_owned(),
+                    solc_version.l2_revision.to_owned(),
+                ));
+            };
+            Some((cbor_key, cbor_data))
+        } else {
+            None
         };
 
         let build = match self.ir {
@@ -134,6 +157,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     metadata_hash,
+                    cbor_data,
                     output_assembly,
                     false,
                 )?
@@ -167,6 +191,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     metadata_hash,
+                    cbor_data,
                     output_assembly,
                     false,
                 )?
@@ -194,6 +219,7 @@ impl Contract {
                 context.build(
                     self.name.full_path.as_str(),
                     metadata_hash,
+                    cbor_data,
                     output_assembly,
                     false,
                 )?
@@ -218,6 +244,7 @@ impl Contract {
                 era_compiler_llvm_context::eravm_build(
                     bytecode_buffer,
                     metadata_hash,
+                    cbor_data,
                     assembly_text,
                 )?
             }
@@ -241,7 +268,7 @@ impl Contract {
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
         missing_libraries: BTreeSet<String>,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EVMMetadataHashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -266,12 +293,9 @@ impl Contract {
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_bytes = serde_json::to_vec(&metadata_json).expect("Always valid");
         let metadata_hash = match metadata_hash_type {
-            era_compiler_common::HashType::None => None,
-            era_compiler_common::HashType::Keccak256 => Some(era_compiler_common::Hash::keccak256(
-                metadata_bytes.as_slice(),
-            )),
-            era_compiler_common::HashType::Ipfs => {
-                Some(era_compiler_common::Hash::ipfs(metadata_bytes.as_slice()))
+            era_compiler_common::EVMMetadataHashType::None => None,
+            era_compiler_common::EVMMetadataHashType::IPFS => {
+                Some(era_compiler_common::IPFSHash::from_slice(metadata_bytes.as_slice()).into())
             }
         };
 

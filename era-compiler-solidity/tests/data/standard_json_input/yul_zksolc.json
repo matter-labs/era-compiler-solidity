@@ -7,8 +7,7 @@
   },
   "settings": {
     "optimizer": {
-        "mode": "3",
-      "details": null,
+      "mode": "3",
       "sizeFallback": true
     },
     "outputSelection": {

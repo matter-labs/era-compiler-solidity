@@ -5,6 +5,12 @@
 /// The default executable name.
 pub static DEFAULT_EXECUTABLE_NAME: &str = "zksolc";
 
+/// The `solc` compiler production name.
+pub static SOLC_PRODUCTION_NAME: &str = "solc";
+
+/// The `solc` LLVM revision metadata tag.
+pub static SOLC_LLVM_REVISION_METADATA_TAG: &str = "llvm";
+
 /// The worker thread stack size.
 pub const WORKER_THREAD_STACK_SIZE: usize = 64 * 1024 * 1024;
 

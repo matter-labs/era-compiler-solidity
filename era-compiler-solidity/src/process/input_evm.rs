@@ -23,7 +23,9 @@ pub struct Input {
     /// Missing unlinked libraries.
     pub missing_libraries: BTreeSet<String>,
     /// The metadata hash type.
-    pub metadata_hash_type: era_compiler_common::HashType,
+    pub metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    /// Append the CBOR metadata at the end of bytecode.
+    pub append_cbor: bool,
     /// The optimizer settings.
     pub optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     /// The extra LLVM arguments.
@@ -41,7 +43,8 @@ impl Input {
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
         missing_libraries: BTreeSet<String>,
-        metadata_hash_type: era_compiler_common::HashType,
+        metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+        append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
         debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -52,6 +55,7 @@ impl Input {
             identifier_paths,
             missing_libraries,
             metadata_hash_type,
+            append_cbor,
             optimizer_settings,
             llvm_options,
             debug_config,

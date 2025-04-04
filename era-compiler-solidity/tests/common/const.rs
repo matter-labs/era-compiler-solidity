@@ -173,16 +173,39 @@ pub const TEST_ERAVM_ASSEMBLY_STANDARD_JSON_MISSING_FILE_PATH: &str =
     "tests/data/standard_json_input/eravm_assembly_urls_missing_file.json";
 
 /// A test input file.
-pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
+pub const TEST_JSON_SUPPRESSED_ERRORS_AND_WARNINGS: &str =
     "tests/data/standard_json_input/suppressed_errors_and_warnings.json";
 
 /// A test input file.
-pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_INVALID: &str =
+pub const TEST_JSON_SUPPRESSED_ERRORS_INVALID: &str =
     "tests/data/standard_json_input/suppressed_errors_invalid.json";
 
 /// A test input file.
-pub const TEST_JSON_CONTRACT_PATH_SUPPRESSED_WARNINGS_INVALID: &str =
+pub const TEST_JSON_SUPPRESSED_WARNINGS_INVALID: &str =
     "tests/data/standard_json_input/suppressed_warnings_invalid.json";
+
+/// A test input file.
+pub const TEST_JSON_METADATA_HASH_IPFS_AND_METADATA: &str =
+    "tests/data/standard_json_input/metadata_hash_ipfs_and_metadata.json";
+
+/// A test input file.
+pub const TEST_JSON_METADATA_HASH_IPFS_NO_METADATA: &str =
+    "tests/data/standard_json_input/metadata_hash_ipfs_no_metadata.json";
+
+/// A test input file.
+pub const TEST_JSON_METADATA_HASH_NONE_AND_METADATA: &str =
+    "tests/data/standard_json_input/metadata_hash_none_and_metadata.json";
+
+/// A test input file.
+pub const TEST_JSON_METADATA_HASH_NONE_NO_METADATA: &str =
+    "tests/data/standard_json_input/metadata_hash_none_no_metadata.json";
+
+/// A test input file.
+pub const TEST_JSON_NO_CBOR_METADATA: &str = "tests/data/standard_json_input/no_cbor_metadata.json";
+
+/// A test input file.
+pub const TEST_JSON_KECCAK256_DEPRECATED: &str =
+    "tests/data/standard_json_input/keccak256_deprecated.json";
 
 /// A test input file.
 pub const TEST_DISASSEMBLER_BYTECODE_PATH: &str = "tests/data/bytecodes/disassembler.zbin";

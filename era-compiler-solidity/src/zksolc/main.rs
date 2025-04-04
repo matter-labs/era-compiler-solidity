@@ -12,10 +12,6 @@ use clap::Parser;
 
 use self::arguments::Arguments;
 
-#[cfg(target_env = "musl")]
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 ///
 /// The application entry point.
 ///
@@ -70,7 +66,7 @@ fn main() -> anyhow::Result<()> {
 /// The auxiliary `main` function to facilitate the `?` error conversion operator.
 ///
 fn main_inner(
-    arguments: Arguments,
+    mut arguments: Arguments,
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
 ) -> anyhow::Result<()> {
     if arguments.version {
@@ -110,6 +106,10 @@ fn main_inner(
     inkwell::support::enable_llvm_pretty_stack_trace();
 
     let (input_files, remappings) = arguments.split_input_files_and_remappings()?;
+
+    if arguments.force_evmla {
+        arguments.codegen = Some(era_solc::StandardJsonInputCodegen::EVMLA);
+    }
 
     let mut optimizer_settings = match arguments.optimization {
         Some(mode) => era_compiler_llvm_context::OptimizerSettings::try_from_cli(mode)?,
@@ -151,12 +151,17 @@ fn main_inner(
 
     let enable_eravm_extensions = arguments.enable_eravm_extensions || arguments.system_mode;
 
-    let metadata_hash_type = arguments
-        .metadata_hash
-        .unwrap_or(era_compiler_common::HashType::Keccak256);
+    let append_cbor = !arguments.no_cbor_metadata;
 
     match target {
         era_compiler_common::Target::EraVM => {
+            let metadata_hash_type = match arguments.metadata_hash {
+                Some(ref hash_type) => {
+                    era_compiler_common::EraVMMetadataHashType::from_str(hash_type.as_str())?
+                }
+                None => era_compiler_common::EraVMMetadataHashType::IPFS,
+            };
+
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_eravm(
                     input_files.as_slice(),
@@ -165,6 +170,7 @@ fn main_inner(
                     messages,
                     enable_eravm_extensions,
                     metadata_hash_type,
+                    append_cbor,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -176,6 +182,7 @@ fn main_inner(
                     arguments.libraries.as_slice(),
                     messages,
                     metadata_hash_type,
+                    append_cbor,
                     optimizer_settings,
                     llvm_options,
                     arguments.output_assembly,
@@ -186,6 +193,7 @@ fn main_inner(
                     input_files.as_slice(),
                     messages,
                     metadata_hash_type,
+                    append_cbor,
                     llvm_options,
                     arguments.output_assembly,
                     debug_config,
@@ -233,6 +241,7 @@ fn main_inner(
                     arguments.evm_version,
                     enable_eravm_extensions,
                     metadata_hash_type,
+                    append_cbor,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_path,
@@ -262,6 +271,7 @@ fn main_inner(
                     arguments.evm_version,
                     enable_eravm_extensions,
                     metadata_hash_type,
+                    append_cbor,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_path,
@@ -293,6 +303,13 @@ fn main_inner(
             }
         }
         era_compiler_common::Target::EVM => {
+            let metadata_hash_type = match arguments.metadata_hash {
+                Some(ref hash_type) => {
+                    era_compiler_common::EVMMetadataHashType::from_str(hash_type.as_str())?
+                }
+                None => era_compiler_common::EVMMetadataHashType::IPFS,
+            };
+
             let build = if arguments.yul {
                 era_compiler_solidity::yul_to_evm(
                     input_files.as_slice(),
@@ -300,6 +317,7 @@ fn main_inner(
                     arguments.solc,
                     messages,
                     metadata_hash_type,
+                    append_cbor,
                     optimizer_settings,
                     llvm_options,
                     debug_config,
@@ -310,6 +328,7 @@ fn main_inner(
                     arguments.libraries.as_slice(),
                     messages,
                     metadata_hash_type,
+                    append_cbor,
                     optimizer_settings,
                     llvm_options,
                     debug_config,
@@ -319,6 +338,7 @@ fn main_inner(
                     input_files.as_slice(),
                     messages,
                     metadata_hash_type,
+                    append_cbor,
                     llvm_options,
                     debug_config,
                 )
@@ -357,6 +377,7 @@ fn main_inner(
                     arguments.codegen,
                     arguments.evm_version,
                     metadata_hash_type,
+                    append_cbor,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_path,
@@ -383,6 +404,7 @@ fn main_inner(
                     arguments.codegen,
                     arguments.evm_version,
                     metadata_hash_type,
+                    append_cbor,
                     arguments.metadata_literal,
                     arguments.base_path,
                     arguments.include_path,

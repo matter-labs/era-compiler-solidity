@@ -1,0 +1,36 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "A": {
+      "content": "// SPDX-License-Identifier: Unlicensed\npragma solidity >=0.0; contract C { function distribute(address payable recipient) public { recipient.send(1); recipient.transfer(1); payable(tx.origin).transfer(1); } }"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "mode": "3",
+      "sizeFallback": false
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "ast"
+        ],
+        "*": [
+          "abi",
+          "evm.methodIdentifiers"
+        ]
+      }
+    },
+    "metadata": {
+      "hashType": "ipfs"
+    },
+    "libraries": {},
+    "codegen": "yul",
+    "enableEraVMExtensions": true,
+    "forceEVMLA": false,
+    "suppressedErrors": ["sendtransfer"],
+    "suppressedWarnings": ["txorigin"]
+  },
+  "suppressedErrors": ["sendtransfer"],
+  "suppressedWarnings": ["txorigin"]
+}

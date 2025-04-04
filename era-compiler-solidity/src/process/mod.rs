@@ -48,6 +48,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
                             input.factory_dependencies,
                             input.enable_eravm_extensions,
                             input.metadata_hash_type,
+                            input.append_cbor,
                             input.optimizer_settings,
                             input.llvm_options,
                             input.output_assembly,

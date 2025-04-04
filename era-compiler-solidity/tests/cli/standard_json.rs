@@ -139,11 +139,11 @@ fn suppressed_messages(target: Target) -> anyhow::Result<()> {
         "--solc",
         solc_compiler.as_str(),
         "--standard-json",
-        crate::common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
+        crate::common::TEST_JSON_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
     let solc_args = &[
         "--standard-json",
-        crate::common::TEST_JSON_CONTRACT_PATH_SUPPRESSED_ERRORS_AND_WARNINGS,
+        crate::common::TEST_JSON_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
@@ -444,6 +444,82 @@ fn yul_solc(target: Target) -> anyhow::Result<()> {
 
     let solc_result = crate::cli::execute_solc(solc_args)?;
     solc_result.code(status);
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+// #[test_case(Target::EVM)] TODO: move metadata to linker
+fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_JSON_METADATA_HASH_IPFS_AND_METADATA,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("a264"))
+        .stdout(predicate::str::contains("\"metadata\""));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+// #[test_case(Target::EVM)] TODO: move metadata to linker
+fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_JSON_METADATA_HASH_IPFS_NO_METADATA,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("a264"))
+        .stdout(predicate::str::contains("\"metadata\"").not());
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+// #[test_case(Target::EVM)] TODO: move metadata to linker
+fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_JSON_METADATA_HASH_NONE_AND_METADATA,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("a164"))
+        .stdout(predicate::str::contains("\"metadata\""));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM)]
+// #[test_case(Target::EVM)] TODO: move metadata to linker
+fn metadata_hash_none_no_metadata(target: Target) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--standard-json",
+        crate::common::TEST_JSON_METADATA_HASH_NONE_NO_METADATA,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("a164"))
+        .stdout(predicate::str::contains("\"metadata\"").not());
 
     Ok(())
 }
