@@ -43,7 +43,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     let output = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,

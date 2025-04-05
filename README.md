@@ -1,22 +1,26 @@
-# ZKsync Era: Solidity Compiler Toolchain
+# ZKsync Era: Solidity Compiler
 
 [![Logo](eraLogo.svg)](https://zksync.io/)
 
 ZKsync Era is a Layer 2 rollup that uses zero-knowledge proofs to scale Ethereum without compromising on security or decentralization. As it is EVM-compatible (with Solidity/Vyper), the majority of Ethereum projects can be redeployed without refactoring and re-auditing. ZKsync Era uses an LLVM-based compiler toolchain that allows developers to design, implement, and optimize efficient language-specific features while benefiting from the extensive LLVM ecosystem.
 
-This repository contains the ZKsync Compiler Toolchain for Solidity and Yul.
+This repository contains the ZKsync Compiler for Solidity and Yul.
 
 ## Installation
 
-To install the *zksolc* compiler, follow the [installation guide](./docs/src/01-installation.md).
+To install the *zksolc* compiler, follow our [installation guide](https://matter-labs.github.io/era-compiler-solidity/latest/01-installation.html).
 
-For local development, [build zksolc from sources](./docs/src/01-installation.md#building-from-source).
+For local development, [build zksolc from its source code](https://matter-labs.github.io/era-compiler-solidity/latest/01-installation.html#building-from-source).
 
 ## Usage
 
 For the detailed usage guide, see the [comprehensive documentation](https://matter-labs.github.io/era-compiler-solidity/latest/).
 
 Alternatively, you may check out its Markdown representation in [this repository](./docs/src/).
+
+## Testing
+
+To run the unit and CLI tests, execute `cargo test` from the repository root.
 
 ## Documentation
 

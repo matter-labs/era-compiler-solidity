@@ -2,21 +2,17 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::HashType;
+use era_compiler_common::EVMMetadataHashType;
+use era_compiler_common::EraVMMetadataHashType;
 use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM, HashType::None)]
-#[test_case(Target::EraVM, HashType::Keccak256)]
-#[test_case(Target::EraVM, HashType::Ipfs)]
-#[test_case(Target::EVM, HashType::None)]
-#[test_case(Target::EVM, HashType::Keccak256)]
-#[test_case(Target::EVM, HashType::Ipfs)]
-fn default(target: Target, hash_type: HashType) -> anyhow::Result<()> {
+#[test_case(Target::EraVM, EraVMMetadataHashType::None.to_string())]
+// #[test_case(Target::EVM, EVMMetadataHashType::None.to_string())] TODO: move metadata to linker
+fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
     crate::common::setup()?;
 
-    let hash_type = hash_type.to_string();
     let args = &[
         "--metadata-hash",
         hash_type.as_str(),
@@ -25,9 +21,48 @@ fn default(target: Target, hash_type: HashType) -> anyhow::Result<()> {
     ];
 
     let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains("a164"));
+
+    Ok(())
+}
+
+#[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
+// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
+fn ipfs(target: Target, hash_type: String) -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--metadata-hash",
+        hash_type.as_str(),
+        "--bin",
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    result.success().stdout(predicate::str::contains("a264"));
+
+    Ok(())
+}
+
+#[test]
+fn keccak256() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let hash_type = EraVMMetadataHashType::Keccak256.to_string();
+    let args = &[
+        "--metadata-hash",
+        hash_type.as_str(),
+        "--bin",
+        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
     result
         .success()
-        .stdout(predicate::str::contains("Binary:\n"));
+        .stdout(predicate::str::contains("Binary:\n"))
+        .stderr(predicate::str::contains(
+            "`keccak256` metadata hash type is deprecated. Please use `ipfs` instead.",
+        ));
 
     Ok(())
 }

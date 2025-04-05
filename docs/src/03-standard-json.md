@@ -132,15 +132,17 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     },
     // Optional: Metadata settings.
     "metadata": {
-      // Optional, zksolc: Use the given hash method for the metadata hash that is appended to the bytecode.
-      // Available options: "none", "keccak256", "ipfs".
-      // The metadata hash can be removed from the bytecode via option "none".
-      // Default: "keccak256".
-      "hashType": "ipfs",
+      // Optional: Use the given hash method for the metadata hash that is appended to the bytecode.
+      // Available options: "none", "ipfs".
+      // Default: "ipfs".
+      "bytecodeHash": "ipfs",
       // Optional: Use only literal content and not URLs.
       // Passed through to solc and does not affect the zksolc-specific metadata.
       // Default: false.
-      "useLiteralContent": true
+      "useLiteralContent": false
+      // Optional: Whether to include CBOR-encoded metadata at the end of bytecode.
+      // Default: true.
+      "appendCBOR": true
     },
 
     // Optional, zksolc: Solidity codegen.

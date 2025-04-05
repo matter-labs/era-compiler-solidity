@@ -41,7 +41,7 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
     let output = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,
@@ -111,7 +111,7 @@ fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
     let output = crate::common::build_solidity_standard_json(
         sources,
         libraries,
-        era_compiler_common::HashType::Ipfs,
+        era_compiler_common::EraVMMetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         codegen,

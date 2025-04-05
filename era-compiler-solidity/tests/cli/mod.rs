@@ -28,6 +28,7 @@ mod llvm_options;
 mod metadata;
 mod metadata_hash;
 mod metadata_literal;
+mod no_cbor_metadata;
 mod optimization;
 mod output_dir;
 mod overwrite;
