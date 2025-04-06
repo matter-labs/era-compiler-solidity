@@ -101,31 +101,34 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
     "evmVersion": "cancun",
     // Optional: Select the desired output.
     // Important: zksolc does not support per-file and per-contract selection.
-    //
-    // Available file-level options, must be listed under "*"."":
-    //   ast                       AST of all source files
-    //
-    // Available contract-level options, must be listed under "*"."*":
-    //   abi                       Solidity ABI
-    //   evm.methodIdentifiers     Solidity function hashes
-    //   storageLayout             Slots, offsets and types of the contract's state variables in storage
-    //   transientStorageLayout    Slots, offsets and types of the contract's state variables in transient storage
-    //   devdoc                    Developer documentation (natspec)
-    //   userdoc                   User documentation (natspec)
-    //   metadata                  Metadata
-    //   evm.legacyAssembly        EVM assembly produced by solc
-    //   irOptimized               Yul produced by solc
-    //   eravm.assembly            EraVM assembly produced by zksolc
-    //
     // Default: no flags are selected, so only bytecode is emitted.
     "outputSelection": {
       "*": {
+        // Available file-level options, must be listed under "*"."":
         "": [
           "ast"
         ],
+        // Available contract-level options, must be listed under "*"."*":
         "*": [
+          // Solidity ABI.
+          "abi",
+          // Solidity function hashes.
+          "evm.methodIdentifiers",
+          // Slots, offsets and types of the contract's state variables in storage.
+          "storageLayout",
+          // Slots, offsets and types of the contract's state variables in transient storage.
+          "transientStorageLayout",
+          // Developer documentation (natspec).
+          "devdoc",
+          // User documentation (natspec).
+          "userdoc",
+          // Metadata.
           "metadata",
+          // EVM assembly produced by solc.
+          "evm.legacyAssembly",
+          // Yul produced by solc.
           "irOptimized",
+          // EraVM assembly produced by zksolc.
           "eravm.assembly"
         ]
       }
@@ -139,7 +142,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
       // Optional: Use only literal content and not URLs.
       // Passed through to solc and does not affect the zksolc-specific metadata.
       // Default: false.
-      "useLiteralContent": false
+      "useLiteralContent": false,
       // Optional: Whether to include CBOR-encoded metadata at the end of bytecode.
       // Default: true.
       "appendCBOR": true
