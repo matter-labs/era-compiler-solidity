@@ -47,6 +47,7 @@ impl Build {
     pub fn link(
         mut self,
         linker_symbols: BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
+        cbor_data: Option<Vec<(String, semver::Version)>>,
     ) -> Self {
         let mut contracts: BTreeMap<String, Contract> = self
             .results
@@ -158,6 +159,7 @@ impl Build {
                     object.identifier.as_str(),
                     false,
                 );
+
                 let (linked_object, object_format) =
                     match era_compiler_llvm_context::evm_link(memory_buffer, &linker_symbols) {
                         Ok((linked_object, object_format)) => (linked_object, object_format),
@@ -169,8 +171,34 @@ impl Build {
                             continue;
                         }
                     };
-                object.bytecode = linked_object.as_slice().to_owned();
                 object.object_format = object_format;
+
+                object.bytecode = linked_object.as_slice().to_owned();
+                // if let era_compiler_common::CodeSegment::Deploy = object.code_segment {
+                //     let metadata = match contract.metadata_hash {
+                //         Some(era_compiler_common::Hash::IPFS(ref hash)) => {
+                //             let cbor = era_compiler_common::CBOR::new(
+                //                 Some((
+                //                     era_compiler_common::EVMMetadataHashType::IPFS,
+                //                     hash.as_bytes(),
+                //                 )),
+                //                 crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                //                 cbor_data.clone(),
+                //             );
+                //             cbor.to_vec()
+                //         }
+                //         Some(era_compiler_common::Hash::Keccak256(ref hash)) => hash.to_vec(),
+                //         None => {
+                //             let cbor = era_compiler_common::CBOR::<'_, String>::new(
+                //                 None,
+                //                 crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                //                 cbor_data.clone(),
+                //             );
+                //             cbor.to_vec()
+                //         }
+                //     };
+                //     object.bytecode.extend(metadata);
+                // }
             }
         }
 

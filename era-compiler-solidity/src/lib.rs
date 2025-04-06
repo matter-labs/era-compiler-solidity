@@ -41,6 +41,7 @@ use std::collections::BTreeSet;
 use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
@@ -60,7 +61,8 @@ pub fn yul_to_eravm(
     solc_path: Option<String>,
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -98,6 +100,7 @@ pub fn yul_to_eravm(
         messages,
         enable_eravm_extensions,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -120,7 +123,8 @@ pub fn yul_to_evm(
     libraries: &[String],
     solc_path: Option<String>,
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -153,6 +157,7 @@ pub fn yul_to_evm(
     let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         debug_config,
@@ -160,7 +165,28 @@ pub fn yul_to_evm(
     build.take_and_write_warnings();
     build.check_errors()?;
 
-    let mut build = build.link(linker_symbols);
+    let cbor_data = if append_cbor {
+        let mut cbor_data = Vec::with_capacity(3);
+        cbor_data.push((
+            crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+            crate::r#const::version().parse().expect("Always valid"),
+        ));
+        if let Some(ref solc_version) = solc_version {
+            cbor_data.push((
+                crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                solc_version.default.to_owned(),
+            ));
+            cbor_data.push((
+                crate::r#const::SOLC_LLVM_REVISION_METADATA_TAG.to_owned(),
+                solc_version.l2_revision.to_owned(),
+            ));
+        };
+        Some(cbor_data)
+    } else {
+        None
+    };
+
+    let mut build = build.link(linker_symbols, cbor_data);
     build.take_and_write_warnings();
     build.check_errors()?;
     Ok(build)
@@ -173,7 +199,8 @@ pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
     libraries: &[String],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -188,6 +215,7 @@ pub fn llvm_ir_to_eravm(
         messages,
         false,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -209,7 +237,8 @@ pub fn llvm_ir_to_evm(
     paths: &[PathBuf],
     libraries: &[String],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -222,6 +251,7 @@ pub fn llvm_ir_to_evm(
     let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         debug_config,
@@ -229,7 +259,16 @@ pub fn llvm_ir_to_evm(
     build.take_and_write_warnings();
     build.check_errors()?;
 
-    let mut build = build.link(linker_symbols);
+    let cbor_data = if append_cbor {
+        Some(vec![(
+            crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+            crate::r#const::version().parse().expect("Always valid"),
+        )])
+    } else {
+        None
+    };
+
+    let mut build = build.link(linker_symbols, cbor_data);
     build.take_and_write_warnings();
     build.check_errors()?;
     Ok(build)
@@ -241,7 +280,8 @@ pub fn llvm_ir_to_evm(
 pub fn eravm_assembly_to_eravm(
     paths: &[PathBuf],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    append_cbor: bool,
     llvm_options: Vec<String>,
     output_assembly: bool,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
@@ -253,6 +293,7 @@ pub fn eravm_assembly_to_eravm(
         messages,
         false,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -273,7 +314,8 @@ pub fn eravm_assembly_to_eravm(
 pub fn eravm_assembly_to_evm(
     paths: &[PathBuf],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::HashType,
+    metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    append_cbor: bool,
     llvm_options: Vec<String>,
     debug_config: Option<era_compiler_llvm_context::DebugConfig>,
 ) -> anyhow::Result<EVMBuild> {
@@ -283,6 +325,7 @@ pub fn eravm_assembly_to_evm(
     let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         debug_config,
@@ -290,7 +333,16 @@ pub fn eravm_assembly_to_evm(
     build.take_and_write_warnings();
     build.check_errors()?;
 
-    let mut build = build.link(BTreeMap::new());
+    let cbor_data = if append_cbor {
+        Some(vec![(
+            crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+            crate::r#const::version().parse().expect("Always valid"),
+        )])
+    } else {
+        None
+    };
+
+    let mut build = build.link(BTreeMap::new(), cbor_data);
     build.take_and_write_warnings();
     build.check_errors()?;
     Ok(build)
@@ -307,8 +359,9 @@ pub fn standard_output_eravm(
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::HashType,
-    use_literal_content: bool,
+    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    append_cbor: bool,
+    metadata_literal: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -332,7 +385,11 @@ pub fn standard_output_eravm(
         evm_version,
         enable_eravm_extensions,
         era_solc::StandardJsonInputSelection::new_required(solc_codegen),
-        era_solc::StandardJsonInputMetadata::new(use_literal_content, metadata_hash_type),
+        era_solc::StandardJsonInputMetadata::new(
+            metadata_literal,
+            !append_cbor,
+            metadata_hash_type.to_string(),
+        ),
         llvm_options.clone(),
         suppressed_errors,
         suppressed_warnings,
@@ -367,6 +424,7 @@ pub fn standard_output_eravm(
         messages,
         enable_eravm_extensions,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -391,8 +449,9 @@ pub fn standard_output_evm(
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    metadata_hash_type: era_compiler_common::HashType,
-    use_literal_content: bool,
+    metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    append_cbor: bool,
+    metadata_literal: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -413,7 +472,11 @@ pub fn standard_output_evm(
         evm_version,
         false,
         era_solc::StandardJsonInputSelection::new_required(solc_codegen),
-        era_solc::StandardJsonInputMetadata::new(use_literal_content, metadata_hash_type),
+        era_solc::StandardJsonInputMetadata::new(
+            metadata_literal,
+            !append_cbor,
+            metadata_hash_type.to_string(),
+        ),
         llvm_options.clone(),
         vec![],
         vec![],
@@ -447,6 +510,7 @@ pub fn standard_output_evm(
     let mut build = project.compile_to_evm(
         messages,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         debug_config,
@@ -454,7 +518,26 @@ pub fn standard_output_evm(
     build.take_and_write_warnings();
     build.check_errors()?;
 
-    let mut build = build.link(linker_symbols);
+    let cbor_data = if append_cbor {
+        Some(vec![
+            (
+                crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+                crate::r#const::version().parse().expect("Always valid"),
+            ),
+            (
+                crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                solc_version.default.to_owned(),
+            ),
+            (
+                crate::r#const::SOLC_LLVM_REVISION_METADATA_TAG.to_owned(),
+                solc_version.l2_revision.to_owned(),
+            ),
+        ])
+    } else {
+        None
+    };
+
+    let mut build = build.link(linker_symbols, cbor_data);
     build.take_and_write_warnings();
     build.check_errors()?;
     Ok(build)
@@ -498,7 +581,11 @@ pub fn standard_json_eravm(
         solc_input.settings.enable_eravm_extensions || enable_eravm_extensions;
     let detect_missing_libraries =
         solc_input.settings.detect_missing_libraries || detect_missing_libraries;
-    let metadata_hash_type = solc_input.settings.metadata.hash_type;
+    let metadata_hash_type = era_compiler_common::EraVMMetadataHashType::from_str(
+        solc_input.settings.metadata.hash_type.as_str(),
+    )?;
+    let append_cbor = solc_input.settings.metadata.append_cbor;
+
     let output_assembly = solc_input
         .settings
         .output_selection
@@ -626,6 +713,7 @@ pub fn standard_json_eravm(
         messages,
         enable_eravm_extensions,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         output_assembly,
@@ -667,7 +755,34 @@ pub fn standard_json_evm(
     }
     let llvm_options = solc_input.settings.llvm_options.clone();
 
-    let metadata_hash_type = solc_input.settings.metadata.hash_type;
+    let metadata_hash_type = era_compiler_common::EVMMetadataHashType::from_str(
+        solc_input.settings.metadata.hash_type.as_str(),
+    )?;
+    let append_cbor = solc_input.settings.metadata.append_cbor;
+
+    let cbor_data = if append_cbor {
+        let mut cbor_data = Vec::with_capacity(3);
+        cbor_data.push((
+            crate::r#const::DEFAULT_EXECUTABLE_NAME.to_owned(),
+            crate::r#const::version().parse().expect("Always valid"),
+        ));
+        if let Some(solc_version) = solc_compiler
+            .as_ref()
+            .map(|solc_compiler| &solc_compiler.version)
+        {
+            cbor_data.push((
+                crate::r#const::SOLC_PRODUCTION_NAME.to_owned(),
+                solc_version.default.to_owned(),
+            ));
+            cbor_data.push((
+                crate::r#const::SOLC_LLVM_REVISION_METADATA_TAG.to_owned(),
+                solc_version.l2_revision.to_owned(),
+            ));
+        };
+        Some(cbor_data)
+    } else {
+        None
+    };
 
     let (mut solc_output, solc_version, project) = match (language, solc_compiler) {
         (era_solc::StandardJsonInputLanguage::Solidity, solc_compiler) => {
@@ -784,6 +899,7 @@ pub fn standard_json_evm(
     let build = project.compile_to_evm(
         messages,
         metadata_hash_type,
+        append_cbor,
         optimizer_settings,
         llvm_options,
         debug_config,
@@ -793,7 +909,7 @@ pub fn standard_json_evm(
         solc_output.write_and_exit(prune_output);
     }
 
-    let build = build.link(linker_symbols);
+    let build = build.link(linker_symbols, cbor_data);
     build.write_to_standard_json(&mut solc_output, solc_version.as_ref())?;
     solc_output.write_and_exit(prune_output);
 }
@@ -810,8 +926,9 @@ pub fn combined_json_eravm(
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::HashType,
-    use_literal_content: bool,
+    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    append_cbor: bool,
+    metadata_literal: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -867,7 +984,8 @@ pub fn combined_json_eravm(
         evm_version,
         enable_eravm_extensions,
         metadata_hash_type,
-        use_literal_content,
+        append_cbor,
+        metadata_literal,
         base_path,
         include_paths,
         allow_paths,
@@ -909,8 +1027,9 @@ pub fn combined_json_evm(
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
-    metadata_hash_type: era_compiler_common::HashType,
-    use_literal_content: bool,
+    metadata_hash_type: era_compiler_common::EVMMetadataHashType,
+    append_cbor: bool,
+    metadata_literal: bool,
     base_path: Option<String>,
     include_paths: Vec<String>,
     allow_paths: Option<String>,
@@ -959,7 +1078,8 @@ pub fn combined_json_evm(
         codegen,
         evm_version,
         metadata_hash_type,
-        use_literal_content,
+        append_cbor,
+        metadata_literal,
         base_path,
         include_paths,
         allow_paths,

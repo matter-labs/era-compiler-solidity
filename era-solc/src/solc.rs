@@ -197,6 +197,15 @@ For reference, see the following links:
                 None,
             ));
         }
+        if input.settings.metadata.hash_type
+            == era_compiler_common::EraVMMetadataHashType::Keccak256.to_string()
+        {
+            messages.push(StandardJsonOutputError::new_warning(
+                "`keccak256` metadata hash type is deprecated. Please use `ipfs` instead.",
+                None,
+                None,
+            ));
+        }
         if !input.suppressed_errors.is_empty() {
             messages.push(StandardJsonOutputError::new_warning(
                 "`suppressedErrors` at the root of standard JSON input is deprecated. Please move them to `settings`.",

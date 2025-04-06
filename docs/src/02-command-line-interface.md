@@ -318,51 +318,63 @@ Under the hood, this option automatically triggers recompilation of contracts wi
 
 ### `--metadata-hash`
 
-Specifies the hash function used for contract metadata.
+Specifies the hash function used for project metadata appended to the end of bytecode.
 
-The following values are allowed:
+The following values are allowed: `none`, `ipfs`.
 
-|     Value    |  Size  | Padding | CBOR |                       Reference                      |
-|:-------------|:-------|:--------|:----:|:-----------------------------------------------------|
-| none         |  0 B   | 0-32 B  |  No  |
-| keccak256    | 32 B   | 0-32 B  |  No  | [SHA-3 Wikipedia Page](https://en.wikipedia.org/wiki/SHA-3)
-| ipfs         | 44 B   | 20-52 B | Yes  | [IPFS Documentation](https://docs.ipfs.tech/)
+The default value is `ipfs`.
 
-For historical reasons, `keccak256` is not CBOR-wrapped, so only the hash itself is appended to the bytecode. The `ipfs` hash is CBOR-wrapped, so the same decoding logic as for EVM can be applied.
+> EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the metadata is *prepended* with zeros.
 
-The default value is `keccak256`.
-
-> EraVM requires its bytecode size to be an odd number of 32-byte words. If the size after appending the hash does not satisfy this requirement, the hash is *prepended* with zeros according to the *Padding* column in the table above.
-
-Usage with `keccak256`:
+Usage:
 
 ```bash
-zksolc './Test.sol' --bin --metadata-hash 'keccak256'
+zksolc 'Simple.sol' --bin --metadata-hash 'ipfs'
 ```
 
-Output with `keccak256`:
+Output:
 
 ```text
-======= .../Test.sol:Test =======
+======= Simple.sol:Simple =======
 Binary:
-00000001002001900000000c0000613d0000008001000039000000400010043f0000000001000416000000000001004b0000000c0000c13d00000020010000390000010000100443000001200000044300000005010000410000000f0001042e000000000100001900000010000104300000000e000004320000000f0001042e00000010000104300000000000000000000000000000000000000000000000000000000200000000000000000000000000000040000001000000000000000000abdcd1e165740381db847385c48007226b5babc8ffc053de6f355baca6616e40
+00000001002001900000000c0000613d0000008001000039000000400010043f0000000001000416000000000001004b0000000c0000c13d00000020010000390000010000100443000001200000044300000005010000
+...
+a2646970667358221220ba14ea4e52366f139a845913d41e98933393bd1c1126331611687003d4aa92de64736f6c6378247a6b736f6c633a312e352e31333b736f6c633a302e382e32393b6c6c766d3a312e302e310055
 ```
 
-Usage with `ipfs`:
+The byte array starting with `a2` at the end of the bytecode is a CBOR-encoded compiler version data and an optional metadata hash.
 
-```bash
-zksolc './Test.sol' --bin --metadata-hash 'ipfs'
+JSON representation of a CBOR payload:
+
+```javascript
+{
+    // Optional: included if `--metadata-hash` is set to `ipfs`.
+    "ipfs": "1220ba14ea4e52366f139a845913d41e98933393bd1c1126331611687003d4aa92de",
+
+    // Required: consists of semicolon-separated pairs of colon-separated compiler names and versions.
+    // `zksolc:<version>` is always included.
+    // `solc:<version>;llvm:<version>` is only included for Solidity contracts and Yul contracts if solc is used for validation,
+    // but not included for LLVM IR and EraVM assembly contracts.
+    // `llvm` stands for the revision of ZKsync fork of solc. It is not possible to use the upstream build of solc with zksolc anymore.
+    "solc": "zksolc:1.5.13;solc:0.8.29;llvm:1.0.2"
+}
 ```
 
-Output with `ipfs`:
+For more information on these formats, see the [CBOR](https://cbor.io/) and [IPFS](https://docs.ipfs.tech/) documentation.
 
-```text
-======= .../Test.sol:Test =======
-Binary:
-00000001002001900000000c0000613d0000008001000039000000400010043f0000000001000416000000000001004b0000000c0000c13d00000020010000390000010000100443000001200000044300000005010000410000000f0001042e000000000100001900000010000104300000000e000004320000000f0001042e0000001000010430000000000000000000000000000000000000000000000000000000020000000000000000000000000000004000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a1646970667358221220aa6c03adc327b2cf98010f155f9849134e325f7a1e2cffd5b99d832a7dba5082002a
+
+
+### `--no-cbor-metadata`
+
+Disables the CBOR metadata that is appended at the end of bytecode. This option is useful for debugging and research purposes.
+
+> It is not recommended to use this option in production, as it is not possible to verify contracts deployed without metadata.
+
+Usage:
+
+```shell
+zksolc 'Simple.sol' --no-cbor-metadata
 ```
-
-Note that a lot of padding is added before the `ipfs` hash to make the bytecode size an odd number of 32-byte words.
 
 
 
