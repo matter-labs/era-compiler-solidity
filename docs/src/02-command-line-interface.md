@@ -32,7 +32,7 @@ Specifies the path to the *solc* compiler. Useful when the *solc* compiler is no
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --solc '/path/to/solc'
+zksolc 'Simple.sol' --bin --solc '/path/to/solc'
 ```
 
 > Examples in the subsequent sections assume that *solc* [is installed and available](./01-installation.md#installing-solc) in the system path.
@@ -45,7 +45,7 @@ zksolc './Simple.sol' --bin --solc '/path/to/solc'
 Enables the output of compiled bytecode. The following command compiles a Solidity file and prints the bytecode:
 
 ```bash
-zksolc './Simple.sol' --bin
+zksolc 'Simple.sol' --bin
 ```
 
 Output:
@@ -59,7 +59,7 @@ Binary:
 It is possible to dry-run the compilation without writing any output. To do this, simply omit `--bin` and other output options:
 
 ```bash
-zksolc './Simple.sol'
+zksolc 'Simple.sol'
 ```
 
 Output:
@@ -75,13 +75,13 @@ Compiler run successful. No output requested. Use flags --metadata, --asm, --bin
 *zksolc* supports multiple input files. The following command compiles two Solidity files and prints the bytecode:
 
 ```bash
-zksolc './Simple.sol' './Complex.sol' --bin
+zksolc 'Simple.sol' 'Complex.sol' --bin
 ```
 
 [Solidity import remappings](https://docs.soliditylang.org/en/latest/path-resolution.html#import-remapping) are passed in the way as input files, but they are distinguished by a `=` symbol between source and destination. The following command compiles a Solidity file with a remapping and prints the bytecode:
 
 ```bash
-zksolc './Simple.sol' 'github.com/ethereum/dapp-bin/=/usr/local/lib/dapp-bin/' --bin
+zksolc 'Simple.sol' 'github.com/ethereum/dapp-bin/=/usr/local/lib/dapp-bin/' --bin
 ```
 
 *zksolc* does not handle remappings itself, but only passes them through to *solc*.
@@ -98,7 +98,7 @@ The specifier has the following format: `<ContractPath>:<ContractName>=<LibraryA
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --libraries 'Simple.sol:Test=0x1234567890abcdef1234567890abcdef12345678'
+zksolc 'Simple.sol' --bin --libraries 'Simple.sol:Test=0x1234567890abcdef1234567890abcdef12345678'
 ```
 
 There are two ways of linking libraries:
@@ -149,7 +149,7 @@ __entry:
 The `--asm` option can be combined with other output options, such as `--bin`:
 
 ```bash
-zksolc './Simple.sol' --asm --bin
+zksolc 'Simple.sol' --asm --bin
 ```
 
 
@@ -163,7 +163,7 @@ The *zksolc* metadata format is compatible with the [Solidity metadata format](h
 Usage:
 
 ```bash
-zksolc './Simple.sol' --metadata
+zksolc 'Simple.sol' --metadata
 ```
 
 Output:
@@ -183,7 +183,7 @@ Specifies the output directory for build artifacts. Can only be used in [basic C
 Usage in basic CLI mode:
 
 ```bash
-zksolc './Simple.sol' --bin --asm --metadata --output-dir './build/'
+zksolc 'Simple.sol' --bin --asm --metadata --output-dir './build/'
 ls './build/Simple.sol'
 ```
 
@@ -198,7 +198,7 @@ Test.zasm       Test.zbin       Test_meta.json
 Usage in combined JSON mode:
 
 ```bash
-zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/'
+zksolc 'Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/'
 ls './build/'
 ```
 
@@ -221,7 +221,7 @@ Can only be used in combination with the [`--output-dir`](#--output-dir) option.
 Usage:
 
 ```bash
-zksolc './Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/' --overwrite
+zksolc 'Simple.sol' --combined-json 'bin,asm,metadata' --output-dir './build/' --overwrite
 ```
 
 If the `--overwrite` option is not specified and the output files already exist, *zksolc* will print an error message and exit:
@@ -391,7 +391,7 @@ The full list of EraVM extensions and their usage can be found [here](./06-eravm
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --enable-eravm-extensions
+zksolc 'Simple.sol' --bin --enable-eravm-extensions
 ```
 
 
@@ -408,7 +408,7 @@ Errors that can be suppressed:
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --suppress-errors 'sendtransfer'
+zksolc 'Simple.sol' --bin --suppress-errors 'sendtransfer'
 ```
 
 
@@ -425,7 +425,7 @@ Warnings that can be suppressed:
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --suppress-warnings 'txorigin'
+zksolc 'Simple.sol' --bin --suppress-warnings 'txorigin'
 ```
 
 
@@ -437,7 +437,7 @@ Specifies additional options for the LLVM framework. The argument must be a sing
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --llvm-options='-eravm-jump-table-density-threshold=10'
+zksolc 'Simple.sol' --bin --llvm-options='-eravm-jump-table-density-threshold=10'
 ```
 
 > The `--llvm-options` option is experimental and must only be used by experienced users. All supported options will be documented in the future.
@@ -468,7 +468,7 @@ Specifies the *solc* codegen. The following values are allowed:
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --codegen 'evmla'
+zksolc 'Simple.sol' --bin --codegen 'evmla'
 ```
 
 
@@ -499,7 +499,7 @@ The following values are allowed, however have in mind that newer EVM versions a
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --evm-version 'cancun'
+zksolc 'Simple.sol' --bin --evm-version 'cancun'
 ```
 
 For more information on how *solc* handles EVM versions, see its [EVM version documentation](https://docs.soliditylang.org/en/latest/using-the-compiler.html#setting-the-evm-version-to-target).
@@ -515,7 +515,7 @@ Tells *solc* to store referenced sources as literal data in the metadata output.
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --metadata-literal
+zksolc 'Simple.sol' --bin --metadata-literal
 ```
 
 
@@ -540,7 +540,7 @@ Enables the Yul mode. In this mode, input is expected to be in the Yul language.
 Usage:
 
 ```bash
-zksolc --yul './Simple.yul' --bin
+zksolc --yul 'Simple.yul' --bin
 ```
 
 Output:
@@ -554,7 +554,7 @@ Binary:
 *zksolc* is able to compile Yul without *solc*. However, using *solc* is still recommended as it provides additional validation, diagnostic and better error messages:
 
 ```bash
-zksolc --yul './Simple.yul' --bin --solc '/path/to/solc'
+zksolc --yul 'Simple.yul' --bin --solc '/path/to/solc'
 ```
 
 *zksolc* features its own dialect of Yul with extensions for EraVM. If [the extensions](./06-eravm-extensions.md) are enabled, it is not possible to use *solc* for validation.
@@ -570,7 +570,7 @@ Unlike *solc*, *zksolc* is an LLVM-based compiler toolchain, so it uses LLVM IR 
 Usage:
 
 ```bash
-zksolc --llvm-ir './Simple.ll' --bin
+zksolc --llvm-ir 'Simple.ll' --bin
 ```
 
 Output:
@@ -594,7 +594,7 @@ For the EraVM assembly specification, visit the [EraVM documentation](https://do
 Usage:
 
 ```bash
-zksolc --eravm-assembly './Simple.zasm' --bin
+zksolc --eravm-assembly 'Simple.zasm' --bin
 ```
 
 Output:
@@ -655,7 +655,7 @@ The disassembler input must be files with a hexadecimal string. The disassembler
 Usage:
 
 ```bash
-cat './input.zbin'
+cat 'input.zbin'
 ```
 
 Output:
@@ -665,7 +665,7 @@ Output:
 ```
 
 ```bash
-zksolc --disassemble './input.zbin'
+zksolc --disassemble 'input.zbin'
 ```
 
 Output:
@@ -716,7 +716,7 @@ The intermediate build artifacts can be:
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --debug-output-dir './debug/'
+zksolc 'Simple.sol' --bin --debug-output-dir './debug/'
 ls './debug/'
 ```
 
@@ -746,7 +746,7 @@ Enables the verification of the LLVM IR after each optimization pass. This optio
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --llvm-verify-each
+zksolc 'Simple.sol' --bin --llvm-verify-each
 ```
 
 
@@ -758,5 +758,5 @@ Enables the debug logging of the LLVM IR optimization passes. This option is use
 Usage:
 
 ```bash
-zksolc './Simple.sol' --bin --llvm-debug-logging
+zksolc 'Simple.sol' --bin --llvm-debug-logging
 ```
