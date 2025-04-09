@@ -36,11 +36,10 @@ jobs:
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          target-env: 'gnu'
           enable-assertions: 'true'
           build-type: RelWithDebInfo
           sanitizer: ${{ inputs.llvm-sanitizer || 'Address' }}
-          ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}
+          ccache-key: ${{ format('llvm-{0}-{1}', runner.os, runner.arch) }}
           save-ccache: 'false'
 
       - name: Run tests

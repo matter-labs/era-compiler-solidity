@@ -38,10 +38,9 @@ jobs:
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          target-env: 'gnu'
           enable-assertions: 'false'
           build-type: Release
-          ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, 'gnu') }}
+          ccache-key: ${{ format('llvm-{0}-{1}', runner.os, runner.arch) }}
           save-ccache: 'false'
 
       - name: Build zksolc

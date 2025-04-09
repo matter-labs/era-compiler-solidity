@@ -22,16 +22,6 @@ on:
         required: false
         type: boolean
         default: true
-      release_linux_amd64_musl:
-        description: "Release for Linux amd64 musl?"
-        required: false
-        type: boolean
-        default: true
-      release_linux_arm64_musl:
-        description: "Release for Linux arm64 musl?"
-        required: false
-        type: boolean
-        default: true
       release_linux_amd64_gnu:
         description: "Release for Linux amd64 gnu?"
         required: false
@@ -81,8 +71,6 @@ jobs:
           MACOS_ARM64='{"name":"MacOS-arm64","runner":["self-hosted","macOS","ARM64"],"release-suffix":"macosx-arm64"}'
           LINUX_AMD64_GNU='{"name":"Linux-AMD64-gnu","runner":"matterlabs-ci-runner-high-performance","image":"ghcr.io/matter-labs/zksync-llvm-runner:latest","target":"x86_64-unknown-linux-gnu","release-suffix":"linux-amd64-gnu"}'
           LINUX_ARM64_GNU='{"name":"Linux-ARM64-gnu","runner":"matterlabs-ci-runner-arm","image":"ghcr.io/matter-labs/zksync-llvm-runner:latest","target":"aarch64-unknown-linux-gnu","release-suffix":"linux-arm64-gnu"}'
-          LINUX_AMD64_MUSL='{"name":"Linux-AMD64-musl","runner":"matterlabs-ci-runner-high-performance","image":"ghcr.io/matter-labs/zksync-llvm-runner:latest","target":"x86_64-unknown-linux-musl","release-suffix":"linux-amd64-musl"}'
-          LINUX_ARM64_MUSL='{"name":"Linux-ARM64-musl","runner":"matterlabs-ci-runner-arm","image":"ghcr.io/matter-labs/zksync-llvm-runner:latest","target":"aarch64-unknown-linux-musl","release-suffix":"linux-arm64-musl"}'
           # Disable platforms for non-tag builds if user requested
           if [ ${GITHUB_REF_TYPE} != tag ]; then
             [ ${{ github.event.inputs.release_windows_amd64 }} != true ] && WINDOWS=
@@ -90,10 +78,8 @@ jobs:
             [ ${{ github.event.inputs.release_macos_arm64 }} != true ] && MACOS_ARM64=
             [ ${{ github.event.inputs.release_linux_amd64_gnu }} != true ] && LINUX_AMD64_GNU=
             [ ${{ github.event.inputs.release_linux_arm64_gnu }} != true ] && LINUX_ARM64_GNU=
-            [ ${{ github.event.inputs.release_linux_amd64_musl }} != true ] && LINUX_AMD64_MUSL=
-            [ ${{ github.event.inputs.release_linux_arm64_musl }} != true ] && LINUX_ARM64_MUSL=
           fi
-          PLATFORMS=(${WINDOWS} ${MACOS_AMD64} ${MACOS_ARM64} ${LINUX_AMD64_GNU} ${LINUX_ARM64_GNU} ${LINUX_AMD64_MUSL} ${LINUX_ARM64_MUSL})
+          PLATFORMS=(${WINDOWS} ${MACOS_AMD64} ${MACOS_ARM64} ${LINUX_AMD64_GNU} ${LINUX_ARM64_GNU})
           echo "matrix={ \"include\": [ $(IFS=, ; echo "${PLATFORMS[*]}") ] }" | tee -a "${GITHUB_OUTPUT}"
 
   build:
@@ -118,10 +104,9 @@ jobs:
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
-          target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
           enable-assertions: 'false'
           build-type: Release
-          ccache-key: ${{ format('llvm-{0}-{1}-{2}', runner.os, runner.arch, contains(matrix.target, 'musl') && 'musl' || 'gnu') }}
+          ccache-key: ${{ format('llvm-{0}-{1}', runner.os, runner.arch) }}
           save-ccache: 'false'
 
       - name: Build zksolc

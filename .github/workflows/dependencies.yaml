@@ -56,7 +56,7 @@ jobs:
         with:
           enable-assertions: 'true'
           build-type: RelWithDebInfo
-          ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}
+          ccache-key: ${{ format('llvm-{0}-{1}', runner.os, runner.arch) }}
           save-ccache: 'false'
 
       - name: Run tests
