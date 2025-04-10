@@ -267,7 +267,7 @@ impl Contract {
         self,
         solc_version: Option<era_solc::Version>,
         identifier_paths: BTreeMap<String, String>,
-        missing_libraries: BTreeSet<String>,
+        unlinked_libraries: BTreeSet<String>,
         metadata_hash_type: era_compiler_common::EVMMetadataHashType,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -344,6 +344,8 @@ impl Contract {
                     Some(era_solc::StandardJsonInputCodegen::Yul),
                     runtime_code_segment,
                     runtime_code_dependecies,
+                    unlinked_libraries.clone(),
+                    era_compiler_common::ObjectFormat::ELF,
                     runtime_code_warnings,
                 );
 
@@ -381,6 +383,8 @@ impl Contract {
                     Some(era_solc::StandardJsonInputCodegen::Yul),
                     deploy_code_segment,
                     deploy_code_dependecies,
+                    unlinked_libraries,
+                    era_compiler_common::ObjectFormat::ELF,
                     deploy_code_warnings,
                 );
 
@@ -390,8 +394,6 @@ impl Contract {
                     runtime_object,
                     metadata_hash,
                     metadata_json,
-                    missing_libraries,
-                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::EVMLA(mut deploy_code) => {
@@ -402,12 +404,12 @@ impl Contract {
                 let runtime_code_identifier =
                     format!("{}.{runtime_code_segment}", self.name.full_path);
 
-                let mut deploy_code_dependecies =
+                let mut deploy_code_dependencies =
                     era_yul::Dependencies::new(deploy_code_identifier.as_str());
-                deploy_code.accumulate_evm_dependencies(&mut deploy_code_dependecies);
-                let mut runtime_code_dependecies =
+                deploy_code.accumulate_evm_dependencies(&mut deploy_code_dependencies);
+                let mut runtime_code_dependencies =
                     era_yul::Dependencies::new(runtime_code_identifier.as_str());
-                runtime_code_assembly.accumulate_evm_dependencies(&mut runtime_code_dependecies);
+                runtime_code_assembly.accumulate_evm_dependencies(&mut runtime_code_dependencies);
 
                 let evmla_data = era_compiler_llvm_context::EVMContextEVMLAData::new(
                     solc_version.expect("Always exists").default,
@@ -437,7 +439,9 @@ impl Contract {
                     runtime_buffer.as_slice().to_owned(),
                     Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     runtime_code_segment,
-                    runtime_code_dependecies,
+                    runtime_code_dependencies,
+                    unlinked_libraries.clone(),
+                    era_compiler_common::ObjectFormat::ELF,
                     runtime_code_warnings,
                 );
 
@@ -470,7 +474,9 @@ impl Contract {
                     deploy_buffer.as_slice().to_owned(),
                     Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     deploy_code_segment,
-                    deploy_code_dependecies,
+                    deploy_code_dependencies,
+                    unlinked_libraries,
+                    era_compiler_common::ObjectFormat::ELF,
                     deploy_code_warnings,
                 );
 
@@ -480,8 +486,6 @@ impl Contract {
                     runtime_object,
                     metadata_hash,
                     metadata_json,
-                    missing_libraries,
-                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::LLVMIR(mut llvm_ir) => {
@@ -521,6 +525,8 @@ impl Contract {
                     None,
                     runtime_code_segment,
                     runtime_code_dependencies,
+                    unlinked_libraries.clone(),
+                    era_compiler_common::ObjectFormat::ELF,
                     runtime_code_warnings,
                 );
 
@@ -533,6 +539,8 @@ impl Contract {
                     None,
                     deploy_code_segment,
                     deploy_code_dependencies,
+                    unlinked_libraries,
+                    era_compiler_common::ObjectFormat::Raw,
                     vec![],
                 );
 
@@ -542,8 +550,6 @@ impl Contract {
                     runtime_object,
                     metadata_hash,
                     metadata_json,
-                    missing_libraries,
-                    era_compiler_common::ObjectFormat::ELF,
                 ))
             }
             IR::EraVMAssembly(_) => anyhow::bail!("EraVM assembly cannot be compiled to EVM."),

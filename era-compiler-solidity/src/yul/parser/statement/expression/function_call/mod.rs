@@ -2112,8 +2112,8 @@ impl FunctionCall {
                 let object_name = arguments[0].original.take().ok_or_else(|| {
                     anyhow::anyhow!("{} `dataoffset` literal is missing", location)
                 })?;
-                era_compiler_llvm_context::evm_code::data_offset(context, object_name.as_str())
-                    .map(Some)
+                let object_name = object_name.split('.').last().expect("Always exists");
+                era_compiler_llvm_context::evm_code::data_offset(context, object_name).map(Some)
             }
             Name::DataSize => {
                 let mut arguments = self.pop_arguments_evm::<1>(context)?;
@@ -2121,8 +2121,8 @@ impl FunctionCall {
                     .original
                     .take()
                     .ok_or_else(|| anyhow::anyhow!("{} `datasize` literal is missing", location))?;
-                era_compiler_llvm_context::evm_code::data_size(context, object_name.as_str())
-                    .map(Some)
+                let object_name = object_name.split('.').last().expect("Always exists");
+                era_compiler_llvm_context::evm_code::data_size(context, object_name).map(Some)
             }
             Name::DataCopy => {
                 let arguments = self.pop_arguments_llvm_evm::<3>(context)?;

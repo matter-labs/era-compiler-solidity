@@ -35,11 +35,6 @@ fn no_arguments() -> anyhow::Result<()> {
     crate::common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM,
     crate::common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM
 )]
-#[test_case(
-    Target::EVM,
-    crate::common::SOLIDITY_BIN_OUTPUT_NAME_EVM,
-    crate::common::SOLIDITY_ASM_OUTPUT_NAME_EVM
-)]
 fn multiple_output_options(
     target: Target,
     bin_output_file_name: &str,

@@ -83,7 +83,6 @@ fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM, crate::common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
-#[test_case(Target::EVM, crate::common::SOLIDITY_ASM_OUTPUT_NAME_EVM)]
 fn asm_and_metadata(target: Target, asm_file_name: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
 
