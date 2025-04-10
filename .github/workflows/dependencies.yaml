@@ -30,6 +30,14 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           repository: matter-labs/era-compiler-solidity
+          submodules: 'recursive'
+
+      # This step is required to checkout submodules
+      # that are disabled in .gitmodules config
+      - name: Checkout submodules
+        run: |
+          git config --global --add safe.directory '*'
+          git submodule update --force --depth=1 --recursive --checkout
 
       - name: Patch dependencies
         shell: bash -ex {0}
@@ -54,6 +62,7 @@ jobs:
       - name: Build LLVM
         uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
         with:
+          clone-llvm: 'false'
           enable-assertions: 'true'
           build-type: RelWithDebInfo
           ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}

@@ -165,7 +165,13 @@ If any of your projects are still using the old locations, please change their d
 3. Clone and checkout this repository.
 
    ```shell
-   git clone https://github.com/matter-labs/era-compiler-solidity
+   git clone https://github.com/matter-labs/era-compiler-solidity --recursive
+   ```
+
+   By default, submodules checkout is disabled to prevent cloning large repositories via `cargo`.
+   If you're building locally, ensure all submodules are checked out with:
+   ```shell
+   git submodule update --recursive --checkout
    ```
     
 4. Install the ZKsync LLVM framework builder. This tool clones the [repository of ZKsync LLVM Framework](https://github.com/matter-labs/era-compiler-llvm) and runs a sequence of build commands tuned for the needs of ZKsync compiler toolchain.
@@ -186,8 +192,6 @@ If any of your projects are still using the old locations, please change their d
    ```shell
    # Navigate to the root of your local copy of this repository.
    cd era-compiler-solidity
-   # Clone the ZKsync LLVM framework. The branch is specified in the file `LLVM.lock`.
-   zksync-llvm clone
    # Build the ZKsync LLVM framework.
    zksync-llvm build
    ```
@@ -197,8 +201,11 @@ If any of your projects are still using the old locations, please change their d
    You can also clone and build LLVM framework outside of the repository root.
    In this case, do the following:
    
-   1. Provide an `LLVM.lock` file in the directory where you run `zksync-llvm`.
-      See the [default LLVM.lock for an example](../LLVM.lock).
+   1. Provide an `LLVM.lock` file in the directory where you run `zksync-llvm`:
+      ```text
+      url = "https://github.com/matter-labs/era-compiler-llvm"
+      branch = "main"
+      ```
    2. Ensure that `LLVM.lock` selects the correct branch of the [ZKsync LLVM Framework repository](https://github.com/matter-labs/era-compiler-llvm).
    3. Before proceeding to the next step, set the environment variable `LLVM_SYS_170_PREFIX` to the path of the directory with the LLVM build artifacts.
       Typically, it ends with `target-llvm/build-final`, which is the default LLVM target directory of the LLVM builder. For example:
