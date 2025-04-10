@@ -68,9 +68,6 @@ pub const SOLIDITY_BIN_OUTPUT_NAME_EVM: &str = "Test.bin";
 pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "Test.zasm";
 
 /// A test input file.
-pub const SOLIDITY_ASM_OUTPUT_NAME_EVM: &str = "Test.asm";
-
-/// A test input file.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 
 /// A test input file.

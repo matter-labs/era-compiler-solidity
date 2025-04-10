@@ -4,7 +4,6 @@
 
 pub mod object;
 
-use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -26,10 +25,6 @@ pub struct Contract {
     pub metadata_hash: Option<era_compiler_common::Hash>,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
-    /// The unlinked missing libraries.
-    pub missing_libraries: BTreeSet<String>,
-    /// The binary object format.
-    pub object_format: era_compiler_common::ObjectFormat,
 }
 
 impl Contract {
@@ -42,8 +37,6 @@ impl Contract {
         runtime_object: Object,
         metadata_hash: Option<era_compiler_common::Hash>,
         metadata_json: serde_json::Value,
-        missing_libraries: BTreeSet<String>,
-        object_format: era_compiler_common::ObjectFormat,
     ) -> Self {
         Self {
             name,
@@ -51,8 +44,6 @@ impl Contract {
             runtime_object,
             metadata_hash,
             metadata_json,
-            missing_libraries,
-            object_format,
         }
     }
 
@@ -63,13 +54,9 @@ impl Contract {
         self,
         path: String,
         output_metadata: bool,
-        output_assembly: bool,
         output_binary: bool,
     ) -> anyhow::Result<()> {
         writeln!(std::io::stdout(), "\n======= {path} =======")?;
-        if output_assembly {
-            writeln!(std::io::stdout(), "Assembly:\nComing soon")?;
-        }
         if output_metadata {
             writeln!(std::io::stdout(), "Metadata:\n{}", self.metadata_json)?;
         }
@@ -92,7 +79,6 @@ impl Contract {
         self,
         output_path: &Path,
         output_metadata: bool,
-        output_assembly: bool,
         output_binary: bool,
         overwrite: bool,
     ) -> anyhow::Result<()> {
@@ -126,25 +112,6 @@ impl Contract {
                     self.metadata_json.to_string().as_bytes(),
                 )
                 .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
-            }
-        }
-
-        if output_assembly {
-            let output_name = format!(
-                "{}.{}",
-                self.name.name.as_deref().unwrap_or(file_name),
-                "asm"
-            );
-            let mut output_path = output_path.clone();
-            output_path.push(output_name.as_str());
-
-            if output_path.exists() && !overwrite {
-                anyhow::bail!(
-                    "Refusing to overwrite an existing file {output_path:?} (use --overwrite to force)."
-                );
-            } else {
-                std::fs::write(output_path.as_path(), "Coming soon".as_bytes())
-                    .map_err(|error| anyhow::anyhow!("File {output_path:?} writing: {error}"))?;
             }
         }
 
@@ -186,8 +153,11 @@ impl Contract {
             .modify_evm(hex::encode(self.deploy_object.bytecode));
         standard_json_contract
             .missing_libraries
-            .extend(self.missing_libraries);
-        standard_json_contract.object_format = Some(self.object_format);
+            .extend(self.deploy_object.unlinked_libraries);
+        standard_json_contract
+            .missing_libraries
+            .extend(self.runtime_object.unlinked_libraries);
+        standard_json_contract.object_format = Some(self.deploy_object.format);
 
         Ok(())
     }
@@ -208,8 +178,11 @@ impl Contract {
 
         combined_json_contract
             .missing_libraries
-            .extend(self.missing_libraries);
-        combined_json_contract.object_format = Some(self.object_format);
+            .extend(self.deploy_object.unlinked_libraries);
+        combined_json_contract
+            .missing_libraries
+            .extend(self.runtime_object.unlinked_libraries);
+        combined_json_contract.object_format = Some(self.deploy_object.format);
 
         Ok(())
     }

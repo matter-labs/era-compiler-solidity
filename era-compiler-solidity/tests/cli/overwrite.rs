@@ -134,7 +134,6 @@ fn asm(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
 fn asm_missing(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 

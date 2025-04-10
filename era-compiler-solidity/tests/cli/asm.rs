@@ -7,7 +7,6 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM, "__entry:")]
-#[test_case(Target::EVM, "Coming soon")]
 fn default(target: Target, pattern: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
 
