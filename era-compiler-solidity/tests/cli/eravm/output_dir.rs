@@ -13,7 +13,7 @@ fn llvm_ir() -> anyhow::Result<()> {
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
 
-    let input_path = PathBuf::from(crate::common::TEST_LLVM_IR_CONTRACT_PATH);
+    let input_path = PathBuf::from(crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH);
     let input_file = input_path
         .file_name()
         .expect("Always exists")

@@ -344,7 +344,9 @@ a2646970667358221220ba14ea4e52366f139a845913d41e98933393bd1c1126331611687003d4aa
 
 The byte array starting with `a2` at the end of the bytecode is a CBOR-encoded compiler version data and an optional metadata hash.
 
-JSON representation of a CBOR payload:
+The last two bytes of the metadata (`0x0055`) are not a part of the CBOR payload, but the length of it, which must be known to correctly decode the payload. 
+
+JSON representation of the CBOR payload:
 
 ```javascript
 {
@@ -354,8 +356,9 @@ JSON representation of a CBOR payload:
     // Required: consists of semicolon-separated pairs of colon-separated compiler names and versions.
     // `zksolc:<version>` is always included.
     // `solc:<version>;llvm:<version>` is only included for Solidity contracts and Yul contracts if solc is used for validation,
-    // but not included for LLVM IR and EraVM assembly contracts.
-    // `llvm` stands for the revision of ZKsync fork of solc. It is not possible to use the upstream build of solc with zksolc anymore.
+    //   but not included for LLVM IR and EraVM assembly contracts.
+    // `llvm` stands for the revision of ZKsync fork of solc. As it is not possible to use the upstream build of solc with zksolc anymore,
+    //   this field is always included if `solc` is included.
     "solc": "zksolc:1.5.13;solc:0.8.29;llvm:1.0.2"
 }
 ```
@@ -564,6 +567,9 @@ zksolc --yul 'Simple.yul' --bin --solc '/path/to/solc'
 ### `--llvm-ir`
 
 Enables the LLVM IR mode. In this mode, input is expected to be in the LLVM IR language. The output works the same way as with Solidity input.
+
+> In this mode, every input file is treated as runtime code, while deploy code will be generated automatically by **solx**.
+> It is not possible to write deploy code manually yet, but it will be supported in the future.
 
 Unlike *solc*, *zksolc* is an LLVM-based compiler toolchain, so it uses LLVM IR as an intermediate representation. It is not recommended to write LLVM IR manually, but it can be useful for debugging and optimization purposes. LLVM IR is more low-level than Yul in the ZKsync compiler toolchain IR hierarchy, so *solc* is not used for compilation.
 

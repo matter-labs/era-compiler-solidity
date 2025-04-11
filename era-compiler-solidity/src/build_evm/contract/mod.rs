@@ -21,8 +21,6 @@ pub struct Contract {
     pub deploy_object: Object,
     /// The runtime code object.
     pub runtime_object: Object,
-    /// The metadata hash.
-    pub metadata_hash: Option<era_compiler_common::Hash>,
     /// The metadata JSON.
     pub metadata_json: serde_json::Value,
 }
@@ -35,14 +33,12 @@ impl Contract {
         name: era_compiler_common::ContractName,
         deploy_object: Object,
         runtime_object: Object,
-        metadata_hash: Option<era_compiler_common::Hash>,
         metadata_json: serde_json::Value,
     ) -> Self {
         Self {
             name,
             deploy_object,
             runtime_object,
-            metadata_hash,
             metadata_json,
         }
     }
