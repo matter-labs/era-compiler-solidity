@@ -47,7 +47,7 @@ fn llvm_ir() -> anyhow::Result<()> {
         "--detect-missing-libraries",
         "--llvm-ir",
         "--bin",
-        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
     ];
 
     let result = crate::cli::execute_zksolc(args)?;

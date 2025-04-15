@@ -3,7 +3,7 @@
   "sources": {
     "Test": {
       "urls": [
-        "tests/data/contracts/llvm_ir/Test.ll"
+        "tests/data/contracts/llvm_ir/Test.eravm.ll"
       ]
     }
   },

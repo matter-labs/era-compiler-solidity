@@ -9,7 +9,7 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM, EraVMMetadataHashType::None.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::None.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM, EVMMetadataHashType::None.to_string())]
 fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -27,7 +27,7 @@ fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())]
 fn ipfs(target: Target, hash_type: String) -> anyhow::Result<()> {
     crate::common::setup()?;
 

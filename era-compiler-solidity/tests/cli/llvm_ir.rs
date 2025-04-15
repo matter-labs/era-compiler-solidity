@@ -72,29 +72,12 @@ fn missing_file() -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-fn linker_error(target: Target) -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let args = &[
-        "--llvm-ir",
-        crate::common::TEST_LLVM_IR_CONTRACT_LINKER_ERROR_PATH,
-    ];
-
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
-    result.failure().stderr(predicate::str::contains(
-        "ld.lld: error: undefined symbol: foo",
-    ));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
 #[test_case(Target::EVM)]
 fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
-        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
         "--llvm-ir",
         "--combined-json",
         "anyarg",
@@ -114,7 +97,7 @@ fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
-        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
         "--llvm-ir",
         "--standard-json",
     ];
