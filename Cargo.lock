@@ -78,9 +78,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.97"
+version = "1.0.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
+checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "arrayref"
@@ -290,9 +290,9 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
 name = "cc"
-version = "1.2.18"
+version = "1.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "525046617d8376e3db1deffb079e91cef90a89fc3ca5c185bbf8c9ecdd15cd5c"
+checksum = "8e3a13707ac958681c13b39b458c073d0d9bc8a22cb1b2f4c8e55eb72c13f362"
 dependencies = [
  "shlex",
 ]
@@ -316,9 +316,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.35"
+version = "4.5.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8aa86934b44c19c50f87cc2790e19f54f7a67aedb64101c2e1a2e5ecfb73944"
+checksum = "2df961d8c8a0d08aa9945718ccf584145eee3f3aa06cddbeac12933781102e04"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -326,9 +326,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.35"
+version = "4.5.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2414dbb2dd0695280da6ea9261e327479e9d37b0630f6b53ba2a11c60c679fd9"
+checksum = "132dbda40fb6753878316a489d5a1242a8ef2f0d9e47ba01c951ea8aa7d013a5"
 dependencies = [
  "anstream",
  "anstyle",
@@ -366,7 +366,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fde0e0ec90c9dfb3b4b1a0891a7dcd0e2bffde2f7efed5fe7c9bb00e5bfb915e"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -481,15 +481,15 @@ dependencies = [
 
 [[package]]
 name = "data-encoding"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "575f75dfd25738df5b91b8e43e14d44bda14637a58fae779fd2b064f8bf3e010"
+checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "data-encoding-macro"
-version = "0.1.17"
+version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f9724adfcf41f45bf652b3995837669d73c4d49a1b5ac1ff82905ac7d9b5558"
+checksum = "47ce6c96ea0102f01122a185683611bd5ac8d99e62bc59dd12e6bda344ee673d"
 dependencies = [
  "data-encoding",
  "data-encoding-macro-internal",
@@ -497,9 +497,9 @@ dependencies = [
 
 [[package]]
 name = "data-encoding-macro-internal"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18e4fdb82bd54a12e42fb58a800dcae6b9e13982238ce2296dc3570b92148e1f"
+checksum = "8d162beedaa69905488a8da94f5ac3edb4dd4788b732fadb7bd120b2625c1976"
 dependencies = [
  "data-encoding",
  "syn",
@@ -654,7 +654,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "2.0.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=az-fix-unreachable#e1beccdd3d15af5a9dca455cc9ea720be4d824ab"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#26eff8c398d0ffe2509846a9ec1f0f346aedcf55"
 dependencies = [
  "anyhow",
  "era-compiler-common",
@@ -729,7 +729,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "976dd42dc7e85965fe702eb8164f21f450704bdde31faefd6471dba214cb594e"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -947,9 +947,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5017294ff4bb30944501348f6f8e42e6ad28f42c8bbef7a74029aff064a4e3c2"
+checksum = "75249d144030531f8dee69fe9cea04d3edf809a017ae445e2abdff6629e86633"
 dependencies = [
  "atomic-waker",
  "bytes",
@@ -1294,7 +1294,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.4.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b2b81c254e25ffbf42c41e40de0748a81f750f94"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b7c8cfbce7f9fb3a7e62f4402af4999eeeef1da9"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -1309,7 +1309,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.9.0"
-source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b2b81c254e25ffbf42c41e40de0748a81f750f94"
+source = "git+https://github.com/matter-labs-forks/inkwell?branch=llvm-17#b7c8cfbce7f9fb3a7e62f4402af4999eeeef1da9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1407,9 +1407,9 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
-version = "0.2.171"
+version = "0.2.172"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c19937216e9d3aa9956d9bb8dfc0b0c8beb6058fc4f7a4dc4d850edf86a237d6"
+checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
 
 [[package]]
 name = "libredox"
@@ -1437,7 +1437,7 @@ checksum = "23fb14cb19457329c82206317a5663005a4d404783dc74f4252769b0d5f42856"
 [[package]]
 name = "llvm-sys"
 version = "170.0.1"
-source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#94f9489e149d6bf99444dc049f6c2fecd1172922"
+source = "git+https://github.com/matter-labs-forks/llvm-sys.rs?branch=llvm-17.0#b952430e02402068588519e3381056bf1093545b"
 dependencies = [
  "anyhow",
  "cc",
@@ -1885,9 +1885,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.94"
+version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31971752e70b8b2686d7e46ec17fb38dad4051d94024c88df49b667caea9c84"
+checksum = "02b3e5e68a3a1a02aad3ec490a98007cbc13c37cbe84a3cd7b8e406d76e7f778"
 dependencies = [
  "unicode-ident",
 ]
@@ -2126,14 +2126,14 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
 name = "rustls"
-version = "0.23.25"
+version = "0.23.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "822ee9188ac4ec04a2f0531e55d035fb2de73f18b41a63c70c2712503b6fb13c"
+checksum = "df51b5869f3a441595eac5e8ff14d486ff285f7b8c0df8770e49c3b56351f0f0"
 dependencies = [
  "once_cell",
  "rustls-pki-types",
@@ -2430,7 +2430,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2519,7 +2519,7 @@ dependencies = [
  "getrandom 0.3.2",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

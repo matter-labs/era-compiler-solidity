@@ -31,7 +31,7 @@ fn llvm_ir(target: Target) -> anyhow::Result<()> {
 
     let args = &[
         "--llvm-ir",
-        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
+        crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
         "--libraries",
         crate::common::LIBRARY_DEFAULT,
     ];

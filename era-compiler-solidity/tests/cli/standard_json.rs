@@ -449,7 +449,7 @@ fn yul_solc(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-// #[test_case(Target::EVM)] TODO: move metadata to linker
+#[test_case(Target::EVM)]
 fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -468,7 +468,7 @@ fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-// #[test_case(Target::EVM)] TODO: move metadata to linker
+#[test_case(Target::EVM)]
 fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -487,7 +487,7 @@ fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-// #[test_case(Target::EVM)] TODO: move metadata to linker
+#[test_case(Target::EVM)]
 fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -506,7 +506,7 @@ fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM)]
-// #[test_case(Target::EVM)] TODO: move metadata to linker
+#[test_case(Target::EVM)]
 fn metadata_hash_none_no_metadata(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 

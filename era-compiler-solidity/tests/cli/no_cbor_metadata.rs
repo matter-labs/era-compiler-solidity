@@ -9,7 +9,7 @@ use predicates::prelude::*;
 use test_case::test_case;
 
 #[test_case(Target::EraVM, EraVMMetadataHashType::None.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::None.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM, EVMMetadataHashType::None.to_string())]
 fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -32,7 +32,7 @@ fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())]
 fn ipfs_solidity(target: Target, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -55,7 +55,7 @@ fn ipfs_solidity(target: Target, hash_type: String) -> anyhow::Result<()> {
 }
 
 #[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())]
 fn ipfs_yul(target: Target, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -78,14 +78,14 @@ fn ipfs_yul(target: Target, hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
-fn ipfs_llvm_ir(target: Target, hash_type: String) -> anyhow::Result<()> {
+#[test_case(Target::EraVM, crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH, EraVMMetadataHashType::IPFS.to_string())]
+#[test_case(Target::EVM, crate::common::TEST_LLVM_IR_CONTRACT_EVM_PATH, EVMMetadataHashType::IPFS.to_string())]
+fn ipfs_llvm_ir(target: Target, path: &str, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
     let args = &[
         "--llvm-ir",
-        crate::common::TEST_LLVM_IR_CONTRACT_PATH,
+        path,
         "--metadata-hash",
         hash_type.as_str(),
         "--no-cbor-metadata",
@@ -102,11 +102,11 @@ fn ipfs_llvm_ir(target: Target, hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
-fn ipfs_eravm_assembly(target: Target, hash_type: String) -> anyhow::Result<()> {
+#[test]
+fn ipfs_eravm_assembly() -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
+    let hash_type = EraVMMetadataHashType::IPFS.to_string();
     let args = &[
         "--eravm-assembly",
         crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
@@ -116,7 +116,7 @@ fn ipfs_eravm_assembly(target: Target, hash_type: String) -> anyhow::Result<()> 
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -127,7 +127,7 @@ fn ipfs_eravm_assembly(target: Target, hash_type: String) -> anyhow::Result<()> 
 }
 
 #[test_case(Target::EraVM)]
-// #[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())] TODO: move metadata to linker
+#[test_case(Target::EVM)]
 fn standard_json(target: Target) -> anyhow::Result<()> {
     crate::common::setup()?;
 
