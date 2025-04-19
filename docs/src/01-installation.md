@@ -207,11 +207,11 @@ If any of your projects are still using the old locations, please change their d
       branch = "main"
       ```
    2. Ensure that `LLVM.lock` selects the correct branch of the [ZKsync LLVM Framework repository](https://github.com/matter-labs/era-compiler-llvm).
-   3. Before proceeding to the next step, set the environment variable `LLVM_SYS_170_PREFIX` to the path of the directory with the LLVM build artifacts.
+   3. Before proceeding to the next step, set the environment variable `LLVM_SYS_191_PREFIX` to the path of the directory with the LLVM build artifacts.
       Typically, it ends with `target-llvm/build-final`, which is the default LLVM target directory of the LLVM builder. For example:
 
       ```shell
-      export LLVM_SYS_170_PREFIX=~/repositories/era-compiler-solidity/target-llvm/build-final 
+      export LLVM_SYS_191_PREFIX=~/repositories/era-compiler-solidity/target-llvm/build-final 
       ```
 
 6. Build the *zksolc* executable.
@@ -222,7 +222,7 @@ If any of your projects are still using the old locations, please change their d
    
     The *zksolc* executable will appear at `./target/release/zksolc`, where you can run it directly or move it to another location.
 
-    If *cargo* cannot find the LLVM build artifacts, return to the previous step and ensure that the `LLVM_SYS_170_PREFIX` environment variable is set to the absolute path of the directory `target-llvm/build-final`.
+    If *cargo* cannot find the LLVM build artifacts, return to the previous step and ensure that the `LLVM_SYS_191_PREFIX` environment variable is set to the absolute path of the directory `target-llvm/build-final`.
 
 
 

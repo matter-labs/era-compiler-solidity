@@ -77,7 +77,7 @@ jobs:
         with:
           repository: 'llvm/llvm-project'
           path: 'llvm-host'
-          ref: 'llvmorg-17.0.6'
+          ref: 'llvmorg-19.1.7'
           fetch-depth: '1'
 
       - name: Prepare Windows env

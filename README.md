@@ -30,11 +30,11 @@ To build the documentation, follow the [instructions](./docs/README.md).
 ## Troubleshooting
 
 If you have multiple LLVM builds in your system, ensure that you choose the correct one to build the compiler.
-The environment variable `LLVM_SYS_170_PREFIX` sets the path to the directory with LLVM build artifacts, which typically ends with `target-llvm/build-final`.
+The environment variable `LLVM_SYS_191_PREFIX` sets the path to the directory with LLVM build artifacts, which typically ends with `target-llvm/build-final`.
 For example:
 
 ```shell
-export LLVM_SYS_170_PREFIX=~/repositories/era-llvm/target-llvm/build-final 
+export LLVM_SYS_191_PREFIX=~/repositories/era-llvm/target-llvm/build-final 
 ```
 
 If you suspect that the compiler is not using the correct LLVM build, check by running `set | grep LLVM`, and reset all LLVM-related environment variables.
