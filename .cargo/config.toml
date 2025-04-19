@@ -20,14 +20,14 @@ rustflags = [
 linker = "rust-lld"
 
 [target.aarch64-unknown-linux-musl.compiler-rt-zksolc]
-rustc-link-search = ["./target-llvm/target-host/lib/clang/17/lib/aarch64-unknown-linux-musl"]
+rustc-link-search = ["./target-llvm/target-host/lib/clang/19/lib/aarch64-unknown-linux-musl"]
 rustc-link-lib = ["clang_rt.builtins"]
 
 [profile.release]
 strip = true
 
 [env]
-LLVM_SYS_170_PREFIX = { value = "./target-llvm/target-final/", relative = true, force = false }
+LLVM_SYS_191_PREFIX = { value = "./target-llvm/target-final/", relative = true, force = false }
 
 [tools.clippy]
 warn = [
