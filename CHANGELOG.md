@@ -1,5 +1,12 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Changed
+
+- Updated to LLVM v19.1
+- Updated to Rust v1.86.0
+
 ## [1.5.13] - 2025-04-07
 
 ### Added
@@ -270,7 +277,7 @@
 
 ### Changed
 
-- Updated to LLVM 17
+- Updated to LLVM v17.0
 
 ### Fixed
 

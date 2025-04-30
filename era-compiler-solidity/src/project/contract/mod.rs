@@ -338,21 +338,21 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let (runtime_buffer, runtime_code_warnings) = runtime_context.build()?;
+                let runtime_build = runtime_context.build(false, true)?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
-                    runtime_buffer.as_slice().to_owned(),
+                    runtime_build.bytecode.expect("Always exists"),
                     Some(era_solc::StandardJsonInputCodegen::Yul),
                     runtime_code_segment,
                     metadata_bytes,
                     runtime_code_dependecies,
                     unlinked_libraries.clone(),
                     era_compiler_common::ObjectFormat::ELF,
-                    runtime_code_warnings,
+                    runtime_build.warnings,
                 );
 
-                let immutables_map = runtime_buffer.get_immutables_evm();
+                let immutables_map = runtime_build.immutables.unwrap_or_default();
 
                 let deploy_llvm = inkwell::context::Context::create();
                 let deploy_module = deploy_llvm.create_module(
@@ -378,18 +378,18 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let (deploy_buffer, deploy_code_warnings) = deploy_context.build()?;
+                let deploy_build = deploy_context.build(false, true)?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),
-                    deploy_buffer.as_slice().to_owned(),
+                    deploy_build.bytecode.expect("Always exists"),
                     Some(era_solc::StandardJsonInputCodegen::Yul),
                     deploy_code_segment,
                     None,
                     deploy_code_dependecies,
                     unlinked_libraries,
                     era_compiler_common::ObjectFormat::ELF,
-                    deploy_code_warnings,
+                    deploy_build.warnings,
                 );
 
                 Ok(EVMContractBuild::new(
@@ -435,21 +435,21 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let (runtime_buffer, runtime_code_warnings) = runtime_context.build()?;
+                let runtime_build = runtime_context.build(false, true)?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
-                    runtime_buffer.as_slice().to_owned(),
+                    runtime_build.bytecode.expect("Always exists"),
                     Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     runtime_code_segment,
                     metadata_bytes,
                     runtime_code_dependencies,
                     unlinked_libraries.clone(),
                     era_compiler_common::ObjectFormat::ELF,
-                    runtime_code_warnings,
+                    runtime_build.warnings,
                 );
 
-                let immutables_map = runtime_buffer.get_immutables_evm();
+                let immutables_map = runtime_build.immutables.unwrap_or_default();
 
                 let deploy_llvm = inkwell::context::Context::create();
                 let deploy_module = deploy_llvm.create_module(deploy_code_identifier.as_str());
@@ -471,18 +471,18 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let (deploy_buffer, deploy_code_warnings) = deploy_context.build()?;
+                let deploy_build = deploy_context.build(false, true)?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),
-                    deploy_buffer.as_slice().to_owned(),
+                    deploy_build.bytecode.expect("Always exists"),
                     Some(era_solc::StandardJsonInputCodegen::EVMLA),
                     deploy_code_segment,
                     None,
                     deploy_code_dependencies,
                     unlinked_libraries,
                     era_compiler_common::ObjectFormat::ELF,
-                    deploy_code_warnings,
+                    deploy_build.warnings,
                 );
 
                 Ok(EVMContractBuild::new(
@@ -538,18 +538,18 @@ impl Contract {
                     optimizer.clone(),
                     debug_config.clone(),
                 );
-                let (runtime_buffer, runtime_code_warnings) = runtime_context.build()?;
+                let runtime_build = runtime_context.build(false, true)?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
-                    runtime_buffer.as_slice().to_owned(),
+                    runtime_build.bytecode.expect("Always exists"),
                     None,
                     runtime_code_segment,
                     metadata_bytes,
                     runtime_code_dependencies,
                     BTreeSet::new(),
                     era_compiler_common::ObjectFormat::ELF,
-                    runtime_code_warnings,
+                    runtime_build.warnings,
                 );
 
                 let deploy_llvm = inkwell::context::Context::create();
@@ -564,18 +564,18 @@ impl Contract {
                     optimizer,
                     debug_config,
                 );
-                let (deploy_buffer, deploy_code_warnings) = deploy_context.build()?;
+                let deploy_build = deploy_context.build(false, true)?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),
-                    deploy_buffer.as_slice().to_owned(),
+                    deploy_build.bytecode.expect("Always exists"),
                     None,
                     deploy_code_segment,
                     None,
                     deploy_code_dependencies,
                     BTreeSet::new(),
                     era_compiler_common::ObjectFormat::ELF,
-                    deploy_code_warnings,
+                    deploy_build.warnings,
                 );
 
                 Ok(EVMContractBuild::new(
