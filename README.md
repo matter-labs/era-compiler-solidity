@@ -16,16 +16,14 @@ For local development, [build zksolc from its source code](https://matter-labs.g
 
 For the detailed usage guide, see the [comprehensive documentation](https://matter-labs.github.io/era-compiler-solidity/latest/).
 
+Our documentation uses the [mdBook](https://github.com/rust-lang/mdBook) utility and its sources available at the `docs/` directory.
+To build the documentation, follow the [instructions](./docs/README.md).
+
 Alternatively, you may check out its Markdown representation in [this repository](./docs/src/).
 
 ## Testing
 
 To run the unit and CLI tests, execute `cargo test` from the repository root.
-
-## Documentation
-
-Documentation is using [mdBook](https://github.com/rust-lang/mdBook) utility and its sources available in the `docs/` directory.
-To build the documentation, follow the [instructions](./docs/README.md).
 
 ## Troubleshooting
 

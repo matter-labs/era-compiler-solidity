@@ -1,6 +1,6 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.14] - 2025-05-22
 
 ### Added
 
