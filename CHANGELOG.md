@@ -1,6 +1,10 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.14] - 2025-05-22
+
+### Added
+
+- The solc v0.8.30 support
 
 ### Changed
 

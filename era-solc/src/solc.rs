@@ -47,7 +47,7 @@ impl Compiler {
     pub const FIRST_CANCUN_VERSION: semver::Version = semver::Version::new(0, 8, 24);
 
     /// The last supported version of `solc`.
-    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 29);
+    pub const LAST_SUPPORTED_VERSION: semver::Version = semver::Version::new(0, 8, 30);
 
     ///
     /// A shortcut constructor lazily using a thread-safe cell.

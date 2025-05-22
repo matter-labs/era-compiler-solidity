@@ -359,7 +359,7 @@ JSON representation of the CBOR payload:
     //   but not included for LLVM IR and EraVM assembly contracts.
     // `llvm` stands for the revision of ZKsync fork of solc. As it is not possible to use the upstream build of solc with zksolc anymore,
     //   this field is always included if `solc` is included.
-    "solc": "zksolc:1.5.13;solc:0.8.29;llvm:1.0.2"
+    "solc": "zksolc:1.5.14;solc:0.8.30;llvm:1.0.2"
 }
 ```
 
