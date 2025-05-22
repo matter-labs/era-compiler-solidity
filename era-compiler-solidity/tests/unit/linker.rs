@@ -71,10 +71,6 @@ fn library_not_passed_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
@@ -122,10 +118,6 @@ fn library_not_passed_post_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let bytecode = get_bytecode(
         crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH,
         "SimpleContract",
@@ -176,10 +168,6 @@ fn library_passed_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let libraries =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries =
@@ -229,10 +217,6 @@ fn library_passed_post_compile_time(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let libraries =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
 
@@ -286,10 +270,6 @@ fn library_passed_post_compile_time_second_call(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let linker_symbols = era_compiler_common::Libraries::try_from(library_arguments.as_slice())
@@ -350,10 +330,6 @@ fn library_passed_post_compile_time_redundant_args(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let libraries = vec![
         "tests/data/contracts/solidity/fake.sol:Fake=0x0000000000000000000000000000000000000000".to_owned(),
         "tests/data/contracts/solidity/scam.sol:Scam=0x0000000000000000000000000000000000000000".to_owned(),
@@ -411,10 +387,6 @@ fn library_passed_post_compile_time_non_elf(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        panic!("Input binary is not an EraVM ELF file");
-    }
-
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = era_compiler_common::Libraries::try_from(library_arguments.as_slice())
@@ -471,10 +443,6 @@ fn library_produce_equal_bytecode_in_both_cases(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let library_arguments =
         vec!["tests/data/contracts/solidity/SimpleContract.sol:SimpleLibrary=0x1234567890abcdef1234567890abcdef12345678".to_owned()];
     let libraries = era_compiler_common::Libraries::try_from(library_arguments.as_slice())

@@ -62,10 +62,6 @@ contract SendExample {
     SEND_TEST_SOURCE_08
 )]
 fn send(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen, source_code: &str) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
@@ -113,10 +109,6 @@ fn send_suppressed(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
@@ -191,10 +183,6 @@ fn transfer(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
@@ -242,10 +230,6 @@ fn transfer_suppressed(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using '<address payable>.send/transfer(<X>)' without providing",
@@ -385,10 +369,6 @@ fn assembly_create(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
@@ -436,10 +416,6 @@ fn assembly_create2(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
@@ -487,10 +463,6 @@ fn assembly_create_suppressed(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
@@ -538,10 +510,6 @@ fn assembly_create2_suppressed(
     codegen: era_solc::StandardJsonInputCodegen,
     source_code: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         source_code,
         "You are using 'create'/'create2' in an assembly block",
@@ -589,10 +557,6 @@ contract Test {
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn runtime_code(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         RUNTIME_CODE_SOURCE,
         "Deploy and runtime code are merged in EraVM",
@@ -638,10 +602,6 @@ contract TxOriginExample {
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn tx_origin(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
@@ -679,10 +639,6 @@ fn tx_origin(version: semver::Version, codegen: era_solc::StandardJsonInputCodeg
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn tx_origin_suppressed(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
@@ -730,10 +686,6 @@ contract TxOriginExample {
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn tx_origin_assembly(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin', which might lead to",
@@ -774,10 +726,6 @@ fn tx_origin_assembly_suppressed(
     version: semver::Version,
     codegen: era_solc::StandardJsonInputCodegen,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(!crate::common::check_solidity_message(
         TX_ORIGIN_ASSEMBLY_TEST_SOURCE,
         "You are checking for 'tx.origin' in your code, which might lead to",
@@ -827,10 +775,6 @@ contract Test {
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn ripemd160(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     assert!(crate::common::check_solidity_message(
         RIPEMD160_CODE_SOURCE,
         "The `ripemd160` precompile is not supported in EraVM yet.",
