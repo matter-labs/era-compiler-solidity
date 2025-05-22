@@ -104,8 +104,8 @@ The format below is a modification of the original combined JSON [output](https:
     }
   },
   // Required: Version of solc.
-  "version": "0.8.29+commit.acc7d8f9.Darwin.appleclang",
+  "version": "0.8.30+commit.acc7d8f9.Darwin.appleclang",
   // Required, zksolc: Version of zksolc.
-  "zk_version": "1.5.13"
+  "zk_version": "1.5.14"
 }
 ```

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- The solc v0.8.30 support
+
 ### Changed
 
 - Updated to LLVM v19.1

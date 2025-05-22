@@ -70,7 +70,7 @@ Running *zksolc* requires the [fork of the Solidity compiler *solc*](https://git
     ```
 
 > The second option is more convenient if you are using different versions of *solc* for different projects.
-> The current version of *zksolc* supports *solc* versions from 0.4.12 to 0.8.29.
+> The current version of *zksolc* supports *solc* versions from 0.4.12 to 0.8.30.
 
 
 
@@ -82,7 +82,7 @@ Versions of [our *solc* fork](https://github.com/matter-labs/era-solidity/releas
 1. Original upstream version
 2. ZKsync revision
 
-For instance, the latest revision of the latest version of *solc* is `0.8.29-1.0.2`. Here are the ZKsync revisions released by now:
+For instance, the latest revision of the latest version of *solc* is `0.8.30-1.0.2`. Here are the ZKsync revisions released by now:
 
 | Revision |                           Features                         |
 |:---------|:-----------------------------------------------------------|
