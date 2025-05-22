@@ -14,10 +14,6 @@ use test_case::test_case;
 #[test_case(semver::Version::new(0, 7, 6))]
 #[test_case(era_solc::Compiler::LAST_SUPPORTED_VERSION)]
 fn evmla(version: semver::Version) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let sources = crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_PATH]);
 
     let build = crate::common::build_solidity_standard_json(
