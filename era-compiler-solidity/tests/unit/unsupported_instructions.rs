@@ -121,10 +121,6 @@ contract CallcodeTest {
 )]
 #[should_panic(expected = "The `CALLCODE` instruction is not supported")]
 fn callcode(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        panic!("The `CALLCODE` instruction is not supported");
-    }
-
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), CALLCODE_TEST_SOURCE.to_owned());
 
@@ -184,10 +180,6 @@ contract ExternalCodeCopy {
 )]
 #[should_panic(expected = "The `EXTCODECOPY` instruction is not supported")]
 fn extcodecopy(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        panic!("The `EXTCODECOPY` instruction is not supported");
-    }
-
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), EXTCODECOPY_TEST_SOURCE.to_owned());
 
@@ -315,10 +307,6 @@ fn selfdestruct(
     codegen: era_solc::StandardJsonInputCodegen,
     source: &str,
 ) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        panic!("The `SELFDESTRUCT` instruction is not supported");
-    }
-
     let mut sources = BTreeMap::new();
     sources.insert("test.sol".to_owned(), source.to_owned());
 

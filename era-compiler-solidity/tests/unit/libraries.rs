@@ -31,10 +31,6 @@ use test_case::test_case;
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let sources =
         crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
@@ -93,10 +89,6 @@ fn not_specified(version: semver::Version, codegen: era_solc::StandardJsonInputC
     era_solc::StandardJsonInputCodegen::Yul
 )]
 fn specified(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen) {
-    if cfg!(target_os = "windows") && version < semver::Version::new(0, 6, 0) {
-        return;
-    }
-
     let sources =
         crate::common::read_sources(&[crate::common::TEST_SOLIDITY_CONTRACT_SIMPLE_CONTRACT_PATH]);
 
