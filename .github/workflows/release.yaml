@@ -136,7 +136,7 @@ jobs:
           save-ccache: 'false'
 
       - name: Build zksolc
-        uses: matter-labs/era-compiler-ci/.github/actions/build-rust@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-rust@aba-do-not-use-lld-on-linux
         with:
           exec_name: 'zksolc'
           target: ${{ matrix.target }}
