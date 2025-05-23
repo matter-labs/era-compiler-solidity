@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.5.15] - 2025-05-23
+
+### Fixed
+
+- The incorrect LLVM dependency reference
+
 ## [1.5.14] - 2025-05-22
 
 ### Added
