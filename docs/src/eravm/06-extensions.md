@@ -33,7 +33,7 @@ Each of the call types above has [its by-ref modification](#mimic-call-by-refere
 
 ### Mimic Call
 
-Mimic call is a call type that allows the caller to execute a call to a contract, but with the ability to specify the address of the contract that will be used as the caller. This is useful for EraVM System Contracts that need to call other contracts on behalf of the user. Essentially, it is a more complete version of `DELEGATECALL`.
+Mimic call is a call type that allows the caller to execute a call to a contract, but with the ability to specify the address of the contract that will be used as the caller. This is useful for EraVM System Contracts that need to call other contracts on behalf of the user.
 
 For a deeper dive into the Mimic Call, visit [the EraVM formal specification](https://matter-labs.github.io/eravm-spec/spec.html).
 
