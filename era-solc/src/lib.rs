@@ -39,6 +39,7 @@ pub use self::standard_json::output::contract::Contract as StandardJsonOutputCon
 pub use self::standard_json::output::error::collectable::Collectable as CollectableError;
 pub use self::standard_json::output::error::source_location::SourceLocation as StandardJsonOutputErrorSourceLocation;
 pub use self::standard_json::output::error::Error as StandardJsonOutputError;
+pub use self::standard_json::output::source::Source as StandardJsonOutputSource;
 pub use self::standard_json::output::Output as StandardJsonOutput;
 pub use self::version::Version;
 
