@@ -1,5 +1,5 @@
 [submodule "llvm"]
     path = llvm
     url = https://github.com/matter-labs/era-compiler-llvm
-    branch = v2.0.0
+    branch = main
     update = none
