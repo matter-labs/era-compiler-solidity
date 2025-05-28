@@ -338,7 +338,8 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let runtime_build = runtime_context.build(false, true)?;
+                let runtime_build =
+                    runtime_context.build(false, true, unlinked_libraries.clone())?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
@@ -378,7 +379,7 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let deploy_build = deploy_context.build(false, true)?;
+                let deploy_build = deploy_context.build(false, true, unlinked_libraries.clone())?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),
@@ -435,7 +436,8 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{runtime_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let runtime_build = runtime_context.build(false, true)?;
+                let runtime_build =
+                    runtime_context.build(false, true, unlinked_libraries.clone())?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
@@ -471,7 +473,7 @@ impl Contract {
                     .map_err(|error| {
                         anyhow::anyhow!("{deploy_code_segment} code LLVM IR generator: {error}")
                     })?;
-                let deploy_build = deploy_context.build(false, true)?;
+                let deploy_build = deploy_context.build(false, true, unlinked_libraries.clone())?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),
@@ -538,7 +540,8 @@ impl Contract {
                     optimizer.clone(),
                     debug_config.clone(),
                 );
-                let runtime_build = runtime_context.build(false, true)?;
+                let runtime_build =
+                    runtime_context.build(false, true, unlinked_libraries.clone())?;
                 let runtime_object = EVMContractObject::new(
                     runtime_code_identifier,
                     self.name.clone(),
@@ -564,7 +567,7 @@ impl Contract {
                     optimizer,
                     debug_config,
                 );
-                let deploy_build = deploy_context.build(false, true)?;
+                let deploy_build = deploy_context.build(false, true, unlinked_libraries.clone())?;
                 let deploy_object = EVMContractObject::new(
                     deploy_code_identifier,
                     self.name.clone(),

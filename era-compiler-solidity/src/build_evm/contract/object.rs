@@ -143,15 +143,18 @@ impl Object {
         &mut self,
         linker_symbols: &BTreeMap<String, [u8; era_compiler_common::BYTE_LENGTH_ETH_ADDRESS]>,
     ) -> anyhow::Result<()> {
-        let memory_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
+        let bytecode_buffer = inkwell::memory_buffer::MemoryBuffer::create_from_memory_range(
             self.bytecode.as_slice(),
             self.identifier.as_str(),
             false,
         );
 
-        let (linked_object, object_format) =
-            era_compiler_llvm_context::evm_link(memory_buffer, linker_symbols)?;
-        self.format = object_format;
+        let linked_object = era_compiler_llvm_context::evm_link(bytecode_buffer, linker_symbols)?;
+        self.format = if linked_object.is_elf_evm() {
+            era_compiler_common::ObjectFormat::ELF
+        } else {
+            era_compiler_common::ObjectFormat::Raw
+        };
 
         self.bytecode = linked_object.as_slice().to_owned();
         Ok(())
