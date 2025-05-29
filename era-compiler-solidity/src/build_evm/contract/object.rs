@@ -26,7 +26,7 @@ pub struct Object {
     pub metadata_bytes: Option<Vec<u8>>,
     /// Dependencies.
     pub dependencies: era_yul::Dependencies,
-    /// The unlinked unlinked libraries.
+    /// The unlinked libraries.
     pub unlinked_libraries: BTreeSet<String>,
     /// Whether the object is already assembled.
     pub is_assembled: bool,
