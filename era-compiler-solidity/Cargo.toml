@@ -30,7 +30,7 @@ num = "0.4"
 
 zkevm_opcode_defs = "=0.150.6"
 
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "az-stack-never-too-deep" }
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
 
 era-solc = { path = "../era-solc" }
@@ -47,6 +47,6 @@ era-compiler-downloader = { git = "https://github.com/matter-labs/era-compiler-c
 
 [dependencies.inkwell]
 git = "https://github.com/matter-labs-forks/inkwell"
-branch = "llvm-19"
+branch = "az-stack-never-too-deep"
 default-features = false
 features = ["llvm19-1", "serde", "no-libffi-linking", "target-eravm", "target-evm"]

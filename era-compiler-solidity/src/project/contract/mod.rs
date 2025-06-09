@@ -229,6 +229,7 @@ impl Contract {
             IR::EraVMAssembly(eravm_assembly) => {
                 let target_machine = era_compiler_llvm_context::TargetMachine::new(
                     era_compiler_common::Target::EraVM,
+                    None,
                     optimizer.settings(),
                     llvm_options.as_slice(),
                 )?;
@@ -530,7 +531,7 @@ impl Contract {
                 let runtime_module = runtime_llvm
                     .create_module_from_ir(runtime_memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let runtime_context = era_compiler_llvm_context::EVMContext::new(
+                let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
                     llvm_options.clone(),
@@ -556,7 +557,7 @@ impl Contract {
                 let deploy_module = deploy_llvm
                     .create_module_from_ir(deploy_memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let deploy_context = era_compiler_llvm_context::EVMContext::new(
+                let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
                     llvm_options,
