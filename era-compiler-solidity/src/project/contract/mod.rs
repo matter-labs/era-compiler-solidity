@@ -229,7 +229,6 @@ impl Contract {
             IR::EraVMAssembly(eravm_assembly) => {
                 let target_machine = era_compiler_llvm_context::TargetMachine::new(
                     era_compiler_common::Target::EraVM,
-                    None,
                     optimizer.settings(),
                     llvm_options.as_slice(),
                 )?;
