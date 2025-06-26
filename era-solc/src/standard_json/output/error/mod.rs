@@ -59,7 +59,7 @@ impl Error {
         let mut formatted_message = if message_trimmed.starts_with(r#type) {
             message_trimmed.to_owned()
         } else {
-            format!("{}: {}", r#type, message_trimmed)
+            format!("{type}: {message_trimmed}")
         };
         formatted_message.push('\n');
         if let Some(ref source_location) = source_location {

@@ -49,9 +49,9 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
+// #[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)] TODO: enable with solc v0.8.31
 #[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
+// #[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)] TODO: enable with solc v0.8.31
 #[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
 fn stack_too_deep(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;

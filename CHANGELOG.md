@@ -1,5 +1,16 @@
 # The `zksolc` changelog
 
+## [Unreleased]
+
+### Changed
+
+- Updated to Rust v1.88.0
+
+### Fixed
+
+- solc-side stack-too-deep errors in EVM assembly codegen (solc >=0.8.31)
+- Compilation time issues due to excessive inlining in EVM assembly codegen (solc >=0.8.31)
+
 ## [1.5.15] - 2025-05-23
 
 ### Fixed

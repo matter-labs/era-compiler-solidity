@@ -367,7 +367,7 @@ impl Contract {
                     debug_config.clone(),
                 );
                 deploy_context.set_solidity_data(
-                    era_compiler_llvm_context::EVMContextSolidityData::new(immutables_map),
+                    era_compiler_llvm_context::EVMContextSolidityData::new(Some(immutables_map)),
                 );
                 deploy_context.set_yul_data(era_compiler_llvm_context::EVMContextYulData::new(
                     identifier_paths,
@@ -462,7 +462,7 @@ impl Contract {
                     debug_config.clone(),
                 );
                 deploy_context.set_solidity_data(
-                    era_compiler_llvm_context::EVMContextSolidityData::new(immutables_map),
+                    era_compiler_llvm_context::EVMContextSolidityData::new(Some(immutables_map)),
                 );
                 deploy_context.set_evmla_data(evmla_data);
                 deploy_code.declare(&mut deploy_context)?;
