@@ -5,6 +5,7 @@
 pub mod stack;
 
 use inkwell::values::BasicValue;
+use num::ToPrimitive;
 
 use era_compiler_llvm_context::IContext;
 use era_compiler_llvm_context::IEVMLAFunction;
@@ -326,6 +327,20 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                 &mut original,
             )
             .map(Some),
+            InstructionName::DUPX => {
+                let offset = self
+                    .stack_input
+                    .pop_constant()?
+                    .to_usize()
+                    .expect("Always valid");
+                crate::evmla::assembly::instruction::stack::dup(
+                    context,
+                    offset,
+                    self.stack.elements.len(),
+                    &mut original,
+                )
+                .map(Some)
+            }
 
             InstructionName::SWAP1 => crate::evmla::assembly::instruction::stack::swap(
                 context,
@@ -423,6 +438,19 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                 self.stack.elements.len(),
             )
             .map(|_| None),
+            InstructionName::SWAPX => {
+                let offset = self
+                    .stack_input
+                    .pop_constant()?
+                    .to_usize()
+                    .expect("Always valid");
+                crate::evmla::assembly::instruction::stack::swap(
+                    context,
+                    offset,
+                    self.stack.elements.len(),
+                )
+                .map(|_| None)
+            }
 
             InstructionName::POP => {
                 crate::evmla::assembly::instruction::stack::pop(context).map(|_| None)
@@ -1320,7 +1348,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                 let result = context.build_call(
                     function,
                     arguments.as_slice(),
-                    format!("call_{}", name).as_str(),
+                    format!("call_{name}").as_str(),
                 )?;
                 match result {
                     Some(value) if value.is_int_value() => {
@@ -1341,7 +1369,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                                 .build_extract_value(
                                     return_value,
                                     index as u32,
-                                    format!("return_value_element_{}", index).as_str(),
+                                    format!("return_value_element_{index}").as_str(),
                                 )
                                 .expect("Always exists");
                             let pointer = era_compiler_llvm_context::Pointer::new(
@@ -1391,7 +1419,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                                     ),
                                 ],
                                 context.field_type(),
-                                format!("return_value_pointer_element_{}", index).as_str(),
+                                format!("return_value_pointer_element_{index}").as_str(),
                             )?;
                             context.build_store(element_pointer, argument)?;
                         }
@@ -1629,6 +1657,20 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 &mut original,
             )
             .map(Some),
+            InstructionName::DUPX => {
+                let offset = self
+                    .stack_input
+                    .pop_constant()?
+                    .to_usize()
+                    .expect("Always valid");
+                crate::evmla::assembly::instruction::stack::dup(
+                    context,
+                    offset,
+                    self.stack.elements.len(),
+                    &mut original,
+                )
+                .map(Some)
+            }
 
             InstructionName::SWAP1 => crate::evmla::assembly::instruction::stack::swap(
                 context,
@@ -1726,6 +1768,19 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 self.stack.elements.len(),
             )
             .map(|_| None),
+            InstructionName::SWAPX => {
+                let offset = self
+                    .stack_input
+                    .pop_constant()?
+                    .to_usize()
+                    .expect("Always valid");
+                crate::evmla::assembly::instruction::stack::swap(
+                    context,
+                    offset,
+                    self.stack.elements.len(),
+                )
+                .map(|_| None)
+            }
 
             InstructionName::POP => {
                 crate::evmla::assembly::instruction::stack::pop(context).map(|_| None)
@@ -2506,7 +2561,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                 let result = context.build_call(
                     function,
                     arguments.as_slice(),
-                    format!("call_{}", name).as_str(),
+                    format!("call_{name}").as_str(),
                 )?;
                 match result {
                     Some(value) if value.is_int_value() => {
@@ -2525,7 +2580,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                             let value = context.builder().build_extract_value(
                                 return_value,
                                 index as u32,
-                                format!("return_value_element_{}", index).as_str(),
+                                format!("return_value_element_{index}").as_str(),
                             )?;
                             let pointer = era_compiler_llvm_context::Pointer::new(
                                 context.field_type(),
@@ -2574,7 +2629,7 @@ impl era_compiler_llvm_context::EVMWriteLLVM for Element {
                                     ),
                                 ],
                                 context.field_type(),
-                                format!("return_value_pointer_element_{}", index).as_str(),
+                                format!("return_value_pointer_element_{index}").as_str(),
                             )?;
                             context.build_store(element_pointer, argument)?;
                         }

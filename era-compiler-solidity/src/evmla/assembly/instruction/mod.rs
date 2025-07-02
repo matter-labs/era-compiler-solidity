@@ -37,6 +37,8 @@ impl Instruction {
     pub const fn input_size(&self, version: &semver::Version) -> usize {
         match self.name {
             Name::POP => 1,
+            Name::DUPX => 1,
+            Name::SWAPX => 1,
 
             Name::JUMP => 1,
             Name::JUMPI => 2,
@@ -194,6 +196,7 @@ impl Instruction {
             Name::DUP14 => 1,
             Name::DUP15 => 1,
             Name::DUP16 => 1,
+            Name::DUPX => 1,
 
             Name::ADD => 1,
             Name::SUB => 1,
@@ -382,8 +385,8 @@ impl std::fmt::Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = self.name.to_string();
         match self.name {
-            Name::Tag => write!(f, "{:4}", name),
-            _ => write!(f, "{:20}", name),
+            Name::Tag => write!(f, "{name:4}"),
+            _ => write!(f, "{name:20}"),
         }?;
         match self.value {
             Some(ref value) if value.len() <= 64 => write!(f, "{value}")?,

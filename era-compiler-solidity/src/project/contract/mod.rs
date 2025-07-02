@@ -367,7 +367,7 @@ impl Contract {
                     debug_config.clone(),
                 );
                 deploy_context.set_solidity_data(
-                    era_compiler_llvm_context::EVMContextSolidityData::new(immutables_map),
+                    era_compiler_llvm_context::EVMContextSolidityData::new(Some(immutables_map)),
                 );
                 deploy_context.set_yul_data(era_compiler_llvm_context::EVMContextYulData::new(
                     identifier_paths,
@@ -462,7 +462,7 @@ impl Contract {
                     debug_config.clone(),
                 );
                 deploy_context.set_solidity_data(
-                    era_compiler_llvm_context::EVMContextSolidityData::new(immutables_map),
+                    era_compiler_llvm_context::EVMContextSolidityData::new(Some(immutables_map)),
                 );
                 deploy_context.set_evmla_data(evmla_data);
                 deploy_code.declare(&mut deploy_context)?;
@@ -530,7 +530,7 @@ impl Contract {
                 let runtime_module = runtime_llvm
                     .create_module_from_ir(runtime_memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let runtime_context = era_compiler_llvm_context::EVMContext::new(
+                let mut runtime_context = era_compiler_llvm_context::EVMContext::new(
                     &runtime_llvm,
                     runtime_module,
                     llvm_options.clone(),
@@ -556,7 +556,7 @@ impl Contract {
                 let deploy_module = deploy_llvm
                     .create_module_from_ir(deploy_memory_buffer)
                     .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-                let deploy_context = era_compiler_llvm_context::EVMContext::new(
+                let mut deploy_context = era_compiler_llvm_context::EVMContext::new(
                     &deploy_llvm,
                     deploy_module,
                     llvm_options,

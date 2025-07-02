@@ -177,8 +177,7 @@ impl Assembly {
                     .map(|evm| &evm.legacy_assembly)
                     .filter(|json| json.is_object())
                 {
-                    Some(assembly) => serde_json::from_value::<Assembly>(assembly.to_owned())
-                        .expect("Always valid"),
+                    Some(assembly) => serde_json::from_value::<Assembly>(assembly.to_owned())?,
                     None => continue,
                 };
                 let deploy_code_hash = deploy_code_assembly.keccak256();
@@ -214,14 +213,13 @@ impl Assembly {
         assemblies
             .into_par_iter()
             .map(|(full_path, assembly_json)| {
-                let mut assembly: Assembly =
-                    serde_json::from_value(assembly_json.to_owned()).expect("Always valid");
+                let mut assembly: Assembly = serde_json::from_value(assembly_json.to_owned())?;
                 Self::preprocess_dependency_level(
                     full_path.as_str(),
                     &mut assembly,
                     &hash_path_mapping,
                 )?;
-                *assembly_json = serde_json::to_value(&assembly).expect("Always valid");
+                *assembly_json = serde_json::to_value(&assembly)?;
                 Ok(())
             })
             .collect::<anyhow::Result<()>>()?;

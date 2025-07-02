@@ -119,6 +119,8 @@ pub enum Name {
     DUP15,
     /// The eponymous EVM instruction.
     DUP16,
+    /// The eponymous EVM instruction.
+    DUPX,
 
     /// The eponymous EVM instruction.
     SWAP1,
@@ -152,6 +154,8 @@ pub enum Name {
     SWAP15,
     /// The eponymous EVM instruction.
     SWAP16,
+    /// The eponymous EVM instruction.
+    SWAPX,
 
     /// The eponymous EVM instruction.
     POP,
@@ -400,10 +404,9 @@ impl std::fmt::Display for Name {
                 ..
             } => write!(
                 f,
-                "RECURSIVE_CALL({}_{}, {}, {}, {})",
-                name, entry_key, input_size, output_size, return_address
+                "RECURSIVE_CALL({name}_{entry_key}, {input_size}, {output_size}, {return_address})",
             ),
-            Self::RecursiveReturn { input_size } => write!(f, "RECURSIVE_RETURN({})", input_size),
+            Self::RecursiveReturn { input_size } => write!(f, "RECURSIVE_RETURN({input_size})"),
             _ => write!(
                 f,
                 "{}",
