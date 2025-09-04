@@ -2,18 +2,15 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[crate::common::TEST_YUL_CONTRACT_PATH, "--yul"];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested",
     ));
@@ -21,9 +18,8 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -36,7 +32,7 @@ fn solc(target: Target) -> anyhow::Result<()> {
         solc_compiler.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
         "Compiler run successful. No output requested",
     ));
@@ -44,14 +40,13 @@ fn solc(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[crate::common::TEST_SOLIDITY_CONTRACT_PATH, "--yul"];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let zksolc_status = result
         .failure()
         .stderr(predicate::str::contains("Yul parsing"))
@@ -66,9 +61,8 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn combined_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn combined_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -78,7 +72,7 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
         "anyarg",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -95,9 +89,8 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -106,7 +99,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         "--standard-json",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time:",
     ));
@@ -114,9 +107,8 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_solc_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_solc_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -129,7 +121,7 @@ fn invalid_solc_error(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "DeclarationError: Function \\\"mdelete\\\" not found.",
     ));
@@ -137,9 +129,8 @@ fn invalid_solc_error(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_zksolc_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -147,7 +138,7 @@ fn invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));
@@ -155,9 +146,8 @@ fn invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn through_solc_invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn through_solc_invalid_zksolc_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -170,7 +160,7 @@ fn through_solc_invalid_zksolc_error(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "The `SELFDESTRUCT` instruction is not supported",
     ));

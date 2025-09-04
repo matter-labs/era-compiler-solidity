@@ -2,9 +2,7 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
 #[test]
 fn default() -> anyhow::Result<()> {
@@ -126,23 +124,6 @@ fn standard_json() -> anyhow::Result<()> {
 }
 
 #[test]
-fn unsupported_evm() -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let args = &[
-        "--eravm-assembly",
-        crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
-    ];
-
-    let result = crate::cli::execute_zksolc_with_target(args, era_compiler_common::Target::EVM)?;
-    result.failure().stderr(predicate::str::contains(
-        "EraVM assembly cannot be compiled to EVM.",
-    ));
-
-    Ok(())
-}
-
-#[test]
 fn optimization() -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -213,9 +194,8 @@ fn standard_json_invalid_assembly() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json_excess_solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -228,26 +208,9 @@ fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "EraVM assembly projects cannot be compiled with `solc`.",
-    ));
-
-    Ok(())
-}
-
-#[test]
-fn standard_json_unsupported_evm() -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let args = &[
-        "--standard-json",
-        crate::common::TEST_ERAVM_ASSEMBLY_STANDARD_JSON_PATH,
-    ];
-
-    let result = crate::cli::execute_zksolc_with_target(args, era_compiler_common::Target::EVM)?;
-    result.success().stdout(predicate::str::contains(
-        "EraVM assembly cannot be compiled to EVM.",
     ));
 
     Ok(())

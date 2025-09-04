@@ -2,7 +2,6 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
@@ -20,11 +19,9 @@ const JSON_ARGS: &[&str] = &[
     "bin-runtime",
 ];
 
-#[test_case(Target::EraVM, era_solc::StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EVM, era_solc::StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, era_solc::StandardJsonInputCodegen::Yul)]
-#[test_case(Target::EVM, era_solc::StandardJsonInputCodegen::Yul)]
-fn all(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
+#[test_case(era_solc::StandardJsonInputCodegen::EVMLA)]
+#[test_case(era_solc::StandardJsonInputCodegen::Yul)]
+fn all(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -36,7 +33,7 @@ fn all(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::R
             "--codegen",
             codegen.as_str(),
         ];
-        let result = crate::cli::execute_zksolc_with_target(zksolc_args, target)?;
+        let result = crate::cli::execute_zksolc(zksolc_args)?;
         let status_code = result
             .success()
             .stdout(predicate::str::contains("contracts"))
@@ -57,9 +54,8 @@ fn all(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::R
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn all_yul(target: Target) -> anyhow::Result<()> {
+#[test]
+fn all_yul() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     for selector in JSON_ARGS.into_iter() {
@@ -69,7 +65,7 @@ fn all_yul(target: Target) -> anyhow::Result<()> {
             selector,
         ];
 
-        let result = crate::cli::execute_zksolc_with_target(args, target)?;
+        let result = crate::cli::execute_zksolc(args)?;
         let status_code = result
             .failure()
             .stderr(predicate::str::contains("Expected identifier"))
@@ -85,9 +81,8 @@ fn all_yul(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn two_files(target: Target) -> anyhow::Result<()> {
+#[test]
+fn two_files() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -97,7 +92,7 @@ fn two_files(target: Target) -> anyhow::Result<()> {
         "bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status_code = result
         .success()
         .stdout(
@@ -114,9 +109,8 @@ fn two_files(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_path(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_path() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -125,7 +119,7 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
         "unknown",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
         "The selector `unknown` is not supported, and therefore ignored.",
     ));
@@ -133,9 +127,8 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -150,7 +143,7 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
         selector.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "ParserError: Expected identifier but got",
     ));
@@ -158,9 +151,8 @@ fn invalid_input(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_output(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_output() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let selector = era_solc::CombinedJsonSelector::Bytecode.to_string();
@@ -172,7 +164,7 @@ fn invalid_output(target: Target) -> anyhow::Result<()> {
         selector.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("subprocess stdout parsing:"));
@@ -180,29 +172,8 @@ fn invalid_output(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EVM)]
-fn warning_evm_assembly_unsupported_yet(target: Target) -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let selector = era_solc::CombinedJsonSelector::Assembly.to_string();
-    let args = &[
-        crate::common::TEST_SOLIDITY_CONTRACT_PATH,
-        "--combined-json",
-        selector.as_str(),
-    ];
-
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
-    result.success().stderr(predicate::str::contains(format!(
-        "The `{}` selector is not supported for the {} target yet, and therefore ignored.",
-        era_solc::CombinedJsonSelector::Assembly,
-        era_compiler_common::Target::EVM,
-    )));
-
-    Ok(())
-}
-
-#[test_case(Target::EraVM)]
-fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
+#[test]
+fn warning_bin_omitted() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let selector = era_solc::CombinedJsonSelector::ASM.to_string();
@@ -212,7 +183,7 @@ fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
         selector.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
         format!("The `{}` selector will become mandatory in future releases of `zksolc`. For now, bytecode is always emitted even if the selector is not provided.", era_solc::CombinedJsonSelector::Bytecode),
     ));
@@ -220,8 +191,8 @@ fn warning_bin_omitted(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-fn warning_bin_runtime_excess(target: Target) -> anyhow::Result<()> {
+#[test]
+fn warning_bin_runtime_excess() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let selector = era_solc::CombinedJsonSelector::BytecodeRuntime.to_string();
@@ -231,7 +202,7 @@ fn warning_bin_runtime_excess(target: Target) -> anyhow::Result<()> {
         selector.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stderr(predicate::str::contains(
         format!("The `{}` selector does not make sense for the {} target, since there is only one bytecode segment. The eponymous output field will be removed in future releases of `zksolc`.", era_solc::CombinedJsonSelector::BytecodeRuntime, era_compiler_common::Target::EraVM),
     ));

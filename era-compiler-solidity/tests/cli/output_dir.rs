@@ -2,15 +2,13 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use std::path::PathBuf;
 use tempfile::TempDir;
 use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -29,7 +27,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -46,9 +44,8 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, era_compiler_common::EXTENSION_ERAVM_BINARY)]
-#[test_case(Target::EVM, era_compiler_common::EXTENSION_EVM_BINARY)]
-fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
+#[test_case(era_compiler_common::EXTENSION_ERAVM_BINARY)]
+fn yul(extension: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -68,7 +65,7 @@ fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -82,8 +79,8 @@ fn yul(target: Target, extension: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, crate::common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
-fn asm_and_metadata(target: Target, asm_file_name: &str) -> anyhow::Result<()> {
+#[test_case(crate::common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM)]
+fn asm_and_metadata(asm_file_name: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -114,7 +111,7 @@ fn asm_and_metadata(target: Target, asm_file_name: &str) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -134,9 +131,8 @@ fn asm_and_metadata(target: Target, asm_file_name: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn weird_path_characters(target: Target) -> anyhow::Result<()> {
+#[test]
+fn weird_path_characters() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -155,7 +151,7 @@ fn weird_path_characters(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -172,9 +168,8 @@ fn weird_path_characters(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn combined_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn combined_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("File!and#$%-XXXXXX")?;
@@ -195,7 +190,7 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -212,9 +207,8 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -224,7 +218,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         "output",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Output directory cannot be used in standard JSON mode.",
     ));

@@ -2,16 +2,13 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use era_solc::StandardJsonInputCodegen;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn default(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
+#[test_case(StandardJsonInputCodegen::EVMLA)]
+#[test_case(StandardJsonInputCodegen::Yul)]
+fn default(codegen: StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -22,7 +19,7 @@ fn default(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -30,11 +27,9 @@ fn default(target: Target, codegen: StandardJsonInputCodegen) -> anyhow::Result<
     Ok(())
 }
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn yul(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
+#[test_case(StandardJsonInputCodegen::EVMLA)]
+#[test_case(StandardJsonInputCodegen::Yul)]
+fn yul(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -46,7 +41,7 @@ fn yul(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::R
         crate::common::TEST_YUL_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode.",
     ));
@@ -54,11 +49,9 @@ fn yul(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::R
     Ok(())
 }
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EVM, StandardJsonInputCodegen::Yul)]
-fn llvm_ir(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
+#[test_case(StandardJsonInputCodegen::EVMLA)]
+#[test_case(StandardJsonInputCodegen::Yul)]
+fn llvm_ir(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -70,7 +63,7 @@ fn llvm_ir(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyho
         crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode.",
     ));
@@ -78,12 +71,9 @@ fn llvm_ir(target: Target, codegen: era_solc::StandardJsonInputCodegen) -> anyho
     Ok(())
 }
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-fn eravm_assembly(
-    target: Target,
-    codegen: era_solc::StandardJsonInputCodegen,
-) -> anyhow::Result<()> {
+#[test_case(StandardJsonInputCodegen::EVMLA)]
+#[test_case(StandardJsonInputCodegen::Yul)]
+fn eravm_assembly(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -95,7 +85,7 @@ fn eravm_assembly(
         crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Error: Codegen settings are only available in Solidity mode.",
     ));
@@ -103,12 +93,9 @@ fn eravm_assembly(
     Ok(())
 }
 
-#[test_case(Target::EraVM, StandardJsonInputCodegen::EVMLA)]
-#[test_case(Target::EraVM, StandardJsonInputCodegen::Yul)]
-fn standard_json(
-    target: Target,
-    codegen: era_solc::StandardJsonInputCodegen,
-) -> anyhow::Result<()> {
+#[test_case(StandardJsonInputCodegen::EVMLA)]
+#[test_case(StandardJsonInputCodegen::Yul)]
+fn standard_json(codegen: era_solc::StandardJsonInputCodegen) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let codegen = codegen.to_string();
@@ -119,7 +106,7 @@ fn standard_json(
         codegen.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Codegen must be passed via standard JSON input.",
     ));
@@ -127,9 +114,8 @@ fn standard_json(
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -139,7 +125,7 @@ fn invalid(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("error: invalid value 'invalid' for '--codegen <CODEGEN>': Invalid codegen: `invalid`. Available options: evmla, yul"));
@@ -147,9 +133,8 @@ fn invalid(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -157,7 +142,7 @@ fn missing(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_FORCE_EVMLA,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "The default codegen of `zksolc` does not match that of `solc` for historical reasons.",
     ));

@@ -3,13 +3,10 @@
 //!
 
 use assert_cmd::Command;
-use era_compiler_common::Target;
 use predicates::prelude::predicate;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -21,7 +18,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         solc_compiler.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -29,17 +26,14 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn no_solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn no_solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let mut zksolc = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
 
     let result = zksolc
         .arg(crate::common::TEST_SOLIDITY_CONTRACT_PATH)
-        .arg("--target")
-        .arg(target.to_string())
         .env("PATH", "./solc-bin")
         .assert();
     result
@@ -49,9 +43,8 @@ fn no_solc(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -64,7 +57,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -72,9 +65,8 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_no_solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json_no_solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -82,7 +74,7 @@ fn standard_json_no_solc(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -90,9 +82,8 @@ fn standard_json_no_solc(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn llvm_ir(target: Target) -> anyhow::Result<()> {
+#[test]
+fn llvm_ir() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -106,7 +97,7 @@ fn llvm_ir(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Using `solc` is only allowed in Solidity and Yul modes.",
     ));
@@ -114,9 +105,8 @@ fn llvm_ir(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn eravm_assembly(target: Target) -> anyhow::Result<()> {
+#[test]
+fn eravm_assembly() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -130,7 +120,7 @@ fn eravm_assembly(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Using `solc` is only allowed in Solidity and Yul modes.",
     ));
@@ -138,15 +128,14 @@ fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_path(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_path() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let path = "solc-not-found";
     let args = &[crate::common::TEST_SOLIDITY_CONTRACT_PATH, "--solc", path];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         format!("The `{path}` executable not found:").as_str(),
     ));
@@ -154,9 +143,8 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -165,7 +153,7 @@ fn error_version_missing(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_VERSION_OUTPUT_ERROR_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("version getting:"));
@@ -173,9 +161,8 @@ fn error_version_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_too_old(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_too_old() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -188,7 +175,7 @@ fn error_version_too_old(target: Target) -> anyhow::Result<()> {
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch -= 1;
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains(format!("versions older than {version_supported} are not supported, found {version_not_supported}.").as_str()));
@@ -196,9 +183,8 @@ fn error_version_too_old(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_too_recent(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_too_recent() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -211,7 +197,7 @@ fn error_version_too_recent(target: Target) -> anyhow::Result<()> {
     let mut version_not_supported = version_supported.clone();
     version_not_supported.patch += 1;
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains(format!("versions newer than {version_supported} are not supported, found {version_not_supported}.").as_str()));
@@ -219,9 +205,8 @@ fn error_version_too_recent(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_not_enough_lines() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -230,7 +215,7 @@ fn error_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_LINES_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "version parsing: not enough lines.",
     ));
@@ -238,9 +223,8 @@ fn error_version_not_enough_lines(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_not_enough_words_in_2nd_line() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -249,7 +233,7 @@ fn error_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<
         crate::common::TEST_SCRIPT_SOLC_VERSION_NOT_ENOUGH_WORDS_IN_2ND_LINE_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "version parsing: not enough words in the 2nd line.",
     ));
@@ -257,9 +241,8 @@ fn error_version_not_enough_words_in_2nd_line(target: Target) -> anyhow::Result<
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn error_version_parsing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn error_version_parsing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -268,7 +251,7 @@ fn error_version_parsing(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_VERSION_PARSING_ERROR_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("version parsing:"));
@@ -276,9 +259,8 @@ fn error_version_parsing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn zksync_revision_missing_version(target: Target) -> anyhow::Result<()> {
+#[test]
+fn zksync_revision_missing_version() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -287,7 +269,7 @@ fn zksync_revision_missing_version(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_VERSION,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "ZKsync revision parsing: missing version.",
     ));
@@ -295,9 +277,8 @@ fn zksync_revision_missing_version(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn zksync_revision_missing_revision(target: Target) -> anyhow::Result<()> {
+#[test]
+fn zksync_revision_missing_revision() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -306,7 +287,7 @@ fn zksync_revision_missing_revision(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_MISSING_REVISION,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "ZKsync revision parsing: missing revision.",
     ));
@@ -314,9 +295,8 @@ fn zksync_revision_missing_revision(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn zksync_revision_parsing_revision_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn zksync_revision_parsing_revision_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -325,7 +305,7 @@ fn zksync_revision_parsing_revision_error(target: Target) -> anyhow::Result<()> 
         crate::common::TEST_SCRIPT_SOLC_VERSION_ZKSYNC_REVISION_PARSING_REVISION_ERROR,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("ZKsync revision parsing:"));
@@ -333,9 +313,8 @@ fn zksync_revision_parsing_revision_error(target: Target) -> anyhow::Result<()> 
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn exit_code_failed(target: Target) -> anyhow::Result<()> {
+#[test]
+fn exit_code_failed() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -344,7 +323,7 @@ fn exit_code_failed(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_EXIT_CODE_FAILED,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("subprocess failed with exit code"));
@@ -352,9 +331,8 @@ fn exit_code_failed(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_output_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_output_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -363,7 +341,7 @@ fn invalid_output_json(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SCRIPT_SOLC_INVALID_OUTPUT_JSON,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("subprocess stdout parsing"));

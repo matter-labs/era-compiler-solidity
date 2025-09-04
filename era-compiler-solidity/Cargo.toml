@@ -50,4 +50,4 @@ era-compiler-downloader = { git = "https://github.com/matter-labs/era-compiler-c
 git = "https://github.com/matter-labs-forks/inkwell"
 branch = "llvm-19"
 default-features = false
-features = ["llvm19-1", "serde", "no-libffi-linking", "target-eravm", "target-evm"]
+features = ["llvm19-1", "serde", "no-libffi-linking", "target-eravm"]

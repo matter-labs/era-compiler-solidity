@@ -2,13 +2,10 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use tempfile::TempDir;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_debug = TempDir::with_prefix("debug_output")?;
@@ -20,15 +17,14 @@ fn default(target: Target) -> anyhow::Result<()> {
         tmp_dir_debug.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success();
 
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_debug = TempDir::with_prefix("debug_output")?;
@@ -40,7 +36,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         tmp_dir_debug.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success();
 
     Ok(())

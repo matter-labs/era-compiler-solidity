@@ -96,12 +96,6 @@ pub struct Arguments {
     #[arg(long)]
     pub standard_json: Option<Option<String>>,
 
-    /// Specify the target machine.
-    /// Available arguments: `eravm`, `evm`.
-    /// The default is `eravm`.
-    #[arg(long)]
-    pub target: Option<String>,
-
     /// Sets the number of threads, where each thread compiles its own translation unit in a child process.
     #[arg(short, long)]
     pub threads: Option<usize>,
@@ -376,18 +370,15 @@ impl Arguments {
             }
         }
 
-        if self.disassemble
-            && std::env::args().count()
-                > 2 + self.inputs.len() + (self.target.is_some() as usize) * 2
-        {
+        if self.disassemble && std::env::args().count() > 2 + self.inputs.len() {
             messages.push(era_solc::StandardJsonOutputError::new_error(
-                "No other options except input files and `--target` are allowed in disassembler mode.",
+                "No other options except input files are allowed in disassembler mode.",
                 None,
                 None,
             ));
         }
 
-        let mut linker_default_arguments_count = 2 + (self.target.is_some() as usize) * 2;
+        let mut linker_default_arguments_count = 2;
         linker_default_arguments_count += match self.standard_json {
             Some(Some(_)) => 2,
             Some(None) => 1,
@@ -395,7 +386,7 @@ impl Arguments {
         };
         if self.link && std::env::args().count() > linker_default_arguments_count {
             messages.push(era_solc::StandardJsonOutputError::new_error(
-                "Error: No other options except bytecode files, `--libraries`, `--standard-json`, `--target` are allowed in linker mode.",
+                "Error: No other options except bytecode files, `--libraries`, `--standard-json` are allowed in linker mode.",
                 None,
                 None,
             ));

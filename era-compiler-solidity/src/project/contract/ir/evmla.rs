@@ -61,16 +61,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for EVMLA {
         self.assembly.into_llvm(context)
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for EVMLA {
-    fn declare(
-        &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext,
-    ) -> anyhow::Result<()> {
-        self.assembly.declare(context)
-    }
-
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        self.assembly.into_llvm(context)
-    }
-}

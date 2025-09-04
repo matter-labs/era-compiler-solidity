@@ -2,13 +2,10 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -25,7 +22,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -40,14 +37,13 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_yul() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &["--standard-json", crate::common::TEST_YUL_CONTRACT_PATH];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("parsing: expected value"))
@@ -62,9 +58,8 @@ fn invalid_input_yul(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_solc_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -81,7 +76,7 @@ fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -98,8 +93,8 @@ fn invalid_input_solc_error(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_zksolc_error() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -116,7 +111,7 @@ fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "You are using \'<address payable>.send/transfer(<X>)\' without providing the gas amount.",
     ));
@@ -127,9 +122,8 @@ fn invalid_input_zksolc_error(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn suppressed_messages(target: Target) -> anyhow::Result<()> {
+#[test]
+fn suppressed_messages() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -146,7 +140,7 @@ fn suppressed_messages(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_JSON_SUPPRESSED_ERRORS_AND_WARNINGS,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -161,9 +155,8 @@ fn suppressed_messages(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn recursion(target: Target) -> anyhow::Result<()> {
+#[test]
+fn recursion() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -171,7 +164,7 @@ fn recursion(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_ZKSOLC_RECURSION_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("bytecode"));
@@ -179,9 +172,8 @@ fn recursion(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_path(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_path() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -193,7 +185,7 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_NON_EXISTENT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains(
@@ -207,9 +199,8 @@ fn invalid_path(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_utf8(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_utf8() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -221,7 +212,7 @@ fn invalid_utf8(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_INVALID_UTF8_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -238,15 +229,14 @@ fn invalid_utf8(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn stdin_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn stdin_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &["--standard-json"];
     let solc_args = &["--standard-json"];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -263,9 +253,8 @@ fn stdin_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn empty_sources(target: Target) -> anyhow::Result<()> {
+#[test]
+fn empty_sources() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -277,7 +266,7 @@ fn empty_sources(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_EMPTY_SOURCES_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("No input sources specified."))
@@ -292,9 +281,8 @@ fn empty_sources(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn missing_sources(target: Target) -> anyhow::Result<()> {
+#[test]
+fn missing_sources() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -306,7 +294,7 @@ fn missing_sources(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_MISSING_SOURCES_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -323,9 +311,8 @@ fn missing_sources(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn yul(target: Target) -> anyhow::Result<()> {
+#[test]
+fn yul() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -337,7 +324,7 @@ fn yul(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -352,9 +339,8 @@ fn yul(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
+#[test]
+fn both_urls_and_content() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -366,7 +352,7 @@ fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_BOTH_URLS_AND_CONTENT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -383,9 +369,8 @@ fn both_urls_and_content(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
+#[test]
+fn neither_urls_nor_content() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -397,7 +382,7 @@ fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_ZKSOLC_NEITHER_URLS_NOR_CONTENT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains(
@@ -414,9 +399,8 @@ fn neither_urls_nor_content(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn yul_solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn yul_solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -433,7 +417,7 @@ fn yul_solc(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stdout(predicate::str::contains("bytecode"))
@@ -448,9 +432,8 @@ fn yul_solc(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata_hash_ipfs_and_metadata() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -458,7 +441,7 @@ fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_JSON_METADATA_HASH_IPFS_AND_METADATA,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("a264"))
@@ -467,9 +450,8 @@ fn metadata_hash_ipfs_and_metadata(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata_hash_ipfs_no_metadata() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -477,7 +459,7 @@ fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_JSON_METADATA_HASH_IPFS_NO_METADATA,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("a264"))
@@ -486,9 +468,8 @@ fn metadata_hash_ipfs_no_metadata(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata_hash_none_and_metadata() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -496,7 +477,7 @@ fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_JSON_METADATA_HASH_NONE_AND_METADATA,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("a164"))
@@ -505,9 +486,8 @@ fn metadata_hash_none_and_metadata(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata_hash_none_no_metadata(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata_hash_none_no_metadata() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -515,7 +495,7 @@ fn metadata_hash_none_no_metadata(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_JSON_METADATA_HASH_NONE_NO_METADATA,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("a164"))

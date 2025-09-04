@@ -2,7 +2,6 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 
 #[test]
@@ -79,7 +78,7 @@ fn with_libraries_excess_args() -> anyhow::Result<()> {
 
     let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
-        "Error: No other options except bytecode files, `--libraries`, `--standard-json`, `--target` are allowed in linker mode.",
+        "Error: No other options except bytecode files, `--libraries`, `--standard-json` are allowed in linker mode.",
     ));
 
     Ok(())
@@ -246,20 +245,6 @@ fn standard_json_linker_error() -> anyhow::Result<()> {
     let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "ld.lld: error: undefined symbol: foo",
-    ));
-
-    Ok(())
-}
-
-#[test]
-fn unsupported_evm() -> anyhow::Result<()> {
-    crate::common::setup()?;
-
-    let args = &["--link", crate::common::TEST_LINKER_BYTECODE_PATH];
-
-    let result = crate::cli::execute_zksolc_with_target(args, Target::EVM)?;
-    result.failure().stderr(predicate::str::contains(
-        "The EVM target does not support linking yet.",
     ));
 
     Ok(())

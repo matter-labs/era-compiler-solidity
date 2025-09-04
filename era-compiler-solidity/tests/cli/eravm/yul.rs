@@ -2,7 +2,6 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 
 #[test]
@@ -20,7 +19,7 @@ fn solc_enable_eravm_extensions() -> anyhow::Result<()> {
         "--enable-eravm-extensions",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("Yul validation cannot be done if EraVM extensions are enabled. Consider compiling without `solc`."));

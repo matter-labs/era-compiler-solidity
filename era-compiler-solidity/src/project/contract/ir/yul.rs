@@ -85,16 +85,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Yul {
         self.object.into_llvm(context)
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for Yul {
-    fn declare(
-        &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext,
-    ) -> anyhow::Result<()> {
-        self.object.declare(context)
-    }
-
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        self.object.into_llvm(context)
-    }
-}

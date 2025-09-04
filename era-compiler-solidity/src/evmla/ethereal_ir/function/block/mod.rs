@@ -135,16 +135,6 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Block {
     }
 }
 
-impl era_compiler_llvm_context::EVMWriteLLVM for Block {
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        for element in self.elements.into_iter() {
-            element.into_llvm(context)?;
-        }
-
-        Ok(())
-    }
-}
-
 impl std::fmt::Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(

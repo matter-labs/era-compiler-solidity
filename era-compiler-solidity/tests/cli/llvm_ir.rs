@@ -2,18 +2,15 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input_text(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_text() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &["--llvm-ir", crate::common::TEST_BROKEN_INPUT_PATH];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("error: expected top-level entity"));
@@ -21,9 +18,8 @@ fn invalid_input_text(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input_solidity(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_solidity() -> anyhow::Result<()> {
     crate::common::setup()?;
     let args = &[
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
@@ -31,7 +27,7 @@ fn invalid_input_solidity(target: Target) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .failure()
         .stderr(predicate::str::contains("expected top-level entity"));
@@ -39,9 +35,8 @@ fn invalid_input_solidity(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn invalid_input_llvm_ir(target: Target) -> anyhow::Result<()> {
+#[test]
+fn invalid_input_llvm_ir() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -49,7 +44,7 @@ fn invalid_input_llvm_ir(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_CONTRACT_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "error: use of undefined value \'%runtime\'",
     ));
@@ -71,9 +66,8 @@ fn missing_file() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn excess_mode_combined_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -83,7 +77,7 @@ fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
         "anyarg",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -91,9 +85,8 @@ fn excess_mode_combined_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn excess_mode_standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -102,7 +95,7 @@ fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
         "--standard-json",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Only one mode is allowed at the same time",
     ));
@@ -110,9 +103,8 @@ fn excess_mode_standard_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_invalid(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json_invalid() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -120,7 +112,7 @@ fn standard_json_invalid(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_STANDARD_JSON_INVALID_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("error: use of undefined value"));
@@ -128,9 +120,8 @@ fn standard_json_invalid(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_missing_file(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json_missing_file() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -138,7 +129,7 @@ fn standard_json_missing_file(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_STANDARD_JSON_MISSING_FILE_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Error: File \\\"tests/data/contracts/llvm_ir/Missing.ll\\\" reading:",
     ));
@@ -146,9 +137,8 @@ fn standard_json_missing_file(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json_excess_solc() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let solc_compiler =
@@ -161,7 +151,7 @@ fn standard_json_excess_solc(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_STANDARD_JSON_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "LLVM IR projects cannot be compiled with `solc`.",
     ));
