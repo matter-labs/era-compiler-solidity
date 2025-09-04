@@ -65,7 +65,7 @@ jobs:
   # Check Hardhat with built zksolc
   check-hardhat:
     needs: build-zksolc
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@v1
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@aba-fix-hardhat-foundry
     secrets: inherit
     with:
       zksolc-release-suffix: 'test-tooling'
@@ -73,7 +73,7 @@ jobs:
   # Check Foundry with built zksolc
   check-foundry:
     needs: build-zksolc
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@v1
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@aba-fix-hardhat-foundry
     secrets: inherit
     with:
       zksolc-release-suffix: 'test-tooling'
@@ -81,7 +81,7 @@ jobs:
   # Check Hardhat with a specific released zksolc version
   check-hardhat-release:
     if: inputs.zksolc-version != ''
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@v1
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-hardhat.yaml@aba-fix-hardhat-foundry
     secrets: inherit
     with:
       zksolc-version: ${{ inputs.zksolc-version }}
@@ -89,7 +89,7 @@ jobs:
   # Check Foundry with a specific released zksolc version
   check-foundry-release:
     if: inputs.zksolc-version != ''
-    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@v1
+    uses: matter-labs/zksync-ci-common/.github/workflows/check-foundry.yaml@aba-fix-hardhat-foundry
     secrets: inherit
     with:
       zksolc-version: ${{ inputs.zksolc-version }}
