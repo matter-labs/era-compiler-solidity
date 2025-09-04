@@ -2,7 +2,6 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -28,7 +27,7 @@ fn llvm_ir() -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));
@@ -63,7 +62,7 @@ fn eravm_assembly() -> anyhow::Result<()> {
         tmp_dir_zksolc.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"));

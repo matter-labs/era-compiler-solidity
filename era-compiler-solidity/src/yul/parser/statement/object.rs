@@ -77,19 +77,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Object {
         Ok(())
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for Object {
-    fn declare(
-        &mut self,
-        _context: &mut era_compiler_llvm_context::EVMContext,
-    ) -> anyhow::Result<()> {
-        Ok(())
-    }
-
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        let mut entry = era_compiler_llvm_context::EVMEntryFunction::new(self.0.code.wrap());
-        entry.declare(context)?;
-        entry.into_llvm(context)?;
-        Ok(())
-    }
-}

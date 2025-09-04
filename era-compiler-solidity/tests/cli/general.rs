@@ -2,7 +2,6 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use tempfile::TempDir;
 use test_case::test_case;
@@ -31,12 +30,10 @@ fn no_arguments() -> anyhow::Result<()> {
 }
 
 #[test_case(
-    Target::EraVM,
     crate::common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM,
     crate::common::SOLIDITY_ASM_OUTPUT_NAME_ERAVM
 )]
 fn multiple_output_options(
-    target: Target,
     bin_output_file_name: &str,
     asm_output_file_name: &str,
 ) -> anyhow::Result<()> {
@@ -51,7 +48,7 @@ fn multiple_output_options(
         tmp_dir.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful."));
@@ -79,12 +76,8 @@ fn multiple_output_options(
     Ok(())
 }
 
-#[test_case(Target::EraVM, crate::common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
-#[test_case(Target::EVM, crate::common::SOLIDITY_BIN_OUTPUT_NAME_EVM)]
-fn same_output_directory_and_terminal(
-    target: Target,
-    bin_output_file_name: &str,
-) -> anyhow::Result<()> {
+#[test_case(crate::common::SOLIDITY_BIN_OUTPUT_NAME_ERAVM)]
+fn same_output_directory_and_terminal(bin_output_file_name: &str) -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir = TempDir::new()?;
@@ -96,7 +89,7 @@ fn same_output_directory_and_terminal(
         tmp_dir.path().to_str().unwrap(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stderr(predicate::str::contains("Compiler run successful."));
@@ -108,7 +101,7 @@ fn same_output_directory_and_terminal(
     assert!(bin_output_file.exists());
 
     let cli_args = &[crate::common::TEST_SOLIDITY_CONTRACT_PATH, "-O3", "--bin"];
-    let cli_result = crate::cli::execute_zksolc_with_target(cli_args, target)?;
+    let cli_result = crate::cli::execute_zksolc(cli_args)?;
 
     let stdout = String::from_utf8_lossy(cli_result.get_output().stdout.as_slice());
     assert!(crate::cli::is_output_same_as_file(

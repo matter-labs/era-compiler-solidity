@@ -21,11 +21,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Code {
         Ok(())
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for Code {
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        self.0.block.wrap().into_llvm(context)?;
-
-        Ok(())
-    }
-}

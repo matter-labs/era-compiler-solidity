@@ -17,7 +17,6 @@ mod combined_json;
 mod debug_output_dir;
 mod disable_solc_optimizer;
 mod eravm;
-mod evm;
 mod evm_version;
 mod fallback_oz;
 mod force_evmla;
@@ -37,7 +36,6 @@ mod recursive_process;
 mod remappings;
 mod solc;
 mod standard_json;
-mod target;
 mod threads;
 mod version;
 mod yul;
@@ -53,24 +51,6 @@ pub fn execute_zksolc(args: &[&str]) -> anyhow::Result<assert_cmd::assert::Asser
             std::fs::canonicalize(PathBuf::from(crate::common::SOLC_DOWNLOAD_DIRECTORY))?,
         )
         .args(args)
-        .assert())
-}
-
-///
-/// Execute zksolc with the given arguments including target, and return the result.
-///
-pub fn execute_zksolc_with_target(
-    args: &[&str],
-    target: era_compiler_common::Target,
-) -> anyhow::Result<assert_cmd::assert::Assert> {
-    let mut cmd = Command::cargo_bin(era_compiler_solidity::DEFAULT_EXECUTABLE_NAME)?;
-    Ok(cmd
-        .env(
-            "PATH",
-            std::fs::canonicalize(PathBuf::from(crate::common::SOLC_DOWNLOAD_DIRECTORY))?,
-        )
-        .args(args)
-        .args(&["--target", target.to_string().as_str()])
         .assert())
 }
 

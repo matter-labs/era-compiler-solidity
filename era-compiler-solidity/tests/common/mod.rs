@@ -138,14 +138,8 @@ pub fn build_solidity_standard_json(
         false,
     )?;
 
-    let mut solc_output = solc_compiler.standard_json(
-        era_compiler_common::Target::EraVM,
-        &mut solc_input,
-        &mut vec![],
-        None,
-        vec![],
-        None,
-    )?;
+    let mut solc_output =
+        solc_compiler.standard_json(&mut solc_input, &mut vec![], None, vec![], None)?;
     solc_output.check_errors()?;
 
     let linker_symbols = libraries.as_linker_symbols()?;
@@ -276,14 +270,8 @@ pub fn build_solidity_and_detect_missing_libraries(
         false,
     )?;
 
-    let mut solc_output = solc_compiler.standard_json(
-        era_compiler_common::Target::EraVM,
-        &mut solc_input,
-        &mut vec![],
-        None,
-        vec![],
-        None,
-    )?;
+    let mut solc_output =
+        solc_compiler.standard_json(&mut solc_input, &mut vec![], None, vec![], None)?;
 
     let project = Project::try_from_solc_output(
         libraries,
@@ -365,11 +353,8 @@ pub fn build_yul_standard_json(
 
     let (solc_version, mut solc_output) = match solc_compiler {
         Some(solc_compiler) => {
-            let solc_output = solc_compiler.validate_yul_standard_json(
-                era_compiler_common::Target::EraVM,
-                &mut solc_input,
-                &mut vec![],
-            )?;
+            let solc_output =
+                solc_compiler.validate_yul_standard_json(&mut solc_input, &mut vec![])?;
             (Some(&solc_compiler.version), solc_output)
         }
         None => (
@@ -520,14 +505,8 @@ pub fn check_solidity_message(
         false,
     )?;
 
-    let solc_output = solc_compiler.standard_json(
-        era_compiler_common::Target::EraVM,
-        &mut solc_input,
-        &mut vec![],
-        None,
-        vec![],
-        None,
-    )?;
+    let solc_output =
+        solc_compiler.standard_json(&mut solc_input, &mut vec![], None, vec![], None)?;
     let contains_warning = solc_output
         .errors
         .iter()

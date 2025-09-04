@@ -47,36 +47,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for IfConditional {
         Ok(())
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for IfConditional {
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        let condition = self
-            .0
-            .condition
-            .wrap()
-            .into_llvm_evm(context)?
-            .expect("Always exists")
-            .to_llvm()
-            .into_int_value();
-        let condition = context.builder().build_int_z_extend_or_bit_cast(
-            condition,
-            context.field_type(),
-            "if_condition_extended",
-        )?;
-        let condition = context.builder().build_int_compare(
-            inkwell::IntPredicate::NE,
-            condition,
-            context.field_const(0),
-            "if_condition_compared",
-        )?;
-        let main_block = context.append_basic_block("if_main");
-        let join_block = context.append_basic_block("if_join");
-        context.build_conditional_branch(condition, main_block, join_block)?;
-        context.set_basic_block(main_block);
-        self.0.block.wrap().into_llvm(context)?;
-        context.build_unconditional_branch(join_block)?;
-        context.set_basic_block(join_block);
-
-        Ok(())
-    }
-}

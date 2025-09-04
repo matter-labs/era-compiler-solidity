@@ -55,20 +55,3 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for EntryLink {
         Ok(())
     }
 }
-
-impl era_compiler_llvm_context::EVMWriteLLVM for EntryLink {
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        let target = context
-            .get_function(EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME)
-            .expect("Always exists")
-            .borrow()
-            .declaration();
-        context.build_invoke(
-            target,
-            &[],
-            format!("call_link_{}", EtherealIR::DEFAULT_ENTRY_FUNCTION_NAME).as_str(),
-        )?;
-
-        Ok(())
-    }
-}

@@ -4,13 +4,11 @@
 
 use era_compiler_common::EVMMetadataHashType;
 use era_compiler_common::EraVMMetadataHashType;
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(Target::EraVM, EraVMMetadataHashType::None.to_string())]
-#[test_case(Target::EVM, EVMMetadataHashType::None.to_string())]
-fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
+#[test_case(EraVMMetadataHashType::None.to_string())]
+fn none(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
     let args = &[
@@ -21,7 +19,7 @@ fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -31,9 +29,8 @@ fn none(target: Target, hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-#[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())]
-fn ipfs_solidity(target: Target, hash_type: String) -> anyhow::Result<()> {
+#[test_case(EVMMetadataHashType::IPFS.to_string())]
+fn ipfs_solidity(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
     let args = &[
@@ -44,7 +41,7 @@ fn ipfs_solidity(target: Target, hash_type: String) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -54,9 +51,8 @@ fn ipfs_solidity(target: Target, hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, EraVMMetadataHashType::IPFS.to_string())]
-#[test_case(Target::EVM, EVMMetadataHashType::IPFS.to_string())]
-fn ipfs_yul(target: Target, hash_type: String) -> anyhow::Result<()> {
+#[test_case(EVMMetadataHashType::IPFS.to_string())]
+fn ipfs_yul(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
     let args = &[
@@ -68,7 +64,7 @@ fn ipfs_yul(target: Target, hash_type: String) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -78,9 +74,8 @@ fn ipfs_yul(target: Target, hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM, crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH, EraVMMetadataHashType::IPFS.to_string())]
-#[test_case(Target::EVM, crate::common::TEST_LLVM_IR_CONTRACT_EVM_PATH, EVMMetadataHashType::IPFS.to_string())]
-fn ipfs_llvm_ir(target: Target, path: &str, hash_type: String) -> anyhow::Result<()> {
+#[test_case(crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH, EraVMMetadataHashType::IPFS.to_string())]
+fn ipfs_llvm_ir(path: &str, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
     let args = &[
@@ -92,7 +87,7 @@ fn ipfs_llvm_ir(target: Target, path: &str, hash_type: String) -> anyhow::Result
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -116,7 +111,7 @@ fn ipfs_eravm_assembly() -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, Target::EraVM)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary"))
@@ -126,14 +121,13 @@ fn ipfs_eravm_assembly() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &["--standard-json", crate::common::TEST_JSON_NO_CBOR_METADATA];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("a264").not())

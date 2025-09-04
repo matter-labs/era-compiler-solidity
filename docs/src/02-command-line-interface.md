@@ -119,11 +119,9 @@ Visit [the *solc* documentation](https://docs.soliditylang.org/en/latest/path-re
 
 ### `--asm`
 
-Enables the output of contract assembly. The assembly format depends on the [*--target*](#--target) architecture the contract is compiled for.
+Enables the output of contract assembly.
 
 For the EraVM assembly specification, visit the [EraVM documentation](https://docs.zksync.io/zk-stack/components/compiler/specification/binary-layout).
-
-EVM assembly is not supported yet.
 
 Usage:
 
@@ -302,7 +300,7 @@ Sets the optimization level of the LLVM optimizer. Available values are:
 
 For most cases, it is fine to use the default value of `3`. You should only use the level `z` if you are ready to deliberately sacrifice performance and optimize for size.
 
-> Large contracts may hit the EraVM or EVM bytecode size limit. In this case, it is recommended to use the [`--fallback-Oz`](#--fallback-oz) option rather than set the `z` level.
+> Large contracts may hit the EraVM bytecode size limit. In this case, it is recommended to use the [`--fallback-Oz`](#--fallback-oz) option rather than set the `z` level.
 
 
 
@@ -609,37 +607,6 @@ Output:
 ======= Simple.zasm =======
 Binary:
 000000000120008c000000070000613d00000020010000390000000000100435...
-```
-
-
-
-## Multi-Target Support
-
-*zksolc* is an LLVM-based compiler toolchain, so it is easily extensible to support multiple target architectures. The following targets are supported:
-
-- `eravm` — [EraVM](https://docs.zksync.io/zk-stack/components/zksync-evm) (default).
-- `evm` — [EVM](https://ethereum.org/en/developers/docs/evm/) (under development and only available for testing).
-
-### `--target`
-
-Specifies the target architecture for the compiled contract.
-
-<div class="warning">
-The <code>--target</code> option is experimental and must be passed as a CLI argument in all modes including combined JSON and standard JSON.
-</div>
-
-Usage:
-
-```bash
-zksolc Simple.sol --bin --target evm
-```
-
-Output:
-
-```text
-======= Simple.sol:Simple =======
-Binary:
-0000008003000039000000400030043f0000000100200190000000130000c13d...
 ```
 
 

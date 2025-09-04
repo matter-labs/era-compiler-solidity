@@ -2,13 +2,10 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
@@ -19,7 +16,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -27,9 +24,8 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn yul(target: Target) -> anyhow::Result<()> {
+#[test]
+fn yul() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
@@ -41,7 +37,7 @@ fn yul(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_YUL_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "EVM version is only allowed in Solidity mode",
     ));
@@ -49,9 +45,8 @@ fn yul(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn llvm_ir(target: Target) -> anyhow::Result<()> {
+#[test]
+fn llvm_ir() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
@@ -63,7 +58,7 @@ fn llvm_ir(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "EVM version is only allowed in Solidity mode",
     ));
@@ -71,9 +66,8 @@ fn llvm_ir(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn eravm_assembly(target: Target) -> anyhow::Result<()> {
+#[test]
+fn eravm_assembly() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
@@ -85,7 +79,7 @@ fn eravm_assembly(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "EVM version is only allowed in Solidity mode",
     ));
@@ -93,9 +87,8 @@ fn eravm_assembly(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let evm_version = era_compiler_common::EVMVersion::Cancun.to_string();
@@ -106,7 +99,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         evm_version.as_str(),
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "EVM version must be passed via standard JSON input.",
     ));

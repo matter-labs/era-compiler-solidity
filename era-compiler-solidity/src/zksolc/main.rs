@@ -80,18 +80,10 @@ fn main_inner(
         return Ok(());
     }
 
-    let target = match arguments.target {
-        Some(ref target) => era_compiler_common::Target::from_str(target.as_str())?,
-        None => era_compiler_common::Target::EraVM,
-    };
-    era_compiler_llvm_context::initialize_target(target);
+    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
 
     if arguments.recursive_process {
-        return era_compiler_solidity::run_recursive(target);
-    }
-
-    if let era_compiler_common::Target::EVM = target {
-        messages.push(era_solc::StandardJsonOutputError::new_warning("EVM target is under development and not fully functional yet. It must only be used for research and development purposes.", None, None))
+        return era_compiler_solidity::run_recursive();
     }
 
     let mut thread_pool_builder = rayon::ThreadPoolBuilder::new();
@@ -153,280 +145,149 @@ fn main_inner(
 
     let append_cbor = !arguments.no_cbor_metadata;
 
-    match target {
-        era_compiler_common::Target::EraVM => {
-            let metadata_hash_type = match arguments.metadata_hash {
-                Some(ref hash_type) => {
-                    era_compiler_common::EraVMMetadataHashType::from_str(hash_type.as_str())?
-                }
-                None => era_compiler_common::EraVMMetadataHashType::IPFS,
-            };
-
-            let build = if arguments.yul {
-                era_compiler_solidity::yul_to_eravm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    arguments.solc,
-                    messages,
-                    enable_eravm_extensions,
-                    metadata_hash_type,
-                    append_cbor,
-                    optimizer_settings,
-                    llvm_options,
-                    arguments.output_assembly,
-                    debug_config,
-                )
-            } else if arguments.llvm_ir {
-                era_compiler_solidity::llvm_ir_to_eravm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    messages,
-                    metadata_hash_type,
-                    append_cbor,
-                    optimizer_settings,
-                    llvm_options,
-                    arguments.output_assembly,
-                    debug_config,
-                )
-            } else if arguments.eravm_assembly {
-                era_compiler_solidity::eravm_assembly_to_eravm(
-                    input_files.as_slice(),
-                    messages,
-                    metadata_hash_type,
-                    append_cbor,
-                    llvm_options,
-                    arguments.output_assembly,
-                    debug_config,
-                )
-            } else if arguments.disassemble {
-                return era_compiler_solidity::disassemble_eravm(arguments.inputs);
-            } else if arguments.link {
-                return match arguments.standard_json {
-                    Some(path) => era_compiler_solidity::link_eravm_json(path),
-                    None => {
-                        era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries)
-                    }
-                };
-            } else if let Some(standard_json) = arguments.standard_json {
-                let solc_compiler = match arguments.solc.as_deref() {
-                    Some(executable) => Some(era_solc::Compiler::try_from_path(executable)?),
-                    None => None,
-                };
-                return era_compiler_solidity::standard_json_eravm(
-                    solc_compiler,
-                    arguments.codegen,
-                    enable_eravm_extensions,
-                    arguments.detect_missing_libraries,
-                    standard_json.map(PathBuf::from),
-                    messages,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    debug_config,
-                );
-            } else if let Some(format) = arguments.combined_json {
-                let solc_compiler = era_solc::Compiler::try_from_path(
-                    arguments
-                        .solc
-                        .as_deref()
-                        .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
-                )?;
-                return era_compiler_solidity::combined_json_eravm(
-                    format,
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    &solc_compiler,
-                    messages,
-                    arguments.codegen,
-                    arguments.evm_version,
-                    enable_eravm_extensions,
-                    metadata_hash_type,
-                    append_cbor,
-                    arguments.metadata_literal,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    remappings,
-                    arguments.output_dir,
-                    arguments.overwrite,
-                    optimizer_settings,
-                    llvm_options,
-                    suppressed_errors,
-                    suppressed_warnings,
-                    debug_config,
-                );
-            } else {
-                let solc_compiler = era_solc::Compiler::try_from_path(
-                    arguments
-                        .solc
-                        .as_deref()
-                        .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
-                )?;
-                era_compiler_solidity::standard_output_eravm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    &solc_compiler,
-                    messages,
-                    arguments.codegen,
-                    arguments.evm_version,
-                    enable_eravm_extensions,
-                    metadata_hash_type,
-                    append_cbor,
-                    arguments.metadata_literal,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    remappings,
-                    optimizer_settings,
-                    llvm_options,
-                    arguments.output_assembly,
-                    suppressed_errors,
-                    suppressed_warnings,
-                    debug_config,
-                )
-            }?;
-
-            if let Some(output_directory) = arguments.output_dir {
-                build.write_to_directory(
-                    &output_directory,
-                    arguments.output_metadata,
-                    arguments.output_assembly,
-                    arguments.output_binary,
-                    arguments.overwrite,
-                )?;
-            } else {
-                build.write_to_terminal(
-                    arguments.output_metadata,
-                    arguments.output_assembly,
-                    arguments.output_binary,
-                )?;
-            }
+    let metadata_hash_type = match arguments.metadata_hash {
+        Some(ref hash_type) => {
+            era_compiler_common::EraVMMetadataHashType::from_str(hash_type.as_str())?
         }
-        era_compiler_common::Target::EVM => {
-            let metadata_hash_type = match arguments.metadata_hash {
-                Some(ref hash_type) => {
-                    era_compiler_common::EVMMetadataHashType::from_str(hash_type.as_str())?
-                }
-                None => era_compiler_common::EVMMetadataHashType::IPFS,
-            };
+        None => era_compiler_common::EraVMMetadataHashType::IPFS,
+    };
 
-            let build = if arguments.yul {
-                era_compiler_solidity::yul_to_evm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    arguments.solc,
-                    messages,
-                    metadata_hash_type,
-                    append_cbor,
-                    optimizer_settings,
-                    llvm_options,
-                    debug_config,
-                )
-            } else if arguments.llvm_ir {
-                era_compiler_solidity::llvm_ir_to_evm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    messages,
-                    metadata_hash_type,
-                    append_cbor,
-                    optimizer_settings,
-                    llvm_options,
-                    debug_config,
-                )
-            } else if arguments.eravm_assembly {
-                era_compiler_solidity::eravm_assembly_to_evm(
-                    input_files.as_slice(),
-                    messages,
-                    metadata_hash_type,
-                    append_cbor,
-                    llvm_options,
-                    debug_config,
-                )
-            } else if arguments.disassemble {
-                anyhow::bail!("The EVM target does not support disassembling yet.");
-            } else if arguments.link {
-                anyhow::bail!("The EVM target does not support linking yet.");
-            } else if let Some(standard_json) = arguments.standard_json {
-                let solc_compiler = match arguments.solc.as_deref() {
-                    Some(executable) => Some(era_solc::Compiler::try_from_path(executable)?),
-                    None => None,
-                };
-                return era_compiler_solidity::standard_json_evm(
-                    solc_compiler,
-                    arguments.codegen,
-                    standard_json.map(PathBuf::from),
-                    messages,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    debug_config,
-                );
-            } else if let Some(format) = arguments.combined_json {
-                let solc_compiler = era_solc::Compiler::try_from_path(
-                    arguments
-                        .solc
-                        .as_deref()
-                        .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
-                )?;
-                return era_compiler_solidity::combined_json_evm(
-                    format,
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    &solc_compiler,
-                    messages,
-                    arguments.codegen,
-                    arguments.evm_version,
-                    metadata_hash_type,
-                    append_cbor,
-                    arguments.metadata_literal,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    remappings,
-                    arguments.output_dir,
-                    arguments.overwrite,
-                    optimizer_settings,
-                    llvm_options,
-                    debug_config,
-                );
-            } else {
-                let solc = era_solc::Compiler::try_from_path(
-                    arguments
-                        .solc
-                        .as_deref()
-                        .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
-                )?;
-                era_compiler_solidity::standard_output_evm(
-                    input_files.as_slice(),
-                    arguments.libraries.as_slice(),
-                    &solc,
-                    messages,
-                    arguments.codegen,
-                    arguments.evm_version,
-                    metadata_hash_type,
-                    append_cbor,
-                    arguments.metadata_literal,
-                    arguments.base_path,
-                    arguments.include_path,
-                    arguments.allow_paths,
-                    remappings,
-                    optimizer_settings,
-                    llvm_options,
-                    debug_config,
-                )
-            }?;
+    let build = if arguments.yul {
+        era_compiler_solidity::yul_to_eravm(
+            input_files.as_slice(),
+            arguments.libraries.as_slice(),
+            arguments.solc,
+            messages,
+            enable_eravm_extensions,
+            metadata_hash_type,
+            append_cbor,
+            optimizer_settings,
+            llvm_options,
+            arguments.output_assembly,
+            debug_config,
+        )
+    } else if arguments.llvm_ir {
+        era_compiler_solidity::llvm_ir_to_eravm(
+            input_files.as_slice(),
+            arguments.libraries.as_slice(),
+            messages,
+            metadata_hash_type,
+            append_cbor,
+            optimizer_settings,
+            llvm_options,
+            arguments.output_assembly,
+            debug_config,
+        )
+    } else if arguments.eravm_assembly {
+        era_compiler_solidity::eravm_assembly_to_eravm(
+            input_files.as_slice(),
+            messages,
+            metadata_hash_type,
+            append_cbor,
+            llvm_options,
+            arguments.output_assembly,
+            debug_config,
+        )
+    } else if arguments.disassemble {
+        return era_compiler_solidity::disassemble_eravm(arguments.inputs);
+    } else if arguments.link {
+        return match arguments.standard_json {
+            Some(path) => era_compiler_solidity::link_eravm_json(path),
+            None => era_compiler_solidity::link_eravm(arguments.inputs, arguments.libraries),
+        };
+    } else if let Some(standard_json) = arguments.standard_json {
+        let solc_compiler = match arguments.solc.as_deref() {
+            Some(executable) => Some(era_solc::Compiler::try_from_path(executable)?),
+            None => None,
+        };
+        return era_compiler_solidity::standard_json_eravm(
+            solc_compiler,
+            arguments.codegen,
+            enable_eravm_extensions,
+            arguments.detect_missing_libraries,
+            standard_json.map(PathBuf::from),
+            messages,
+            arguments.base_path,
+            arguments.include_path,
+            arguments.allow_paths,
+            debug_config,
+        );
+    } else if let Some(format) = arguments.combined_json {
+        let solc_compiler = era_solc::Compiler::try_from_path(
+            arguments
+                .solc
+                .as_deref()
+                .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
+        )?;
+        return era_compiler_solidity::combined_json_eravm(
+            format,
+            input_files.as_slice(),
+            arguments.libraries.as_slice(),
+            &solc_compiler,
+            messages,
+            arguments.codegen,
+            arguments.evm_version,
+            enable_eravm_extensions,
+            metadata_hash_type,
+            append_cbor,
+            arguments.metadata_literal,
+            arguments.base_path,
+            arguments.include_path,
+            arguments.allow_paths,
+            remappings,
+            arguments.output_dir,
+            arguments.overwrite,
+            optimizer_settings,
+            llvm_options,
+            suppressed_errors,
+            suppressed_warnings,
+            debug_config,
+        );
+    } else {
+        let solc_compiler = era_solc::Compiler::try_from_path(
+            arguments
+                .solc
+                .as_deref()
+                .unwrap_or(era_solc::Compiler::DEFAULT_EXECUTABLE_NAME),
+        )?;
+        era_compiler_solidity::standard_output_eravm(
+            input_files.as_slice(),
+            arguments.libraries.as_slice(),
+            &solc_compiler,
+            messages,
+            arguments.codegen,
+            arguments.evm_version,
+            enable_eravm_extensions,
+            metadata_hash_type,
+            append_cbor,
+            arguments.metadata_literal,
+            arguments.base_path,
+            arguments.include_path,
+            arguments.allow_paths,
+            remappings,
+            optimizer_settings,
+            llvm_options,
+            arguments.output_assembly,
+            suppressed_errors,
+            suppressed_warnings,
+            debug_config,
+        )
+    }?;
 
-            if let Some(output_directory) = arguments.output_dir {
-                build.write_to_directory(
-                    &output_directory,
-                    arguments.output_metadata,
-                    arguments.output_binary,
-                    arguments.overwrite,
-                )?;
-            } else {
-                build.write_to_terminal(arguments.output_metadata, arguments.output_binary)?;
-            }
-        }
+    if let Some(output_directory) = arguments.output_dir {
+        build.write_to_directory(
+            &output_directory,
+            arguments.output_metadata,
+            arguments.output_assembly,
+            arguments.output_binary,
+            arguments.overwrite,
+        )?;
+    } else {
+        build.write_to_terminal(
+            arguments.output_metadata,
+            arguments.output_assembly,
+            arguments.output_binary,
+        )?;
     }
 
     Ok(())

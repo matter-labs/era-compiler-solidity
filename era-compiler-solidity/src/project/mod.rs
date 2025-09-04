@@ -13,14 +13,10 @@ use rayon::iter::ParallelIterator;
 
 use crate::build_eravm::contract::Contract as EraVMContractBuild;
 use crate::build_eravm::Build as EraVMBuild;
-use crate::build_evm::contract::Contract as EVMContractBuild;
-use crate::build_evm::Build as EVMBuild;
 use crate::evmla::assembly::Assembly;
 use crate::missing_libraries::MissingLibraries;
 use crate::process::input_eravm::Input as EraVMProcessInput;
-use crate::process::input_evm::Input as EVMProcessInput;
 use crate::process::output_eravm::Output as EraVMOutput;
-use crate::process::output_evm::Output as EVMOutput;
 
 use self::contract::ir::eravm_assembly::EraVMAssembly as ContractEraVMAssembly;
 use self::contract::ir::evmla::EVMLA as ContractEVMLA;
@@ -395,46 +391,11 @@ impl Project {
                 debug_config.clone(),
             );
             let result: crate::Result<EraVMOutput> =
-                crate::process::call(path.as_str(), input, era_compiler_common::Target::EraVM);
+                crate::process::call(path.as_str(), input);
             let result = result.map(|output| output.build);
             (path, result)
         }).collect::<BTreeMap<String, Result<EraVMContractBuild, era_solc::StandardJsonOutputError>>>();
         Ok(EraVMBuild::new(results, messages))
-    }
-
-    ///
-    /// Compiles all contracts to EVM, returning their build artifacts.
-    ///
-    pub fn compile_to_evm(
-        self,
-        messages: &mut Vec<era_solc::StandardJsonOutputError>,
-        metadata_hash_type: era_compiler_common::EVMMetadataHashType,
-        append_cbor: bool,
-        optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
-        llvm_options: Vec<String>,
-        debug_config: Option<era_compiler_llvm_context::DebugConfig>,
-    ) -> anyhow::Result<EVMBuild> {
-        let deployed_libraries = self.libraries.as_paths();
-        let results = self.contracts.into_par_iter().map(|(path, contract)| {
-            let missing_libraries = contract.get_missing_libraries(&deployed_libraries);
-            let input = EVMProcessInput::new(
-                contract,
-                self.solc_version.clone(),
-                self.identifier_paths.clone(),
-                missing_libraries,
-                metadata_hash_type,
-                append_cbor,
-                optimizer_settings.clone(),
-                llvm_options.clone(),
-                debug_config.clone(),
-            );
-            let result: crate::Result<EVMOutput> =
-                crate::process::call(path.as_str(), input, era_compiler_common::Target::EVM);
-            let result = result.map(|output| output.build);
-            (path, result)
-        }).collect::<BTreeMap<String, Result<EVMContractBuild, era_solc::StandardJsonOutputError>>>();
-
-        Ok(EVMBuild::new(results, messages))
     }
 
     ///

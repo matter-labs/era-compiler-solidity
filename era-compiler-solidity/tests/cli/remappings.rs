@@ -2,13 +2,10 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn default(target: Target) -> anyhow::Result<()> {
+#[test]
+fn default() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -17,7 +14,7 @@ fn default(target: Target) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result
         .success()
         .stdout(predicate::str::contains("Binary:\n"));
@@ -25,9 +22,8 @@ fn default(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn excess_equals_sign(target: Target) -> anyhow::Result<()> {
+#[test]
+fn excess_equals_sign() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -36,7 +32,7 @@ fn excess_equals_sign(target: Target) -> anyhow::Result<()> {
         "--bin",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.failure().stderr(predicate::str::contains(
         "expected two parts separated by '='",
     ));
@@ -44,9 +40,8 @@ fn excess_equals_sign(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -55,7 +50,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         crate::common::TEST_SOLIDITY_STANDARD_JSON_SOLC_PATH,
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Input files must be passed via standard JSON input.",
     ));

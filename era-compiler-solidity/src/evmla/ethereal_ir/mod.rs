@@ -128,33 +128,6 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for EtherealIR {
     }
 }
 
-impl era_compiler_llvm_context::EVMWriteLLVM for EtherealIR {
-    fn declare(
-        &mut self,
-        context: &mut era_compiler_llvm_context::EVMContext,
-    ) -> anyhow::Result<()> {
-        self.entry_function.declare(context)?;
-
-        for (_key, function) in self.recursive_functions.iter_mut() {
-            function.declare(context)?;
-        }
-
-        Ok(())
-    }
-
-    fn into_llvm(self, context: &mut era_compiler_llvm_context::EVMContext) -> anyhow::Result<()> {
-        context.evmla_mut().expect("Always exists").stack = vec![];
-
-        self.entry_function.into_llvm(context)?;
-
-        for (_key, function) in self.recursive_functions.into_iter() {
-            function.into_llvm(context)?;
-        }
-
-        Ok(())
-    }
-}
-
 impl std::fmt::Display for EtherealIR {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", self.entry_function)?;

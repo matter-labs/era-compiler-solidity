@@ -3,9 +3,7 @@
 //!
 
 pub mod input_eravm;
-pub mod input_evm;
 pub mod output_eravm;
-pub mod output_evm;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -14,9 +12,7 @@ use std::sync::OnceLock;
 use std::thread::Builder;
 
 use self::input_eravm::Input as EraVMInput;
-use self::input_evm::Input as EVMInput;
 use self::output_eravm::Output as EraVMOutput;
-use self::output_evm::Output as EVMOutput;
 
 /// The overridden executable name used when the compiler is run as a library.
 pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
@@ -24,93 +20,45 @@ pub static EXECUTABLE: OnceLock<PathBuf> = OnceLock::new();
 ///
 /// Read input from `stdin`, compile a contract, and write the output to `stdout`.
 ///
-pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
-    match target {
-        era_compiler_common::Target::EraVM => {
-            let input_json = std::io::read_to_string(std::io::stdin())
-                .map_err(|error| anyhow::anyhow!("Stdin reading error: {error}"))?;
-            let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
-                .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
+pub fn run() -> anyhow::Result<()> {
+    let input_json = std::io::read_to_string(std::io::stdin())
+        .map_err(|error| anyhow::anyhow!("Stdin reading error: {error}"))?;
+    let input: EraVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
+        .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
 
-            let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
-                input.contract.name.path.clone(),
-            );
+    let source_location =
+        era_solc::StandardJsonOutputErrorSourceLocation::new(input.contract.name.path.clone());
 
-            let result = Builder::new()
-                .stack_size(crate::WORKER_THREAD_STACK_SIZE)
-                .spawn(move || {
-                    input
-                        .contract
-                        .compile_to_eravm(
-                            input.solc_version,
-                            input.identifier_paths,
-                            input.missing_libraries,
-                            input.factory_dependencies,
-                            input.enable_eravm_extensions,
-                            input.metadata_hash_type,
-                            input.append_cbor,
-                            input.optimizer_settings,
-                            input.llvm_options,
-                            input.output_assembly,
-                            input.debug_config,
-                        )
-                        .map(EraVMOutput::new)
-                        .map_err(|error| {
-                            era_solc::StandardJsonOutputError::new_error(
-                                error,
-                                Some(source_location),
-                                None,
-                            )
-                        })
+    let result = Builder::new()
+        .stack_size(crate::WORKER_THREAD_STACK_SIZE)
+        .spawn(move || {
+            input
+                .contract
+                .compile_to_eravm(
+                    input.solc_version,
+                    input.identifier_paths,
+                    input.missing_libraries,
+                    input.factory_dependencies,
+                    input.enable_eravm_extensions,
+                    input.metadata_hash_type,
+                    input.append_cbor,
+                    input.optimizer_settings,
+                    input.llvm_options,
+                    input.output_assembly,
+                    input.debug_config,
+                )
+                .map(EraVMOutput::new)
+                .map_err(|error| {
+                    era_solc::StandardJsonOutputError::new_error(error, Some(source_location), None)
                 })
-                .expect("Threading error")
-                .join()
-                .expect("Threading error");
+        })
+        .expect("Threading error")
+        .join()
+        .expect("Threading error");
 
-            serde_json::to_writer(std::io::stdout(), &result)
-                .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
-        }
-        era_compiler_common::Target::EVM => {
-            let input_json = std::io::read_to_string(std::io::stdin())
-                .map_err(|error| anyhow::anyhow!("Stdin reading error: {error}"))?;
-            let input: EVMInput = era_compiler_common::deserialize_from_str(input_json.as_str())
-                .map_err(|error| anyhow::anyhow!("Stdin parsing error: {error}"))?;
+    serde_json::to_writer(std::io::stdout(), &result)
+        .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
 
-            let source_location = era_solc::StandardJsonOutputErrorSourceLocation::new(
-                input.contract.name.path.clone(),
-            );
-
-            let result = Builder::new()
-                .stack_size(crate::WORKER_THREAD_STACK_SIZE)
-                .spawn(move || {
-                    input
-                        .contract
-                        .compile_to_evm(
-                            input.solc_version,
-                            input.identifier_paths,
-                            input.missing_libraries,
-                            input.metadata_hash_type,
-                            input.optimizer_settings,
-                            input.llvm_options,
-                            input.debug_config,
-                        )
-                        .map(EVMOutput::new)
-                        .map_err(|error| {
-                            era_solc::StandardJsonOutputError::new_error(
-                                error,
-                                Some(source_location),
-                                None,
-                            )
-                        })
-                })
-                .expect("Threading error")
-                .join()
-                .expect("Threading error");
-
-            serde_json::to_writer(std::io::stdout(), &result)
-                .map_err(|error| anyhow::anyhow!("Stdout writing error: {error}"))?;
-        }
-    }
     unsafe { inkwell::support::shutdown_llvm() };
     Ok(())
 }
@@ -118,7 +66,7 @@ pub fn run(target: era_compiler_common::Target) -> anyhow::Result<()> {
 ///
 /// Runs this process recursively to compile a single contract.
 ///
-pub fn call<I, O>(path: &str, input: I, target: era_compiler_common::Target) -> crate::Result<O>
+pub fn call<I, O>(path: &str, input: I) -> crate::Result<O>
 where
     I: serde::Serialize,
     O: serde::de::DeserializeOwned,
@@ -134,8 +82,6 @@ where
     command.stderr(std::process::Stdio::piped());
     command.arg("--recursive-process");
     command.arg(path);
-    command.arg("--target");
-    command.arg(target.to_string());
 
     let mut process = command
         .spawn()

@@ -2,14 +2,11 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::Target;
 use predicates::prelude::*;
 use tempfile::TempDir;
-use test_case::test_case;
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn bin(target: Target) -> anyhow::Result<()> {
+#[test]
+fn bin() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -30,8 +27,8 @@ fn bin(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -49,9 +46,8 @@ fn bin(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn bin_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn bin_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -70,8 +66,8 @@ fn bin_missing(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -91,9 +87,8 @@ fn bin_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn asm(target: Target) -> anyhow::Result<()> {
+#[test]
+fn asm() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -114,8 +109,8 @@ fn asm(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -133,8 +128,8 @@ fn asm(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-fn asm_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn asm_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -153,8 +148,8 @@ fn asm_missing(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -174,9 +169,8 @@ fn asm_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -197,8 +191,8 @@ fn metadata(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -216,9 +210,8 @@ fn metadata(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn metadata_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn metadata_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -237,8 +230,8 @@ fn metadata_missing(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -258,9 +251,8 @@ fn metadata_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn all(target: Target) -> anyhow::Result<()> {
+#[test]
+fn all() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -285,8 +277,8 @@ fn all(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -304,9 +296,8 @@ fn all(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn all_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn all_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -329,8 +320,8 @@ fn all_missing(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -350,9 +341,8 @@ fn all_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn combined_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn combined_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -375,8 +365,8 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .success()
         .stderr(predicate::str::contains("Compiler run successful"))
@@ -394,9 +384,8 @@ fn combined_json(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn combined_json_missing(target: Target) -> anyhow::Result<()> {
+#[test]
+fn combined_json_missing() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let tmp_dir_zksolc = TempDir::with_prefix("zksolc_output")?;
@@ -417,8 +406,8 @@ fn combined_json_missing(target: Target) -> anyhow::Result<()> {
         tmp_dir_solc.path().to_str().unwrap(),
     ];
 
-    let _ = crate::cli::execute_zksolc_with_target(args, target)?;
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let _ = crate::cli::execute_zksolc(args)?;
+    let result = crate::cli::execute_zksolc(args)?;
     let status = result
         .failure()
         .stderr(predicate::str::contains(
@@ -438,9 +427,8 @@ fn combined_json_missing(target: Target) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(Target::EraVM)]
-#[test_case(Target::EVM)]
-fn standard_json(target: Target) -> anyhow::Result<()> {
+#[test]
+fn standard_json() -> anyhow::Result<()> {
     crate::common::setup()?;
 
     let args = &[
@@ -451,7 +439,7 @@ fn standard_json(target: Target) -> anyhow::Result<()> {
         "--overwrite",
     ];
 
-    let result = crate::cli::execute_zksolc_with_target(args, target)?;
+    let result = crate::cli::execute_zksolc(args)?;
     result.success().stdout(predicate::str::contains(
         "Overwriting flag cannot be used in standard JSON mode.",
     ));

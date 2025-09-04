@@ -66,9 +66,6 @@ pub const TEST_SOLIDITY_CONTRACT_INTERFACE_EMPTY_YUL_PATH: &str =
 pub const SOLIDITY_BIN_OUTPUT_NAME_ERAVM: &str = "Test.zbin";
 
 /// A test input file.
-pub const SOLIDITY_BIN_OUTPUT_NAME_EVM: &str = "Test.bin";
-
-/// A test input file.
 pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "Test.zasm";
 
 /// A test input file.
@@ -78,18 +75,11 @@ pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 pub const TEST_LLVM_IR_CONTRACT_ERAVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.eravm.ll";
 
 /// A test input file.
-pub const TEST_LLVM_IR_CONTRACT_EVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.evm.ll";
-
-/// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_INVALID_PATH: &str = "tests/data/contracts/llvm_ir/Invalid.ll";
 
 /// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_ERAVM_LINKER_ERROR_PATH: &str =
     "tests/data/contracts/llvm_ir/LinkerError.eravm.ll";
-
-/// A test input file.
-pub const TEST_LLVM_IR_CONTRACT_EVM_LINKER_ERROR_PATH: &str =
-    "tests/data/contracts/llvm_ir/LinkerError.evm.ll";
 
 /// A test input file.
 pub const TEST_ERAVM_ASSEMBLY_CONTRACT_PATH: &str = "tests/data/contracts/eravm_assembly/Test.zasm";
