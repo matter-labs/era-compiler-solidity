@@ -19,7 +19,7 @@ fn evmla(version: semver::Version) {
     let build = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         era_solc::StandardJsonInputCodegen::EVMLA,
@@ -60,7 +60,7 @@ fn yul(version: semver::Version) {
     let build = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         era_solc::StandardJsonInputCodegen::Yul,
@@ -104,7 +104,7 @@ fn yul_empty_solidity_interface(version: semver::Version) {
     let build = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         BTreeSet::new(),
         &version,
         era_solc::StandardJsonInputCodegen::Yul,

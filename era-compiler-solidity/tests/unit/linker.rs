@@ -19,7 +19,7 @@ fn get_bytecode(
     let build = crate::common::build_solidity_standard_json(
         sources,
         libraries,
-        era_compiler_common::EraVMMetadataHashType::None,
+        era_compiler_common::MetadataHashType::None,
         BTreeSet::new(),
         version,
         codegen,
@@ -526,7 +526,7 @@ fn libraries_passed_post_compile_time_complex(
     let build = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::None,
+        era_compiler_common::MetadataHashType::None,
         BTreeSet::new(),
         &version,
         codegen,
@@ -593,7 +593,7 @@ fn libraries_not_passed_post_compile_time_complex(
     let build = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::None,
+        era_compiler_common::MetadataHashType::None,
         BTreeSet::new(),
         &version,
         codegen,

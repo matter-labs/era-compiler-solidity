@@ -2,11 +2,11 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::EraVMMetadataHashType;
+use era_compiler_common::MetadataHashType;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(EraVMMetadataHashType::None.to_string())]
+#[test_case(MetadataHashType::None.to_string())]
 fn none(hash_type: String) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -23,7 +23,7 @@ fn none(hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(EraVMMetadataHashType::IPFS.to_string())]
+#[test_case(MetadataHashType::IPFS.to_string())]
 fn ipfs(hash_type: String) -> anyhow::Result<()> {
     crate::common::setup()?;
 
@@ -44,7 +44,7 @@ fn ipfs(hash_type: String) -> anyhow::Result<()> {
 fn keccak256() -> anyhow::Result<()> {
     crate::common::setup()?;
 
-    let hash_type = EraVMMetadataHashType::Keccak256.to_string();
+    let hash_type = MetadataHashType::Keccak256.to_string();
     let args = &[
         "--metadata-hash",
         hash_type.as_str(),

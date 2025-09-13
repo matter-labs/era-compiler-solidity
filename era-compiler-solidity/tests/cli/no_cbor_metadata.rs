@@ -2,12 +2,11 @@
 //! CLI tests for the eponymous option.
 //!
 
-use era_compiler_common::EVMMetadataHashType;
-use era_compiler_common::EraVMMetadataHashType;
+use era_compiler_common::MetadataHashType;
 use predicates::prelude::*;
 use test_case::test_case;
 
-#[test_case(EraVMMetadataHashType::None.to_string())]
+#[test_case(MetadataHashType::None.to_string())]
 fn none(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -29,7 +28,7 @@ fn none(hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(EVMMetadataHashType::IPFS.to_string())]
+#[test_case(MetadataHashType::IPFS.to_string())]
 fn ipfs_solidity(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -51,7 +50,7 @@ fn ipfs_solidity(hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(EVMMetadataHashType::IPFS.to_string())]
+#[test_case(MetadataHashType::IPFS.to_string())]
 fn ipfs_yul(hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -74,7 +73,7 @@ fn ipfs_yul(hash_type: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test_case(crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH, EraVMMetadataHashType::IPFS.to_string())]
+#[test_case(crate::common::TEST_LLVM_IR_CONTRACT_ERAVM_PATH, MetadataHashType::IPFS.to_string())]
 fn ipfs_llvm_ir(path: &str, hash_type: String) -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
@@ -101,7 +100,7 @@ fn ipfs_llvm_ir(path: &str, hash_type: String) -> anyhow::Result<()> {
 fn ipfs_eravm_assembly() -> anyhow::Result<()> {
     let _ = crate::common::setup();
 
-    let hash_type = EraVMMetadataHashType::IPFS.to_string();
+    let hash_type = MetadataHashType::IPFS.to_string();
     let args = &[
         "--eravm-assembly",
         crate::common::TEST_ERAVM_ASSEMBLY_CONTRACT_PATH,

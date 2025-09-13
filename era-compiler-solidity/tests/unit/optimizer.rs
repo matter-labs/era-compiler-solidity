@@ -37,7 +37,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     let build_unoptimized = crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::Keccak256,
+        era_compiler_common::MetadataHashType::Keccak256,
         BTreeSet::new(),
         &version,
         codegen,
@@ -47,7 +47,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     let build_optimized_for_cycles = crate::common::build_solidity_standard_json(
         sources.clone(),
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::Keccak256,
+        era_compiler_common::MetadataHashType::Keccak256,
         BTreeSet::new(),
         &version,
         codegen,
@@ -57,7 +57,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     let build_optimized_for_size = crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::Keccak256,
+        era_compiler_common::MetadataHashType::Keccak256,
         BTreeSet::new(),
         &version,
         codegen,

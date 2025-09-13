@@ -80,7 +80,7 @@ fn main_inner(
         return Ok(());
     }
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     if arguments.recursive_process {
         return era_compiler_solidity::run_recursive();
@@ -146,10 +146,8 @@ fn main_inner(
     let append_cbor = !arguments.no_cbor_metadata;
 
     let metadata_hash_type = match arguments.metadata_hash {
-        Some(ref hash_type) => {
-            era_compiler_common::EraVMMetadataHashType::from_str(hash_type.as_str())?
-        }
-        None => era_compiler_common::EraVMMetadataHashType::IPFS,
+        Some(ref hash_type) => era_compiler_common::MetadataHashType::from_str(hash_type.as_str())?,
+        None => era_compiler_common::MetadataHashType::IPFS,
     };
 
     let build = if arguments.yul {

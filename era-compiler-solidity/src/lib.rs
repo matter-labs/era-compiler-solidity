@@ -56,7 +56,7 @@ pub fn yul_to_eravm(
     solc_path: Option<String>,
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
@@ -112,7 +112,7 @@ pub fn llvm_ir_to_eravm(
     paths: &[PathBuf],
     libraries: &[String],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     append_cbor: bool,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
     llvm_options: Vec<String>,
@@ -149,7 +149,7 @@ pub fn llvm_ir_to_eravm(
 pub fn eravm_assembly_to_eravm(
     paths: &[PathBuf],
     messages: &mut Vec<era_solc::StandardJsonOutputError>,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     append_cbor: bool,
     llvm_options: Vec<String>,
     output_assembly: bool,
@@ -188,7 +188,7 @@ pub fn standard_output_eravm(
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     append_cbor: bool,
     metadata_literal: bool,
     base_path: Option<String>,
@@ -305,7 +305,7 @@ pub fn standard_json_eravm(
         solc_input.settings.enable_eravm_extensions || enable_eravm_extensions;
     let detect_missing_libraries =
         solc_input.settings.detect_missing_libraries || detect_missing_libraries;
-    let metadata_hash_type = era_compiler_common::EraVMMetadataHashType::from_str(
+    let metadata_hash_type = era_compiler_common::MetadataHashType::from_str(
         solc_input.settings.metadata.hash_type.as_str(),
     )?;
     let append_cbor = solc_input.settings.metadata.append_cbor;
@@ -461,7 +461,7 @@ pub fn combined_json_eravm(
     codegen: Option<era_solc::StandardJsonInputCodegen>,
     evm_version: Option<era_compiler_common::EVMVersion>,
     enable_eravm_extensions: bool,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     append_cbor: bool,
     metadata_literal: bool,
     base_path: Option<String>,

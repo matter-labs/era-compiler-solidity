@@ -52,7 +52,7 @@ impl Metadata {
     /// The default metadata hash type.
     ///
     fn default_hash_type() -> String {
-        era_compiler_common::EVMMetadataHashType::IPFS.to_string()
+        era_compiler_common::MetadataHashType::IPFS.to_string()
     }
 
     ///
