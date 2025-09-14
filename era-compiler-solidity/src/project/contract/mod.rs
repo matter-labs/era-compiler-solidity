@@ -70,7 +70,7 @@ impl Contract {
         missing_libraries: BTreeSet<String>,
         factory_dependencies: BTreeSet<String>,
         enable_eravm_extensions: bool,
-        metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+        metadata_hash_type: era_compiler_common::MetadataHashType,
         append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
@@ -96,12 +96,12 @@ impl Contract {
         let metadata_json = serde_json::to_value(&metadata).expect("Always valid");
         let metadata_json_bytes = serde_json::to_vec(&metadata_json).expect("Always valid");
         let metadata_bytes = match metadata_hash_type {
-            era_compiler_common::EraVMMetadataHashType::None => None,
-            era_compiler_common::EraVMMetadataHashType::Keccak256 => Some(
+            era_compiler_common::MetadataHashType::None => None,
+            era_compiler_common::MetadataHashType::Keccak256 => Some(
                 era_compiler_common::Keccak256Hash::from_slice(metadata_json_bytes.as_slice())
                     .into(),
             ),
-            era_compiler_common::EraVMMetadataHashType::IPFS => Some(
+            era_compiler_common::MetadataHashType::IPFS => Some(
                 era_compiler_common::IPFSHash::from_slice(metadata_json_bytes.as_slice()).into(),
             ),
         };

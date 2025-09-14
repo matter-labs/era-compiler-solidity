@@ -260,8 +260,7 @@ impl Arguments {
             ));
         }
 
-        if self.metadata_hash
-            == Some(era_compiler_common::EraVMMetadataHashType::Keccak256.to_string())
+        if self.metadata_hash == Some(era_compiler_common::MetadataHashType::Keccak256.to_string())
         {
             messages.push(era_solc::StandardJsonOutputError::new_warning(
                 "`keccak256` metadata hash type is deprecated. Please use `ipfs` instead.",

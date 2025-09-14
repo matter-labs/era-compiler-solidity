@@ -104,7 +104,7 @@ pub fn read_sources(paths: &[&str]) -> BTreeMap<String, String> {
 pub fn build_solidity_standard_json(
     sources: BTreeMap<String, String>,
     libraries: era_compiler_common::Libraries,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     remappings: BTreeSet<String>,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
@@ -114,7 +114,7 @@ pub fn build_solidity_standard_json(
 
     let solc_compiler = get_solc_compiler(solc_version)?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let sources: BTreeMap<String, era_solc::StandardJsonInputSource> = sources
         .into_iter()
@@ -180,14 +180,14 @@ pub fn build_solidity_combined_json(
     sources: BTreeMap<String, String>,
     libraries: era_compiler_common::Libraries,
     selectors: Vec<era_solc::CombinedJsonSelector>,
-    metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+    metadata_hash_type: era_compiler_common::MetadataHashType,
     solc_version: &semver::Version,
     solc_codegen: era_solc::StandardJsonInputCodegen,
     optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
 ) -> anyhow::Result<era_solc::CombinedJson> {
     self::setup()?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let solc_compiler = get_solc_compiler(solc_version)?;
     let paths: Vec<PathBuf> = sources.keys().map(PathBuf::from).collect();
@@ -245,7 +245,7 @@ pub fn build_solidity_and_detect_missing_libraries(
 
     let solc_compiler = get_solc_compiler(solc_version)?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let sources: BTreeMap<String, era_solc::StandardJsonInputSource> = sources
         .into_iter()
@@ -296,7 +296,7 @@ pub fn build_yul(
 ) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::none();
 
@@ -317,7 +317,7 @@ pub fn build_yul(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         false,
         optimizer_settings,
         vec![],
@@ -345,7 +345,7 @@ pub fn build_yul_standard_json(
 ) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let optimizer_settings = era_compiler_llvm_context::OptimizerSettings::try_from_cli(
         solc_input.settings.optimizer.mode,
@@ -373,7 +373,7 @@ pub fn build_yul_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         solc_compiler.is_none(),
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         false,
         optimizer_settings,
         vec![],
@@ -398,7 +398,7 @@ pub fn build_llvm_ir_standard_json(
 ) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
@@ -413,7 +413,7 @@ pub fn build_llvm_ir_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         false,
         optimizer_settings,
         vec![],
@@ -438,7 +438,7 @@ pub fn build_eravm_assembly_standard_json(
 ) -> anyhow::Result<era_solc::StandardJsonOutput> {
     self::setup()?;
 
-    era_compiler_llvm_context::initialize_target(era_compiler_common::Target::EraVM);
+    era_compiler_llvm_context::initialize_target();
 
     let optimizer_settings =
         era_compiler_llvm_context::OptimizerSettings::try_from_cli(input.settings.optimizer.mode)?;
@@ -449,7 +449,7 @@ pub fn build_eravm_assembly_standard_json(
     let build = project.compile_to_eravm(
         &mut vec![],
         true,
-        era_compiler_common::EraVMMetadataHashType::IPFS,
+        era_compiler_common::MetadataHashType::IPFS,
         false,
         optimizer_settings,
         vec![],

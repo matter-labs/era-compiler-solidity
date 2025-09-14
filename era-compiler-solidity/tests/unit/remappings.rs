@@ -42,7 +42,7 @@ fn default(version: semver::Version, codegen: era_solc::StandardJsonInputCodegen
     crate::common::build_solidity_standard_json(
         sources,
         era_compiler_common::Libraries::default(),
-        era_compiler_common::EraVMMetadataHashType::Keccak256,
+        era_compiler_common::MetadataHashType::Keccak256,
         remappings,
         &version,
         codegen,

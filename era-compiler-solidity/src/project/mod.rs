@@ -359,7 +359,7 @@ impl Project {
         self,
         messages: &mut Vec<era_solc::StandardJsonOutputError>,
         enable_eravm_extensions: bool,
-        metadata_hash_type: era_compiler_common::EraVMMetadataHashType,
+        metadata_hash_type: era_compiler_common::MetadataHashType,
         append_cbor: bool,
         optimizer_settings: era_compiler_llvm_context::OptimizerSettings,
         llvm_options: Vec<String>,
