@@ -19,7 +19,7 @@ impl Comment {
     pub const END: &'static str = "\n";
 
     ///
-    /// Returns the comment's length, including the trimmed whitespace around it.
+    /// Returns the comment token, including its length.
     ///
     pub fn parse(input: &str) -> Token {
         let end_position = input.find(Self::END).unwrap_or(input.len());

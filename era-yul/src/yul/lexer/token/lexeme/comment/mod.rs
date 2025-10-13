@@ -18,7 +18,7 @@ pub enum Comment {}
 
 impl Comment {
     ///
-    /// Returns the comment's length, including the trimmed whitespace around it.
+    /// Returns the comment token, or None if the input doesn't start with a comment.
     ///
     pub fn parse(input: &str) -> Option<Token> {
         if input.starts_with(SingleLineComment::START) {
