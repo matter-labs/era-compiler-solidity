@@ -54,9 +54,9 @@ jobs:
       matrix:
         include:
           - name: "MacOS x86"
-            runner: macos-13-large
+            runner: macos-latest-large
           - name: "MacOS arm64"
-            runner: [self-hosted, macOS, ARM64]
+            runner: macos-latest-xlarge
           - name: "Linux x86 gnu"
             runner: matterlabs-ci-runner-high-performance
             image: ghcr.io/matter-labs/zksync-llvm-runner:latest
@@ -74,9 +74,9 @@ jobs:
             runner: matterlabs-ci-runner-arm
             image: ghcr.io/matter-labs/zksync-llvm-runner:latest
             target: "aarch64-unknown-linux-musl"
-          - name: "Windows"
-            runner: windows-2022-github-hosted-16core
-            target: "x86_64-pc-windows-gnu"
+          # - name: "Windows"
+          #   runner: windows-2022-github-hosted-16core
+          #   target: "x86_64-pc-windows-gnu"
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image || '' }} # Special workaround to allow matrix builds with optional container
