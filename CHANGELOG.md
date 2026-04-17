@@ -1,10 +1,10 @@
 # The `zksolc` changelog
 
-## [Unreleased]
+## [1.5.16] - 2026-04-17
 
 ### Changed
 
-- Updated to Rust v1.88.0
+- Updated to Rust v1.89.0
 
 ### Fixed
 
