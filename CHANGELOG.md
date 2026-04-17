@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- Optimization bug that could cause do-while loops to execute one extra iteration
+- Optimization bug that incorrectly combines a move-immediate instruction into its use
 - solc-side stack-too-deep errors in EVM assembly codegen (solc >=0.8.31)
 - Compilation time issues due to excessive inlining in EVM assembly codegen (solc >=0.8.31)
 
