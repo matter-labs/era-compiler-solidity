@@ -150,7 +150,7 @@ Internally, *zksolc* extracts all *zksolc*-specific options and converts the inp
 
     // Optional, zksolc: Solidity codegen.
     // Can be "evmla" or "yul".
-    // In contract to solc, zksolc uses "Yul" codegen by default for solc v0.8.0 and newer. It will be fixed soon, so solc and zksolc defaults become the same.
+    // In contrast to solc, zksolc uses "Yul" codegen by default for solc v0.8.0 and newer. It will be fixed soon, so solc and zksolc defaults become the same.
     // Default: "evmla" for solc <0.8.0, "yul" for solc >=0.8.0.
     "codegen": "yul",
     // Optional, zksolc: Enables the EraVM extensions in Solidity and Yul modes.

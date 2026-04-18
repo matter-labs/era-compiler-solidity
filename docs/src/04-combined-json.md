@@ -22,11 +22,11 @@ The following selectors are supported:
 | **devdoc**                    | Developer documentation                     | JSON (NatSpec)            |  **solc**  |
 | **userdoc**                   | User documentation                          | JSON (NatSpec)            |  **solc**  |
 | **storage-layout**            | Solidity storage layout                     | JSON                      |  **solc**  |
-| **transient-storage-layout**  | Solidity transientstorage layout            | JSON                      |  **solc**  |
+| **transient-storage-layout**  | Solidity transient storage layout           | JSON                      |  **solc**  |
 | **ast**                       | AST of the source file                      | JSON                      |  **solc**  |
 | **asm**                       | EVM assembly                                | JSON                      |  **solc**  |
 | **eravm-assembly**            | EraVM assembly                              | String                    | **zksolc** |
-| **bin**                       | Deploy ytecode (always enabled)             | Hexadecimal string        | **zksolc** |
+| **bin**                       | Deploy bytecode (always enabled)            | Hexadecimal string        | **zksolc** |
 | **bin-runtime**               | Runtime bytecode (EVM-only, always enabled) | Hexadecimal string        | **zksolc** |
 
 > **Warning:** It is only possible to use Combined JSON with Solidity input, so the path to **solc** must be always provided to **zksolc**. Support for other languages is planned for future releases.
