@@ -50,7 +50,7 @@ jobs:
       # this can be reverted to the composite action call.
       - name: Install rustc nightly
         shell: bash
-        run: rustup toolchain install nightly
+        run: rustup toolchain install nightly nightly-2025-06-01 --profile minimal
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
