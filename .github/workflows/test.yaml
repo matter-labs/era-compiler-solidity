@@ -42,10 +42,44 @@ jobs:
           ccache-key: ${{ format('llvm-{0}-{1}-gnu', runner.os, runner.arch) }}
           save-ccache: 'false'
 
-      - name: Cargo checks
-        uses: matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+      # NOTE: This inlines matter-labs/era-compiler-ci/.github/actions/cargo-check@v1
+      # to work around cargo-udeps failing to build under the pinned stable toolchain:
+      # the latest cargo-udeps pulls cargo@0.96.0 which requires rustc >= 1.93, while
+      # rust-toolchain.toml pins 1.89.0. Building the tool with +nightly avoids bumping
+      # the release toolchain. Once the shared action installs cargo-udeps with +nightly,
+      # this can be reverted to the composite action call.
+      - name: Install rustc nightly
+        shell: bash
+        run: rustup toolchain install nightly
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          shared-key: "rust-cargo-cache-${{ runner.os }}-${{ runner.arch }}"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Cargo deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command-arguments: "--allow unmaintained --hide-inclusion-graph"
+
+      - name: Cargo check
+        shell: bash
+        run: cargo check --verbose
+
+      - name: Cargo format
+        shell: bash
+        run: cargo fmt --all -- --check --verbose
+
+      - name: Cargo clippy
+        shell: bash
+        run: cargo clippy
+
+      - name: Cargo udeps
+        shell: bash
+        run: |
+          cargo +nightly install cargo-udeps --locked
+          cargo +nightly udeps --all-targets
 
   # Build and run regression tests
   build-and-test:
