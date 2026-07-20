@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.5.17] - 2026-07-20
+
+### Fixed
+
+- EraVM miscompile affecting mulmod behavior with a large modulus (bn254 scalar field-sized)
+
 ## [1.5.16] - 2026-04-17
 
 ### Changed
