@@ -1,5 +1,11 @@
 # The `zksolc` changelog
 
+## [1.5.18] - 2026-09-22
+
+### Fixed
+
+- EraVM miscompile where stack and code-page inputs of stack-result `select` instructions were not converted from bytes to cells
+
 ## [1.5.17] - 2026-07-20
 
 ### Fixed
