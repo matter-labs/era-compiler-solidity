@@ -609,9 +609,16 @@ pub fn verbatim<'ctx>(
                 context.llvm_runtime().static_call,
                 arguments[0].into_int_value(),
                 arguments[1],
-                arguments[4].into_int_value(),
-                arguments[5].into_int_value(),
-                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
+                // r3..r6 are register values for every documented variant; the
+                // output region is empty, as in `system_call`.
+                context.field_const(0),
+                context.field_const(0),
+                vec![
+                    arguments[2].into_int_value(),
+                    arguments[3].into_int_value(),
+                    arguments[4].into_int_value(),
+                    arguments[5].into_int_value(),
+                ],
             )
             .map(Some)
         }
@@ -633,9 +640,16 @@ pub fn verbatim<'ctx>(
                 context.llvm_runtime().delegate_call,
                 arguments[0].into_int_value(),
                 arguments[1],
-                arguments[4].into_int_value(),
-                arguments[5].into_int_value(),
-                vec![arguments[2].into_int_value(), arguments[3].into_int_value()],
+                // r3..r6 are register values for every documented variant; the
+                // output region is empty, as in `system_call`.
+                context.field_const(0),
+                context.field_const(0),
+                vec![
+                    arguments[2].into_int_value(),
+                    arguments[3].into_int_value(),
+                    arguments[4].into_int_value(),
+                    arguments[5].into_int_value(),
+                ],
             )
             .map(Some)
         }
@@ -690,9 +704,15 @@ pub fn verbatim<'ctx>(
                 context
                     .get_active_pointer(context.field_const(0))?
                     .as_basic_value_enum(),
-                arguments[3].into_int_value(),
-                arguments[4].into_int_value(),
-                vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
+                // See the non-byref variants.
+                context.field_const(0),
+                context.field_const(0),
+                vec![
+                    arguments[1].into_int_value(),
+                    arguments[2].into_int_value(),
+                    arguments[3].into_int_value(),
+                    arguments[4].into_int_value(),
+                ],
             )
             .map(Some)
         }
@@ -716,9 +736,15 @@ pub fn verbatim<'ctx>(
                 context
                     .get_active_pointer(context.field_const(0))?
                     .as_basic_value_enum(),
-                arguments[3].into_int_value(),
-                arguments[4].into_int_value(),
-                vec![arguments[1].into_int_value(), arguments[2].into_int_value()],
+                // See the non-byref variants.
+                context.field_const(0),
+                context.field_const(0),
+                vec![
+                    arguments[1].into_int_value(),
+                    arguments[2].into_int_value(),
+                    arguments[3].into_int_value(),
+                    arguments[4].into_int_value(),
+                ],
             )
             .map(Some)
         }
