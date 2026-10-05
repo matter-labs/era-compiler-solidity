@@ -925,8 +925,14 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                 let library_flag: u64 = 0x73;
 
                 match (source, destination) {
-                    (_, StackElement::Constant(destination))
-                        if destination == &num::BigUint::from(library_marker) =>
+                    // solc's library deploy stub copies a sub-assembly, so its
+                    // source is never a plain literal. Matching any CODECOPY whose
+                    // destination folds to 11 silently replaces an unrelated copy
+                    // with the marker; excluding a literal source keeps the stub
+                    // working while rejecting hand-written codecopy(11, C, N).
+                    (source, StackElement::Constant(destination))
+                        if destination == &num::BigUint::from(library_marker)
+                            && !matches!(source, StackElement::Constant(_)) =>
                     {
                         crate::evmla::assembly::instruction::codecopy::library_marker(
                             context,
