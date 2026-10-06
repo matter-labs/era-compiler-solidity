@@ -826,9 +826,19 @@ impl Function {
             } => {
                 let operands = &block_stack.elements[block_stack.elements.len() - 2..];
 
+                // EVM saturates a shift of >= 256 to zero; wrapping the amount
+                // mod 256 makes the interpreter disagree with the VM, and since
+                // it resolves indirect jump targets, that is wrong control flow.
                 let result = match (&operands[0], &operands[1]) {
+                    (_, Element::Constant(offset))
+                        if offset
+                            >= &num::BigUint::from(
+                                era_compiler_common::BIT_LENGTH_FIELD as u64,
+                            ) =>
+                    {
+                        Element::Constant(num::BigUint::zero())
+                    }
                     (Element::Tag(tag), Element::Constant(offset)) => {
-                        let offset = offset % era_compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         let result = tag >> offset;
                         if Self::is_tag_value_valid(blocks, &result) {
@@ -838,7 +848,6 @@ impl Function {
                         }
                     }
                     (Element::Constant(constant), Element::Constant(offset)) => {
-                        let offset = offset % era_compiler_common::BIT_LENGTH_FIELD;
                         let offset = offset.to_u64().expect("Always valid");
                         Element::Constant(constant >> offset)
                     }
