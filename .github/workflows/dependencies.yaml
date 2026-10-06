@@ -60,7 +60,7 @@ jobs:
           cat "${CARGO_TOML}"
 
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1
         with:
           clone-llvm: 'false'
           enable-assertions: 'true'
@@ -69,4 +69,4 @@ jobs:
           save-ccache: 'false'
 
       - name: Run tests
-        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1

@@ -34,7 +34,7 @@ jobs:
           git submodule update --force --depth=1 --recursive --checkout
 
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1
         with:
           clone-llvm: 'false'
           build-type: 'Release'
@@ -139,10 +139,10 @@ jobs:
 
       - name: Prepare Windows env
         if: runner.os == 'Windows'
-        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/prepare-msys@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1
 
       - name: Build LLVM
-        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/build-llvm@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1
         with:
           clone-llvm: 'false'
           target-env: ${{ contains(matrix.target, 'musl') && 'musl' || 'gnu' }}
@@ -152,7 +152,7 @@ jobs:
           save-ccache: 'false'
 
       - name: Run tests
-        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@v1
+        uses: matter-labs/era-compiler-ci/.github/actions/rust-unit-tests@9f40f1ebd5ec6bbb037be408cf3203cd09187428 # v1
         with:
           target: ${{ matrix.target || '' }}
           enable-coverage: ${{ matrix.enable-coverage || 'false' }}
