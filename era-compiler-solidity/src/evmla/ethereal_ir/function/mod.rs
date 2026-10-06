@@ -795,9 +795,10 @@ impl Function {
                 // it resolves indirect jump targets, that is wrong control flow.
                 let result = match (&operands[0], &operands[1]) {
                     (_, Element::Constant(offset))
-                        if offset >= &num::BigUint::from(
-                            era_compiler_common::BIT_LENGTH_FIELD as u64,
-                        ) =>
+                        if offset
+                            >= &num::BigUint::from(
+                                era_compiler_common::BIT_LENGTH_FIELD as u64,
+                            ) =>
                     {
                         Element::Constant(num::BigUint::zero())
                     }
