@@ -95,3 +95,27 @@ fn deprecated_system_mode() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn stale_constant_on_assignment() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_STALE_CONSTANT_PATH,
+    ];
+
+    // The call destination is reassigned from the `meta` simulation selector to
+    // an ordinary address, so it must be compiled as a call to 0x8002 rather
+    // than as the `meta` extension.
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("32770"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
