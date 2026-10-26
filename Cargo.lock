@@ -655,7 +655,7 @@ dependencies = [
 [[package]]
 name = "era-compiler-llvm-context"
 version = "2.0.0"
-source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=main#68e4674db2c5030d589d758582e9c12ecf12b8a2"
+source = "git+https://github.com/matter-labs/era-compiler-llvm-context?branch=fix%2Fyul-remove-constant#29a786852256865c8958b0843f2c5bd7386f9497"
 dependencies = [
  "anyhow",
  "era-compiler-common",

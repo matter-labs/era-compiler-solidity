@@ -72,6 +72,10 @@ pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "Test.zasm";
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 
 /// A test input file.
+pub const TEST_YUL_CONTRACT_STALE_CONSTANT_PATH: &str =
+    "tests/data/contracts/yul/StaleConstant.yul";
+
+/// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_ERAVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.eravm.ll";
 
 /// A test input file.

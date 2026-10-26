@@ -36,7 +36,26 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Assignment {
                         identifier.inner,
                     )
                 })?;
+            // The constant annotation attached to a variable must equal that
+            // variable's value on every control-flow path. `variable_declaration`
+            // caches a literal initializer; an assignment that does not refresh
+            // the entry leaves a stale constant behind, and a later read
+            // re-attaches it to the new value. Under `--enable-eravm-extensions`
+            // that annotation selects the extension intrinsic for a call
+            // destination, so a stale entry turns an external call into an
+            // unrelated instruction.
+            let constant = value.constant.clone();
             context.build_store(pointer, value.to_llvm())?;
+            let function = context.current_function();
+            let mut function = function.borrow_mut();
+            match constant {
+                Some(constant) => function
+                    .yul_mut()
+                    .insert_constant(identifier.inner, constant),
+                None => function
+                    .yul_mut()
+                    .remove_constant(identifier.inner.as_str()),
+            }
             return Ok(());
         }
 
@@ -73,6 +92,13 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Assignment {
                 format!("assignment_binding_{index}_value").as_str(),
             )?;
             context.build_store(binding_pointer, value)?;
+            // A tuple element is loaded from memory and is never a known
+            // constant, so any cached entry for this binding is now stale.
+            context
+                .current_function()
+                .borrow_mut()
+                .yul_mut()
+                .remove_constant(binding.inner.as_str());
         }
 
         Ok(())

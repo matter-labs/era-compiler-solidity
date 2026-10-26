@@ -30,7 +30,10 @@ hex = "0.4"
 num = "0.4"
 
 zkevm_opcode_defs = { git = "https://github.com/matter-labs/zksync-protocol", branch = "main" }
-era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "main" }
+# TEMPORARY: pinned to the branch of matter-labs/era-compiler-llvm-context#95,
+# which adds `YulData::remove_constant`. Revert to `branch = "main"` once that
+# PR has merged; this crate does not compile against main until then.
+era-compiler-llvm-context = { git = "https://github.com/matter-labs/era-compiler-llvm-context", branch = "fix/yul-remove-constant" }
 era-compiler-common = { git = "https://github.com/matter-labs/era-compiler-common", branch = "main" }
 
 era-solc = { path = "../era-solc" }
