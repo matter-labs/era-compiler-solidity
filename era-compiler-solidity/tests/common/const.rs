@@ -28,6 +28,10 @@ pub const TEST_SOLIDITY_CONTRACT_NAME: &str = "Test.sol";
 pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Test.sol";
 
 /// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_CODECOPY_ELEVEN_PATH: &str =
+    "tests/data/contracts/solidity/CodecopyEleven.sol";
+
+/// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_GREETER_PATH: &str = "tests/data/contracts/solidity/Greeter.sol";
 
 /// A test input file.

@@ -149,3 +149,32 @@ fn missing() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn evmla_codecopy_to_library_marker_offset() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "evmla",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_CODECOPY_ELEVEN_PATH,
+    ];
+
+    // Offset 11 is where solc's library deploy stub writes the `PUSH20` opcode,
+    // but this copy is hand-written and must be emitted as a real copy. The
+    // marker lowers to an `or` against `0x73 << 248`, so its absence, together
+    // with the pointer arithmetic of an actual copy, pins the behaviour.
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(
+            predicate::str::contains(
+                "52015977587075634662932278421871521105961125924018222127100086566054726205440",
+            )
+            .not(),
+        )
+        .stdout(predicate::str::contains("addp"));
+
+    Ok(())
+}
