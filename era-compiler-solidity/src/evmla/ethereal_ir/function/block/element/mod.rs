@@ -925,8 +925,28 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                 let library_flag: u64 = 0x73;
 
                 match (source, destination) {
-                    (_, StackElement::Constant(destination))
-                        if destination == &num::BigUint::from(library_marker) =>
+                    // solc's library deploy stub is
+                    //     codecopy(11, dataOffset(sub_0), dataSize(sub_0))
+                    // the library copying its own runtime sub-assembly so that it
+                    // can assert that byte 11 is PUSH20 (0x73) and patch its own
+                    // address in before returning it. EraVM never returns runtime
+                    // bytecode, so the copy is dead; the byte is written only to
+                    // keep that assertion from reverting with a panic.
+                    //
+                    // Match on the source being our own sub-assembly rather than
+                    // on the destination alone. A user cannot produce a `Path`
+                    // element, so every hand-written `codecopy(11, ...)` now does
+                    // a real copy, including when its source is a runtime value,
+                    // and when the destination folds to 11 on only some paths.
+                    (StackElement::Path(source), StackElement::Constant(destination))
+                        if destination == &num::BigUint::from(library_marker)
+                            && source
+                                .strip_suffix(
+                                    format!(".{}", era_compiler_common::CodeSegment::Runtime)
+                                        .as_str(),
+                                )
+                                .map(|source| source == parent)
+                                .unwrap_or_default() =>
                     {
                         crate::evmla::assembly::instruction::codecopy::library_marker(
                             context,
