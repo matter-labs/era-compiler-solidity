@@ -31,6 +31,10 @@ pub const TEST_SOLIDITY_CONTRACT_PATH: &str = "tests/data/contracts/solidity/Tes
 pub const TEST_SOLIDITY_CONTRACT_CODECOPY_ELEVEN_PATH: &str =
     "tests/data/contracts/solidity/CodecopyEleven.sol";
 
+/// A test input file containing both a contract and a linkable library.
+pub const TEST_SOLIDITY_CONTRACT_LIBRARY_PATH: &str =
+    "tests/data/contracts/solidity/SimpleContract.sol";
+
 /// A test input file.
 pub const TEST_SOLIDITY_CONTRACT_GREETER_PATH: &str = "tests/data/contracts/solidity/Greeter.sol";
 
