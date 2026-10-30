@@ -5,7 +5,6 @@
 use crate::declare_wrapper;
 use crate::yul::parser::dialect::era::EraDialect;
 use crate::yul::parser::wrapper::Wrap;
-use era_compiler_llvm_context::IContext;
 
 declare_wrapper!(
     era_yul::yul::parser::statement::object::Object<EraDialect>,
@@ -31,20 +30,6 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Object {
             era_compiler_llvm_context::EraVMDummyLLVMWritable::default(),
         )
         .declare(context)?;
-
-        for name in [
-            era_compiler_llvm_context::EraVMRuntime::FUNCTION_DEPLOY_CODE,
-            era_compiler_llvm_context::EraVMRuntime::FUNCTION_RUNTIME_CODE,
-            era_compiler_llvm_context::EraVMRuntime::FUNCTION_ENTRY,
-        ]
-        .into_iter()
-        {
-            context
-                .get_function(name)
-                .expect("Always exists")
-                .borrow_mut()
-                .set_yul_data(era_compiler_llvm_context::EraVMFunctionYulData::default());
-        }
 
         entry.into_llvm(context)?;
 

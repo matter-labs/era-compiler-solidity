@@ -72,6 +72,22 @@ pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "Test.zasm";
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
 
 /// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_LITERAL_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionLiteral.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionVariable.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionReassigned.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_SIBLING_SCOPE_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionSiblingScope.yul";
+
+/// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_ERAVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.eravm.ll";
 
 /// A test input file.

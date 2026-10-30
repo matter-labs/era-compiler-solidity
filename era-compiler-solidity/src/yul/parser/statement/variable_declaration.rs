@@ -35,17 +35,7 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for VariableDeclaration {
 
             let value = if let Some(expression) = self.0.expression {
                 match Expression(expression).into_llvm(context)? {
-                    Some(mut value) => {
-                        if let Some(constant) = value.constant.take() {
-                            context
-                                .current_function()
-                                .borrow_mut()
-                                .yul_mut()
-                                .insert_constant(identifier.inner, constant);
-                        }
-
-                        value.to_llvm()
-                    }
+                    Some(value) => value.to_llvm(),
                     None => r#type.const_zero().as_basic_value_enum(),
                 }
             } else {
