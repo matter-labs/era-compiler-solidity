@@ -95,3 +95,85 @@ fn deprecated_system_mode() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn yul_literal_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_LITERAL_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_variable_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("65532"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_reassigned_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("32770"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_sibling_scope_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_SIBLING_SCOPE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}

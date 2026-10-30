@@ -50,20 +50,8 @@ impl Expression {
                         )
                     })?;
 
-                let constant = context
-                    .current_function()
-                    .borrow()
-                    .yul()
-                    .get_constant(identifier.inner.as_str());
-
                 let value = context.build_load(pointer, identifier.inner.as_str())?;
-
-                match constant {
-                    Some(constant) => Ok(Some(
-                        era_compiler_llvm_context::Value::new_with_constant(value, constant),
-                    )),
-                    None => Ok(Some(value.into())),
-                }
+                Ok(Some(value.into()))
             }
             era_yul::yul::parser::statement::expression::Expression::FunctionCall(call) => Ok(call
                 .wrap()

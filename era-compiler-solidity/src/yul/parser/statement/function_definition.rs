@@ -54,9 +54,6 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for FunctionDefinition {
                 .collect(),
             true,
         );
-        function
-            .borrow_mut()
-            .set_yul_data(era_compiler_llvm_context::EraVMFunctionYulData::default());
 
         Ok(())
     }
