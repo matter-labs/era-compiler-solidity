@@ -940,7 +940,6 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Element {
                     // and when the destination folds to 11 on only some paths.
                     (StackElement::Path(source), StackElement::Constant(destination))
                         if destination == &num::BigUint::from(library_marker)
-                        if destination == &num::BigUint::from(library_marker)
                             && source.strip_suffix(
                                 format!(".{}", era_compiler_common::CodeSegment::Runtime).as_str(),
                             ) == Some(parent) =>
