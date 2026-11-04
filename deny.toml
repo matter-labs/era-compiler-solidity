@@ -2,6 +2,19 @@
 yanked = "warn"
 ignore = [
     #"RUSTSEC-0000-0000",
+    # crypto-bigint (0.5.5) has timing variability in operations meant to be
+    # constant-time. The fix is in >=0.7.6, which this graph cannot reach:
+    # `elliptic-curve 0.13.8` requires `crypto-bigint ^0.5`, and the whole
+    # RustCrypto stack arrives through `zkevm_opcode_defs`, which pins `k256`
+    # and `p256` to `0.13.*`. Every published `zkevm_opcode_defs` does, so
+    # there is no release to move to; it needs a bump in `zksync-protocol`
+    # first. Not reachable here: `zkevm_opcode_defs` only re-exports `k256`
+    # and `p256`, this repository uses it for address and enum constants and
+    # the SHA-256 bytecode hash, and no symbol from `crypto-bigint`,
+    # `elliptic-curve`, `k256`, `p256` or `ecdsa` is linked into `zksolc`. A
+    # compiler also holds no secret material to leak through timing. Revisit
+    # once `zkevm_opcode_defs` moves to `k256`/`p256` 0.14.
+    "RUSTSEC-2026-0387",
 ]
 
 [licenses]
