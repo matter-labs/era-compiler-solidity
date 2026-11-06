@@ -18,6 +18,7 @@ mod debug_output_dir;
 mod disable_solc_optimizer;
 mod eravm;
 mod evm_version;
+mod evmla_constant_folding;
 mod fallback_oz;
 mod force_evmla;
 mod general;
