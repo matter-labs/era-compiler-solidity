@@ -77,7 +77,63 @@ pub const SOLIDITY_BIN_OUTPUT_NAME_ERAVM: &str = "Test.zbin";
 pub const SOLIDITY_ASM_OUTPUT_NAME_ERAVM: &str = "Test.zasm";
 
 /// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_PATH: &str =
+    "tests/data/contracts/solidity/EraVMExtensionCSE.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_REASSIGNED_PATH: &str =
+    "tests/data/contracts/solidity/EraVMExtensionCSEReassigned.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_STRAIGHT_LINE_PATH: &str =
+    "tests/data/contracts/solidity/EraVMExtensionCSEStraightLine.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_IF_CONDITION_PATH: &str =
+    "tests/data/contracts/solidity/EraVMExtensionCSEIfCondition.sol";
+
+/// A test input file.
+pub const TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_SAME_BLOCK_ALIAS_PATH: &str =
+    "tests/data/contracts/solidity/EraVMExtensionCSESameBlockAlias.sol";
+
+/// A test input file.
 pub const TEST_YUL_CONTRACT_PATH: &str = "tests/data/contracts/yul/Default.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_LITERAL_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionLiteral.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionVariable.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionReassigned.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_SIBLING_SCOPE_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionSiblingScope.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_AFTER_CALL_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionReassignedAfterCall.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_IN_LOOP_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionReassignedInLoop.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_IN_BRANCH_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionReassignedInBranch.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_STRAIGHT_LINE_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionVariableStraightLine.yul";
+
+/// A test input file.
+pub const TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_IF_CONDITION_PATH: &str =
+    "tests/data/contracts/yul/EraVMExtensionVariableIfCondition.yul";
 
 /// A test input file.
 pub const TEST_LLVM_IR_CONTRACT_ERAVM_PATH: &str = "tests/data/contracts/llvm_ir/Test.eravm.ll";

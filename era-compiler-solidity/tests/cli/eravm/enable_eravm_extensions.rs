@@ -95,3 +95,289 @@ fn deprecated_system_mode() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn yul_literal_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_LITERAL_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_variable_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_reassigned_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("32770"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_sibling_scope_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_SIBLING_SCOPE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_reassigned_after_call_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_AFTER_CALL_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_reassigned_in_loop_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_IN_LOOP_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_reassigned_in_branch_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_REASSIGNED_IN_BRANCH_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn solidity_cse_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn solidity_cse_reassigned_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_REASSIGNED_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("@__staticcall"))
+        .stdout(predicate::str::contains("meta").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_variable_address_straight_line() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_STRAIGHT_LINE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn yul_variable_address_if_condition() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_YUL_CONTRACT_ERAVM_EXTENSION_VARIABLE_IF_CONDITION_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn solidity_cse_straight_line_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_STRAIGHT_LINE_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn solidity_cse_if_condition_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_IF_CONDITION_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
+
+#[test]
+fn solidity_cse_same_block_alias_address() -> anyhow::Result<()> {
+    crate::common::setup()?;
+
+    let args = &[
+        "--codegen",
+        "yul",
+        "--enable-eravm-extensions",
+        "--asm",
+        crate::common::TEST_SOLIDITY_CONTRACT_ERAVM_EXTENSION_CSE_SAME_BLOCK_ALIAS_PATH,
+    ];
+
+    let result = crate::cli::execute_zksolc(args)?;
+    result
+        .success()
+        .stdout(predicate::str::contains("meta"))
+        .stdout(predicate::str::contains("@__staticcall").not());
+
+    Ok(())
+}
