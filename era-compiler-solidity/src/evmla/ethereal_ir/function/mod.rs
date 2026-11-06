@@ -178,7 +178,11 @@ impl Function {
             .ok_or_else(|| {
                 anyhow::anyhow!("Undeclared destination block {}", queue_element.block_key)
             })?;
-        block.initial_stack = queue_element.stack.clone();
+        // Forget the constants at block entry. A clone is shared by all routes with the same tags
+        // on the stack and is interpreted only once, so the constants of the other routes are
+        // never seen. Adding the constants to the clone key instead would clone a loop for each
+        // value of its counter.
+        block.initial_stack = queue_element.stack.without_constants();
         let block = self.insert_block(block);
         block.stack = block.initial_stack.clone();
         if let Some(predecessor) = queue_element.predecessor.take() {
@@ -646,10 +650,7 @@ impl Function {
                         }
                     }
                     (Element::Constant(operand_1), Element::Constant(operand_2)) => {
-                        match operand_1.checked_add(operand_2) {
-                            Some(result) => Element::Constant(result),
-                            None => Element::value(instruction.name.to_string()),
-                        }
+                        Element::Constant(Self::wrap_to_word(operand_1 + operand_2))
                     }
                     _ => Element::value(instruction.name.to_string()),
                 };
@@ -704,10 +705,7 @@ impl Function {
                         }
                     }
                     (Element::Constant(operand_1), Element::Constant(operand_2)) => {
-                        match operand_1.checked_mul(operand_2) {
-                            Some(result) => Element::Constant(result),
-                            None => Element::value(instruction.name.to_string()),
-                        }
+                        Element::Constant(Self::wrap_to_word(operand_1 * operand_2))
                     }
                     _ => Element::value(instruction.name.to_string()),
                 };
@@ -813,7 +811,7 @@ impl Function {
                     }
                     (Element::Constant(constant), Element::Constant(offset)) => {
                         let offset = offset.to_u64().expect("Always valid");
-                        Element::Constant(constant << offset)
+                        Element::Constant(Self::wrap_to_word(constant << offset))
                     }
                     _ => Element::value(instruction.name.to_string()),
                 };
@@ -1157,6 +1155,13 @@ impl Function {
             era_compiler_common::CodeSegment::Runtime,
             tag & num::BigUint::from(u32::MAX),
         ))
+    }
+
+    ///
+    /// Wraps the value around 2^256, as EVM does on overflow.
+    ///
+    fn wrap_to_word(value: num::BigUint) -> num::BigUint {
+        value % (num::BigUint::one() << era_compiler_common::BIT_LENGTH_FIELD)
     }
 
     ///
