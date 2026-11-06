@@ -40,7 +40,10 @@ impl era_compiler_llvm_context::EraVMWriteLLVM for Object {
         self,
         context: &mut era_compiler_llvm_context::EraVMContext,
     ) -> anyhow::Result<()> {
-        let term = self.0;
+        let mut term = self.0;
+        if context.are_eravm_extensions_enabled() {
+            crate::yul::simulation_addresses::run(&mut term.code.block);
+        }
         if term.identifier.ends_with("_deployed") {
             era_compiler_llvm_context::EraVMRuntimeCodeFunction::new(term.code.wrap())
                 .into_llvm(context)?;

@@ -4,8 +4,7 @@ object "Test" {
     }
     object "Test_deployed" {
         code {
-            // Extensions are selected by a literal call destination only.
-            // A selector held in a variable is an ordinary call.
+            // A variable that holds a selector at the call site selects the extension.
             let dest := 0xFFFC
             let result := staticcall(0, dest, 0, 0, 0, 0)
             mstore(0, result)
