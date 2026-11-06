@@ -54,10 +54,23 @@ impl Stack {
     ///
     pub fn hash(&self) -> u64 {
         let mut hasher = XxHash3_64::default();
+        // Frame the stream: a tag's minimal little-endian encoding is otherwise
+        // indistinguishable from several elements, e.g. [Value, Tag(1)] and
+        // [Tag(256)] both encode `00 01`. This hash is the sole block-clone
+        // identity, so a collision makes two call sites share one clone.
+        hasher.write_u64(self.elements.len() as u64);
         for element in self.elements.iter() {
             match element {
-                Element::Tag(tag) => hasher.write(tag.to_bytes_le().as_slice()),
-                _ => hasher.write_u8(0),
+                Element::Tag(tag) => {
+                    let bytes = tag.to_bytes_le();
+                    hasher.write_u8(1);
+                    hasher.write_u64(bytes.len() as u64);
+                    hasher.write(bytes.as_slice());
+                }
+                _ => {
+                    hasher.write_u8(0);
+                    hasher.write_u64(0);
+                }
             }
         }
         hasher.finish()
