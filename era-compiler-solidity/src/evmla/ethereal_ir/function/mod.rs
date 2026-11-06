@@ -178,7 +178,11 @@ impl Function {
             .ok_or_else(|| {
                 anyhow::anyhow!("Undeclared destination block {}", queue_element.block_key)
             })?;
-        block.initial_stack = queue_element.stack.clone();
+        // Forget the constants at block entry. A clone is shared by all routes with the same tags
+        // on the stack and is interpreted only once, so the constants of the other routes are
+        // never seen. Adding the constants to the clone key instead would clone a loop for each
+        // value of its counter.
+        block.initial_stack = queue_element.stack.without_constants();
         let block = self.insert_block(block);
         block.stack = block.initial_stack.clone();
         if let Some(predecessor) = queue_element.predecessor.take() {

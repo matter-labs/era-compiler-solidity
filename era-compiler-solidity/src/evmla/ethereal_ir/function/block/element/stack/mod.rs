@@ -77,6 +77,21 @@ impl Stack {
     }
 
     ///
+    /// Returns a copy of the stack with the constants replaced with runtime values.
+    ///
+    pub fn without_constants(&self) -> Self {
+        let elements = self
+            .elements
+            .iter()
+            .map(|element| match element {
+                Element::Constant(_) => Element::value("BLOCK_INPUT".to_owned()),
+                element => element.to_owned(),
+            })
+            .collect();
+        Self { elements }
+    }
+
+    ///
     /// Pushes an element onto the stack.
     ///
     pub fn push(&mut self, element: Element) {

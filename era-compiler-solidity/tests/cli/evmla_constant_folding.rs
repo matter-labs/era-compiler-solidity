@@ -111,7 +111,7 @@ fn overflow(destination: &str, expected: &str) -> anyhow::Result<()> {
     if calldataload(36) { d := 2 }
     codecopy(d, off, 32)
     "#,
-    "1";
+    "runtime";
     "forward join"
 )]
 #[test_case(
@@ -120,7 +120,7 @@ fn overflow(destination: &str, expected: &str) -> anyhow::Result<()> {
     for { let i := 0 } lt(i, calldataload(36)) { i := add(i, 1) } { d := 2 }
     codecopy(d, off, 32)
     "#,
-    "1";
+    "runtime";
     "back edge"
 )]
 fn route_dependent(assembly: &str, expected: &str) -> anyhow::Result<()> {
