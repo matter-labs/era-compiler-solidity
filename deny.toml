@@ -2,6 +2,11 @@
 yanked = "warn"
 ignore = [
     #"RUSTSEC-0000-0000",
+    # crypto-bigint 0.5.5: timing side channel. The fix (>=0.7.6) is out of
+    # reach -- zkevm_opcode_defs pins k256/p256 to 0.13.*, which caps
+    # crypto-bigint at ^0.5 -- and needs a zksync-protocol bump to clear.
+    # Not reachable here: nothing from crypto-bigint is linked into zksolc.
+    "RUSTSEC-2026-0387",
 ]
 
 [licenses]
