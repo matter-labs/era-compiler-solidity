@@ -90,13 +90,13 @@ fn shift_amount(destination: &str, expected: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-// The top bit of a result that doesn't overflow is 1, and it's 3 if the overflow bit is kept.
+// The top bit of each result is 1, and it would be 3 if the overflow bit were kept.
 #[test_case("shr(255, add(0x8000000000000000000000000000000000000000000000000000000000000000, 1))", "1"; "add in range")]
 #[test_case("shr(255, mul(0x4000000000000000000000000000000000000000000000000000000000000000, 2))", "1"; "mul in range")]
 #[test_case("shr(255, shl(254, 2))", "1"; "shl in range")]
-#[test_case("shr(255, add(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff))", "3"; "add overflow")]
-#[test_case("shr(255, mul(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 2))", "3"; "mul overflow")]
-#[test_case("shr(255, shl(1, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff))", "3"; "shl overflow")]
+#[test_case("shr(255, add(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff))", "1"; "add overflow")]
+#[test_case("shr(255, mul(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 2))", "1"; "mul overflow")]
+#[test_case("shr(255, shl(1, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff))", "1"; "shl overflow")]
 fn overflow(destination: &str, expected: &str) -> anyhow::Result<()> {
     let assembly = format!("codecopy({destination}, off, 32)");
     assert_eq!(folded(assembly.as_str())?, expected);

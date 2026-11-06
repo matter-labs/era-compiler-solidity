@@ -9,7 +9,7 @@
 pub enum Element {
     /// The runtime value.
     Value(String),
-    /// The compile-time value.
+    /// The compile-time value. Always fits 256 bits.
     Constant(num::BigUint),
     /// The compile-time destination tag.
     Tag(num::BigUint),
